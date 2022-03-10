@@ -44,10 +44,10 @@ const backendDependencies = {
  * `/openmrs/spa/hello`.
  */
 function setupOpenMRS() {
-  const moduleName = "@openmrs/esm-template-app";
+  const moduleName = "@openmrs/esm-dispensing-app";
 
   const options = {
-    featureName: "hello-world",
+    featureName: "dispensing",
     moduleName,
   };
 
@@ -56,37 +56,11 @@ function setupOpenMRS() {
   return {
     pages: [
       {
-        load: getAsyncLifecycle(() => import("./hello"), options),
-        route: "hello",
+        load: getAsyncLifecycle(() => import("./home"), options),
+        route: "dispensing",
       },
     ],
-    extensions: [
-      {
-        id: "Red box",
-        load: getAsyncLifecycle(
-          () => import("./boxes/extensions/red-box"),
-          options
-        ),
-        slot: "Boxes",
-      },
-      {
-        id: "Blue box",
-        load: getAsyncLifecycle(
-          () => import("./boxes/extensions/blue-box"),
-          options
-        ),
-        slot: "Boxes",
-        // same as `slots: ["Boxes"],`
-      },
-      {
-        id: "Brand box",
-        load: getAsyncLifecycle(
-          () => import("./boxes/extensions/brand-box"),
-          options
-        ),
-        slot: "Boxes",
-      },
-    ],
+    extensions: [],
   };
 }
 

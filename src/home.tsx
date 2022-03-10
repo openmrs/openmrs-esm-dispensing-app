@@ -9,22 +9,15 @@
  */
 
 import React from "react";
-import styles from "./hello.css";
-import { Greeter } from "./greeter/greeter";
-import { PatientGetter } from "./patient-getter/patient-getter";
-import { Boxes } from "./boxes/slot/boxes";
+import { Trans } from "react-i18next";
+import styles from "./home.css";
 
-const Hello: React.FC = () => {
+const Home: React.FC = () => {
   return (
     <div className={`omrs-main-content ${styles.container}`}>
-      {/* Greeter: demonstrates the configuration system */}
-      <Greeter />
-      {/* PatientGetter: demonstrates data fetching */}
-      <PatientGetter />
-      {/* Boxes: demonstrates the extension system */}
-      <Boxes />
+      <Trans key="dispensing">Medication Dispensing</Trans>
     </div>
   );
 };
 
-export default Hello;
+export default Home;

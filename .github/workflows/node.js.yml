@@ -10,8 +10,8 @@ on:
       - created
 
 env:
-  ESM_NAME: "@openmrs/esm-template-app"
-  JS_NAME: "openmrs-esm-template-app.js"
+  ESM_NAME: "@openmrs/esm-dispensing-app"
+  JS_NAME: "openmrs-esm-dispensing-app.js"
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: "14.x"
+          node-version: "16"
       - run: npm install
       - run: npm run lint
       - run: npm run coverage

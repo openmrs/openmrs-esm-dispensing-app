@@ -1,9 +1,9 @@
 {
-  "name": "@openmrs/esm-template-app",
-  "version": "3.0.0",
+  "name": "@openmrs/esm-dispensing-app",
+  "version": "1.0.0",
   "license": "MPL-2.0",
-  "description": "A microfrontend template OpenMRS",
-  "browser": "dist/openmrs-esm-template-app.js",
+  "description": "Medication dispensing application",
+  "browser": "dist/openmrs-esm-dispensing-app.js",
   "main": "src/index.ts",
   "source": true,
   "scripts": {
@@ -28,18 +28,21 @@
   ],
   "keywords": [
     "openmrs",
-    "microfrontends"
+    "microfrontends",
+    "medication",
+    "dispensing",
+    "pharmacy"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openmrs/openmrs-esm-template-app.git"
+    "url": "git+https://github.com/openmrs/openmrs-esm-dispensing.git"
   },
-  "homepage": "https://github.com/openmrs/openmrs-esm-template-app#readme",
+  "homepage": "https://github.com/openmrs/openmrs-esm-dispensing#readme",
   "publishConfig": {
     "access": "public"
   },
   "bugs": {
-    "url": "https://github.com/openmrs/openmrs-esm-template-app/issues"
+    "url": "https://github.com/openmrs/openmrs-esm-dispensing/issues"
   },
   "dependencies": {
     "@carbon/icons-react": "^10.18.0",

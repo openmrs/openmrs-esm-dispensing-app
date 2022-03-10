@@ -22,7 +22,6 @@
  */
 import React from "react";
 import { render, cleanup } from "@testing-library/react";
-import Hello from "./hello";
 import { useConfig } from "@openmrs/esm-framework";
 import { Config } from "./config-schema";
 
@@ -35,11 +34,11 @@ import { Config } from "./config-schema";
  */
 const mockUseConfig = useConfig as jest.Mock;
 
-describe(`<Hello />`, () => {
+describe("<div/>", () => {
   afterEach(cleanup);
-  it(`renders without dying`, () => {
-    const config: Config = { casualGreeting: false, whoToGreet: ["World"] };
+  it("does nothing", () => {
+    const config: Config = {};
     mockUseConfig.mockReturnValue(config);
-    render(<Hello />);
+    render(<div />);
   });
 });
