@@ -20,6 +20,9 @@ Open a browser, pointing the the port indicated above (eg. 8081):
 If you run into errors with running the code, and see errors in the console related to having not enough file watchers on Linux,
 these instructions help:  https://stackoverflow.com/questions/55763428/react-native-error-enospc-system-limit-for-number-of-file-watchers-reached
 
+If you are unable to commit and push using Intellij, you may need to update the path in Intellij to match your terminal:
+https://typicode.github.io/husky/#/?id=command-not-found
+
 ## Contributing
 
 For more information, please see the
