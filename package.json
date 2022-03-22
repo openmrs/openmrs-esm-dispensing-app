@@ -11,17 +11,13 @@
     "serve": "webpack serve --mode=development",
     "build": "webpack --mode production",
     "analyze": "webpack --mode=production --env.analyze=true",
-    "lint": "eslint src --ext js,jsx,ts,tsx",
     "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "typescript": "tsc",
+    "lint": "eslint src --ext js,jsx,ts,tsx",
     "test": "jest --config jest.config.json",
-    "coverage": "npm run test -- --coverage",
+    "typescript": "tsc",
+    "verify": "concurrently 'yarn:lint' 'yarn:test' 'yarn:typescript'",
+    "coverage": "yarn test --coverage",
     "prepare": "husky install"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged && concurrently 'npm:lint' 'npm:test' 'npm:typescript'"
-    }
   },
   "browserslist": [
     "extends browserslist-config-openmrs"
