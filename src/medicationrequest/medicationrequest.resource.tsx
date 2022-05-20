@@ -48,7 +48,7 @@ export function useOrders() {
       encounterOrders.map((order) => order.resource)
     );
   });
-  debugger;
+
   return {
     orders,
     isError: error,
