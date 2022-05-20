@@ -59,10 +59,7 @@ export function useOrders() {
 function buildEncounterOrders(
   encounter: FHIREncounterOrder,
   orders: Array<FHIREncounterOrder>
-) {
-  console.log("buildEncounterOrders");
-  debugger;
-}
+) {}
 
 function mapEncounterProperties(encounter: FHIREncounterOrder): EncounterOrder {
   return {
