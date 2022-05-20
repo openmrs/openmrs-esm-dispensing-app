@@ -28,44 +28,40 @@ export function useOrders() {
     Error
   >(url, openmrsFetch);
 
-  let formattedEncounters =
-    data?.data?.total > 0
-      ? data?.data.entry
-          .filter((entry) => entry?.resource?.resourceType == "Encounter")
-          .map((entry) => entry.resource ?? [])
-          .map(mapEncounterProperties)
-      : null;
+  const formattedEncounters = data?.data.entry.filter(
+    (entry) => entry?.resource?.resourceType == "Encounter"
+  );
 
-  const formattedMedicationRequests =
-    data?.data?.total > 0
-      ? data?.data.entry
-          .filter(
-            (entry) => entry?.resource?.resourceType == "MedicationRequest"
-          )
-          .map((entry) => entry.resource ?? [])
-          .map(mapOrderProperties)
-      : null;
+  const formattedMedicationRequests = data?.data.entry.filter(
+    (entry) => entry?.resource?.resourceType == "MedicationRequest"
+  );
 
-  if (formattedEncounters?.length && formattedMedicationRequests?.length) {
-    formattedEncounters.forEach((encounter) => {
-      let encounterUuid = encounter.id;
-      const encounterOrders = formattedMedicationRequests.filter(function (
-        order
-      ) {
-        return order.encounter == "Encounter/" + encounter.id;
-      });
-
-      encounterOrders.forEach((order) => {
-        encounter.prescriber = order.requester;
-        encounter.status = order.status;
-      });
-    });
-  }
+  const orders = formattedEncounters.map((encounter) => {
+    encounter.resource;
+    const encounterOrders = formattedMedicationRequests.filter(
+      (order) =>
+        order.resource.encounter.reference ==
+        "Encounter/" + encounter.resource.id
+    );
+    return buildEncounterOrders(
+      encounter.resource,
+      encounterOrders.map((order) => order.resource)
+    );
+  });
+  debugger;
   return {
-    orders: data ? formattedEncounters : null,
+    orders,
     isError: error,
     isLoading: !data && !error,
   };
+}
+
+function buildEncounterOrders(
+  encounter: FHIREncounterOrder,
+  orders: Array<FHIREncounterOrder>
+) {
+  console.log("buildEncounterOrders");
+  debugger;
 }
 
 function mapEncounterProperties(encounter: FHIREncounterOrder): EncounterOrder {
