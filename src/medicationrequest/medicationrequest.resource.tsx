@@ -47,24 +47,11 @@ export function useOrders() {
       : null;
 
   if (formattedEncounters?.length && formattedMedicationRequests?.length) {
-    console.log(
-      "formattedEncounters.length= " +
-        formattedEncounters.length +
-        "; formattedMedicationRequests.length= " +
-        formattedMedicationRequests.length
-    );
     formattedEncounters.forEach((encounter) => {
       let encounterUuid = encounter.id;
-      console.log("encounterUuid: " + encounterUuid);
       const encounterOrders = formattedMedicationRequests.filter(function (
         order
       ) {
-        console.log(
-          "encounter.id: " +
-            encounter.id +
-            "; order.encounter: " +
-            order.encounter
-        );
         return order.encounter == "Encounter/" + encounter.id;
       });
 
