@@ -96,7 +96,7 @@ function buildEncounterOrders(
     patientName: encounter?.subject?.display,
     drugs: "tbd",
     lastDispenser: "tbd",
-    prescriber: [...new Set(orders.map((o) => o.requester))].join(", "),
+    prescriber: [...new Set(orders.map((o) => o.requester.display))].join(", "),
     status: computeStatus(orders.map((o) => o.status)),
   };
 }
