@@ -64,3 +64,4 @@ dist/
 
 # Intellij integration
 *.iml
+.idea
