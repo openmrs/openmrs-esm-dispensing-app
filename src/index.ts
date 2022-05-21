@@ -56,7 +56,7 @@ function setupOpenMRS() {
   return {
     pages: [
       {
-        load: getAsyncLifecycle(() => import("./home"), options),
+        load: getAsyncLifecycle(() => import("./dispensing"), options),
         route: "dispensing",
       },
     ],

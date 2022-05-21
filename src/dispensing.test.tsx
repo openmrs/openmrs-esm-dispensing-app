@@ -21,24 +21,11 @@
  *   https://testing-library.com/docs/guiding-principles
  */
 import React from "react";
-import { render, cleanup } from "@testing-library/react";
-import { useConfig } from "@openmrs/esm-framework";
-import { Config } from "./config-schema";
-
-/**
- * This is an idiomatic way of dealing with mocked files. Note that
- * `useConfig` is already mocked; the Jest moduleNameMapper (see the
- * Jest config) has mapped the `@openmrs/esm-framework` import to a
- * mock file. This line just tells TypeScript that the object is, in
- * fact, a mock, and so will have methods like `mockReturnValue`.
- */
-const mockUseConfig = useConfig as jest.Mock;
+import { render } from "@testing-library/react";
+import Dispensing from "./dispensing";
 
 describe("<div/>", () => {
-  afterEach(cleanup);
   it("does nothing", () => {
-    const config: Config = {};
-    mockUseConfig.mockReturnValue(config);
-    render(<div />);
+    render(<Dispensing />);
   });
 });
