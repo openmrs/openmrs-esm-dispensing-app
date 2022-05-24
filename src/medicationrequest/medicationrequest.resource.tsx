@@ -64,30 +64,34 @@ export function useOrders() {
   let orders = null;
   if (data) {
     const entries = data?.data.entry;
-    const fhirEncounters = entries.filter(
-      (entry) => entry?.resource?.resourceType == "Encounter"
-    );
-    const fhirMedicationRequests = entries.filter(
-      (entry) => entry?.resource?.resourceType == "MedicationRequest"
-    );
+    if (entries) {
+      const fhirEncounters = entries.filter(
+        (entry) => entry?.resource?.resourceType == "Encounter"
+      );
+      const fhirMedicationRequests = entries.filter(
+        (entry) => entry?.resource?.resourceType == "MedicationRequest"
+      );
 
-    orders = fhirEncounters.map((encounter) => {
-      const encounterOrders = fhirMedicationRequests.filter(
-        (order) =>
-          order.resource.encounter.reference ==
-          "Encounter/" + encounter.resource.id
-      );
-      return buildEncounterOrders(
-        encounter.resource,
-        encounterOrders.map((order) => order.resource)
-      );
-    });
+      orders = fhirEncounters.map((encounter) => {
+        const encounterOrders = fhirMedicationRequests.filter(
+          (order) =>
+            order.resource.encounter.reference ==
+            "Encounter/" + encounter.resource.id
+        );
+        return buildEncounterOrders(
+          encounter.resource,
+          encounterOrders.map((order) => order.resource)
+        );
+      });
+    } else {
+      orders = [];
+    }
   }
 
   return {
     orders,
     isError: error,
-    isLoading: !data && !error,
+    isLoading: !orders && !error,
   };
 }
 
