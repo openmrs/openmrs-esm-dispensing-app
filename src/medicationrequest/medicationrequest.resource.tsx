@@ -40,6 +40,11 @@ interface FHIREncounterOrder {
     display: string;
     reference: string;
   };
+  medicationReference: {
+    reference: string;
+    type: string;
+    display: string;
+  };
   requester: {
     type: string;
     display: string;
@@ -94,7 +99,9 @@ function buildEncounterOrders(
     id: encounter?.id,
     created: encounter?.period?.start,
     patientName: encounter?.subject?.display,
-    drugs: "tbd",
+    drugs: [...new Set(orders.map((o) => o.medicationReference.display))].join(
+      ", "
+    ),
     lastDispenser: "tbd",
     prescriber: [...new Set(orders.map((o) => o.requester.display))].join(", "),
     status: computeStatus(orders.map((o) => o.status)),
