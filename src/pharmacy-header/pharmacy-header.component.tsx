@@ -4,6 +4,7 @@ import Calendar16 from "@carbon/icons-react/es/calendar/16";
 import Location16 from "@carbon/icons-react/es/location/16";
 import { useConfig, useSession, formatDate } from "@openmrs/esm-framework";
 import { PharmacyConfig } from "../config-schema";
+import PharmacyIllustration from "./pharmacy-illustration.component";
 import styles from "./pharmacy-header.scss";
 
 export const PharmacyHeader: React.FC = () => {
@@ -15,6 +16,7 @@ export const PharmacyHeader: React.FC = () => {
   return (
     <div className={styles.header}>
       <div className={styles["left-justified-items"]}>
+        <PharmacyIllustration />
         <div className={styles["page-labels"]}>
           <Location16 />
           <span className={styles.value}>{userLocation}</span>
