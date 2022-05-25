@@ -9,8 +9,8 @@ import {
 } from "carbon-components-react";
 
 import React from "react";
-import { Trans } from "react-i18next";
 import styles from "./dispensing.scss";
+import { PharmacyHeader } from "./pharmacy-header/pharmacy-header.component";
 import {
   Order,
   useOrders,
@@ -28,17 +28,12 @@ const columns: Array<[string, keyof Order]> = [
 export default function Dispensing() {
   const { orders, isError, isLoading } = useOrders();
 
-  if (isLoading) {
-    return <DataTableSkeleton role="progressbar" />;
-  }
-  if (isError) {
-    // render error state
-    return <p>Error</p>;
-  }
-  if (orders) {
-    return (
-      <div className={`omrs-main-content ${styles.container}`}>
-        <Trans key="dispensing">Medication Dispensing</Trans>
+  return (
+    <div className={`omrs-main-content ${styles.container}`}>
+      <PharmacyHeader />
+      {isLoading && <DataTableSkeleton role="progressbar" />}
+      {isError && <p>Error</p>}
+      {orders && (
         <Table>
           <TableHead>
             <TableRow>
@@ -63,7 +58,7 @@ export default function Dispensing() {
             ))}
           </TableBody>
         </Table>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 }
