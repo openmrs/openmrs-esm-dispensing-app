@@ -54,19 +54,3 @@
 .view {
   @include carbon--type-style('label-01');
 }
-
-.dropdown {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: 0.25rem;
-
-  :global(.bx--dropdown__wrapper--inline) {
-    align-items: center;
-    display: flex;
-  }
-
-  :global(.bx--list-box__menu) {
-    left: -10.15rem;
-  }
-}
