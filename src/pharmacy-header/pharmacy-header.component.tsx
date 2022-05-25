@@ -2,8 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import Calendar16 from "@carbon/icons-react/es/calendar/16";
 import Location16 from "@carbon/icons-react/es/location/16";
-import { formatDate } from "@openmrs/esm-framework";
-import { useConfig, useSession } from "@openmrs/esm-framework";
+import { useConfig, useSession, formatDate } from "@openmrs/esm-framework";
 import { PharmacyConfig } from "../config-schema";
 import styles from "./pharmacy-header.scss";
 
