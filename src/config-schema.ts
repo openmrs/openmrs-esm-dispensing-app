@@ -20,6 +20,13 @@ import { Type, validator } from "@openmrs/esm-framework";
  * and the Schema Reference
  *   https://openmrs.github.io/openmrs-esm-core/#/main/config?id=schema-reference
  */
-export const configSchema = {};
+export const configSchema = {
+  appName: {
+    _type: Type.String,
+    _default: "Pharmacy",
+  },
+};
 
-export type Config = {};
+export type PharmacyConfig = {
+  appName: String;
+};
