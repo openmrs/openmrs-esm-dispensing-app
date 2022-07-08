@@ -14,7 +14,8 @@ import { PharmacyHeader } from "./pharmacy-header/pharmacy-header.component";
 import {
   Order,
   useOrders,
-} from "./medicationrequest/medicationrequest.resource";
+} from "./medication-request/medication-request.resource";
+import DispensingTiles from "./dispensing-tiles/dispensing-tiles.component";
 
 const columns: Array<[string, keyof Order]> = [
   ["Created", "created"],
@@ -29,8 +30,9 @@ export default function Dispensing() {
   const { orders, isError, isLoading } = useOrders();
 
   return (
-    <div className={`omrs-main-content ${styles.container}`}>
+    <div className={`omrs-main-content ${styles.dispensingContainer}`}>
       <PharmacyHeader />
+      <DispensingTiles />
       {isLoading && <DataTableSkeleton role="progressbar" />}
       {isError && <p>Error</p>}
       {orders && (

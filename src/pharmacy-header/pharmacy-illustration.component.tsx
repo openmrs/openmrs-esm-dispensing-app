@@ -8,7 +8,7 @@ const PharmacyIllustration: React.FC = () => {
       viewBox="0 0 92 94"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <title>Patient queue illustration</title>
+      <title>Pharmacy illustration</title>
       <g fill="none" fillRule="evenodd">
         <path fill="#FFF" d="M0 0h92v94H0z" />
         <path

@@ -22,7 +22,7 @@
  */
 import React from "react";
 import { render } from "@testing-library/react";
-import Dispensing from "./dispensing";
+import Dispensing from "./dispensing.component";
 
 describe("<div/>", () => {
   it("does nothing", () => {
