@@ -57,7 +57,7 @@
     "rxjs": "6.x"
   },
   "devDependencies": {
-    "@openmrs/esm-framework": "^3.4.1-pre.117",
+    "@openmrs/esm-framework": "next",
     "@swc/core": "^1.2.189",
     "@swc/jest": "^0.2.21",
     "@testing-library/dom": "^7.31.2",
@@ -82,7 +82,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.0.4",
     "jest-cli": "^27.0.4",
-    "openmrs": "^3.4.1-pre.117",
+    "openmrs": "next",
     "prettier": "^2.3.0",
     "pretty-quick": "^3.1.0",
     "react": "^16.13.1",

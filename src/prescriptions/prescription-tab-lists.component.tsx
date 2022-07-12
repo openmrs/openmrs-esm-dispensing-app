@@ -1,8 +1,6 @@
 import React, { ReactNode, useCallback, useMemo, useState } from "react";
 import Add16 from "@carbon/icons-react/es/add/16";
 import {
-  Button,
-  DataTableHeader,
   DataTableSkeleton,
   Tab,
   Table,
@@ -14,9 +12,7 @@ import {
   Tabs,
 } from "carbon-components-react";
 import { useTranslation } from "react-i18next";
-import { ExtensionSlot, showModal, useSession } from "@openmrs/esm-framework";
 import styles from "./prescriptions.scss";
-import { PatientList, PatientListFilter, PatientListType } from "../types";
 import {
   Order,
   useOrders,
@@ -37,12 +33,6 @@ const labelMap = [
   "Cancelled",
 ];
 
-const headersWithoutType: Array<DataTableHeader<keyof PatientList>> = [
-  { key: "display", header: "List Name" },
-  { key: "size", header: "No. Patients" },
-  { key: "isStarred", header: "" },
-];
-
 function createLabels() {
   const res: Array<ReactNode> = [];
 
@@ -52,31 +42,6 @@ function createLabels() {
 
   return res;
 }
-
-function useAppropriateTableHeadersForSelectedTab(selectedTab: TabTypes) {
-  return useMemo(
-    () =>
-      selectedTab === TabTypes.SYSTEM || selectedTab === TabTypes.USER
-        ? headersWithoutType
-        : undefined,
-    [selectedTab]
-  );
-}
-
-enum RouteStateTypes {
-  ALL_PRESCRIPTIONS,
-  CREATE_NEW_PRESCRIPTION,
-}
-
-interface AllListRouteState {
-  type: RouteStateTypes.ALL_PRESCRIPTIONS;
-}
-
-interface CreateNewListState {
-  type: RouteStateTypes.CREATE_NEW_PRESCRIPTION;
-}
-
-type RouteState = AllListRouteState | CreateNewListState;
 
 const columns: Array<[string, keyof Order]> = [
   ["Created", "created"],
@@ -89,16 +54,7 @@ const columns: Array<[string, keyof Order]> = [
 
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
-  const [routeState, setRouteState] = useState<RouteState>({
-    type: RouteStateTypes.ALL_PRESCRIPTIONS,
-  });
   const [selectedTab, setSelectedTab] = useState(TabTypes.STARRED);
-  const [searchString, setSearchString] = useState<string>("");
-
-  const customHeaders = useAppropriateTableHeadersForSelectedTab(selectedTab);
-  const [showOverlay, setShowOverlay] = useState(false);
-
-  const handleSearch = (str) => setSearchString(str);
   const { orders, isError, isLoading } = useOrders();
 
   return (
@@ -143,15 +99,6 @@ const PrescriptionTabLists: React.FC = () => {
           )}
         </div>
       </section>
-      {/* <section>
-        {routeState.type === RouteStateTypes.CREATE_NEW_PRESCRIPTION && (
-
-          // <CreateNewList
-          //   close={() => setRouteState({ type: RouteStateTypes.ALL_PRESCRIPTIONS })}
-          //   onSuccess={() => patientListQuery.mutate()}
-          // />
-        )}
-      </section> */}
     </main>
   );
 };

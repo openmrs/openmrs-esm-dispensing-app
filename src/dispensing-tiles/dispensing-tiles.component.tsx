@@ -18,7 +18,7 @@ const DispensingTiles: React.FC = () => {
       <div className={styles.cardContainer}>
         <DispensingTile
           label={t("orders", "Orders")}
-          value={metrics ? metrics.orders : 0}
+          value={metrics.orders}
           headerLabel={t(
             "prescriptionsToFillToday",
             "Prescriptions to fill today"
@@ -26,12 +26,12 @@ const DispensingTiles: React.FC = () => {
         />
         <DispensingTile
           label={t("today", "Today")}
-          value={metrics ? metrics.orders_for_home_delivery : 0}
+          value={metrics.orders_for_home_delivery}
           headerLabel={t("ordersForHomeDelivery", "Orders for home delivery")}
         />
         <DispensingTile
           label={t("last14Days", "Last 14 days")}
-          value={metrics ? metrics.missed_collections : 0}
+          value={metrics.missed_collections}
           headerLabel={t("missedCollections", "Missed collections")}
         />
       </div>
