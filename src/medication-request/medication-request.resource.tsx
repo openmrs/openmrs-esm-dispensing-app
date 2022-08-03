@@ -55,7 +55,7 @@ interface FHIREncounterOrder {
 
 export function useOrders() {
   const url =
-    "/ws/fhir2/R4/Encounter?_count=100&_revinclude=MedicationRequest:encounter&_has:MedicationRequest:encounter:intent=order&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter";
+    "/ws/fhir2/R4/Encounter?_count=10&_revinclude=MedicationRequest:encounter&_has:MedicationRequest:encounter:intent=order&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter";
   const { data, error } = useSWR<
     { data: FHIRMedicationRequestResponse },
     Error

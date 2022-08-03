@@ -1,11 +1,15 @@
-import React, { ReactNode, useCallback, useMemo, useState } from "react";
-import Add16 from "@carbon/icons-react/es/add/16";
+import React, { ReactNode, useState } from "react";
 import {
+  DataTable,
   DataTableSkeleton,
   Tab,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
+  TableExpandedRow,
+  TableExpandHeader,
+  TableExpandRow,
   TableHead,
   TableHeader,
   TableRow,
@@ -13,10 +17,8 @@ import {
 } from "carbon-components-react";
 import { useTranslation } from "react-i18next";
 import styles from "./prescriptions.scss";
-import {
-  Order,
-  useOrders,
-} from "../medication-request/medication-request.resource";
+import { useOrders } from "../medication-request/medication-request.resource";
+import OrderExpanded from "../components/order-expanded.component";
 
 enum TabTypes {
   STARRED,
@@ -43,13 +45,13 @@ function createLabels() {
   return res;
 }
 
-const columns: Array<[string, keyof Order]> = [
-  ["Created", "created"],
-  ["Patient name", "patientName"],
-  ["Prescriber", "prescriber"],
-  ["Drugs", "drugs"],
-  ["Last dispenser", "lastDispenser"],
-  ["Status", "status"],
+const columns = [
+  { header: "Created", key: "created" },
+  { header: "Patient name", key: "patientName" },
+  { header: "Prescriber", key: "prescriber" },
+  { header: "Drugs", key: "drugs" },
+  { header: "Last dispenser", key: "lastDispenser" },
+  { header: "Status", key: "status" },
 ];
 
 const PrescriptionTabLists: React.FC = () => {
@@ -72,30 +74,46 @@ const PrescriptionTabLists: React.FC = () => {
           {isLoading && <DataTableSkeleton role="progressbar" />}
           {isError && <p>Error</p>}
           {orders && (
-            <Table>
-              <TableHead>
-                <TableRow>
-                  {columns.map(([header, _]) => (
-                    <TableHeader id={header} key={header}>
-                      {header}
-                    </TableHeader>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orders.map((order) => (
-                  <TableRow key={order.id}>
-                    {columns.map(([_, key]) => {
-                      return (
-                        <TableCell key={`${order.id}-${key}`}>
-                          {order[key]}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable rows={orders} headers={columns} isSortable>
+              {({
+                rows,
+                headers,
+                getHeaderProps,
+                getRowProps,
+                getTableProps,
+              }) => (
+                <TableContainer>
+                  <Table {...getTableProps()}>
+                    <TableHead>
+                      <TableRow>
+                        <TableExpandHeader />
+                        {headers.map((header) => (
+                          <TableHeader {...getHeaderProps({ header })}>
+                            {header.header}
+                          </TableHeader>
+                        ))}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {rows.map((row) => (
+                        <React.Fragment key={row.id}>
+                          <TableExpandRow {...getRowProps({ row })}>
+                            {row.cells.map((cell) => (
+                              <TableCell key={cell.id}>{cell.value}</TableCell>
+                            ))}
+                          </TableExpandRow>
+                          {row.isExpanded && (
+                            <TableExpandedRow colSpan={headers.length + 1}>
+                              <OrderExpanded />
+                            </TableExpandedRow>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </DataTable>
           )}
         </div>
       </section>
