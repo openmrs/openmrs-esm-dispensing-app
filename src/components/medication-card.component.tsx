@@ -1,7 +1,6 @@
 import React from "react";
 import { DosageInstruction, MedicationRequest } from "../types";
 import styles from "./medication-card.scss";
-import capitalize from "lodash-es/capitalize";
 import { getDosageInstruction } from "../utils";
 import { Tile } from "carbon-components-react";
 import { useTranslation } from "react-i18next";
@@ -18,7 +17,7 @@ const MedicationCard: React.FC<{ medication: MedicationRequest }> = ({
     <Tile className={styles.medicationTile}>
       <div>
         <p className={styles.medicationName}>
-          <strong>{capitalize(medication.medicationReference?.display)}</strong>
+          <strong>{medication.medicationReference?.display}</strong>
         </p>
         <p className={styles.bodyLong01}>
           <span className={styles.label01}>
