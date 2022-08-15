@@ -1,0 +1,26 @@
+.commentsContainer {
+  max-width: 80%;
+
+  form {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+  }
+
+  form input {
+    vertical-align: middle;
+    margin: 0 10px 0 0;
+    padding: 10px;
+    border: 1px solid #8d8d8d !important;
+    background-color: white;
+  }
+  form button {
+    width: 90px;
+    height: 20px;
+    min-height: 2.5rem !important;
+  }
+
+  form :global(.bx--btn--ghost) {
+    width: 8rem !important;
+  }
+}

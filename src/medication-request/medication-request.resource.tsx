@@ -1,5 +1,10 @@
 import useSWR from "swr";
-import { openmrsFetch } from "@openmrs/esm-framework";
+import {
+  fhirBaseUrl,
+  openmrsFetch,
+  openmrsObservableFetch,
+} from "@openmrs/esm-framework";
+import { MedicationRequest, MedicationRequestResponse } from "../types";
 
 export type Order = {
   id: string;
@@ -9,6 +14,7 @@ export type Order = {
   drugs: string;
   lastDispenser: string;
   status: string;
+  patientUuid: string;
 };
 
 interface FHIRMedicationRequestResponse {
@@ -20,7 +26,6 @@ interface FHIRMedicationRequestResponse {
   type: string;
   total: number;
   entry: Array<{
-    // Todo: split this into a union type. Possibly just use the types `fhir.Encounter` and `fhir.MedicationRequest`.
     resource: FHIREncounterOrder;
   }>;
 }
@@ -109,9 +114,33 @@ function buildEncounterOrders(
     lastDispenser: "tbd",
     prescriber: [...new Set(orders.map((o) => o.requester.display))].join(", "),
     status: computeStatus(orders.map((o) => o.status)),
+    patientUuid: encounter?.subject?.reference?.split("/")[1],
   };
 }
 
 function computeStatus(orderStatuses: Array<string>) {
   return orderStatuses.filter((s) => s)[0];
+}
+
+export function useOrderDetails(encounterUuid: string) {
+  let medications = null;
+  const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
+    `${fhirBaseUrl}/MedicationRequest?encounter=${encounterUuid}`,
+    openmrsFetch
+  );
+
+  if (data) {
+    const orders = data?.data.entry;
+    medications = orders?.map((order) => {
+      return order.resource;
+    });
+  } else {
+    medications = [];
+  }
+
+  return {
+    medications,
+    isError: error,
+    isLoading: !medications && !error,
+  };
 }

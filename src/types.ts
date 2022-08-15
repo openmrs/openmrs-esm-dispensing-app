@@ -66,3 +66,120 @@ export interface Drug {
   concept: OpenmrsResource;
   dosageForm: OpenmrsResource;
 }
+
+export interface Patient {
+  uuid: string;
+  display: string;
+  identifiers: Array<any>;
+  person: Person;
+}
+
+export interface Person {
+  age: number;
+  attributes: Array<Attribute>;
+  birthDate: string;
+  gender: string;
+  display: string;
+  preferredAddress: OpenmrsResource;
+  uuid: string;
+}
+
+export interface Attribute {
+  attributeType: OpenmrsResource;
+  display: string;
+  uuid: string;
+  value: string | number;
+}
+
+export interface MedicationRequestResponse {
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
+  };
+  type: string;
+  total: number;
+  entry: Array<{
+    resource: MedicationRequest;
+  }>;
+}
+
+export interface MedicationRequest {
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
+  };
+  status: string;
+  intent: string;
+  priority: string;
+  medicationReference: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  subject: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  encounter: {
+    reference: string;
+    type: string;
+  };
+  requester: {
+    reference: string;
+    type: string;
+    identifier: {
+      value: string;
+    };
+    display: string;
+  };
+  dosageInstruction: Array<DosageInstruction>;
+  dispenseRequest: {
+    numberOfRepeatsAllowed: number;
+    quantity: {
+      value: number;
+      unit: string;
+      code: string;
+    };
+  };
+}
+
+export interface DosageInstruction {
+  text: string;
+  timing: {
+    repeat: {
+      duration: number;
+      durationUnit: string;
+    };
+    code: {
+      coding: [
+        {
+          code: string;
+          display: string;
+        }
+      ];
+      text: string;
+    };
+  };
+  asNeededBoolean: boolean;
+  route: {
+    coding: [
+      {
+        code: string;
+        display: string;
+      }
+    ];
+    text: string;
+  };
+  doseAndRate: [
+    {
+      doseQuantity: {
+        value: number;
+        unit: string;
+        code: string;
+      };
+    }
+  ];
+}

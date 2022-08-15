@@ -1,10 +1,17 @@
-import { Tile } from "carbon-components-react";
+import { DataTableSkeleton, Tile } from "carbon-components-react";
 import React from "react";
 import styles from "./prescription-details.scss";
 import { WarningFilled24 } from "@carbon/icons-react";
-import { formatDate } from "@openmrs/esm-framework";
+import { useOrderDetails } from "../medication-request/medication-request.resource";
+import { useTranslation } from "react-i18next";
+import MedicationCard from "./medication-card.component";
 
-const PrescriptionDetails: React.FC = () => {
+const PrescriptionDetails: React.FC<{ encounterUuid: string }> = ({
+  encounterUuid,
+}) => {
+  const { t } = useTranslation();
+  const { medications, isError, isLoading } = useOrderDetails(encounterUuid);
+
   return (
     <div className={styles.prescriptionContainer}>
       <Tile className={styles.allergiesTile}>
@@ -26,62 +33,13 @@ const PrescriptionDetails: React.FC = () => {
       >
         Prescribed
       </h5>
-      <Tile className={styles.prescriptionTile}>
-        Drug Orders
-        {/* <div className={styles.medicationRecord}>
-          <div>
-            <p className={styles.bodyLong01}>
-              <strong>{capitalize(medication.drug?.name)}</strong> &mdash; {medication.drug?.strength.toLowerCase()}{' '}
-              &mdash; {medication.doseUnits?.display.toLowerCase()}
-            </p>
-            <p className={styles.bodyLong01}>
-              <span className={styles.label01}>{t('dose', 'Dose').toUpperCase()}</span>{' '}
-              <span className={styles.dosage}>
-                {getDosage(medication.drug?.strength, medication.dose).toLowerCase()}
-              </span>{' '}
-              &mdash; {medication.route?.display.toLowerCase()} &mdash; {medication.frequency?.display.toLowerCase()}{' '}
-              &mdash;{' '}
-              {!medication.duration
-                ? t('medicationIndefiniteDuration', 'Indefinite duration').toLowerCase()
-                : t('medicationDurationAndUnit', 'for {duration} {durationUnit}', {
-                  duration: medication.duration,
-                  durationUnit: medication.durationUnits?.display.toLowerCase(),
-                })}{' '}
-              {medication.numRefills !== 0 && (
-                <span>
-                  <span className={styles.label01}> &mdash; {t('refills', 'Refills').toUpperCase()}</span>{' '}
-                  {medication.numRefills}
-                </span>
-              )}
-              {medication.dosingInstructions && (
-                <span> &mdash; {medication.dosingInstructions.toLocaleLowerCase()}</span>
-              )}
-            </p>
-          </div>
-          <p className={styles.bodyLong01}>
-            {medication.orderReasonNonCoded ? (
-              <span>
-                <span className={styles.label01}>{t('indication', 'Indication').toUpperCase()}</span>{' '}
-                {medication.orderReasonNonCoded}
-              </span>
-            ) : null}
-            {medication.quantity ? (
-              <span>
-                <span className={styles.label01}> &mdash; {t('quantity', 'Quantity').toUpperCase()}</span>{' '}
-                {medication.quantity}
-              </span>
-            ) : null}
-            {medication.dateStopped ? (
-              <span className={styles.bodyShort01}>
-                <span className={styles.label01}>
-                  {medication.quantity ? ` — ` : ''} {t('endDate', 'End date').toUpperCase()}
-                </span>{' '}
-                {formatDate(new Date(medication.dateStopped))}
-              </span>
-            ) : null}
-          </p>
-        </div> */}
-      </Tile>
+
+      {isLoading && <DataTableSkeleton role="progressbar" />}
+      {isError && <p>Error</p>}
+      {medications &&
+        medications.map((medication) => {
+          return <MedicationCard medication={medication} />;
+        })}
     </div>
   );
 };

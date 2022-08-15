@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import {
   DataTable,
   DataTableSkeleton,
@@ -17,7 +17,10 @@ import {
 } from "carbon-components-react";
 import { useTranslation } from "react-i18next";
 import styles from "./prescriptions.scss";
-import { useOrders } from "../medication-request/medication-request.resource";
+import {
+  Order,
+  useOrders,
+} from "../medication-request/medication-request.resource";
 import OrderExpanded from "../components/order-expanded.component";
 
 enum TabTypes {
@@ -58,6 +61,15 @@ const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState(TabTypes.STARRED);
   const { orders, isError, isLoading } = useOrders();
+  const encounterToPatientMap = {};
+
+  useEffect(() => {
+    if (orders?.length > 0) {
+      orders.map((order: Order) => {
+        encounterToPatientMap[order.id] = order.patientUuid;
+      });
+    }
+  }, [orders]);
 
   return (
     <main className={`omrs-main-content ${styles.prescriptionListContainer}`}>
@@ -104,7 +116,10 @@ const PrescriptionTabLists: React.FC = () => {
                           </TableExpandRow>
                           {row.isExpanded && (
                             <TableExpandedRow colSpan={headers.length + 1}>
-                              <OrderExpanded />
+                              <OrderExpanded
+                                encounterUuid={row.id}
+                                patientUuid={encounterToPatientMap[row.id]}
+                              />
                             </TableExpandedRow>
                           )}
                         </React.Fragment>
