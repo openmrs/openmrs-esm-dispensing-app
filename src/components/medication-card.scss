@@ -1,0 +1,26 @@
+@import 'carbon-components/css/carbon-components.css';
+@import 'carbon-components/scss/globals/scss/typography.scss';
+@import "~@openmrs/esm-styleguide/src/vars";
+
+.medicationTile {
+  width: 100%;
+  margin: 2px 0 8px;
+  padding: 0 48px 0 0;
+  background-color: #fff;
+  border-left: 4px solid #007d79;
+  color: $text-02;
+  margin-bottom: 1rem !important;
+}
+
+.medicationName {
+  font-size: 15px !important;
+}
+
+.bodyLong01 {
+  font-size: 13px !important;
+}
+
+.dosage {
+  color: #525252;
+  font-weight: bold;
+}

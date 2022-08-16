@@ -1,4 +1,10 @@
 {
   "dispensing": "Dispensing",
-  "appName": "Pharmacy"
+  "appName": "Pharmacy",
+  "prescriptionDetails": "Prescription details",
+  "historyComments": "History and comments",
+  "patientDetails": "Patient details",
+  "billing": "Billing",
+  "post": "Post",
+  "addItem": "Add item"
 }

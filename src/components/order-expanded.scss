@@ -1,0 +1,57 @@
+@import 'carbon-components/css/carbon-components.css';
+@import 'carbon-components/scss/globals/scss/typography.scss';
+@import "~@openmrs/esm-styleguide/src/vars";
+
+
+.prescriptionContainer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+:global(.bx--tab-content) {
+  width: 100% !important;
+}
+
+:global(.bx--child-row-inner-container) > div {
+  display: flex;
+  flex-direction: row;
+}
+
+.tabsContainer {
+  margin: 1rem 0;
+  width: 20%;
+
+  &:global(.bx--tabs--scrollable .bx--tabs--scrollable__nav-item+.bx--tabs--scrollable__nav-item) {
+    margin-left: 0rem !important;
+  }
+
+  > ul {
+    flex-direction: column !important;
+  }
+
+  > ul > li button {
+    width: 12rem !important;
+  }
+
+  :global(.bx--tabs--scrollable__nav-item--selected) {
+      border-bottom: 0px !important;
+      border-left: 3px solid var(--brand-03) !important;
+  }
+}
+
+.orderTabs {
+  flex-direction: row;
+
+  button {
+    border-bottom: 0 !important;
+    border-left: 3px solid $ui-03 !important;
+  }
+
+  button,
+  button:focus,
+  button:active {
+    outline: 0 !important;
+    outline-offset: 0 !important;
+  }
+}

@@ -1,0 +1,56 @@
+@import 'carbon-components/css/carbon-components.css';
+@import 'carbon-components/scss/globals/scss/typography.scss';
+@import "~@openmrs/esm-styleguide/src/vars";
+
+.prescriptionContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 1rem;
+
+  &:global(.bx--tile) {
+    min-height: 3rem !important;
+    padding-left: 10px !important;
+  }
+}
+
+.prescriptionContainer > :global(.bx--tile) {
+  min-height: 3rem !important;
+  padding-left: 10px !important;
+  margin: auto;
+}
+
+.allergiesTile {
+  width: 100%;
+  height: 24px;
+  padding: 0 8px 0 0;
+  border-left: 4px solid  #f1c21b;
+  background-color: rgba(253, 209, 58, 0.3);
+  margin: auto;
+}
+
+.allergesContent {
+  margin: auto;
+  padding-top: 10px;
+
+  div {
+    display: flex;
+    flex-direction: row;
+  }
+
+  p {
+    margin-left: 10px;
+    font-size: 0.9rem;
+  }
+
+  a {
+    margin: auto;
+    color: #0f62fe;
+    text-decoration: none;
+  }
+}
+
+svg.allergiesIcon {
+  fill: #f1c21b;
+  vertical-align: middle;
+}
