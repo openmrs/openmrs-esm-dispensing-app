@@ -58,8 +58,8 @@ interface FHIREncounterOrder {
   status: string;
 }
 
-export function useOrders(pageSize: number = 10, page: number = 1) {
-  const url = `/ws/fhir2/R4/Encounter?_getpagesoffset=${page}&_count=${pageSize}&_revinclude=MedicationRequest:encounter&_has:MedicationRequest:encounter:intent=order&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
+export function useOrders(pageSize: number = 10, pageOffset: number = 0) {
+  const url = `/ws/fhir2/R4/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&_revinclude=MedicationRequest:encounter&_has:MedicationRequest:encounter:intent=order&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
   const { data, error } = useSWR<
     { data: FHIRMedicationRequestResponse },
     Error
