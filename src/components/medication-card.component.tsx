@@ -23,18 +23,29 @@ const MedicationCard: React.FC<{ medication: MedicationRequest }> = ({
           <span className={styles.label01}>
             {t("dose", "Dose").toUpperCase()}
           </span>{" "}
-          <span className={styles.dosage}>
-            {dosageInstruction?.doseAndRate[0]?.doseQuantity?.value}{" "}
-            {dosageInstruction?.doseAndRate[0]?.doseQuantity?.unit}
-          </span>{" "}
-          &mdash; {dosageInstruction?.route?.text} &mdash;{" "}
-          {dosageInstruction?.timing?.code?.text}{" "}
-          {dosageInstruction?.timing?.repeat?.duration
-            ? "for " +
-              dosageInstruction?.timing?.repeat?.duration +
-              " " +
-              dosageInstruction?.timing?.repeat?.durationUnit
-            : " "}
+          {dosageInstruction && (
+            <>
+              <span className={styles.dosage}>
+                {dosageInstruction.doseAndRate &&
+                  dosageInstruction?.doseAndRate.map((doseAndRate) => {
+                    return (
+                      <>
+                        {doseAndRate?.doseQuantity?.value}{" "}
+                        {doseAndRate?.doseQuantity?.unit}
+                      </>
+                    );
+                  })}
+              </span>{" "}
+              &mdash; {dosageInstruction?.route?.text} &mdash;{" "}
+              {dosageInstruction?.timing?.code?.text}{" "}
+              {dosageInstruction?.timing?.repeat?.duration
+                ? "for " +
+                  dosageInstruction?.timing?.repeat?.duration +
+                  " " +
+                  dosageInstruction?.timing?.repeat?.durationUnit
+                : " "}
+            </>
+          )}
         </p>
       </div>
     </Tile>
