@@ -2,6 +2,7 @@ import React, { ReactNode, useEffect, useState } from "react";
 import {
   DataTable,
   DataTableSkeleton,
+  Pagination,
   Tab,
   Table,
   TableBody,
@@ -60,7 +61,13 @@ const columns = [
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState(TabTypes.STARRED);
-  const { orders, isError, isLoading } = useOrders();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [nextOffSet, setNextOffSet] = useState(0);
+  const { orders, isError, isLoading, totalOrders } = useOrders(
+    pageSize,
+    nextOffSet
+  );
   const encounterToPatientMap = {};
 
   useEffect(() => {
@@ -86,49 +93,66 @@ const PrescriptionTabLists: React.FC = () => {
           {isLoading && <DataTableSkeleton role="progressbar" />}
           {isError && <p>Error</p>}
           {orders && (
-            <DataTable rows={orders} headers={columns} isSortable>
-              {({
-                rows,
-                headers,
-                getHeaderProps,
-                getRowProps,
-                getTableProps,
-              }) => (
-                <TableContainer>
-                  <Table {...getTableProps()}>
-                    <TableHead>
-                      <TableRow>
-                        <TableExpandHeader />
-                        {headers.map((header) => (
-                          <TableHeader {...getHeaderProps({ header })}>
-                            {header.header}
-                          </TableHeader>
+            <>
+              <DataTable rows={orders} headers={columns} isSortable>
+                {({
+                  rows,
+                  headers,
+                  getHeaderProps,
+                  getRowProps,
+                  getTableProps,
+                }) => (
+                  <TableContainer>
+                    <Table {...getTableProps()}>
+                      <TableHead>
+                        <TableRow>
+                          <TableExpandHeader />
+                          {headers.map((header) => (
+                            <TableHeader {...getHeaderProps({ header })}>
+                              {header.header}
+                            </TableHeader>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {rows.map((row) => (
+                          <React.Fragment key={row.id}>
+                            <TableExpandRow {...getRowProps({ row })}>
+                              {row.cells.map((cell) => (
+                                <TableCell key={cell.id}>
+                                  {cell.value}
+                                </TableCell>
+                              ))}
+                            </TableExpandRow>
+                            {row.isExpanded && (
+                              <TableExpandedRow colSpan={headers.length + 1}>
+                                <OrderExpanded
+                                  encounterUuid={row.id}
+                                  patientUuid={encounterToPatientMap[row.id]}
+                                />
+                              </TableExpandedRow>
+                            )}
+                          </React.Fragment>
                         ))}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {rows.map((row) => (
-                        <React.Fragment key={row.id}>
-                          <TableExpandRow {...getRowProps({ row })}>
-                            {row.cells.map((cell) => (
-                              <TableCell key={cell.id}>{cell.value}</TableCell>
-                            ))}
-                          </TableExpandRow>
-                          {row.isExpanded && (
-                            <TableExpandedRow colSpan={headers.length + 1}>
-                              <OrderExpanded
-                                encounterUuid={row.id}
-                                patientUuid={encounterToPatientMap[row.id]}
-                              />
-                            </TableExpandedRow>
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </DataTable>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </DataTable>
+              <div style={{ width: "100%" }}>
+                <Pagination
+                  page={page}
+                  pageSize={pageSize}
+                  pageSizes={[10, 20, 30, 40, 50, 100]}
+                  totalItems={totalOrders}
+                  onChange={({ page, pageSize }) => {
+                    setPage(page);
+                    setNextOffSet((page - 1) * pageSize);
+                    setPageSize(pageSize);
+                  }}
+                />
+              </div>
+            </>
           )}
         </div>
       </section>
