@@ -183,3 +183,92 @@ export interface DosageInstruction {
     }
   ];
 }
+
+export interface AllergyIntoleranceResponse {
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
+  };
+  type: string;
+  total: number;
+  entry: Array<{
+    resource: AllergyIntolerance;
+  }>;
+}
+
+export interface AllergyIntolerance {
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
+  };
+  clinicalStatus: {
+    coding: [
+      {
+        system: string;
+        code: string;
+        display: string;
+      }
+    ];
+    text: string;
+  };
+  verificationStatus: {
+    coding: [
+      {
+        system: string;
+        code: string;
+        display: string;
+      }
+    ];
+    text: string;
+  };
+  type: string;
+  category: Array<string>;
+  criticality: string;
+  code: {
+    coding: [
+      {
+        code: string;
+        display: string;
+      }
+    ];
+    text: string;
+  };
+  patient: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  recordedDate: string;
+  recorder: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  reaction: [
+    {
+      substance: {
+        coding: [
+          {
+            code: string;
+            display: string;
+          }
+        ];
+        text: string;
+      };
+      manifestation: [
+        {
+          coding: [
+            {
+              code: string;
+              display: string;
+            }
+          ];
+          text: string;
+        }
+      ];
+      severity: string;
+    }
+  ];
+}

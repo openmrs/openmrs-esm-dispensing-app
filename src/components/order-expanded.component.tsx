@@ -21,7 +21,12 @@ const OrderExpanded: React.FC<{
   const tabs: TabItem[] = [
     {
       name: t("prescriptionDetails", "Prescription details"),
-      component: <PrescriptionDetails encounterUuid={encounterUuid} />,
+      component: (
+        <PrescriptionDetails
+          encounterUuid={encounterUuid}
+          patientUuid={patientUuid}
+        />
+      ),
     },
     {
       name: t("historyComments", "History and comments"),
