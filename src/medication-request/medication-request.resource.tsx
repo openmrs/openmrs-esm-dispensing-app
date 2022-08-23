@@ -4,7 +4,11 @@ import {
   openmrsFetch,
   openmrsObservableFetch,
 } from "@openmrs/esm-framework";
-import { MedicationRequest, MedicationRequestResponse } from "../types";
+import {
+  AllergyIntoleranceResponse,
+  MedicationRequest,
+  MedicationRequestResponse,
+} from "../types";
 
 export type Order = {
   id: string;
@@ -142,5 +146,34 @@ export function useOrderDetails(encounterUuid: string) {
     medications,
     isError: error,
     isLoading: !medications && !error,
+  };
+}
+
+export function usePatientAllergies(patientUuid: string) {
+  const { data, error } = useSWR<{ data: AllergyIntoleranceResponse }, Error>(
+    `${fhirBaseUrl}/AllergyIntolerance?patient=${patientUuid}`,
+    openmrsFetch
+  );
+
+  let allergiesArray = [];
+  if (data) {
+    const allergyIntolerances = data?.data.entry;
+    allergyIntolerances?.map((allergy) => {
+      return allergiesArray.push(allergy.resource?.code?.text);
+    });
+  }
+
+  let allergies = null;
+  if (allergiesArray.length > 0) {
+    allergies = allergiesArray.join(", ");
+  } else {
+    allergies = "No known allergies";
+  }
+
+  return {
+    allergies: allergies,
+    totalAllergies: data?.data.total,
+    isError: error,
+    isLoading: !allergiesArray && !error,
   };
 }

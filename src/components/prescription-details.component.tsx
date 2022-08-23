@@ -1,32 +1,51 @@
 import { DataTableSkeleton, Tile } from "carbon-components-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./prescription-details.scss";
 import { WarningFilled24 } from "@carbon/icons-react";
-import { useOrderDetails } from "../medication-request/medication-request.resource";
+import {
+  useOrderDetails,
+  usePatientAllergies,
+} from "../medication-request/medication-request.resource";
 import { useTranslation } from "react-i18next";
 import MedicationCard from "./medication-card.component";
+import { PatientUuid } from "@openmrs/esm-framework";
 
-const PrescriptionDetails: React.FC<{ encounterUuid: string }> = ({
-  encounterUuid,
-}) => {
+const PrescriptionDetails: React.FC<{
+  encounterUuid: string;
+  patientUuid: PatientUuid;
+}> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
+  const [isAllergiesLoaded, setAllergiesLoadedStatus] = useState(true);
+  const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
   const { medications, isError, isLoading } = useOrderDetails(encounterUuid);
+
+  useEffect(() => {
+    if (typeof totalAllergies == "number") {
+      setAllergiesLoadedStatus(false);
+    }
+  }, [totalAllergies]);
 
   return (
     <div className={styles.prescriptionContainer}>
-      <Tile className={styles.allergiesTile}>
-        <div className={styles.allergesContent}>
-          <div>
-            <WarningFilled24 className={styles.allergiesIcon} />
-            <p>
-              <b>3 allergies</b> Penicillin, Naproxen sodium, Ibuprofen
-            </p>
-            <a href={`dispensing`} onClick={(e) => e.preventDefault()}>
-              View
-            </a>
+      {isAllergiesLoaded && <DataTableSkeleton role="progressbar" />}
+      {typeof totalAllergies == "number" && (
+        <Tile className={styles.allergiesTile}>
+          <div className={styles.allergesContent}>
+            <div>
+              <WarningFilled24 className={styles.allergiesIcon} />
+              <p>
+                <span style={{ fontWeight: "bold" }}>
+                  {totalAllergies} allergies
+                </span>{" "}
+                {allergies}
+              </p>
+              <a href={`dispensing`} onClick={(e) => e.preventDefault()}>
+                View
+              </a>
+            </div>
           </div>
-        </div>
-      </Tile>
+        </Tile>
+      )}
 
       <h5
         style={{ paddingTop: "8px", paddingBottom: "8px", fontSize: "0.9rem" }}
