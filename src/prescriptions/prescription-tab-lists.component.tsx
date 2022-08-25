@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
   Tabs,
-} from "carbon-components-react";
+} from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import styles from "./prescriptions.scss";
 import {

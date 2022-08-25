@@ -1,6 +1,6 @@
 import React from "react";
 import { PatientUuid } from "@openmrs/esm-framework";
-import { Tab, Tabs } from "carbon-components-react";
+import { Tab, Tabs } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import HistoryAndComments from "./history-and-comments.component";
 import styles from "./order-expanded.scss";

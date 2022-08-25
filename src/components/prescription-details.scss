@@ -8,13 +8,13 @@
   width: 100%;
   margin-bottom: 1rem;
 
-  &:global(.bx--tile) {
+  &:global(.cds--tile) {
     min-height: 3rem !important;
     padding-left: 10px !important;
   }
 }
 
-.prescriptionContainer > :global(.bx--tile) {
+.prescriptionContainer > :global(.cds--tile) {
   min-height: 3rem !important;
   padding-left: 10px !important;
   margin: auto;

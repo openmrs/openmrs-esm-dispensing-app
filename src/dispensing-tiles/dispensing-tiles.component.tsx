@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { DataTableSkeleton } from "carbon-components-react";
+import { DataTableSkeleton } from "@carbon/react";
 import { useMetrics } from "./dispensing-tiles.resource";
 import DispensingTile from "./dispensing-tile.component";
 import styles from "./dispensing-tiles.scss";

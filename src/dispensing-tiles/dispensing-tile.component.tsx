@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Tile, Button } from "carbon-components-react";
-import ArrowRight16 from "@carbon/icons-react/es/arrow--right/16";
+import { Tile, Button } from "@carbon/react";
+import { ArrowRight } from "@carbon/react/icons";
 import styles from "./dispensing-tile.scss";
 
 interface DispensingTileProps {
@@ -28,7 +28,7 @@ const DispensingTile: React.FC<DispensingTileProps> = ({
         </div>
         <Button
           kind="ghost"
-          renderIcon={ArrowRight16}
+          renderIcon={(props) => <ArrowRight size={16} />}
           iconDescription={t("view", "View")}
         >
           {t("view", "View")}
