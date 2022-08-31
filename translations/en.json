@@ -6,5 +6,7 @@
   "patientDetails": "Patient details",
   "billing": "Billing",
   "post": "Post",
-  "addItem": "Add item"
+  "addItem": "Add item",
+  "fillPrescription": "Fill prescription",
+  "searchPrescription": "Search prescription"
 }

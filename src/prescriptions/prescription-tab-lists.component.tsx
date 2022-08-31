@@ -18,7 +18,10 @@ import {
   TabList,
   TabPanels,
   TabPanel,
+  Search,
+  Button,
 } from "@carbon/react";
+import { Add } from "@carbon/react/icons";
 import { useTranslation } from "react-i18next";
 import styles from "./prescriptions.scss";
 import {
@@ -41,16 +44,6 @@ const labelMap = [
   "Returned",
   "Cancelled",
 ];
-
-function createLabels() {
-  const res: Array<ReactNode> = [];
-
-  for (let index = 0; index < Object.keys(labelMap).length; index++) {
-    res.push(<Tab label={labelMap[index]} key={index} id={"tab-" + index} />);
-  }
-
-  return res;
-}
 
 const columns = [
   { header: "Created", key: "created" },
@@ -104,6 +97,26 @@ const PrescriptionTabLists: React.FC = () => {
               );
             })}
           </TabList>
+          <div className={styles.searchContainer}>
+            <Button
+              kind="primary"
+              renderIcon={(props) => <Add size={24} />}
+              className={styles.addPrescriptionBtn}
+            >
+              {t("fillPrescription", "Fill prescription")}
+            </Button>
+            <Search
+              closeButtonLabelText="Clear search input"
+              defaultValue=""
+              placeholder={t("searchPrescription", "Search prescription")}
+              id="search-1"
+              labelText="Search prescriptions"
+              onChange={function noRefCheck() {}}
+              onKeyDown={function noRefCheck() {}}
+              size="lg"
+              className={styles.patientSearch}
+            />
+          </div>
           <TabPanels>
             <TabPanel>
               <div className={styles.patientListTableContainer}>
