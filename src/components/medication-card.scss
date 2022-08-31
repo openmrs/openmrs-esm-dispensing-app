@@ -1,5 +1,5 @@
-@import 'carbon-components/css/carbon-components.css';
-@import 'carbon-components/scss/globals/scss/typography.scss';
+@use '@carbon/styles/scss/spacing';
+@use '@carbon/styles/scss/type';
 @import "~@openmrs/esm-styleguide/src/vars";
 
 .medicationTile {

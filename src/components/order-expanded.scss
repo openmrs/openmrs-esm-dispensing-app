@@ -1,57 +1,46 @@
-@import 'carbon-components/css/carbon-components.css';
-@import 'carbon-components/scss/globals/scss/typography.scss';
+@use '@carbon/styles/scss/spacing';
+@use '@carbon/styles/scss/type';
 @import "~@openmrs/esm-styleguide/src/vars";
 
 
-.prescriptionContainer {
+.expandedTabsContainer {
   display: flex;
   flex-direction: row;
-  width: 100%;
-}
 
-:global(.cds--tab-content) {
-  width: 100% !important;
-}
+  :global(.cds--tabs) {
+    margin: 1rem 0;
+    width: 20%;
+    max-height: 8rem !important;
+  }
 
-:global(.cds--child-row-inner-container) > div {
-  display: flex;
-  flex-direction: row;
-}
+  :global(.cds--tab--list) {
+    flex-direction: column !important;
+  }
 
-.tabsContainer {
-  margin: 1rem 0;
-  width: 20%;
+  :global(.cds--tab-content) {
+    margin: 1rem 0;
+    width: 100% !important;
+  }
+
+  :global(.cds--tabs__nav-link) {
+    border-bottom: 0 !important;
+    border-left: 3px solid $ui-03 !important;
+  }
+
+  :global(.cds--tabs__nav-item--selected) {
+      border-bottom: 0px !important;
+      border-left: 3px solid var(--brand-03) !important;
+  }
 
   &:global(.cds--tabs--scrollable .cds--tabs--scrollable__nav-item+.cds--tabs--scrollable__nav-item) {
     margin-left: 0rem !important;
   }
 
-  > ul {
+  >ul {
     flex-direction: column !important;
   }
 
-  > ul > li button {
+  >ul>li button {
     width: 12rem !important;
-  }
-
-  :global(.cds--tabs--scrollable__nav-item--selected) {
-      border-bottom: 0px !important;
-      border-left: 3px solid var(--brand-03) !important;
-  }
-}
-
-.orderTabs {
-  flex-direction: row;
-
-  button {
-    border-bottom: 0 !important;
-    border-left: 3px solid $ui-03 !important;
-  }
-
-  button,
-  button:focus,
-  button:active {
-    outline: 0 !important;
-    outline-offset: 0 !important;
   }
 }

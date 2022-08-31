@@ -1,6 +1,6 @@
 import React from "react";
 import { PatientUuid } from "@openmrs/esm-framework";
-import { Tab, Tabs } from "@carbon/react";
+import { Tab, Tabs, TabList, TabPanels, TabPanel } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import HistoryAndComments from "./history-and-comments.component";
 import styles from "./order-expanded.scss";
@@ -43,13 +43,20 @@ const OrderExpanded: React.FC<{
   ];
 
   return (
-    <div className={styles.expandedContainer}>
-      <Tabs className={styles.tabsContainer}>
-        {tabs.map((tab: TabItem, index: number) => (
-          <Tab key={index} label={tab.name} className={styles.orderTabs}>
-            {tab.component}
-          </Tab>
-        ))}
+    <div className={styles.expandedTabsContainer}>
+      <Tabs>
+        <TabList>
+          {tabs.map((tab: TabItem, index: number) => (
+            <Tab key={index} className={styles.orderTabs}>
+              {tab.name}
+            </Tab>
+          ))}
+        </TabList>
+        <TabPanels>
+          {tabs.map((tab: TabItem) => (
+            <TabPanel>{tab.component}</TabPanel>
+          ))}
+        </TabPanels>
       </Tabs>
     </div>
   );

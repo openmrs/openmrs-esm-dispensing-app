@@ -28,7 +28,9 @@ const DispensingTile: React.FC<DispensingTileProps> = ({
         </div>
         <Button
           kind="ghost"
-          renderIcon={(props) => <ArrowRight size={16} />}
+          renderIcon={(props) => (
+            <ArrowRight size={16} className={styles.arrowIcon} />
+          )}
           iconDescription={t("view", "View")}
         >
           {t("view", "View")}
