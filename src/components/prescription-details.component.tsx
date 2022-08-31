@@ -1,7 +1,7 @@
-import { DataTableSkeleton, Tile } from "carbon-components-react";
+import { DataTableSkeleton, Tile } from "@carbon/react";
 import React, { useEffect, useState } from "react";
 import styles from "./prescription-details.scss";
-import { WarningFilled24 } from "@carbon/icons-react";
+import { WarningFilled } from "@carbon/react/icons";
 import {
   useOrderDetails,
   usePatientAllergies,
@@ -32,7 +32,7 @@ const PrescriptionDetails: React.FC<{
         <Tile className={styles.allergiesTile}>
           <div className={styles.allergesContent}>
             <div>
-              <WarningFilled24 className={styles.allergiesIcon} />
+              <WarningFilled size={24} className={styles.allergiesIcon} />
               <p>
                 <span style={{ fontWeight: "bold" }}>
                   {totalAllergies} allergies

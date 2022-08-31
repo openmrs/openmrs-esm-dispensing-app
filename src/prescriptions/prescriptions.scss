@@ -1,3 +1,5 @@
+@use '@carbon/styles/scss/spacing';
+@use '@carbon/styles/scss/type';
 @import '../root.scss';
 
 title {
@@ -29,14 +31,15 @@ title {
 .prescriptionTabsContainer {
   height: 100%;
   width: 100%;
-  background-color: $ui-02;
+
+  :global(.cds--tab-content) {
+    padding: 0 !important;
+  }
 }
 
-.patientListHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-left: $spacing-05;
+.prescriptionTabs {
+  grid-column: 'span 2';
+  padding: 0 spacing.$spacing-05;
 }
 
 .newListButton {
@@ -45,9 +48,8 @@ title {
   align-self: center;
 }
 
-.tabs {
-  grid-column: 'span 2';
-  padding: 0 $spacing-05;
+.tabsContainer {
+  background-color: $ui-02;
 }
 
 .hiddenTabsContent, .tabs .hiddenTabsContent {
@@ -58,11 +60,18 @@ title {
   grid-row: 3 / 4;
   grid-column: 1 / 2;
   height: 100%;
-  padding: $spacing-05;
+  padding: spacing.$spacing-05;
   background-color: $ui-01;
 }
 
 // Patient List Table
+
+.patientListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-left: spacing.$spacing-05;
+}
 
 .searchContainer {
   display: grid;
@@ -82,22 +91,6 @@ title {
   border-bottom-color: $ui-03;
 }
 
-.tableBody {
-  background-color: $ui-01;
-}
-
-.tableCell, .interactiveText01 {
-  color: $interactive-01;
-}
-
-.desktopRow, .desktopHeader {
-    height: $spacing-07 !important;
-}
-
-.tabletRow, .tabletHeader {
-    height: $spacing-09 !important;
-}
-
 // Search Overlay
 
 .searchOverlay {
@@ -113,19 +106,19 @@ title {
   grid-row: 2 / 4;
   grid-column: 1 / 2;
   background-color: $ui-01;
-  padding: $spacing-05;
+  padding: spacing.$spacing-05;
 }
 
 // Results Overlay
 
 .resultCount {
-  @include carbon--type-style('body-short-01');
+  @include type.type-style('body-compact-01');
   color: $text-02;
   border-bottom: solid 1px #e0e0e0;
-  padding: $spacing-04 0;
+  padding: spacing.$spacing-04 0;
 }
 
 .patientListResultsTableContainer {
-  margin: $spacing-03;
+  margin: spacing.$spacing-03;
 }
 

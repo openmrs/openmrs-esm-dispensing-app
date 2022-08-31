@@ -2,7 +2,7 @@ import React from "react";
 import { DosageInstruction, MedicationRequest } from "../types";
 import styles from "./medication-card.scss";
 import { getDosageInstruction } from "../utils";
-import { Tile } from "carbon-components-react";
+import { Tile } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 
 const MedicationCard: React.FC<{ medication: MedicationRequest }> = ({

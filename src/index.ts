@@ -37,7 +37,7 @@ function setupOpenMRS() {
     ],
     extensions: [
       {
-        id: "appointments-link",
+        id: "dispensing-link",
         slot: "app-menu-slot",
         load: getAsyncLifecycle(() => import("./dispensing-link"), options),
         online: true,

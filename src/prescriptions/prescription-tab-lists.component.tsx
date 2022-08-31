@@ -15,7 +15,10 @@ import {
   TableHeader,
   TableRow,
   Tabs,
-} from "carbon-components-react";
+  TabList,
+  TabPanels,
+  TabPanel,
+} from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import styles from "./prescriptions.scss";
 import {
@@ -82,79 +85,100 @@ const PrescriptionTabLists: React.FC = () => {
     <main className={`omrs-main-content ${styles.prescriptionListContainer}`}>
       <section className={styles.prescriptionTabsContainer}>
         <Tabs
-          className={styles.tabs}
+          className={styles.prescriptionTabs}
           type="container"
           tabContentClassName={styles.hiddenTabsContent}
           onSelectionChange={setSelectedTab}
         >
-          {createLabels()}
-        </Tabs>
-        <div className={styles.patientListTableContainer}>
-          {isLoading && <DataTableSkeleton role="progressbar" />}
-          {isError && <p>Error</p>}
-          {orders && (
-            <>
-              <DataTable rows={orders} headers={columns} isSortable>
-                {({
-                  rows,
-                  headers,
-                  getHeaderProps,
-                  getRowProps,
-                  getTableProps,
-                }) => (
-                  <TableContainer>
-                    <Table {...getTableProps()}>
-                      <TableHead>
-                        <TableRow>
-                          <TableExpandHeader />
-                          {headers.map((header) => (
-                            <TableHeader {...getHeaderProps({ header })}>
-                              {header.header}
-                            </TableHeader>
-                          ))}
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {rows.map((row) => (
-                          <React.Fragment key={row.id}>
-                            <TableExpandRow {...getRowProps({ row })}>
-                              {row.cells.map((cell) => (
-                                <TableCell key={cell.id}>
-                                  {cell.value}
-                                </TableCell>
+          <TabList contained className={styles.tabsContainer}>
+            {labelMap.map((label, index) => {
+              return (
+                <Tab
+                  title={label}
+                  key={index}
+                  id={"tab-" + index}
+                  className={styles.tab}
+                >
+                  {label}
+                </Tab>
+              );
+            })}
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <div className={styles.patientListTableContainer}>
+                {isLoading && <DataTableSkeleton role="progressbar" />}
+                {isError && <p>Error</p>}
+                {orders && (
+                  <>
+                    <DataTable rows={orders} headers={columns} isSortable>
+                      {({
+                        rows,
+                        headers,
+                        getHeaderProps,
+                        getRowProps,
+                        getTableProps,
+                      }) => (
+                        <TableContainer>
+                          <Table {...getTableProps()}>
+                            <TableHead>
+                              <TableRow>
+                                <TableExpandHeader />
+                                {headers.map((header) => (
+                                  <TableHeader {...getHeaderProps({ header })}>
+                                    {header.header}
+                                  </TableHeader>
+                                ))}
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {rows.map((row) => (
+                                <React.Fragment key={row.id}>
+                                  <TableExpandRow {...getRowProps({ row })}>
+                                    {row.cells.map((cell) => (
+                                      <TableCell key={cell.id}>
+                                        {cell.value}
+                                      </TableCell>
+                                    ))}
+                                  </TableExpandRow>
+                                  {row.isExpanded && (
+                                    <TableExpandedRow
+                                      colSpan={headers.length + 1}
+                                    >
+                                      <OrderExpanded
+                                        encounterUuid={row.id}
+                                        patientUuid={
+                                          encounterToPatientMap[row.id]
+                                        }
+                                      />
+                                    </TableExpandedRow>
+                                  )}
+                                </React.Fragment>
                               ))}
-                            </TableExpandRow>
-                            {row.isExpanded && (
-                              <TableExpandedRow colSpan={headers.length + 1}>
-                                <OrderExpanded
-                                  encounterUuid={row.id}
-                                  patientUuid={encounterToPatientMap[row.id]}
-                                />
-                              </TableExpandedRow>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      )}
+                    </DataTable>
+                    <div style={{ width: "100%" }}>
+                      <Pagination
+                        page={page}
+                        pageSize={pageSize}
+                        pageSizes={[10, 20, 30, 40, 50, 100]}
+                        totalItems={totalOrders}
+                        onChange={({ page, pageSize }) => {
+                          setPage(page);
+                          setNextOffSet((page - 1) * pageSize);
+                          setPageSize(pageSize);
+                        }}
+                      />
+                    </div>
+                  </>
                 )}
-              </DataTable>
-              <div style={{ width: "100%" }}>
-                <Pagination
-                  page={page}
-                  pageSize={pageSize}
-                  pageSizes={[10, 20, 30, 40, 50, 100]}
-                  totalItems={totalOrders}
-                  onChange={({ page, pageSize }) => {
-                    setPage(page);
-                    setNextOffSet((page - 1) * pageSize);
-                    setPageSize(pageSize);
-                  }}
-                />
               </div>
-            </>
-          )}
-        </div>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </section>
     </main>
   );
