@@ -18,7 +18,10 @@ import {
   TabList,
   TabPanels,
   TabPanel,
+  Search,
+  Button,
 } from "@carbon/react";
+import { Add } from "@carbon/react/icons";
 import { useTranslation } from "react-i18next";
 import styles from "./prescriptions.scss";
 import {
@@ -42,16 +45,6 @@ const labelMap = [
   "Cancelled",
 ];
 
-function createLabels() {
-  const res: Array<ReactNode> = [];
-
-  for (let index = 0; index < Object.keys(labelMap).length; index++) {
-    res.push(<Tab label={labelMap[index]} key={index} id={"tab-" + index} />);
-  }
-
-  return res;
-}
-
 const columns = [
   { header: "Created", key: "created" },
   { header: "Patient name", key: "patientName" },
@@ -67,9 +60,11 @@ const PrescriptionTabLists: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
   const { orders, isError, isLoading, totalOrders } = useOrders(
     pageSize,
-    nextOffSet
+    nextOffSet,
+    searchTerm
   );
   const encounterToPatientMap = {};
 
@@ -104,6 +99,28 @@ const PrescriptionTabLists: React.FC = () => {
               );
             })}
           </TabList>
+          <div className={styles.searchContainer}>
+            <Button
+              kind="primary"
+              renderIcon={(props) => <Add size={24} />}
+              className={styles.addPrescriptionBtn}
+            >
+              {t("fillPrescription", "Fill prescription")}
+            </Button>
+            <Search
+              closeButtonLabelText="Clear search input"
+              defaultValue={searchTerm}
+              placeholder={t("searchPrescription", "Search prescription")}
+              labelText="Search prescriptions"
+              onChange={(e) => {
+                e.preventDefault();
+                setSearchTerm(e.target.value);
+              }}
+              onKeyDown={function noRefCheck() {}}
+              size="lg"
+              className={styles.patientSearch}
+            />
+          </div>
           <TabPanels>
             <TabPanel>
               <div className={styles.patientListTableContainer}>

@@ -1031,7 +1031,7 @@
   resolved "https://registry.yarnpkg.com/@carbon/motion/-/motion-11.3.0.tgz#c71f181bc99bdab64ccefd189afa509e6bb90930"
   integrity sha512-uhseTXlSXBH7FA2euriLYrFcKZqx65raXyVN0F1XIiw3dDfTOwdXGLdg8nPQB3sGVefTinEvGxqwc6dwinbsNA==
 
-"@carbon/react@^1.8.0":
+"@carbon/react@^1.8.0", "@carbon/react@^1.9.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@carbon/react/-/react-1.11.0.tgz#a18b951c9b8e6e54f5d93d4237ba56c86747e673"
   integrity sha512-6i2WW404cIfOYJiGXfMtUwmX+5eS4sxL2K4quFFqqtElOShPzApMEzdbryaix0JXcDt+kvG948LwOwigXvmnlQ==
