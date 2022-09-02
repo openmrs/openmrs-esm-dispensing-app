@@ -60,9 +60,11 @@ const PrescriptionTabLists: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
   const { orders, isError, isLoading, totalOrders } = useOrders(
     pageSize,
-    nextOffSet
+    nextOffSet,
+    searchTerm
   );
   const encounterToPatientMap = {};
 
@@ -107,11 +109,13 @@ const PrescriptionTabLists: React.FC = () => {
             </Button>
             <Search
               closeButtonLabelText="Clear search input"
-              defaultValue=""
+              defaultValue={searchTerm}
               placeholder={t("searchPrescription", "Search prescription")}
-              id="search-1"
               labelText="Search prescriptions"
-              onChange={function noRefCheck() {}}
+              onChange={(e) => {
+                e.preventDefault();
+                setSearchTerm(e.target.value);
+              }}
               onKeyDown={function noRefCheck() {}}
               size="lg"
               className={styles.patientSearch}
