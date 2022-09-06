@@ -43,6 +43,16 @@ function setupOpenMRS() {
         online: true,
         offline: false,
       },
+      {
+        name: "dispense-form-workspace",
+        load: getAsyncLifecycle(
+          () => import("./forms/dispense-form.component"),
+          options
+        ),
+        meta: {
+          title: "Dispense prescription",
+        },
+      },
     ],
   };
 }

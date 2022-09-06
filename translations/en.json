@@ -8,5 +8,8 @@
   "post": "Post",
   "addItem": "Add item",
   "fillPrescription": "Fill prescription",
-  "searchPrescription": "Search prescription"
+  "searchPrescription": "Search prescription",
+  "deletePrescription": "Delete prescription",
+  "sendBackToPrescriber": "Send back to prescriber",
+  "dispense": "Dispense"
 }
