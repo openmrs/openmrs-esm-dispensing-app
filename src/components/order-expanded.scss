@@ -48,10 +48,16 @@
   >ul>li button {
     width: 12rem !important;
   }
+
+  :global(.cds--tabs__nav-link) {
+    max-width: 12rem !important;
+  }
 }
 
 .prescriptionActions {
   width: 100%;
+  border-top: 1px solid #c7c1c1;
+  padding-top: 1rem;
 
   .deletePrescriptionBtn > svg {
     fill: var(--cds-link-primary, #0f62fe);

@@ -343,3 +343,10 @@ export interface AllergyIntolerance {
     }
   ];
 }
+
+export interface DispensePayload {
+  drugs: Array<Drug>;
+  encounterUuid: string;
+  patientUuid: string;
+  comments: string;
+}

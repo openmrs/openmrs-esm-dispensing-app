@@ -7,7 +7,8 @@ import styles from "./order-expanded.scss";
 import PatientDetails from "./patient-details.component";
 import PrescriptionDetails from "./prescription-details.component";
 import { TrashCan } from "@carbon/react/icons";
-import { launchPatientWorkspace } from "../workspaces";
+import DispenseForm from "../forms/dispense-form.component";
+import { launchOverlay } from "../hooks/useOverlay";
 
 interface TabItem {
   name: string;
@@ -44,9 +45,6 @@ const OrderExpanded: React.FC<{
     // },
   ];
 
-  const launchDispenseForm = () =>
-    launchPatientWorkspace("dispense-form-workspace");
-
   return (
     <div className={styles.expandedTabsParentContainer}>
       <div className={styles.expandedTabsContainer}>
@@ -76,7 +74,15 @@ const OrderExpanded: React.FC<{
         <Button
           kind="primary"
           className={styles.dispenseBtn}
-          onClick={launchDispenseForm}
+          onClick={() =>
+            launchOverlay(
+              t("dispensePrescription", "Dispense prescription"),
+              <DispenseForm
+                patientUuid={patientUuid}
+                encounterUuid={encounterUuid}
+              />
+            )
+          }
         >
           {t("dispense", "Dispense")}
         </Button>

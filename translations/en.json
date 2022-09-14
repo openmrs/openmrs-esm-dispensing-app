@@ -11,5 +11,19 @@
   "searchPrescription": "Search prescription",
   "deletePrescription": "Delete prescription",
   "sendBackToPrescriber": "Send back to prescriber",
-  "dispense": "Dispense"
+  "dispense": "Dispense",
+  "dispensePrescription": "Dispense prescription",
+  "cancel": "Cancel",
+  "internalComments": "Internal comments",
+  "addNoteText": "Add a note to the prescription history",
+  "dispensingNotePlaceholder": "Write any additional dispensing notes here",
+  "drug": "Drug",
+  "medicationDispensed": "Medication successfully dispensed.",
+  "medicationListUpdated": "Medication dispense list has been updated.",
+  "medicationDispenseError": "Error dispensing medication.",
+  "quantity": "Quantity",
+  "dose": "Dose",
+  "frequency": "Frequency",
+  "route": "Route",
+  "patientInstructions": "Patient instructions"
 }

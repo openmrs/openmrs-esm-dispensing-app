@@ -1,5 +1,11 @@
 import useSWR from "swr";
-import { fhirBaseUrl, openmrsFetch } from "@openmrs/esm-framework";
+import {
+  fhirBaseUrl,
+  formatDate,
+  openmrsFetch,
+  openmrsObservableFetch,
+  parseDate,
+} from "@openmrs/esm-framework";
 import {
   AllergyIntoleranceResponse,
   EncounterWithMedicationRequests,
@@ -62,7 +68,7 @@ function buildEncounterOrders(
 ): Prescription {
   return {
     id: encounter?.id,
-    created: encounter?.period?.start,
+    created: formatDate(parseDate(encounter?.period?.start)),
     patientName: encounter?.subject?.display,
     drugs: [
       ...new Set(
@@ -86,6 +92,7 @@ function computeStatus(orderStatuses: Array<string>) {
 
 export function useOrderDetails(encounterUuid: string) {
   let medications = null;
+  let isLoading = true;
   const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
     `${fhirBaseUrl}/MedicationRequest?encounter=${encounterUuid}`,
     openmrsFetch
@@ -99,11 +106,12 @@ export function useOrderDetails(encounterUuid: string) {
   } else {
     medications = [];
   }
+  isLoading = !medications && !error;
 
   return {
     medications,
     isError: error,
-    isLoading: !medications && !error,
+    isLoading,
   };
 }
 
