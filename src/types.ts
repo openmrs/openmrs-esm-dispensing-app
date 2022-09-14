@@ -104,6 +104,16 @@ export interface MedicationRequestResponse {
   }>;
 }
 
+export interface Coding {
+  system?: string;
+  code: string;
+  display: string;
+}
+
+export interface CodingArray {
+  [index: number]: Coding;
+}
+
 export interface MedicationRequest {
   resourceType: string;
   id: string;
@@ -117,6 +127,10 @@ export interface MedicationRequest {
     reference: string;
     type: string;
     display: string;
+  };
+  medicationCodeableConcept?: {
+    coding: CodingArray;
+    text: string;
   };
   subject: {
     reference: string;
@@ -182,6 +196,63 @@ export interface DosageInstruction {
       };
     }
   ];
+}
+
+export interface EncountersWithMedicationRequestsResponse {
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
+  };
+  type: string;
+  total: number;
+  entry: Array<{
+    resource: EncounterWithMedicationRequests;
+  }>;
+}
+
+export interface EncounterWithMedicationRequests {
+  type: string;
+  id: string;
+  resourceType: string;
+  period?: {
+    start: string;
+  };
+  encounter: {
+    reference: string;
+  };
+  subject: {
+    type: string;
+    display: string;
+    reference: string;
+  };
+  medicationReference?: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  medicationCodeableConcept?: {
+    coding: CodingArray;
+    text: string;
+  };
+  requester: {
+    type: string;
+    display: string;
+    reference: string;
+  };
+  status: string;
+}
+
+// represents a "Prescription" as understood by the UI, derived from a EncounterWithMedicationRequest
+export interface Prescription {
+  id: string;
+  created: string;
+  patientName: string;
+  prescriber: string;
+  drugs: string;
+  lastDispenser: string;
+  status: string;
+  patientUuid: string;
 }
 
 export interface AllergyIntoleranceResponse {

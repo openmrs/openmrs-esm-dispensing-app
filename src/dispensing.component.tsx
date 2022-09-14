@@ -7,7 +7,7 @@ export default function Dispensing() {
   return (
     <div className={`omrs-main-content`}>
       <PharmacyHeader />
-      <DispensingTiles />
+      {/*      <DispensingTiles />*/}
       <PrescriptionTabLists />
     </div>
   );
