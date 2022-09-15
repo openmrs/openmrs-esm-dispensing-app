@@ -1,0 +1,3 @@
+# workaround for https://github.com/yarnpkg/yarn/issues/754
+
+node_modules/
