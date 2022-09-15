@@ -44,15 +44,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
-      - run: yarn
-      - run: yarn build
+      - run: yarn --verbose
       - run: sed -i -e "s/\(\"version\":\\s\+\"\([0-9]\+\.\?\)\+\)/\1-pre.${{ github.run_number }}/" 'package.json'
-      - run: yarn publish --access public --tag next
+      - run: yarn publish --access public --tag next --verbose
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
