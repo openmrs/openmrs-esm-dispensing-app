@@ -23,11 +23,10 @@ import {
 } from "@carbon/react";
 import { Add } from "@carbon/react/icons";
 import { useTranslation } from "react-i18next";
+import { parseDate, formatDatetime } from "@openmrs/esm-framework";
 import styles from "./prescriptions.scss";
-import {
-  Order,
-  useOrders,
-} from "../medication-request/medication-request.resource";
+import { Prescription } from "../types";
+import { useOrders } from "../medication-request/medication-request.resource";
 import OrderExpanded from "../components/order-expanded.component";
 
 enum TabTypes {
@@ -70,7 +69,7 @@ const PrescriptionTabLists: React.FC = () => {
 
   useEffect(() => {
     if (orders?.length > 0) {
-      orders.map((order: Order) => {
+      orders.map((order: Prescription) => {
         encounterToPatientMap[order.id] = order.patientUuid;
       });
     }
@@ -154,7 +153,11 @@ const PrescriptionTabLists: React.FC = () => {
                                   <TableExpandRow {...getRowProps({ row })}>
                                     {row.cells.map((cell) => (
                                       <TableCell key={cell.id}>
-                                        {cell.value}
+                                        {cell.id.endsWith("created")
+                                          ? formatDatetime(
+                                              parseDate(cell.value)
+                                            )
+                                          : cell.value}
                                       </TableCell>
                                     ))}
                                   </TableExpandRow>

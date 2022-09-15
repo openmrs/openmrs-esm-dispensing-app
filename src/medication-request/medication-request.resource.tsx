@@ -1,66 +1,13 @@
 import useSWR from "swr";
-import {
-  fhirBaseUrl,
-  openmrsFetch,
-  openmrsObservableFetch,
-} from "@openmrs/esm-framework";
+import { fhirBaseUrl, openmrsFetch } from "@openmrs/esm-framework";
 import {
   AllergyIntoleranceResponse,
+  EncounterWithMedicationRequests,
+  EncountersWithMedicationRequestsResponse,
   MedicationRequest,
   MedicationRequestResponse,
+  Prescription,
 } from "../types";
-
-export type Order = {
-  id: string;
-  created: string;
-  patientName: string;
-  prescriber: string;
-  drugs: string;
-  lastDispenser: string;
-  status: string;
-  patientUuid: string;
-};
-
-interface FHIRMedicationRequestResponse {
-  resourceType: string;
-  id: string;
-  meta: {
-    lastUpdated: string;
-  };
-  type: string;
-  total: number;
-  entry: Array<{
-    resource: FHIREncounterOrder;
-  }>;
-}
-
-interface FHIREncounterOrder {
-  type: string;
-  id: string;
-  resourceType: string;
-  period?: {
-    start: string;
-  };
-  encounter: {
-    reference: string;
-  };
-  subject: {
-    type: string;
-    display: string;
-    reference: string;
-  };
-  medicationReference: {
-    reference: string;
-    type: string;
-    display: string;
-  };
-  requester: {
-    type: string;
-    display: string;
-    reference: string;
-  };
-  status: string;
-}
 
 export function useOrders(
   pageSize: number = 10,
@@ -69,11 +16,11 @@ export function useOrders(
 ) {
   const url = `/ws/fhir2/R4/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_has:MedicationRequest:encounter:intent=order&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
   const { data, error } = useSWR<
-    { data: FHIRMedicationRequestResponse },
+    { data: EncountersWithMedicationRequestsResponse },
     Error
   >(url, openmrsFetch);
 
-  let orders = null;
+  let orders: Prescription[];
   if (data) {
     const entries = data?.data.entry;
     if (entries) {
@@ -95,6 +42,7 @@ export function useOrders(
           encounterOrders.map((order) => order.resource)
         );
       });
+      orders.sort((a, b) => (a.created < b.created ? 1 : -1));
     } else {
       orders = [];
     }
@@ -109,16 +57,22 @@ export function useOrders(
 }
 
 function buildEncounterOrders(
-  encounter: FHIREncounterOrder,
-  orders: Array<FHIREncounterOrder>
-): Order {
+  encounter: EncounterWithMedicationRequests,
+  orders: Array<EncounterWithMedicationRequests>
+): Prescription {
   return {
     id: encounter?.id,
     created: encounter?.period?.start,
     patientName: encounter?.subject?.display,
-    drugs: [...new Set(orders.map((o) => o.medicationReference.display))].join(
-      ", "
-    ),
+    drugs: [
+      ...new Set(
+        orders.map((o) =>
+          o.medicationReference
+            ? o.medicationReference.display
+            : o.medicationCodeableConcept?.text
+        )
+      ),
+    ].join("; "),
     lastDispenser: "tbd",
     prescriber: [...new Set(orders.map((o) => o.requester.display))].join(", "),
     status: computeStatus(orders.map((o) => o.status)),

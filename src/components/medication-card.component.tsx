@@ -17,7 +17,11 @@ const MedicationCard: React.FC<{ medication: MedicationRequest }> = ({
     <Tile className={styles.medicationTile}>
       <div>
         <p className={styles.medicationName}>
-          <strong>{medication.medicationReference?.display}</strong>
+          <strong>
+            {medication.medicationReference
+              ? medication.medicationReference.display
+              : medication?.medicationCodeableConcept.text}
+          </strong>
         </p>
         <p className={styles.bodyLong01}>
           <span className={styles.label01}>
