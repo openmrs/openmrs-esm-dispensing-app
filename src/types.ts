@@ -243,8 +243,8 @@ export interface EncounterWithMedicationRequests {
   status: string;
 }
 
-// represents a "Prescription" as understood by the UI, derived from a EncounterWithMedicationRequest
-export interface Prescription {
+// represents a row in the main table
+export interface EncounterOrders {
   id: string;
   created: string;
   patientName: string;

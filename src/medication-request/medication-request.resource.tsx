@@ -6,7 +6,7 @@ import {
   EncountersWithMedicationRequestsResponse,
   MedicationRequest,
   MedicationRequestResponse,
-  Prescription,
+  EncounterOrders,
 } from "../types";
 
 export function useOrders(
@@ -20,7 +20,7 @@ export function useOrders(
     Error
   >(url, openmrsFetch);
 
-  let orders: Prescription[];
+  let orders: EncounterOrders[];
   if (data) {
     const entries = data?.data.entry;
     if (entries) {
@@ -59,7 +59,7 @@ export function useOrders(
 function buildEncounterOrders(
   encounter: EncounterWithMedicationRequests,
   orders: Array<EncounterWithMedicationRequests>
-): Prescription {
+): EncounterOrders {
   return {
     id: encounter?.id,
     created: encounter?.period?.start,

@@ -25,7 +25,7 @@ import { Add } from "@carbon/react/icons";
 import { useTranslation } from "react-i18next";
 import { parseDate, formatDatetime } from "@openmrs/esm-framework";
 import styles from "./prescriptions.scss";
-import { Prescription } from "../types";
+import { EncounterOrders } from "../types";
 import { useOrders } from "../medication-request/medication-request.resource";
 import OrderExpanded from "../components/order-expanded.component";
 
@@ -69,7 +69,7 @@ const PrescriptionTabLists: React.FC = () => {
 
   useEffect(() => {
     if (orders?.length > 0) {
-      orders.map((order: Prescription) => {
+      orders.map((order: EncounterOrders) => {
         encounterToPatientMap[order.id] = order.patientUuid;
       });
     }
