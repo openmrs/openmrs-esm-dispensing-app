@@ -1,0 +1,9 @@
+[main]
+host = https://www.transifex.com
+
+[openmrs-esm-dispensing.openmrs-esm-dispensing]
+file_filter = translations/<lang>.json
+minimum_perc = 0
+source_file = translations/en.json
+source_lang = en
+type = KEYVALUEJSON
