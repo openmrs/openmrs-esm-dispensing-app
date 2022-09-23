@@ -71,6 +71,10 @@ title {
   tbody>tr>:nth-child(2) {
     white-space: nowrap;
   }
+
+  :global(.cds--data-table td) {
+    height: unset !important;
+  }
 }
 
 .searchContainer {

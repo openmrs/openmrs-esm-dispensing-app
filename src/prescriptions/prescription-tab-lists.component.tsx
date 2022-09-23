@@ -160,18 +160,16 @@ const PrescriptionTabLists: React.FC = () => {
                                       </TableCell>
                                     ))}
                                   </TableExpandRow>
-                                  {row.isExpanded && (
-                                    <TableExpandedRow
-                                      colSpan={headers.length + 1}
-                                    >
-                                      <OrderExpanded
-                                        encounterUuid={row.id}
-                                        patientUuid={
-                                          encounterToPatientMap[row.id]
-                                        }
-                                      />
-                                    </TableExpandedRow>
-                                  )}
+                                  <TableExpandedRow
+                                    colSpan={headers.length + 1}
+                                  >
+                                    <OrderExpanded
+                                      encounterUuid={row.id}
+                                      patientUuid={
+                                        encounterToPatientMap[row.id]
+                                      }
+                                    />
+                                  </TableExpandedRow>
                                 </React.Fragment>
                               ))}
                             </TableBody>

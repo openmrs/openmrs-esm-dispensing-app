@@ -9,26 +9,17 @@ import {
   usePatient,
 } from "@openmrs/esm-framework";
 import { useSWRConfig } from "swr";
-import {
-  Button,
-  Select,
-  SelectItem,
-  TextArea,
-  TimePickerSelect,
-  TimePicker,
-  ContentSwitcher,
-  FormGroup,
-  RadioButton,
-  Toggle,
-  DataTableSkeleton,
-} from "@carbon/react";
-
+import { Button, TextArea, FormLabel, DataTableSkeleton } from "@carbon/react";
 import styles from "./dispense-form.scss";
 import { closeOverlay } from "../hooks/useOverlay";
-import { DispensePayload } from "../types";
-import { saveMedicationDispense } from "../medication-dispense/medication-dispense.resource";
+import { MedicationDispense } from "../types";
+import {
+  initiateMedicationDispenseBody,
+  saveMedicationDispense,
+  useOrderConfig,
+} from "../medication-dispense/medication-dispense.resource";
 import { useOrderDetails } from "../medication-request/medication-request.resource";
-import MedicationCard from "../components/medication-card.component";
+import MedicationDispenseReview from "../components/medication-dispense-review.component";
 
 interface DispenseFormProps {
   patientUuid: string;
@@ -43,63 +34,100 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const isTablet = useLayoutType() === "tablet";
   const { mutate } = useSWRConfig();
   const session = useSession();
-  const [drugs, setDrugs] = useState([]);
-  const [dispensingNotes, setDispensingNotes] = useState("");
+  const [internalComments, setInternalComments] = useState("");
   const { medications, isError, isLoading } = useOrderDetails(encounterUuid);
+  const { orderConfigObject } = useOrderConfig();
 
-  const [medicationRequests, setMedicationRequests] = useState();
-  const [medicationRequest, setMedicationRequest] = useState({});
+  // Keep track of medication dispense payload
+  const [medicationDispenseRequests, setMedicationDispenseRequests] = useState(
+    Array<MedicationDispense>
+  );
 
-  const [quantity, setQuantity] = useState(0);
-  const [dose, setDose] = useState(0);
-  const [doseUnit, setDoseUnit] = useState("");
-  const [route, setRoute] = useState("");
-  const [frequency, setFrequency] = useState("");
-  const [patientInstructions, setPatientInstructions] = useState("");
+  // Dosing Unit eg Tablets
+  const [drugDosingUnits, setDrugDosingUnits] = useState([]);
+  // Route eg Oral
+  const [drugRoutes, setDrugRoutes] = useState([]);
+  // Frequency eg Twice daily
+  const [orderFrequencies, setOrderFrequencies] = useState([]);
 
+  // Submit medication dispense form
   const handleSubmit = () => {
-    const medicationDispensePayload: DispensePayload = {
-      drugs,
-      encounterUuid: encounterUuid,
-      patientUuid: patientUuid,
-      comments: dispensingNotes,
-    };
-
     const abortController = new AbortController();
-    saveMedicationDispense(medicationDispensePayload, abortController).then(
-      ({ status }) => {
-        if (status === 200) {
-          closeOverlay();
-          showToast({
+    medicationDispenseRequests.map((dispenseRequest) => {
+      saveMedicationDispense(dispenseRequest, abortController).then(
+        ({ status }) => {
+          if (status === 201 || status === 200) {
+            closeOverlay;
+            showToast({
+              critical: true,
+              kind: "success",
+              description: t(
+                "medicationListUpdated",
+                "Medication dispense list has been updated."
+              ),
+              title: t(
+                "medicationDispensed",
+                "Medication successfully dispensed."
+              ),
+            });
+          }
+        },
+        (error) => {
+          showNotification({
+            title: t("medicationDispenseError", "Error dispensing medication."),
+            kind: "error",
             critical: true,
-            kind: "success",
-            description: t(
-              "medicationListUpdated",
-              "Medication dispense list has been updated."
-            ),
-            title: t(
-              "medicationDispensed",
-              "Medication successfully dispensed."
-            ),
+            description: error?.message,
           });
         }
-      },
-      (error) => {
-        showNotification({
-          title: t("medicationDispenseError", "Error dispensing medication."),
-          kind: "error",
-          critical: true,
-          description: error?.message,
-        });
-      }
-    );
+      );
+    });
   };
 
   useEffect(() => {
     if (medications) {
-      setMedicationRequests(medications);
+      let dispenseMedications = initiateMedicationDispenseBody(
+        medications,
+        session
+      );
+      setMedicationDispenseRequests(dispenseMedications);
     }
-  }, [medications]);
+  }, []);
+
+  useEffect(() => {
+    if (orderConfigObject) {
+      // sync drug route options order config
+      const availableRoutes = drugRoutes.map((x) => x.id);
+      const otherRouteOptions = [];
+      orderConfigObject.drugRoutes.forEach(
+        (x) =>
+          availableRoutes.includes(x.uuid) ||
+          otherRouteOptions.push({ id: x.uuid, text: x.display })
+      );
+      setDrugRoutes([...drugRoutes, ...otherRouteOptions]);
+
+      // sync dosage.unit options with what's defined in the order config
+      const availableDosingUnits = drugDosingUnits.map((x) => x.id);
+      const otherDosingUnits = [];
+      orderConfigObject.drugDosingUnits.forEach(
+        (x) =>
+          availableDosingUnits.includes(x.uuid) ||
+          otherDosingUnits.push({ id: x.uuid, text: x.display })
+      );
+      setDrugDosingUnits([...drugDosingUnits, ...otherDosingUnits]);
+
+      // sync order frequency options with order config
+      const availableFrequencies = orderFrequencies.map((x) => x.id);
+      const otherFrequencyOptions = [];
+      orderConfigObject.orderFrequencies.forEach(
+        (x) =>
+          availableFrequencies.includes(x.uuid) ||
+          otherFrequencyOptions.push({ id: x.uuid, text: x.display })
+      );
+      setOrderFrequencies([...orderFrequencies, ...otherFrequencyOptions]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderConfigObject]);
 
   return (
     <div className="">
@@ -107,38 +135,20 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
       <div className={styles.formWrapper}>
         <section className={styles.formGroup}>
           <span style={{ marginTop: "1rem" }}>1. {t("drug", "Drug")}</span>
-          {medications &&
-            medications.map((medication) => (
-              <div className="reviewContainer">
-                <MedicationCard medication={medication} />
-                Quantity - number Dose - dose unit - route (dropdown) frequency
-                - dropdown patient instructions - text area
-                {/* <Select
-                  id="provider"
-                  labelText={t('provider', 'Provider')}
-                  light={isTablet}
-                  // onChange={(event) => setSelectedProvider(event.target.value)}
-                  value={selectedProvider}>
-                  {!selectedProvider ? <SelectItem text={t('chooseProvider', 'Choose provider')} value="" /> : null}
-                  {providers?.length > 0 &&
-                    providers.map((provider) => (
-                      <SelectItem key={provider.uuid} text={provider.display} value={provider.uuid}>
-                        {provider.display}
-                      </SelectItem>
-                    ))}
-                </Select> */}
-                <TextArea
-                  labelText={t("patientInstructions", "Patient instructions")}
-                  value={medication.dosageInstructions}
-                  maxLength={65535}
-                  onChange={(e) =>
-                    setMedicationRequest({
-                      ...medicationRequest,
-                      freeTextDosage: e.target.value,
-                    })
-                  }
-                />
-              </div>
+          <FormLabel>
+            {t(
+              "drugHelpText",
+              "You may edit the formulation and quantity dispensed here"
+            )}
+          </FormLabel>
+          {medicationDispenseRequests &&
+            medicationDispenseRequests.map((medicationDispense) => (
+              <MedicationDispenseReview
+                medicationDispense={medicationDispense}
+                drugDosingUnits={drugDosingUnits}
+                drugRoutes={drugRoutes}
+                orderFrequencies={orderFrequencies}
+              />
             ))}
         </section>
         <section className={styles.formGroup}>
@@ -154,14 +164,15 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
               "dispensingNotePlaceholder",
               "Write any additional dispensing notes here"
             )}
-            onChange={(event) => setDispensingNotes(event.target.value)}
+            value={internalComments}
+            onChange={(e) => setInternalComments(e.target.value)}
           />
         </section>
         <section className={styles.buttonGroup}>
-          <Button onClick={() => closeOverlay()} kind="secondary">
+          <Button onClick={() => closeOverlay} kind="secondary">
             {t("cancel", "Cancel")}
           </Button>
-          <Button disabled={!drugs} onClick={handleSubmit}>
+          <Button disabled={!medications} onClick={handleSubmit}>
             {t("dispensePrescription", "Dispense prescription")}
           </Button>
         </section>

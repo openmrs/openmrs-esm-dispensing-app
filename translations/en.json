@@ -23,7 +23,9 @@
   "medicationDispenseError": "Error dispensing medication.",
   "quantity": "Quantity",
   "dose": "Dose",
+  "doseUnit": "Dose unit",
   "frequency": "Frequency",
   "route": "Route",
-  "patientInstructions": "Patient instructions"
+  "patientInstructions": "Patient instructions",
+  "drugHelpText": "You may edit the formulation and quantity dispensed here"
 }

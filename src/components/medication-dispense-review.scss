@@ -1,0 +1,73 @@
+@use '@carbon/styles/scss/spacing';
+@use '@carbon/styles/scss/type';
+@import '~@openmrs/esm-styleguide/src/vars';
+
+.productiveHeading02 {
+  color: $color-gray-70;
+  @include type.type-style('productive-heading-02');
+}
+
+:global(.omrs-breakpoint-lt-desktop) .formWrapper {
+  background-color: $openmrs-background-grey;
+}
+
+:global(.omrs-breakpoint-gt-tablet) .formWrapper {
+  background-color: $ui-02;
+}
+
+.formGroup {
+  display: flex;
+  margin-bottom: spacing.$spacing-02;
+  padding: spacing.$spacing-05;
+}
+
+:global(.omrs-breakpoint-lt-desktop) .formGroup>span {
+  flex: 1;
+}
+
+:global(.omrs-breakpoint-lt-desktop) .formGroup>div {
+  flex: 3;
+}
+
+.formGroup span {
+  @extend .productiveHeading02;
+}
+
+.patientInfo {
+  position: sticky;
+  z-index: 1000;
+  background-color: $ui-02;
+  top: 3rem;
+  overflow-y: auto;
+}
+
+:global(.omrs-breakpoint-lt-desktop) .formGroup {
+  flex-direction: row;
+}
+
+:global(.omrs-breakpoint-gt-tablet) .formGroup {
+  flex-direction: column;
+}
+
+.buttonGroup {
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+}
+
+:global(.omrs-breakpoint-lt-desktop) .buttonGroup {
+  padding: spacing.$spacing-05 spacing.$spacing-06;
+  background-color: $ui-02;
+}
+
+.buttonGroup button {
+  max-width: none;
+  width: 50%;
+  height: spacing.$spacing-10;
+  align-items: flex-start;
+}
+
+.reviewContainer {
+  margin: 0.8rem 0 0 0 !important;
+}
