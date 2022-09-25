@@ -115,7 +115,6 @@ const PrescriptionTabLists: React.FC = () => {
                 e.preventDefault();
                 setSearchTerm(e.target.value);
               }}
-              onKeyDown={function noRefCheck() {}}
               size="lg"
               className={styles.patientSearch}
             />
@@ -136,7 +135,7 @@ const PrescriptionTabLists: React.FC = () => {
                         getTableProps,
                       }) => (
                         <TableContainer>
-                          <Table {...getTableProps()}>
+                          <Table {...getTableProps()} useZebraStyles>
                             <TableHead>
                               <TableRow>
                                 <TableExpandHeader />
@@ -161,18 +160,16 @@ const PrescriptionTabLists: React.FC = () => {
                                       </TableCell>
                                     ))}
                                   </TableExpandRow>
-                                  {row.isExpanded && (
-                                    <TableExpandedRow
-                                      colSpan={headers.length + 1}
-                                    >
-                                      <OrderExpanded
-                                        encounterUuid={row.id}
-                                        patientUuid={
-                                          encounterToPatientMap[row.id]
-                                        }
-                                      />
-                                    </TableExpandedRow>
-                                  )}
+                                  <TableExpandedRow
+                                    colSpan={headers.length + 1}
+                                  >
+                                    <OrderExpanded
+                                      encounterUuid={row.id}
+                                      patientUuid={
+                                        encounterToPatientMap[row.id]
+                                      }
+                                    />
+                                  </TableExpandedRow>
                                 </React.Fragment>
                               ))}
                             </TableBody>

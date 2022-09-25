@@ -187,15 +187,13 @@ export interface DosageInstruction {
     ];
     text: string;
   };
-  doseAndRate: [
-    {
-      doseQuantity: {
-        value: number;
-        unit: string;
-        code: string;
-      };
-    }
-  ];
+  doseAndRate: Array<{
+    doseQuantity: {
+      value: number;
+      unit: string;
+      code: string;
+    };
+  }>;
 }
 
 export interface EncountersWithMedicationRequestsResponse {
@@ -342,4 +340,73 @@ export interface AllergyIntolerance {
       severity: string;
     }
   ];
+}
+
+export interface CommonConfigProps {
+  uuid: string;
+  display: string;
+}
+
+export interface OrderConfig {
+  drugRoutes: Array<CommonConfigProps>;
+  drugDosingUnits: Array<CommonConfigProps>;
+  drugDispensingUnits: Array<CommonConfigProps>;
+  durationUnits: Array<CommonConfigProps>;
+  orderFrequencies: Array<CommonConfigProps>;
+}
+
+export interface MedicationDispense {
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
+  };
+  status: string;
+  intent: string;
+  priority: string;
+  medicationReference: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  subject: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  performer: Array<{
+    actor: {
+      reference: string;
+      type: string;
+      identifier: {
+        value: string;
+      };
+      display: string;
+    };
+  }>;
+  location: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  type: {
+    coding: [
+      Array<{
+        code: string;
+        display: string;
+      }>
+    ];
+    text: string;
+  };
+  quantity: {
+    value: number;
+    unit: string;
+    code: string;
+  };
+  whenPrepared: string;
+  whenHandedOver: string;
+  dosageInstruction: Array<DosageInstruction>;
+  substitution: {
+    wasSubstituted: boolean;
+  };
 }

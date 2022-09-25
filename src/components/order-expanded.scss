@@ -2,6 +2,11 @@
 @use '@carbon/styles/scss/type';
 @import "~@openmrs/esm-styleguide/src/vars";
 
+.expandedTabsParentContainer {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: spacing.$spacing-05;
+}
 
 .expandedTabsContainer {
   display: flex;
@@ -42,5 +47,28 @@
 
   >ul>li button {
     width: 12rem !important;
+  }
+
+  :global(.cds--tabs__nav-link) {
+    max-width: 12rem !important;
+  }
+}
+
+.prescriptionActions {
+  width: 100%;
+  border-top: 1px solid #c7c1c1;
+  padding-top: 1rem;
+
+  .deletePrescriptionBtn > svg {
+    fill: var(--cds-link-primary, #0f62fe);
+  }
+
+  .dispenseBtn {
+    float: right;
+    margin-left: 1rem;
+  }
+
+  .returnToPrescriberBtn {
+    float: right;
   }
 }
