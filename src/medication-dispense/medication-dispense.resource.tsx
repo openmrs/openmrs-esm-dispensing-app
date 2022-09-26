@@ -46,13 +46,13 @@ export function initiateMedicationDispenseBody(
       medicationReference: medicationRequest.medicationReference,
       medicationCodeableConcept: medicationRequest.medicationCodeableConcept,
       subject: medicationRequest.subject,
-      performer: [
+      /* performer: [
         {
           actor: {
             reference: medicationRequest.requester.reference,
           },
         },
-      ],
+      ],*/
       // location: {
       //   reference: session?.sessionLocation?.uuid,
       // },
