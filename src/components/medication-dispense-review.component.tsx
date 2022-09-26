@@ -72,10 +72,14 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             titleText={t("doseUnit", "Dose unit")}
             itemToString={(item) => item?.text}
             selectedItem={{
-              id: dispenseRequest.dosageInstruction[0].doseAndRate[0]
-                .doseQuantity?.code,
-              text: dispenseRequest.dosageInstruction[0].doseAndRate[0]
-                .doseQuantity?.unit,
+              id: dispenseRequest.dosageInstruction[0].doseAndRate
+                ? dispenseRequest.dosageInstruction[0].doseAndRate[0]
+                    .doseQuantity?.code
+                : null,
+              text: dispenseRequest.dosageInstruction[0].doseAndRate
+                ? dispenseRequest.dosageInstruction[0].doseAndRate[0]
+                    .doseQuantity?.unit
+                : null,
             }}
             onChange={({ selectedItem }) => {
               setDispenseRequest({
@@ -108,8 +112,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             light={isTablet}
             items={drugRoutes}
             selectedItem={{
-              id: dispenseRequest.dosageInstruction[0].route.coding[0]?.code,
-              text: dispenseRequest.dosageInstruction[0].route.text,
+              id: dispenseRequest.dosageInstruction[0].route?.coding[0]?.code,
+              text: dispenseRequest.dosageInstruction[0].route?.text,
             }}
             titleText={t("route", "Route")}
             itemToString={(item) => item?.text}
@@ -144,9 +148,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             light={isTablet}
             items={orderFrequencies}
             selectedItem={{
-              id: dispenseRequest.dosageInstruction[0].timing.code.coding[0]
+              id: dispenseRequest.dosageInstruction[0].timing.code?.coding[0]
                 ?.code,
-              text: dispenseRequest.dosageInstruction[0].timing.code.text,
+              text: dispenseRequest.dosageInstruction[0].timing.code?.text,
             }}
             titleText={t("frequency", "Frequency")}
             itemToString={(item) => item?.text}

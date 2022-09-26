@@ -369,6 +369,10 @@ export interface MedicationDispense {
     type: string;
     display: string;
   };
+  medicationCodeableConcept?: {
+    coding: CodingArray;
+    text: string;
+  };
   subject: {
     reference: string;
     type: string;

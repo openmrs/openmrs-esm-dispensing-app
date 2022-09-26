@@ -40,6 +40,7 @@ export function initiateMedicationDispenseBody(
       resourceType: "MedicationDispense",
       status: "on-hold", // might need to change this to appropriate status
       medicationReference: medicationRequest.medicationReference,
+      medicationCodeableConcept: medicationRequest.medicationCodeableConcept,
       subject: medicationRequest.subject,
       performer: [
         {
