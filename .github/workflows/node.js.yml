@@ -22,7 +22,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: "16"
+          node-version: "18"
       - run: yarn
       - run: yarn lint
       - run: yarn coverage
@@ -49,10 +49,11 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: "16.x"
+          node-version: "18"
           registry-url: "https://registry.npmjs.org"
-      - run: yarn
-      - run: sed -i -e "s/\(\"version\":\\s\+\"\([0-9]\+\.\?\)\+\)/\1-pre.${{ github.run_number }}/" 'package.json'
+      - run: yarn install --immuatable
+      - run: yarn version --new-version "$(node -e "console.log(require('semver').inc(require('./package.json').version, 'patch'))")-pre.${{ github.run_number }}" --no-git-tag-version
+      - run: yarn build
       - run: yarn publish --access public --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
@@ -71,9 +72,24 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: "16"
+          node-version: "18"
           registry-url: 'https://registry.npmjs.org'
       - run: yarn
       - run: yarn publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+  
+  deploy:
+    runs-on: ubuntu-latest
+
+    needs: pre_release
+
+    if: ${{ github.event_name == 'push' }}
+
+    steps:
+      - name: Trigger RefApp Build
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: https://ci.openmrs.org/rest/api/latest/queue/REFAPP-D3X
+          method: "POST"
+          customHeaders: '{ "Authorization": "Bearer ${{ secrets.BAMBOO_TOKEN }}" }'
