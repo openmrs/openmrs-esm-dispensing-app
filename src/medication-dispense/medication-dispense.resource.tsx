@@ -39,16 +39,20 @@ export function initiateMedicationDispenseBody(
     let dispense = {
       resourceType: "MedicationDispense",
       status: "on-hold", // might need to change this to appropriate status
+      authorizingPrescription: {
+        reference: "MedicationRequest/" + medicationRequest.id,
+        type: "MedicationRequest",
+      },
       medicationReference: medicationRequest.medicationReference,
       medicationCodeableConcept: medicationRequest.medicationCodeableConcept,
       subject: medicationRequest.subject,
-      performer: [
+      /* performer: [
         {
           actor: {
             reference: medicationRequest.requester.reference,
           },
         },
-      ],
+      ],*/
       // location: {
       //   reference: session?.sessionLocation?.uuid,
       // },
