@@ -38,7 +38,7 @@ export function initiateMedicationDispenseBody(
   medicationRequests.map((medicationRequest) => {
     let dispense = {
       resourceType: "MedicationDispense",
-      status: "on-hold", // might need to change this to appropriate status
+      status: "completed", // might need to change this to appropriate status
       authorizingPrescription: {
         reference: "MedicationRequest/" + medicationRequest.id,
         type: "MedicationRequest",
