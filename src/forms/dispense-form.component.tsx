@@ -35,7 +35,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const { mutate } = useSWRConfig();
   const session = useSession();
   const [internalComments, setInternalComments] = useState("");
-  const { medications, isError, isLoading } = useOrderDetails(encounterUuid);
+  const { requests, isError, isLoading } = useOrderDetails(encounterUuid);
   const { orderConfigObject } = useOrderConfig();
 
   // Keep track of medication dispense payload
@@ -85,9 +85,9 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   };
 
   useEffect(() => {
-    if (medications) {
+    if (requests) {
       let dispenseMedications = initiateMedicationDispenseBody(
-        medications,
+        requests,
         session
       );
       setMedicationDispenseRequests(dispenseMedications);
@@ -172,7 +172,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           <Button onClick={() => closeOverlay} kind="secondary">
             {t("cancel", "Cancel")}
           </Button>
-          <Button disabled={!medications} onClick={handleSubmit}>
+          <Button disabled={!requests} onClick={handleSubmit}>
             {t("dispensePrescription", "Dispense prescription")}
           </Button>
         </section>

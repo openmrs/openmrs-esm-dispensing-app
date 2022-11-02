@@ -100,7 +100,7 @@ export interface MedicationRequestResponse {
   type: string;
   total: number;
   entry: Array<{
-    resource: MedicationRequest;
+    resource: MedicationRequest | MedicationDispense;
   }>;
 }
 
@@ -196,7 +196,8 @@ export interface DosageInstruction {
   }>;
 }
 
-export interface EncountersWithMedicationRequestsResponse {
+// TODO change this so resource is Encounter | MedicationRequest | MedicationDispense ?
+export interface EncountersWithMedicationRequestsAndMedicationDispensesResponse {
   resourceType: string;
   id: string;
   meta: {
@@ -205,11 +206,11 @@ export interface EncountersWithMedicationRequestsResponse {
   type: string;
   total: number;
   entry: Array<{
-    resource: EncounterWithMedicationRequests;
+    resource: EncounterWithMedicationRequestsAndMedicationDispenses;
   }>;
 }
 
-export interface EncounterWithMedicationRequests {
+export interface EncounterWithMedicationRequestsAndMedicationDispenses {
   type: string;
   id: string;
   resourceType: string;
@@ -238,7 +239,23 @@ export interface EncounterWithMedicationRequests {
     display: string;
     reference: string;
   };
+  authorizingPrescription?: {
+    reference: string;
+  };
+
   status: string;
+}
+
+// TODO flesh this out
+export interface Encounter {
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
+  };
+  period?: {
+    start: string;
+  };
 }
 
 // represents a row in the main table

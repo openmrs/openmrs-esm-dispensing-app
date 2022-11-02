@@ -33,7 +33,7 @@ const OrderExpanded: React.FC<{
     },
     {
       name: t("historyComments", "History and comments"),
-      component: <HistoryAndComments />,
+      component: <HistoryAndComments encounterUuid={encounterUuid} />,
     },
     {
       name: t("patientDetails", "Patient details"),
