@@ -30,7 +30,9 @@ const HistoryAndComments: React.FC<{ encounterUuid: string }> = ({
                   fontSize: "0.9rem",
                 }}
               >
-                tbd {t("dispensedMedication", "dispensed medication")}{" "}
+                {medication.performer &&
+                  medication.performer[0]?.actor?.display}{" "}
+                {t("dispensedMedication", "dispensed medication")} -{" "}
                 {formatDatetime(parseDate(medication.whenHandedOver))}
               </h5>
               <MedicationCard medication={medication} />
