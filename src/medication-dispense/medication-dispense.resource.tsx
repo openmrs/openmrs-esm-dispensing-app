@@ -49,12 +49,16 @@ export function initiateMedicationDispenseBody(
       performer: [
         {
           actor: {
-            reference: "Practitioner/" + session?.currentProvider?.uuid,
+            reference: session?.currentProvider
+              ? `Practitioner/${session.currentProvider.uuid}`
+              : "",
           },
         },
       ],
       location: {
-        reference: "Location/" + session?.sessionLocation?.uuid,
+        reference: session?.sessionLocation
+          ? `Location/${session.sessionLocation.uuid}`
+          : "",
       },
       type: {
         coding: [
