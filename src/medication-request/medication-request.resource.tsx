@@ -2,87 +2,87 @@ import useSWR from "swr";
 import { fhirBaseUrl, openmrsFetch, parseDate } from "@openmrs/esm-framework";
 import {
   AllergyIntoleranceResponse,
-  EncounterWithMedicationRequestsAndMedicationDispenses,
-  EncountersWithMedicationRequestsAndMedicationDispensesResponse,
+  EncounterResponse,
   MedicationRequest,
   MedicationRequestResponse,
-  EncounterOrders,
+  PrescriptionsTableRow,
   MedicationDispense,
   Encounter,
 } from "../types";
 
-export function useOrders(
+export function usePrescriptionsTable(
   pageSize: number = 10,
   pageOffset: number = 0,
   patientSearchTerm: string = ""
 ) {
   const url = `/ws/fhir2/R4/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_revinclude:iterate=MedicationDispense:prescription&_has:MedicationRequest:encounter:intent=order&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
-  const { data, error } = useSWR<
-    { data: EncountersWithMedicationRequestsAndMedicationDispensesResponse },
-    Error
-  >(url, openmrsFetch);
+  const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
+    url,
+    openmrsFetch
+  );
 
-  let orders: EncounterOrders[];
+  let prescriptionsTableRows: PrescriptionsTableRow[];
   if (data) {
     const entries = data?.data.entry;
     if (entries) {
-      const fhirEncounters = entries.filter(
-        (entry) => entry?.resource?.resourceType == "Encounter"
-      );
-      const fhirMedicationRequests = entries.filter(
-        (entry) => entry?.resource?.resourceType == "MedicationRequest"
-      );
-      const fhirMedicationDispenses = entries.filter(
-        (entry) => entry?.resource?.resourceType == "MedicationDispense"
-      );
-      orders = fhirEncounters.map((encounter) => {
-        const encounterOrders = fhirMedicationRequests.filter(
-          (order) =>
-            order.resource.encounter.reference ==
-            "Encounter/" + encounter.resource.id
+      const encounters = entries
+        .filter((entry) => entry?.resource?.resourceType == "Encounter")
+        .map((entry) => entry.resource as Encounter);
+      const medicationRequests = entries
+        .filter((entry) => entry?.resource?.resourceType == "MedicationRequest")
+        .map((entry) => entry.resource as MedicationRequest);
+      const medicationDispenses = entries
+        .filter(
+          (entry) => entry?.resource?.resourceType == "MedicationDispense"
+        )
+        .map((entry) => entry.resource as MedicationDispense);
+      prescriptionsTableRows = encounters.map((encounter) => {
+        const medicationRequestsForEncounter = medicationRequests.filter(
+          (medicationRequest) =>
+            medicationRequest.encounter.reference == "Encounter/" + encounter.id
         );
 
-        const encounterOrderReferences = encounterOrders.map(
-          (order) => "MedicationRequest/" + order.resource.id
+        const medicationRequestReferences = medicationRequestsForEncounter.map(
+          (medicationRequest) => "MedicationRequest/" + medicationRequest.id
         );
-        const encounterMedicationDispenses = fhirMedicationDispenses.filter(
-          (dispense) =>
-            encounterOrderReferences.includes(
-              dispense.resource.authorizingPrescription[0]?.reference
+        const medicationDispensesForMedicationRequests =
+          medicationDispenses.filter((medicationDispense) =>
+            medicationRequestReferences.includes(
+              medicationDispense.authorizingPrescription[0]?.reference
             )
-        );
-        return buildEncounterOrders(
-          encounter.resource,
-          encounterOrders.map((order) => order.resource),
-          encounterMedicationDispenses.map((dispense) => dispense.resource)
+          );
+        return buildPrescriptionsTableRow(
+          encounter,
+          medicationRequestsForEncounter,
+          medicationDispensesForMedicationRequests
         );
       });
-      orders.sort((a, b) => (a.created < b.created ? 1 : -1));
+      prescriptionsTableRows.sort((a, b) => (a.created < b.created ? 1 : -1));
     } else {
-      orders = [];
+      prescriptionsTableRows = [];
     }
   }
 
   return {
-    orders,
+    prescriptionsTableRows,
     isError: error,
-    isLoading: !orders && !error,
+    isLoading: !prescriptionsTableRows && !error,
     totalOrders: data?.data.total,
   };
 }
 
-function buildEncounterOrders(
-  encounter: EncounterWithMedicationRequestsAndMedicationDispenses,
-  orders: Array<EncounterWithMedicationRequestsAndMedicationDispenses>,
-  medicationDispense: Array<EncounterWithMedicationRequestsAndMedicationDispenses>
-): EncounterOrders {
+function buildPrescriptionsTableRow(
+  encounter: Encounter,
+  medicationRequests: Array<MedicationRequest>,
+  medicationDispense: Array<MedicationDispense>
+): PrescriptionsTableRow {
   return {
     id: encounter?.id,
     created: encounter?.period?.start,
     patientName: encounter?.subject?.display,
     drugs: [
       ...new Set(
-        orders.map((o) =>
+        medicationRequests.map((o) =>
           o.medicationReference
             ? o.medicationReference.display
             : o.medicationCodeableConcept?.text
@@ -90,8 +90,10 @@ function buildEncounterOrders(
       ),
     ].join("; "),
     lastDispenser: "tbd", // TODO calculate once MedicationDispense includes performer/dispenser
-    prescriber: [...new Set(orders.map((o) => o.requester.display))].join(", "),
-    status: computeStatus(orders.map((o) => o.status)),
+    prescriber: [
+      ...new Set(medicationRequests.map((o) => o.requester.display)),
+    ].join(", "),
+    status: computeStatus(medicationRequests.map((o) => o.status)),
     patientUuid: encounter?.subject?.reference?.split("/")[1],
   };
 }
