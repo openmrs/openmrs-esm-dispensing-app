@@ -17,7 +17,7 @@ const PrescriptionDetails: React.FC<{
   const { t } = useTranslation();
   const [isAllergiesLoaded, setAllergiesLoadedStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
-  const { medications, isError, isLoading } = useOrderDetails(encounterUuid);
+  const { requests, isError, isLoading } = useOrderDetails(encounterUuid);
 
   useEffect(() => {
     if (typeof totalAllergies == "number") {
@@ -35,7 +35,7 @@ const PrescriptionDetails: React.FC<{
               <WarningFilled size={24} className={styles.allergiesIcon} />
               <p>
                 <span style={{ fontWeight: "bold" }}>
-                  {totalAllergies} allergies
+                  {totalAllergies} {t("allergies", "allergies").toLowerCase()}
                 </span>{" "}
                 {allergies}
               </p>
@@ -50,13 +50,13 @@ const PrescriptionDetails: React.FC<{
       <h5
         style={{ paddingTop: "8px", paddingBottom: "8px", fontSize: "0.9rem" }}
       >
-        Prescribed
+        {t("prescribed", "Prescribed")}
       </h5>
 
       {isLoading && <DataTableSkeleton role="progressbar" />}
       {isError && <p>Error</p>}
-      {medications &&
-        medications.map((medication) => {
+      {requests &&
+        requests.map((medication) => {
           return <MedicationCard medication={medication} />;
         })}
     </div>

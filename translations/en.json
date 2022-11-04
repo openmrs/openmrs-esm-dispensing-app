@@ -27,5 +27,9 @@
   "frequency": "Frequency",
   "route": "Route",
   "patientInstructions": "Patient instructions",
-  "drugHelpText": "You may edit the formulation and quantity dispensed here"
+  "drugHelpText": "You may edit the formulation and quantity dispensed here",
+  "dispensedMedication": "dispensed medication",
+  "orderedMedication": "ordered medication",
+  "prescribed": "Prescribed",
+  "allergies": "Allergies"
 }

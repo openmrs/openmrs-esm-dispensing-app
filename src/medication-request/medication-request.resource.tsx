@@ -1,18 +1,14 @@
 import useSWR from "swr";
-import {
-  fhirBaseUrl,
-  formatDate,
-  openmrsFetch,
-  openmrsObservableFetch,
-  parseDate,
-} from "@openmrs/esm-framework";
+import { fhirBaseUrl, openmrsFetch, parseDate } from "@openmrs/esm-framework";
 import {
   AllergyIntoleranceResponse,
-  EncounterWithMedicationRequests,
-  EncountersWithMedicationRequestsResponse,
+  EncounterWithMedicationRequestsAndMedicationDispenses,
+  EncountersWithMedicationRequestsAndMedicationDispensesResponse,
   MedicationRequest,
   MedicationRequestResponse,
   EncounterOrders,
+  MedicationDispense,
+  Encounter,
 } from "../types";
 
 export function useOrders(
@@ -20,9 +16,9 @@ export function useOrders(
   pageOffset: number = 0,
   patientSearchTerm: string = ""
 ) {
-  const url = `/ws/fhir2/R4/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_has:MedicationRequest:encounter:intent=order&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
+  const url = `/ws/fhir2/R4/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_revinclude:iterate=MedicationDispense:prescription&_has:MedicationRequest:encounter:intent=order&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
   const { data, error } = useSWR<
-    { data: EncountersWithMedicationRequestsResponse },
+    { data: EncountersWithMedicationRequestsAndMedicationDispensesResponse },
     Error
   >(url, openmrsFetch);
 
@@ -36,16 +32,29 @@ export function useOrders(
       const fhirMedicationRequests = entries.filter(
         (entry) => entry?.resource?.resourceType == "MedicationRequest"
       );
-
+      const fhirMedicationDispenses = entries.filter(
+        (entry) => entry?.resource?.resourceType == "MedicationDispense"
+      );
       orders = fhirEncounters.map((encounter) => {
         const encounterOrders = fhirMedicationRequests.filter(
           (order) =>
             order.resource.encounter.reference ==
             "Encounter/" + encounter.resource.id
         );
+
+        const encounterOrderReferences = encounterOrders.map(
+          (order) => "MedicationRequest/" + order.resource.id
+        );
+        const encounterMedicationDispenses = fhirMedicationDispenses.filter(
+          (dispense) =>
+            encounterOrderReferences.includes(
+              dispense.resource.authorizingPrescription[0]?.reference
+            )
+        );
         return buildEncounterOrders(
           encounter.resource,
-          encounterOrders.map((order) => order.resource)
+          encounterOrders.map((order) => order.resource),
+          encounterMedicationDispenses.map((dispense) => dispense.resource)
         );
       });
       orders.sort((a, b) => (a.created < b.created ? 1 : -1));
@@ -63,8 +72,9 @@ export function useOrders(
 }
 
 function buildEncounterOrders(
-  encounter: EncounterWithMedicationRequests,
-  orders: Array<EncounterWithMedicationRequests>
+  encounter: EncounterWithMedicationRequestsAndMedicationDispenses,
+  orders: Array<EncounterWithMedicationRequestsAndMedicationDispenses>,
+  medicationDispense: Array<EncounterWithMedicationRequestsAndMedicationDispenses>
 ): EncounterOrders {
   return {
     id: encounter?.id,
@@ -79,7 +89,7 @@ function buildEncounterOrders(
         )
       ),
     ].join("; "),
-    lastDispenser: "tbd",
+    lastDispenser: "tbd", // TODO calculate once MedicationDispense includes performer/dispenser
     prescriber: [...new Set(orders.map((o) => o.requester.display))].join(", "),
     status: computeStatus(orders.map((o) => o.status)),
     patientUuid: encounter?.subject?.reference?.split("/")[1],
@@ -90,26 +100,48 @@ function computeStatus(orderStatuses: Array<string>) {
   return orderStatuses.filter((s) => s)[0];
 }
 
+// TODO: think about better name for this method?
 export function useOrderDetails(encounterUuid: string) {
-  let medications = null;
+  let requests: Array<MedicationRequest> = [];
+  let dispenses: Array<MedicationDispense> = [];
+  let prescriptionDate: Date;
   let isLoading = true;
+
+  // TODO this fetch is duplicative; all the data necessary is fetched in the original request... we should refactor to use the original request, *but* I'm waiting on that because we may be refactoring the original request into something more performant, in which case we may still need this to be separate (MG)
   const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
-    `${fhirBaseUrl}/MedicationRequest?encounter=${encounterUuid}`,
+    `${fhirBaseUrl}/MedicationRequest?encounter=${encounterUuid}&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter`,
     openmrsFetch
   );
 
   if (data) {
-    const orders = data?.data.entry;
-    medications = orders?.map((order) => {
-      return order.resource;
-    });
-  } else {
-    medications = [];
+    const results = data?.data.entry;
+
+    const encounter = results
+      .filter((entry) => entry?.resource?.resourceType == "Encounter")
+      .map((entry) => entry.resource as Encounter);
+
+    // by definition of the request (search by encounter) there should be one and only one encounter
+    prescriptionDate = parseDate(encounter[0]?.period.start);
+
+    requests = results
+      ?.filter((entry) => entry?.resource?.resourceType == "MedicationRequest")
+      .map((entry) => entry.resource as MedicationRequest);
+    dispenses = results
+      ?.filter((entry) => entry?.resource?.resourceType == "MedicationDispense")
+      .map((entry) => entry.resource as MedicationDispense)
+      .sort(
+        (a, b) =>
+          parseDate(b.whenHandedOver).getTime() -
+          parseDate(a.whenHandedOver).getTime()
+      );
   }
-  isLoading = !medications && !error;
+
+  isLoading = !requests && !error;
 
   return {
-    medications,
+    requests,
+    dispenses,
+    prescriptionDate,
     isError: error,
     isLoading,
   };

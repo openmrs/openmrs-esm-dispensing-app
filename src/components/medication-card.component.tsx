@@ -1,13 +1,18 @@
 import React from "react";
-import { DosageInstruction, MedicationRequest } from "../types";
+import {
+  DosageInstruction,
+  MedicationDispense,
+  MedicationRequest,
+} from "../types";
 import styles from "./medication-card.scss";
 import { getDosageInstruction } from "../utils";
 import { Tile } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 
-const MedicationCard: React.FC<{ medication: MedicationRequest }> = ({
-  medication,
-}) => {
+// TODO: rename this card since it really renders a MedicationRequest or Dispense, not just a Medication?
+const MedicationCard: React.FC<{
+  medication: MedicationRequest | MedicationDispense;
+}> = ({ medication }) => {
   const { t } = useTranslation();
   const dosageInstruction: DosageInstruction = getDosageInstruction(
     medication.dosageInstruction
