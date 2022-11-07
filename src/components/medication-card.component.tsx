@@ -3,9 +3,10 @@ import {
   DosageInstruction,
   MedicationDispense,
   MedicationRequest,
+  Quantity,
 } from "../types";
 import styles from "./medication-card.scss";
-import { getDosageInstruction } from "../utils";
+import { getDosageInstruction, getQuantity, getRefillsAllowed } from "../utils";
 import { Tile } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 
@@ -17,6 +18,8 @@ const MedicationCard: React.FC<{
   const dosageInstruction: DosageInstruction = getDosageInstruction(
     medication.dosageInstruction
   );
+  const quantity: Quantity = getQuantity(medication);
+  const refillsAllowed: number = getRefillsAllowed(medication);
 
   return (
     <Tile className={styles.medicationTile}>
@@ -56,6 +59,24 @@ const MedicationCard: React.FC<{
             </>
           )}
         </p>
+        <p className={styles.bodyLong01}>
+          <span className={styles.label01}>
+            {t("quantity", "Quantity").toUpperCase()}
+          </span>{" "}
+          {quantity && (
+            <span className={styles.quantity}>
+              {quantity.value} {quantity.unit}
+            </span>
+          )}
+        </p>
+        {refillsAllowed && (
+          <p className={styles.bodyLong01}>
+            <span className={styles.label01}>
+              {t("refills", "Refills").toUpperCase()}
+            </span>{" "}
+            <span className={styles.refills}>{refillsAllowed}</span>
+          </p>
+        )}
       </div>
     </Tile>
   );
