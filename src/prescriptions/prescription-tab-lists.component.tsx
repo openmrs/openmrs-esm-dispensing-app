@@ -25,8 +25,8 @@ import { Add } from "@carbon/react/icons";
 import { useTranslation } from "react-i18next";
 import { parseDate, formatDatetime } from "@openmrs/esm-framework";
 import styles from "./prescriptions.scss";
-import { EncounterOrders } from "../types";
-import { useOrders } from "../medication-request/medication-request.resource";
+import { PrescriptionsTableRow } from "../types";
+import { usePrescriptionsTable } from "../medication-request/medication-request.resource";
 import OrderExpanded from "../components/order-expanded.component";
 
 enum TabTypes {
@@ -60,20 +60,17 @@ const PrescriptionTabLists: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const { orders, isError, isLoading, totalOrders } = useOrders(
-    pageSize,
-    nextOffSet,
-    searchTerm
-  );
+  const { prescriptionsTableRows, isError, isLoading, totalOrders } =
+    usePrescriptionsTable(pageSize, nextOffSet, searchTerm);
   const encounterToPatientMap = {};
 
   useEffect(() => {
-    if (orders?.length > 0) {
-      orders.map((order: EncounterOrders) => {
+    if (prescriptionsTableRows?.length > 0) {
+      prescriptionsTableRows.map((order: PrescriptionsTableRow) => {
         encounterToPatientMap[order.id] = order.patientUuid;
       });
     }
-  }, [orders]);
+  }, [prescriptionsTableRows]);
 
   return (
     <main className={`omrs-main-content ${styles.prescriptionListContainer}`}>
@@ -124,9 +121,13 @@ const PrescriptionTabLists: React.FC = () => {
               <div className={styles.patientListTableContainer}>
                 {isLoading && <DataTableSkeleton role="progressbar" />}
                 {isError && <p>Error</p>}
-                {orders && (
+                {prescriptionsTableRows && (
                   <>
-                    <DataTable rows={orders} headers={columns} isSortable>
+                    <DataTable
+                      rows={prescriptionsTableRows}
+                      headers={columns}
+                      isSortable
+                    >
                       {({
                         rows,
                         headers,
