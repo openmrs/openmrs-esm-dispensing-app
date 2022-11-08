@@ -35,7 +35,12 @@ export function usePrescriptionsTable(
         .filter(
           (entry) => entry?.resource?.resourceType == "MedicationDispense"
         )
-        .map((entry) => entry.resource as MedicationDispense);
+        .map((entry) => entry.resource as MedicationDispense)
+        .sort(
+          (a, b) =>
+            parseDate(b.whenHandedOver).getTime() -
+            parseDate(a.whenHandedOver).getTime()
+        );
       prescriptionsTableRows = encounters.map((encounter) => {
         const medicationRequestsForEncounter = medicationRequests.filter(
           (medicationRequest) =>
@@ -89,7 +94,10 @@ function buildPrescriptionsTableRow(
         )
       ),
     ].join("; "),
-    lastDispenser: "tbd", // TODO calculate once MedicationDispense includes performer/dispenser
+    lastDispenser:
+      medicationDispense &&
+      medicationDispense[0]?.performer &&
+      medicationDispense[0]?.performer[0]?.actor.display,
     prescriber: [
       ...new Set(medicationRequests.map((o) => o.requester.display)),
     ].join(", "),
