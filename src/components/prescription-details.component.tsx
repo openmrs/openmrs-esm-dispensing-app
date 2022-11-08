@@ -7,7 +7,7 @@ import {
   usePatientAllergies,
 } from "../medication-request/medication-request.resource";
 import { useTranslation } from "react-i18next";
-import MedicationCard from "./medication-card.component";
+import MedicationEventCard from "./medication-event-card.component";
 import { PatientUuid } from "@openmrs/esm-framework";
 
 const PrescriptionDetails: React.FC<{
@@ -57,7 +57,7 @@ const PrescriptionDetails: React.FC<{
       {isError && <p>Error</p>}
       {requests &&
         requests.map((medication) => {
-          return <MedicationCard medication={medication} />;
+          return <MedicationEventCard medication={medication} />;
         })}
     </div>
   );

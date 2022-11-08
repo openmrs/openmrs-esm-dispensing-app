@@ -1,10 +1,12 @@
 import {
   DosageInstruction,
+  Medication,
   MedicationDispense,
   MedicationRequest,
   Quantity,
 } from "./types";
 
+/* TODO: confirm we can remove, not used but looks like it might do wrong thing anyway
 export function getDosage(strength: string, doseNumber: number) {
   if (!strength || !doseNumber) {
     return "";
@@ -34,6 +36,7 @@ export function getDosage(strength: string, doseNumber: number) {
     return `${strengthQuantity * doseNumber} ${strengthUnits}`;
   }
 }
+*/
 
 export function getDosageInstruction(
   dosageInstructions: Array<DosageInstruction>
@@ -64,4 +67,14 @@ export function getRefillsAllowed(
   } else {
     return null; // dispense doesn'r haee a "refills allowed" component
   }
+}
+
+// TODO does this need to null-check
+export function getMedication(
+  resource: MedicationRequest | MedicationDispense
+): Medication {
+  return {
+    medicationReference: resource.medicationReference,
+    medicationCodeableConcept: resource.medicationCodeableConcept,
+  };
 }

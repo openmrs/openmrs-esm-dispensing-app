@@ -30,6 +30,7 @@ export function useOrderConfig() {
   };
 }
 
+// TODO: should more be stripped out of here when initializing... ie don't copy over all the display data?
 export function initiateMedicationDispenseBody(
   medicationRequests: Array<MedicationRequest>,
   session: Session

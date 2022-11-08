@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { parseDate, formatDatetime } from "@openmrs/esm-framework";
 import styles from "./history-and-comments.scss";
 import { useOrderDetails } from "../medication-request/medication-request.resource";
-import MedicationCard from "./medication-card.component";
+import MedicationEventCard from "./medication-event-card.component";
 
 const HistoryAndComments: React.FC<{ encounterUuid: string }> = ({
   encounterUuid,
@@ -35,7 +35,7 @@ const HistoryAndComments: React.FC<{ encounterUuid: string }> = ({
                 {t("dispensedMedication", "dispensed medication")} -{" "}
                 {formatDatetime(parseDate(medication.whenHandedOver))}
               </h5>
-              <MedicationCard medication={medication} />
+              <MedicationEventCard medication={medication} />
             </div>
           );
         })}
@@ -54,7 +54,7 @@ const HistoryAndComments: React.FC<{ encounterUuid: string }> = ({
                 {t("orderedMedication ", "ordered medication")} -{" "}
                 {formatDatetime(prescriptionDate)}
               </h5>
-              <MedicationCard medication={medication} />
+              <MedicationEventCard medication={medication} />
             </div>
           );
         })}

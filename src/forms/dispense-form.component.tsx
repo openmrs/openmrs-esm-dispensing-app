@@ -5,8 +5,6 @@ import {
   showToast,
   showNotification,
   useLayoutType,
-  useConfig,
-  usePatient,
 } from "@openmrs/esm-framework";
 import { useSWRConfig } from "swr";
 import { Button, TextArea, FormLabel, DataTableSkeleton } from "@carbon/react";
@@ -32,9 +30,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
 }) => {
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
-  const { mutate } = useSWRConfig();
   const session = useSession();
-  const [internalComments, setInternalComments] = useState("");
   const { requests, isError, isLoading } = useOrderDetails(encounterUuid);
   const { orderConfigObject } = useOrderConfig();
 
@@ -82,6 +78,22 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         }
       );
     });
+  };
+
+  // updates the medication dispense referenced by the specified index, this function passed on to the card to allow updating a specific element
+  const updateMedicationDispenseRequest = (
+    medicationDispenseRequest: MedicationDispense,
+    index: number
+  ) => {
+    setMedicationDispenseRequests(
+      medicationDispenseRequests.map((element: MedicationDispense, i) => {
+        if (index === i) {
+          return medicationDispenseRequest;
+        } else {
+          return element;
+        }
+      })
+    );
   };
 
   useEffect(() => {
@@ -142,16 +154,18 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             )}
           </FormLabel>
           {medicationDispenseRequests &&
-            medicationDispenseRequests.map((medicationDispense) => (
+            medicationDispenseRequests.map((medicationDispense, index) => (
               <MedicationDispenseReview
                 medicationDispense={medicationDispense}
+                updateMedicationDispense={updateMedicationDispenseRequest}
+                index={index}
                 drugDosingUnits={drugDosingUnits}
                 drugRoutes={drugRoutes}
                 orderFrequencies={orderFrequencies}
               />
             ))}
         </section>
-        <section className={styles.formGroup}>
+        {/*    <section className={styles.formGroup}>
           <span>2. {t("internalComments", "Internal comments")}</span>
           <TextArea
             id="dispensingNote"
@@ -167,7 +181,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             value={internalComments}
             onChange={(e) => setInternalComments(e.target.value)}
           />
-        </section>
+        </section>*/}
         <section className={styles.buttonGroup}>
           <Button onClick={() => closeOverlay} kind="secondary">
             {t("cancel", "Cancel")}

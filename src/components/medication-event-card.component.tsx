@@ -1,18 +1,28 @@
 import React from "react";
-import { DosageInstruction, MedicationDispense } from "../types";
-import styles from "./medication-card.scss";
-import { getDosageInstruction } from "../utils";
+import {
+  DosageInstruction,
+  MedicationDispense,
+  MedicationRequest,
+  Quantity,
+} from "../types";
+import styles from "./medication-event-card.scss";
+import { getDosageInstruction, getQuantity, getRefillsAllowed } from "../utils";
 import { Tile } from "@carbon/react";
+import { useTranslation } from "react-i18next";
 
-const DispenseCard: React.FC<{ medication: MedicationDispense }> = ({
-  medication,
-}) => {
+// can render MedicationRequest or MedicationDispense
+const MedicationEventCard: React.FC<{
+  medication: MedicationRequest | MedicationDispense;
+}> = ({ medication }) => {
+  const { t } = useTranslation();
   const dosageInstruction: DosageInstruction = getDosageInstruction(
     medication.dosageInstruction
   );
+  const quantity: Quantity = getQuantity(medication);
+  const refillsAllowed: number = getRefillsAllowed(medication);
 
   return (
-    <Tile className={styles.medicationTile}>
+    <Tile className={styles.medicationEventTile}>
       <div>
         <p className={styles.medicationName}>
           <strong>
@@ -22,6 +32,9 @@ const DispenseCard: React.FC<{ medication: MedicationDispense }> = ({
           </strong>
         </p>
         <p className={styles.bodyLong01}>
+          <span className={styles.label01}>
+            {t("dose", "Dose").toUpperCase()}
+          </span>{" "}
           {dosageInstruction && (
             <>
               <span className={styles.dosage}>
@@ -46,9 +59,27 @@ const DispenseCard: React.FC<{ medication: MedicationDispense }> = ({
             </>
           )}
         </p>
+        <p className={styles.bodyLong01}>
+          <span className={styles.label01}>
+            {t("quantity", "Quantity").toUpperCase()}
+          </span>{" "}
+          {quantity && (
+            <span className={styles.quantity}>
+              {quantity.value} {quantity.unit}
+            </span>
+          )}
+        </p>
+        {refillsAllowed && (
+          <p className={styles.bodyLong01}>
+            <span className={styles.label01}>
+              {t("refills", "Refills").toUpperCase()}
+            </span>{" "}
+            <span className={styles.refills}>{refillsAllowed}</span>
+          </p>
+        )}
       </div>
     </Tile>
   );
 };
 
-export default DispenseCard;
+export default MedicationEventCard;
