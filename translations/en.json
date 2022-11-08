@@ -25,6 +25,7 @@
   "dose": "Dose",
   "doseUnit": "Dose unit",
   "frequency": "Frequency",
+  "refills": "Refills",
   "route": "Route",
   "patientInstructions": "Patient instructions",
   "drugHelpText": "You may edit the formulation and quantity dispensed here",

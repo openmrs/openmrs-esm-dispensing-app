@@ -1,4 +1,9 @@
-import { DosageInstruction } from "./types";
+import {
+  DosageInstruction,
+  MedicationDispense,
+  MedicationRequest,
+  Quantity,
+} from "./types";
 
 export function getDosage(strength: string, doseNumber: number) {
   if (!strength || !doseNumber) {
@@ -37,4 +42,26 @@ export function getDosageInstruction(
     return dosageInstructions[0];
   }
   return null;
+}
+
+export function getQuantity(
+  resource: MedicationRequest | MedicationDispense
+): Quantity {
+  if (resource.resourceType == "MedicationRequest") {
+    return (resource as MedicationRequest).dispenseRequest.quantity;
+  }
+  if (resource.resourceType == "MedicationDispense") {
+    return (resource as MedicationDispense).quantity;
+  }
+}
+
+export function getRefillsAllowed(
+  resource: MedicationRequest | MedicationDispense
+): number {
+  if (resource.resourceType == "MedicationRequest") {
+    return (resource as MedicationRequest).dispenseRequest
+      ?.numberOfRepeatsAllowed;
+  } else {
+    return null; // dispense doesn'r haee a "refills allowed" component
+  }
 }

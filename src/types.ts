@@ -139,11 +139,7 @@ export interface DosageInstruction {
     text: string;
   };
   doseAndRate: Array<{
-    doseQuantity: {
-      value: number;
-      unit: string;
-      code: string;
-    };
+    doseQuantity: Quantity;
   }>;
 }
 
@@ -234,11 +230,7 @@ export interface MedicationDispense {
     ];
     text: string;
   };
-  quantity: {
-    value: number;
-    unit: string;
-    code: string;
-  };
+  quantity: Quantity;
   whenPrepared: string;
   whenHandedOver: string;
   dosageInstruction: Array<DosageInstruction>;
@@ -285,11 +277,7 @@ export interface MedicationRequest {
   dosageInstruction: Array<DosageInstruction>;
   dispenseRequest: {
     numberOfRepeatsAllowed: number;
-    quantity: {
-      value: number;
-      unit: string;
-      code: string;
-    };
+    quantity: Quantity;
   };
 }
 
@@ -341,4 +329,10 @@ export interface PrescriptionsTableRow {
   lastDispenser: string;
   status: string;
   patientUuid: string;
+}
+
+export interface Quantity {
+  value: number;
+  unit: string;
+  code: string;
 }
