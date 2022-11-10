@@ -4,7 +4,7 @@ import { OverflowMenuVertical } from "@carbon/react/icons";
 import { useTranslation } from "react-i18next";
 import { parseDate, formatDatetime } from "@openmrs/esm-framework";
 import styles from "./history-and-comments.scss";
-import { useOrderDetails } from "../medication-request/medication-request.resource";
+import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
 import MedicationEventCard from "./medication-event-card.component";
 
 const HistoryAndComments: React.FC<{ encounterUuid: string }> = ({
@@ -12,7 +12,7 @@ const HistoryAndComments: React.FC<{ encounterUuid: string }> = ({
 }) => {
   const { t } = useTranslation();
   const { requests, dispenses, prescriptionDate, isError, isLoading } =
-    useOrderDetails(encounterUuid);
+    usePrescriptionDetails(encounterUuid);
 
   // TODO: assumption is dispenses always are after requqests?
   return (

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./prescription-details.scss";
 import { WarningFilled } from "@carbon/react/icons";
 import {
-  useOrderDetails,
+  usePrescriptionDetails,
   usePatientAllergies,
 } from "../medication-request/medication-request.resource";
 import { useTranslation } from "react-i18next";
@@ -17,7 +17,8 @@ const PrescriptionDetails: React.FC<{
   const { t } = useTranslation();
   const [isAllergiesLoaded, setAllergiesLoadedStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
-  const { requests, isError, isLoading } = useOrderDetails(encounterUuid);
+  const { requests, isError, isLoading } =
+    usePrescriptionDetails(encounterUuid);
 
   useEffect(() => {
     if (typeof totalAllergies == "number") {

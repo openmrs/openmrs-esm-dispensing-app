@@ -5,6 +5,7 @@ import {
   MedicationRequest,
   Quantity,
 } from "./types";
+import { fhirBaseUrl } from "@openmrs/esm-framework";
 
 /* TODO: confirm we can remove, not used but looks like it might do wrong thing anyway
 export function getDosage(strength: string, doseNumber: number) {
@@ -77,4 +78,16 @@ export function getMedication(
     medicationReference: resource.medicationReference,
     medicationCodeableConcept: resource.medicationCodeableConcept,
   };
+}
+
+export function getPrescriptionDetailsEndpoint(encounterUuid: string) {
+  return `${fhirBaseUrl}/MedicationRequest?encounter=${encounterUuid}&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter`;
+}
+
+export function getPrescriptionTableEndpoint(
+  pageOffset: number,
+  pageSize: number,
+  patientSearchTerm: string
+) {
+  return `${fhirBaseUrl}/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_revinclude:iterate=MedicationDispense:prescription&_has:MedicationRequest:encounter:intent=order&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
 }

@@ -201,9 +201,11 @@ export interface MedicationDispense {
   status: string;
   intent: string;
   priority: string;
-  authorizingPrescription?: {
-    reference: string;
-  };
+  authorizingPrescription?: [
+    {
+      reference: string;
+    }
+  ];
   medicationReference: {
     reference: string;
     type: string;

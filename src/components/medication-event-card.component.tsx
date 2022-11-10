@@ -69,13 +69,16 @@ const MedicationEventCard: React.FC<{
             </span>
           )}
         </p>
-        {refillsAllowed && (
+        {(refillsAllowed || refillsAllowed === 0) && (
           <p className={styles.bodyLong01}>
             <span className={styles.label01}>
               {t("refills", "Refills").toUpperCase()}
             </span>{" "}
             <span className={styles.refills}>{refillsAllowed}</span>
           </p>
+        )}
+        {dosageInstruction?.text && (
+          <p className={styles.bodyLong01}>{dosageInstruction.text}</p>
         )}
       </div>
     </Tile>

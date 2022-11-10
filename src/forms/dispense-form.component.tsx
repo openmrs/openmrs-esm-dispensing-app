@@ -7,7 +7,7 @@ import {
   useLayoutType,
 } from "@openmrs/esm-framework";
 import { useSWRConfig } from "swr";
-import { Button, TextArea, FormLabel, DataTableSkeleton } from "@carbon/react";
+import { Button, FormLabel, DataTableSkeleton } from "@carbon/react";
 import styles from "./dispense-form.scss";
 import { closeOverlay } from "../hooks/useOverlay";
 import { MedicationDispense } from "../types";
@@ -16,8 +16,9 @@ import {
   saveMedicationDispense,
   useOrderConfig,
 } from "../medication-dispense/medication-dispense.resource";
-import { useOrderDetails } from "../medication-request/medication-request.resource";
+import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
 import MedicationDispenseReview from "../components/medication-dispense-review.component";
+import { getPrescriptionDetailsEndpoint } from "../utils";
 
 interface DispenseFormProps {
   patientUuid: string;
@@ -31,8 +32,10 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
   const session = useSession();
-  const { requests, isError, isLoading } = useOrderDetails(encounterUuid);
+  const { requests, isError, isLoading } =
+    usePrescriptionDetails(encounterUuid);
   const { orderConfigObject } = useOrderConfig();
+  const { mutate } = useSWRConfig();
 
   // Keep track of medication dispense payload
   const [medicationDispenseRequests, setMedicationDispenseRequests] = useState(
@@ -41,10 +44,15 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
 
   // Dosing Unit eg Tablets
   const [drugDosingUnits, setDrugDosingUnits] = useState([]);
+  // Dispensing Unit eg Tablets
+  const [drugDispensingUnits, setDrugDispensingUnits] = useState([]);
   // Route eg Oral
   const [drugRoutes, setDrugRoutes] = useState([]);
   // Frequency eg Twice daily
   const [orderFrequencies, setOrderFrequencies] = useState([]);
+
+  // whether or note the form is valid and ready to submit
+  const [isValid, setIsValid] = useState(false);
 
   // Submit medication dispense form
   const handleSubmit = () => {
@@ -53,7 +61,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
       saveMedicationDispense(dispenseRequest, abortController).then(
         ({ status }) => {
           if (status === 201 || status === 200) {
-            closeOverlay;
+            closeOverlay();
+            mutate(getPrescriptionDetailsEndpoint(encounterUuid));
             showToast({
               critical: true,
               kind: "success",
@@ -96,6 +105,27 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     );
   };
 
+  const checkIsValid = () => {
+    if (medicationDispenseRequests) {
+      setIsValid(
+        medicationDispenseRequests.every((request) => {
+          return (
+            request.quantity?.value &&
+            request.quantity?.code &&
+            request.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity.value &&
+            request.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity.code &&
+            request.dosageInstruction[0]?.route.coding[0].code &&
+            request.dosageInstruction[0]?.timing.code.coding[0].code
+          );
+        })
+      );
+    } else {
+      setIsValid(false);
+    }
+  };
+
+  useEffect(checkIsValid, [medicationDispenseRequests]);
+
   useEffect(() => {
     if (requests) {
       let dispenseMedications = initiateMedicationDispenseBody(
@@ -103,6 +133,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         session
       );
       setMedicationDispenseRequests(dispenseMedications);
+      checkIsValid();
     }
   }, []);
 
@@ -127,6 +158,16 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           otherDosingUnits.push({ id: x.uuid, text: x.display })
       );
       setDrugDosingUnits([...drugDosingUnits, ...otherDosingUnits]);
+
+      // sync dispensing unit options with what's defined in the order config
+      const availableDispensingUnits = drugDispensingUnits.map((x) => x.id);
+      const otherDispensingUnits = [];
+      orderConfigObject.drugDispensingUnits.forEach(
+        (x) =>
+          availableDispensingUnits.includes(x.uuid) ||
+          otherDispensingUnits.push({ id: x.uuid, text: x.display })
+      );
+      setDrugDispensingUnits([...drugDispensingUnits, ...otherDispensingUnits]);
 
       // sync order frequency options with order config
       const availableFrequencies = orderFrequencies.map((x) => x.id);
@@ -160,6 +201,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 updateMedicationDispense={updateMedicationDispenseRequest}
                 index={index}
                 drugDosingUnits={drugDosingUnits}
+                drugDispensingUnits={drugDispensingUnits}
                 drugRoutes={drugRoutes}
                 orderFrequencies={orderFrequencies}
               />
@@ -183,10 +225,10 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           />
         </section>*/}
         <section className={styles.buttonGroup}>
-          <Button onClick={() => closeOverlay} kind="secondary">
+          <Button onClick={() => closeOverlay()} kind="secondary">
             {t("cancel", "Cancel")}
           </Button>
-          <Button disabled={!requests} onClick={handleSubmit}>
+          <Button disabled={!isValid} onClick={handleSubmit}>
             {t("dispensePrescription", "Dispense prescription")}
           </Button>
         </section>

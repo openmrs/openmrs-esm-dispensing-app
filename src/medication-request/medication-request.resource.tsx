@@ -9,15 +9,18 @@ import {
   MedicationDispense,
   Encounter,
 } from "../types";
+import {
+  getPrescriptionTableEndpoint,
+  getPrescriptionDetailsEndpoint,
+} from "../utils";
 
 export function usePrescriptionsTable(
   pageSize: number = 10,
   pageOffset: number = 0,
   patientSearchTerm: string = ""
 ) {
-  const url = `/ws/fhir2/R4/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_revinclude:iterate=MedicationDispense:prescription&_has:MedicationRequest:encounter:intent=order&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
   const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
-    url,
+    getPrescriptionTableEndpoint(pageOffset, pageSize, patientSearchTerm),
     openmrsFetch
   );
 
@@ -87,11 +90,15 @@ function buildPrescriptionsTableRow(
     patientName: encounter?.subject?.display,
     drugs: [
       ...new Set(
-        medicationRequests.map((o) =>
-          o.medicationReference
-            ? o.medicationReference.display
-            : o.medicationCodeableConcept?.text
-        )
+        medicationRequests
+          .map((o) =>
+            o.medicationReference
+              ? o.medicationReference.display
+              : o.medicationCodeableConcept?.text
+          )
+          .sort((a, b) => {
+            return a.localeCompare(b);
+          })
       ),
     ].join("; "),
     lastDispenser:
@@ -110,16 +117,15 @@ function computeStatus(orderStatuses: Array<string>) {
   return orderStatuses.filter((s) => s)[0];
 }
 
-// TODO: think about better name for this method?
-export function useOrderDetails(encounterUuid: string) {
+export function usePrescriptionDetails(encounterUuid: string) {
   let requests: Array<MedicationRequest> = [];
   let dispenses: Array<MedicationDispense> = [];
   let prescriptionDate: Date;
   let isLoading = true;
 
-  // TODO this fetch is duplicative; all the data necessary is fetched in the original request... we should refactor to use the original request, *but* I'm waiting on that because we may be refactoring the original request into something more performant, in which case we may still need this to be separate (MG)
+  // TODO this fetch is duplicative; all the data necessary is fetched in the original request... we could refactor to use the original request, *but* I'm waiting on that because we may be refactoring the original request into something more performant, in which case would make sense fo this to be separate (MG)
   const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
-    `${fhirBaseUrl}/MedicationRequest?encounter=${encounterUuid}&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter`,
+    getPrescriptionDetailsEndpoint(encounterUuid),
     openmrsFetch
   );
 

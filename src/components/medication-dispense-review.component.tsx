@@ -2,16 +2,17 @@ import React from "react";
 import { CommonConfigProps, MedicationDispense } from "../types";
 import MedicationCard from "./medication-card-component";
 import { TextArea, Column, ComboBox, Grid, NumberInput } from "@carbon/react";
-import styles from "./medication-dispense-review.scss";
 import { useLayoutType } from "@openmrs/esm-framework";
 import { useTranslation } from "react-i18next";
 import { getMedication } from "../utils";
+import styles from "./medication-dispense-review.scss";
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
   index: number;
   updateMedicationDispense: Function;
   drugDosingUnits: Array<CommonConfigProps>;
+  drugDispensingUnits: Array<CommonConfigProps>;
   drugRoutes: Array<CommonConfigProps>;
   orderFrequencies: Array<CommonConfigProps>;
 }
@@ -21,6 +22,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   index,
   updateMedicationDispense,
   drugDosingUnits,
+  drugDispensingUnits,
   drugRoutes,
   orderFrequencies,
 }) => {
@@ -28,36 +30,64 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const isTablet = useLayoutType() === "tablet";
 
   return (
-    <div className={styles.reviewContainer}>
+    <div className={styles.medicationDispenseReviewContainer}>
       <MedicationCard medication={getMedication(medicationDispense)} />
 
-      <NumberInput
-        allowEmpty={false}
-        hideSteppers={true}
-        id="tj-input"
-        invalidText="Number is not valid"
-        label="Quantity"
-        min={0}
-        value={medicationDispense.quantity.value}
-        onChange={(e) => {
-          updateMedicationDispense(
-            {
-              ...medicationDispense,
-              quantity: {
-                value: e.target.value,
-                unit: medicationDispense.quantity.unit,
-                code: medicationDispense.quantity.code,
-              },
-            },
-            index
-          );
-        }}
-        size="md"
-        step={1}
-      />
+      <Grid className={styles.noPadding}>
+        <Column lg={5}>
+          <NumberInput
+            allowEmpty={false}
+            hideSteppers={true}
+            id="quantity"
+            invalidText="Number is not valid"
+            label="Quantity"
+            min={0}
+            value={medicationDispense.quantity.value}
+            onChange={(e) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  quantity: {
+                    value: e.target.value,
+                    unit: medicationDispense.quantity.unit,
+                    code: medicationDispense.quantity.code,
+                  },
+                },
+                index
+              );
+            }}
+          />
+        </Column>
+        <Column lg={11}>
+          <ComboBox
+            id="quantityUnits"
+            light={isTablet}
+            items={drugDispensingUnits}
+            titleText={t("drugDispensingUnit", "Dispensing unit")}
+            itemToString={(item) => item?.text}
+            initialSelectedItem={{
+              id: medicationDispense.quantity.code,
+              text: medicationDispense.quantity.unit,
+            }}
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  quantity: {
+                    value: medicationDispense.quantity.value,
+                    code: selectedItem?.id,
+                  },
+                },
+                index
+              );
+            }}
+            required
+          />
+        </Column>
+      </Grid>
 
-      <Grid className={styles.gridRow}>
-        <Column md={5}>
+      <Grid>
+        <Column lg={5}>
           <NumberInput
             allowEmpty={false}
             hideSteppers={true}
@@ -98,7 +128,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             }}
           />
         </Column>
-        <Column md={6}>
+        <Column lg={6}>
           <ComboBox
             id="dosingUnits"
             light={isTablet}
@@ -141,7 +171,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             required
           />
         </Column>
-        <Column md={5} className={styles.lastGridCell}>
+        <Column lg={5}>
           <ComboBox
             id="editRoute"
             light={isTablet}
@@ -178,8 +208,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         </Column>
       </Grid>
 
-      <div className={styles.row}>
-        <Column md={8}>
+      <Grid>
+        <Column lg={16}>
           <ComboBox
             id="frequency"
             light={isTablet}
@@ -217,27 +247,31 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             required
           />
         </Column>
-      </div>
+      </Grid>
 
-      <TextArea
-        labelText={t("patientInstructions", "Patient instructions")}
-        value={medicationDispense.dosageInstruction[0].text}
-        maxLength={65535}
-        onChange={(e) => {
-          updateMedicationDispense(
-            {
-              ...medicationDispense,
-              dosageInstruction: [
+      <Grid>
+        <Column lg={16}>
+          <TextArea
+            labelText={t("patientInstructions", "Patient instructions")}
+            value={medicationDispense.dosageInstruction[0].text}
+            maxLength={65535}
+            onChange={(e) => {
+              updateMedicationDispense(
                 {
-                  ...medicationDispense.dosageInstruction[0],
-                  text: e.target.value,
+                  ...medicationDispense,
+                  dosageInstruction: [
+                    {
+                      ...medicationDispense.dosageInstruction[0],
+                      text: e.target.value,
+                    },
+                  ],
                 },
-              ],
-            },
-            index
-          );
-        }}
-      />
+                index
+              );
+            }}
+          />
+        </Column>
+      </Grid>
     </div>
   );
 };
