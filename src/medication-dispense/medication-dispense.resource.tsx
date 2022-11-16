@@ -30,6 +30,7 @@ export function useOrderConfig() {
   };
 }
 
+// TODO: should more be stripped out of here when initializing... ie don't copy over all the display data?
 export function initiateMedicationDispenseBody(
   medicationRequests: Array<MedicationRequest>,
   session: Session
@@ -39,10 +40,12 @@ export function initiateMedicationDispenseBody(
     let dispense = {
       resourceType: "MedicationDispense",
       status: "completed", // might need to change this to appropriate status
-      authorizingPrescription: {
-        reference: "MedicationRequest/" + medicationRequest.id,
-        type: "MedicationRequest",
-      },
+      authorizingPrescription: [
+        {
+          reference: "MedicationRequest/" + medicationRequest.id,
+          type: "MedicationRequest",
+        },
+      ],
       medicationReference: medicationRequest.medicationReference,
       medicationCodeableConcept: medicationRequest.medicationCodeableConcept,
       subject: medicationRequest.subject,

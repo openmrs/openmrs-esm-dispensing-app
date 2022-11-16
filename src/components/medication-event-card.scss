@@ -2,7 +2,7 @@
 @use '@carbon/styles/scss/type';
 @import "~@openmrs/esm-styleguide/src/vars";
 
-.medicationTile {
+.medicationEventTile {
   width: 100%;
   margin: 2px 0 8px;
   padding: 0 48px 0 8px;
@@ -16,3 +16,11 @@
   font-size: 15px !important;
 }
 
+.bodyLong01 {
+  font-size: 13px !important;
+}
+
+.dosage, .quantity, .refills {
+  color: #525252;
+  font-weight: bold;
+}

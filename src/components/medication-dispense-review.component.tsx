@@ -1,202 +1,277 @@
-import React, { useState } from "react";
+import React from "react";
 import { CommonConfigProps, MedicationDispense } from "../types";
-import DispenseCard from "../components/dispense-card.component";
-import {
-  Select,
-  SelectItem,
-  TextArea,
-  FormGroup,
-  RadioButton,
-  Toggle,
-  FormLabel,
-  DataTableSkeleton,
-  Column,
-  ComboBox,
-  Grid,
-  NumberInput,
-} from "@carbon/react";
-import styles from "./medication-dispense-review.scss";
+import MedicationCard from "./medication-card-component";
+import { TextArea, Column, ComboBox, Grid, NumberInput } from "@carbon/react";
 import { useLayoutType } from "@openmrs/esm-framework";
 import { useTranslation } from "react-i18next";
+import { getMedication } from "../utils";
+import styles from "./medication-dispense-review.scss";
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
+  index: number;
+  updateMedicationDispense: Function;
   drugDosingUnits: Array<CommonConfigProps>;
+  drugDispensingUnits: Array<CommonConfigProps>;
   drugRoutes: Array<CommonConfigProps>;
   orderFrequencies: Array<CommonConfigProps>;
 }
 
 const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   medicationDispense,
+  index,
+  updateMedicationDispense,
   drugDosingUnits,
+  drugDispensingUnits,
   drugRoutes,
   orderFrequencies,
 }) => {
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
-  const [dispenseRequest, setDispenseRequest] = useState(medicationDispense);
 
   return (
-    <div className={styles.reviewContainer}>
-      <DispenseCard medication={medicationDispense} />
+    <div className={styles.medicationDispenseReviewContainer}>
+      <MedicationCard medication={getMedication(medicationDispense)} />
 
-      <NumberInput
-        className="some-class"
-        id="tj-input"
-        invalidText="Number is not valid"
-        label="Quantity"
-        max={100}
-        min={0}
-        value={dispenseRequest.quantity.value}
-        onChange={(e) => {
-          setDispenseRequest({
-            ...dispenseRequest,
-            quantity: {
-              value: e.target.value,
-              unit: dispenseRequest.quantity.unit,
-              code: dispenseRequest.quantity.code,
-            },
-          });
-        }}
-        size="md"
-        step={1}
-        warnText="A high threshold may impact performance"
-      />
-
-      <Grid className={styles.gridRow}>
-        <Column md={4}>
-          <ComboBox
-            id="dosingUnits"
-            light={isTablet}
-            items={drugDosingUnits}
-            titleText={t("doseUnit", "Dose unit")}
-            itemToString={(item) => item?.text}
-            selectedItem={{
-              id: dispenseRequest.dosageInstruction[0].doseAndRate
-                ? dispenseRequest.dosageInstruction[0].doseAndRate[0]
-                    .doseQuantity?.code
-                : null,
-              text: dispenseRequest.dosageInstruction[0].doseAndRate
-                ? dispenseRequest.dosageInstruction[0].doseAndRate[0]
-                    .doseQuantity?.unit
-                : null,
-            }}
-            onChange={({ selectedItem }) => {
-              setDispenseRequest({
-                ...dispenseRequest,
-                dosageInstruction: [
-                  {
-                    ...dispenseRequest.dosageInstruction[0],
-                    doseAndRate: [
-                      {
-                        ...dispenseRequest.dosageInstruction[0].doseAndRate[0],
-                        doseQuantity: {
-                          value:
-                            dispenseRequest.dosageInstruction[0].doseAndRate[0]
-                              .doseQuantity?.value,
-                          unit: selectedItem.text,
-                          code: selectedItem.id,
-                        },
-                      },
-                    ],
+      <Grid className={styles.noPadding}>
+        <Column lg={5}>
+          <NumberInput
+            allowEmpty={false}
+            hideSteppers={true}
+            id="quantity"
+            invalidText="Number is not valid"
+            label="Quantity"
+            min={0}
+            value={medicationDispense.quantity.value}
+            onChange={(e) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  quantity: {
+                    value: e.target.value,
+                    unit: medicationDispense.quantity.unit,
+                    code: medicationDispense.quantity.code,
                   },
-                ],
-              });
+                },
+                index
+              );
             }}
-            required
           />
         </Column>
-        <Column md={8} className={styles.lastGridCell}>
+        <Column lg={11}>
           <ComboBox
-            id="editRoute"
+            id="quantityUnits"
             light={isTablet}
-            items={drugRoutes}
-            selectedItem={{
-              id: dispenseRequest.dosageInstruction[0].route?.coding[0]?.code,
-              text: dispenseRequest.dosageInstruction[0].route?.text,
-            }}
-            titleText={t("route", "Route")}
+            items={drugDispensingUnits}
+            titleText={t("drugDispensingUnit", "Dispensing unit")}
             itemToString={(item) => item?.text}
+            initialSelectedItem={{
+              id: medicationDispense.quantity.code,
+              text: medicationDispense.quantity.unit,
+            }}
             onChange={({ selectedItem }) => {
-              setDispenseRequest({
-                ...dispenseRequest,
-                dosageInstruction: [
-                  {
-                    ...dispenseRequest.dosageInstruction[0],
-                    route: {
-                      ...dispenseRequest.dosageInstruction[0].route,
-                      coding: [
-                        {
-                          code: selectedItem.id,
-                          display: selectedItem.text,
-                        },
-                      ],
-                    },
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  quantity: {
+                    value: medicationDispense.quantity.value,
+                    code: selectedItem?.id,
                   },
-                ],
-              });
+                },
+                index
+              );
             }}
             required
           />
         </Column>
       </Grid>
 
-      <div className={styles.row}>
-        <Column md={8}>
-          <ComboBox
-            id="frequency"
+      <Grid>
+        <Column lg={5}>
+          <NumberInput
+            allowEmpty={false}
+            hideSteppers={true}
+            id="dosingQuanity"
             light={isTablet}
-            items={orderFrequencies}
-            selectedItem={{
-              id: dispenseRequest.dosageInstruction[0].timing.code?.coding[0]
-                ?.code,
-              text: dispenseRequest.dosageInstruction[0].timing.code?.text,
-            }}
-            titleText={t("frequency", "Frequency")}
-            itemToString={(item) => item?.text}
-            onChange={({ selectedItem }) => {
-              setDispenseRequest({
-                ...dispenseRequest,
-                dosageInstruction: [
-                  {
-                    ...dispenseRequest.dosageInstruction[0],
-                    timing: {
-                      ...dispenseRequest.dosageInstruction[0].timing,
-                      code: {
-                        ...dispenseRequest.dosageInstruction[0].timing.code,
-                        coding: [
-                          {
-                            code: selectedItem.id,
-                            display: selectedItem.text,
+            invalidText="Number is not valid"
+            min={0}
+            label="Dose"
+            value={
+              medicationDispense.dosageInstruction[0].doseAndRate[0]
+                .doseQuantity.value
+            }
+            onChange={(e) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  dosageInstruction: [
+                    {
+                      ...medicationDispense.dosageInstruction[0],
+                      doseAndRate: [
+                        {
+                          ...medicationDispense.dosageInstruction[0]
+                            .doseAndRate[0],
+                          doseQuantity: {
+                            value: e.target.value,
+                            unit: medicationDispense.dosageInstruction[0]
+                              .doseAndRate[0].doseQuantity.unit,
+                            code: medicationDispense.dosageInstruction[0]
+                              .doseAndRate[0].doseQuantity.code,
                           },
-                        ],
-                      },
+                        },
+                      ],
                     },
-                  },
-                ],
-              });
+                  ],
+                },
+                index
+              );
+            }}
+          />
+        </Column>
+        <Column lg={6}>
+          <ComboBox
+            id="dosingUnits"
+            light={isTablet}
+            items={drugDosingUnits}
+            titleText={t("doseUnit", "Dose unit")}
+            itemToString={(item) => item?.text}
+            initialSelectedItem={{
+              id: medicationDispense.dosageInstruction[0].doseAndRate
+                ? medicationDispense.dosageInstruction[0].doseAndRate[0]
+                    .doseQuantity?.code
+                : null,
+              text: medicationDispense.dosageInstruction[0].doseAndRate
+                ? medicationDispense.dosageInstruction[0].doseAndRate[0]
+                    .doseQuantity?.unit
+                : null,
+            }}
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  dosageInstruction: [
+                    {
+                      ...medicationDispense.dosageInstruction[0],
+                      doseAndRate: [
+                        {
+                          doseQuantity: {
+                            value:
+                              medicationDispense.dosageInstruction[0]
+                                .doseAndRate[0].doseQuantity?.value,
+                            code: selectedItem?.id,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                index
+              );
             }}
             required
           />
         </Column>
-      </div>
+        <Column lg={5}>
+          <ComboBox
+            id="editRoute"
+            light={isTablet}
+            items={drugRoutes}
+            initialSelectedItem={{
+              id: medicationDispense.dosageInstruction[0].route?.coding[0]
+                ?.code,
+              text: medicationDispense.dosageInstruction[0].route?.text,
+            }}
+            titleText={t("route", "Route")}
+            itemToString={(item) => item?.text}
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  dosageInstruction: [
+                    {
+                      ...medicationDispense.dosageInstruction[0],
+                      route: {
+                        coding: [
+                          {
+                            code: selectedItem?.id,
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                index
+              );
+            }}
+            required
+          />
+        </Column>
+      </Grid>
 
-      <TextArea
-        labelText={t("patientInstructions", "Patient instructions")}
-        value={dispenseRequest.dosageInstruction[0].text}
-        maxLength={65535}
-        onChange={(e) => {
-          setDispenseRequest({
-            ...dispenseRequest,
-            dosageInstruction: [
-              {
-                ...dispenseRequest.dosageInstruction[0],
-                text: e.target.value,
-              },
-            ],
-          });
-        }}
-      />
+      <Grid>
+        <Column lg={16}>
+          <ComboBox
+            id="frequency"
+            light={isTablet}
+            items={orderFrequencies}
+            initialSelectedItem={{
+              id: medicationDispense.dosageInstruction[0].timing.code?.coding[0]
+                ?.code,
+              text: medicationDispense.dosageInstruction[0].timing.code?.text,
+            }}
+            titleText={t("frequency", "Frequency")}
+            itemToString={(item) => item?.text}
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  dosageInstruction: [
+                    {
+                      ...medicationDispense.dosageInstruction[0],
+                      timing: {
+                        ...medicationDispense.dosageInstruction[0].timing,
+                        code: {
+                          coding: [
+                            {
+                              code: selectedItem?.id,
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  ],
+                },
+                index
+              );
+            }}
+            required
+          />
+        </Column>
+      </Grid>
+
+      <Grid>
+        <Column lg={16}>
+          <TextArea
+            labelText={t("patientInstructions", "Patient instructions")}
+            value={medicationDispense.dosageInstruction[0].text}
+            maxLength={65535}
+            onChange={(e) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  dosageInstruction: [
+                    {
+                      ...medicationDispense.dosageInstruction[0],
+                      text: e.target.value,
+                    },
+                  ],
+                },
+                index
+              );
+            }}
+          />
+        </Column>
+      </Grid>
     </div>
   );
 };

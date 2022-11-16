@@ -180,6 +180,18 @@ export interface EncounterResponse {
   }>;
 }
 
+export interface Medication {
+  medicationReference: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  medicationCodeableConcept?: {
+    coding: CodingArray;
+    text: string;
+  };
+}
+
 export interface MedicationDispense {
   resourceType: string;
   id: string;
@@ -189,9 +201,11 @@ export interface MedicationDispense {
   status: string;
   intent: string;
   priority: string;
-  authorizingPrescription?: {
-    reference: string;
-  };
+  authorizingPrescription?: [
+    {
+      reference: string;
+    }
+  ];
   medicationReference: {
     reference: string;
     type: string;

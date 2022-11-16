@@ -2,6 +2,13 @@
 @use '@carbon/styles/scss/type';
 @import '~@openmrs/esm-styleguide/src/vars';
 
+.medicationDispenseReviewContainer {
+  :global(.cds--css-grid) {
+    padding-left:0 !important;
+    padding-right:0 !important;
+  }
+}
+
 .productiveHeading02 {
   color: $color-gray-70;
   @include type.type-style('productive-heading-02');
@@ -66,8 +73,4 @@
   width: 50%;
   height: spacing.$spacing-10;
   align-items: flex-start;
-}
-
-.reviewContainer {
-  margin: 0.8rem 0 0 0 !important;
 }

@@ -5,13 +5,13 @@ import {
   MedicationRequest,
   Quantity,
 } from "../types";
-import styles from "./medication-card.scss";
+import styles from "./medication-event-card.scss";
 import { getDosageInstruction, getQuantity, getRefillsAllowed } from "../utils";
 import { Tile } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 
-// TODO: rename this card since it really renders a MedicationRequest or Dispense, not just a Medication?
-const MedicationCard: React.FC<{
+// can render MedicationRequest or MedicationDispense
+const MedicationEventCard: React.FC<{
   medication: MedicationRequest | MedicationDispense;
 }> = ({ medication }) => {
   const { t } = useTranslation();
@@ -22,7 +22,7 @@ const MedicationCard: React.FC<{
   const refillsAllowed: number = getRefillsAllowed(medication);
 
   return (
-    <Tile className={styles.medicationTile}>
+    <Tile className={styles.medicationEventTile}>
       <div>
         <p className={styles.medicationName}>
           <strong>
@@ -69,7 +69,7 @@ const MedicationCard: React.FC<{
             </span>
           )}
         </p>
-        {refillsAllowed && (
+        {(refillsAllowed || refillsAllowed === 0) && (
           <p className={styles.bodyLong01}>
             <span className={styles.label01}>
               {t("refills", "Refills").toUpperCase()}
@@ -77,9 +77,12 @@ const MedicationCard: React.FC<{
             <span className={styles.refills}>{refillsAllowed}</span>
           </p>
         )}
+        {dosageInstruction?.text && (
+          <p className={styles.bodyLong01}>{dosageInstruction.text}</p>
+        )}
       </div>
     </Tile>
   );
 };
 
-export default MedicationCard;
+export default MedicationEventCard;
