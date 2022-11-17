@@ -61,8 +61,9 @@ title {
   grid-row: 3 / 4;
   grid-column: 1 / 2;
   height: 100%;
-  padding: 0.5rem spacing.$spacing-05;
+  margin: 0.5rem spacing.$spacing-05;
   background-color: $ui-01;
+  border: 0.5px solid #e0e0e0;
 
   :global(.cds--data-table-container) {
     padding-top: 0 !important;
@@ -74,6 +75,17 @@ title {
 
   :global(.cds--data-table td) {
     height: unset !important;
+  }
+
+  :global(.cds--data-table--zebra) tbody tr[data-parent-row]:nth-child(4n + 1) td {
+    background-color: $ui-02;
+    border-bottom: 1px solid $ui-03;
+    border-top: 1px solid $ui-03;
+  }
+
+  :global(.cds--data-table--zebra) tbody tr[data-parent-row]:nth-child(4n + 3) td {
+    background-color: $ui-01;
+    border-bottom: 1px solid $ui-03;
   }
 }
 

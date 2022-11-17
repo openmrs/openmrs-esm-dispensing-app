@@ -100,6 +100,7 @@ const PrescriptionTabLists: React.FC = () => {
               kind="primary"
               renderIcon={(props) => <Add size={24} />}
               className={styles.addPrescriptionBtn}
+              size="sm"
             >
               {t("fillPrescription", "Fill prescription")}
             </Button>
@@ -112,7 +113,7 @@ const PrescriptionTabLists: React.FC = () => {
                 e.preventDefault();
                 setSearchTerm(e.target.value);
               }}
-              size="lg"
+              size="md"
               className={styles.patientSearch}
             />
           </div>
