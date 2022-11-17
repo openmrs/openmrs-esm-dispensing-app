@@ -54,39 +54,49 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   // whether or note the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
 
+  // to prevent duplicate submits
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Submit medication dispense form
   const handleSubmit = () => {
-    const abortController = new AbortController();
-    medicationDispenseRequests.map((dispenseRequest) => {
-      saveMedicationDispense(dispenseRequest, abortController).then(
-        ({ status }) => {
-          if (status === 201 || status === 200) {
-            closeOverlay();
-            mutate(getPrescriptionDetailsEndpoint(encounterUuid));
-            showToast({
-              critical: true,
-              kind: "success",
-              description: t(
-                "medicationListUpdated",
-                "Medication dispense list has been updated."
-              ),
+    if (!isSubmitting) {
+      setIsSubmitting(true);
+      const abortController = new AbortController();
+      medicationDispenseRequests.map((dispenseRequest) => {
+        saveMedicationDispense(dispenseRequest, abortController).then(
+          ({ status }) => {
+            if (status === 201 || status === 200) {
+              closeOverlay();
+              mutate(getPrescriptionDetailsEndpoint(encounterUuid));
+              showToast({
+                critical: true,
+                kind: "success",
+                description: t(
+                  "medicationListUpdated",
+                  "Medication dispense list has been updated."
+                ),
+                title: t(
+                  "medicationDispensed",
+                  "Medication successfully dispensed."
+                ),
+              });
+            }
+          },
+          (error) => {
+            showNotification({
               title: t(
-                "medicationDispensed",
-                "Medication successfully dispensed."
+                "medicationDispenseError",
+                "Error dispensing medication."
               ),
+              kind: "error",
+              critical: true,
+              description: error?.message,
             });
+            setIsSubmitting(false);
           }
-        },
-        (error) => {
-          showNotification({
-            title: t("medicationDispenseError", "Error dispensing medication."),
-            kind: "error",
-            critical: true,
-            description: error?.message,
-          });
-        }
-      );
-    });
+        );
+      });
+    }
   };
 
   // updates the medication dispense referenced by the specified index, this function passed on to the card to allow updating a specific element
@@ -228,7 +238,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           <Button onClick={() => closeOverlay()} kind="secondary">
             {t("cancel", "Cancel")}
           </Button>
-          <Button disabled={!isValid} onClick={handleSubmit}>
+          <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
             {t("dispensePrescription", "Dispense prescription")}
           </Button>
         </section>
