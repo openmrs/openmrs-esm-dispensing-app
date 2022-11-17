@@ -77,14 +77,16 @@ title {
     height: unset !important;
   }
 
-  :global(.cds--parent-row > td) {
-    background-color: #f4f4f4 !important;
+  :global(.cds--data-table--zebra) tbody tr[data-parent-row]:nth-child(4n + 1) td {
+    background-color: $ui-02;
+    border-bottom: 1px solid $ui-03;
+    border-top: 1px solid $ui-03;
   }
-}
 
-:global(.cds--data-table--zebra) > tbody > tr[data-parent-row]:nth-child(4n+1) td {
- border-bottom: none !important;
- border-top: none !important;
+  :global(.cds--data-table--zebra) tbody tr[data-parent-row]:nth-child(4n + 3) td {
+    background-color: $ui-01;
+    border-bottom: 1px solid $ui-03;
+  }
 }
 
 .searchContainer {

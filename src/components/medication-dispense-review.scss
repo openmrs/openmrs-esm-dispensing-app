@@ -3,10 +3,20 @@
 @import '~@openmrs/esm-styleguide/src/vars';
 
 .medicationDispenseReviewContainer {
+  display: flex;
+  flex-direction: column;
+
   :global(.cds--css-grid) {
     padding-left:0 !important;
     padding-right:0 !important;
   }
+}
+
+.dispenseDetailsContainer {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  gap: spacing.$spacing-05;
 }
 
 .productiveHeading02 {
