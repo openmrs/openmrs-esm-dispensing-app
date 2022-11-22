@@ -3,7 +3,7 @@ import { PatientUuid } from "@openmrs/esm-framework";
 import { Tab, Tabs, TabList, TabPanels, TabPanel, Button } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import HistoryAndComments from "./history-and-comments.component";
-import styles from "./order-expanded.scss";
+import styles from "./prescription-expanded.scss";
 import PrescriptionDetails from "./prescription-details.component";
 import { TrashCan } from "@carbon/react/icons";
 import DispenseForm from "../forms/dispense-form.component";
@@ -14,10 +14,11 @@ interface TabItem {
   component: JSX.Element;
 }
 
-const OrderExpanded: React.FC<{
+const PrescriptionExpanded: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
-}> = ({ encounterUuid, patientUuid }) => {
+  mutatePrescriptionTableRows: Function;
+}> = ({ encounterUuid, patientUuid, mutatePrescriptionTableRows }) => {
   const { t } = useTranslation();
 
   const tabs: TabItem[] = [
@@ -79,6 +80,7 @@ const OrderExpanded: React.FC<{
               <DispenseForm
                 patientUuid={patientUuid}
                 encounterUuid={encounterUuid}
+                mutatePrescriptionTableRows={mutatePrescriptionTableRows}
               />
             )
           }
@@ -93,4 +95,4 @@ const OrderExpanded: React.FC<{
   );
 };
 
-export default OrderExpanded;
+export default PrescriptionExpanded;

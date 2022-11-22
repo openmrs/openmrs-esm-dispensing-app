@@ -27,7 +27,7 @@ import { parseDate, formatDatetime } from "@openmrs/esm-framework";
 import styles from "./prescriptions.scss";
 import { PrescriptionsTableRow } from "../types";
 import { usePrescriptionsTable } from "../medication-request/medication-request.resource";
-import OrderExpanded from "../components/order-expanded.component";
+import PrescriptionExpanded from "../components/prescription-expanded.component";
 
 enum TabTypes {
   STARRED,
@@ -60,7 +60,7 @@ const PrescriptionTabLists: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const { prescriptionsTableRows, isError, isLoading, totalOrders } =
+  const { prescriptionsTableRows, mutate, isError, isLoading, totalOrders } =
     usePrescriptionsTable(pageSize, nextOffSet, searchTerm);
   const encounterToPatientMap = {};
 
@@ -167,11 +167,12 @@ const PrescriptionTabLists: React.FC = () => {
                                   <TableExpandedRow
                                     colSpan={headers.length + 1}
                                   >
-                                    <OrderExpanded
+                                    <PrescriptionExpanded
                                       encounterUuid={row.id}
                                       patientUuid={
                                         encounterToPatientMap[row.id]
                                       }
+                                      mutatePrescriptionTableRows={mutate}
                                     />
                                   </TableExpandedRow>
                                 </React.Fragment>
