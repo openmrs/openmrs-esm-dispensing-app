@@ -5,7 +5,7 @@
 .prescriptionContainer {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  max-width: 80%;
   margin-bottom: 1rem;
 
   &:global(.cds--tile) {
