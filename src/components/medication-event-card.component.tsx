@@ -41,12 +41,12 @@ const MedicationEventCard: React.FC<{
             <>
               <span className={styles.dosage}>
                 {dosageInstruction.doseAndRate &&
-                  dosageInstruction?.doseAndRate.map((doseAndRate) => {
+                  dosageInstruction?.doseAndRate.map((doseAndRate, index) => {
                     return (
-                      <>
+                      <span key={index}>
                         {doseAndRate?.doseQuantity?.value}{" "}
                         {doseAndRate?.doseQuantity?.unit}
-                      </>
+                      </span>
                     );
                   })}
               </span>{" "}

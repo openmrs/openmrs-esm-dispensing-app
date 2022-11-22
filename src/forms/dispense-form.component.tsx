@@ -206,6 +206,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           {medicationDispenseRequests &&
             medicationDispenseRequests.map((medicationDispense, index) => (
               <MedicationDispenseReview
+                key={index}
                 medicationDispense={medicationDispense}
                 updateMedicationDispense={updateMedicationDispenseRequest}
                 index={index}

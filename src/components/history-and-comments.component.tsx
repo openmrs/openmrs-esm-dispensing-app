@@ -22,7 +22,11 @@ const HistoryAndComments: React.FC<{
   const generateMedicationDispenseActionMenu: Function = (
     medicationDispenseUuid: string
   ) => (
-    <OverflowMenu flipped={true} className={styles.medicationEventActionMenu}>
+    <OverflowMenu
+      ariaLabel="Medication Dispense Action Menu"
+      flipped={true}
+      className={styles.medicationEventActionMenu}
+    >
       <OverflowMenuItem
         onClick={() => {
           deleteMedicationDispense(medicationDispenseUuid);
@@ -42,7 +46,7 @@ const HistoryAndComments: React.FC<{
       {dispenses &&
         dispenses.map((dispense) => {
           return (
-            <div>
+            <div key={dispense.id}>
               <h5
                 style={{
                   paddingTop: "8px",
@@ -64,7 +68,7 @@ const HistoryAndComments: React.FC<{
       {requests &&
         requests.map((request) => {
           return (
-            <div>
+            <div key={request.id}>
               <h5
                 style={{
                   paddingTop: "8px",
