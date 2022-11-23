@@ -33,7 +33,12 @@ const PrescriptionExpanded: React.FC<{
     },
     {
       name: t("historyComments", "History and comments"),
-      component: <HistoryAndComments encounterUuid={encounterUuid} />,
+      component: (
+        <HistoryAndComments
+          encounterUuid={encounterUuid}
+          mutatePrescriptionTableRows={mutatePrescriptionTableRows}
+        />
+      ),
     },
     /* {
       name: t("patientDetails", "Patient details"),
@@ -49,7 +54,7 @@ const PrescriptionExpanded: React.FC<{
     <div className={styles.expandedTabsParentContainer}>
       <div className={styles.expandedTabsContainer}>
         <Tabs>
-          <TabList>
+          <TabList aria-label="Tab List">
             {tabs.map((tab: TabItem, index: number) => (
               <Tab key={index} className={styles.orderTabs}>
                 {tab.name}
@@ -57,8 +62,8 @@ const PrescriptionExpanded: React.FC<{
             ))}
           </TabList>
           <TabPanels>
-            {tabs.map((tab: TabItem) => (
-              <TabPanel>{tab.component}</TabPanel>
+            {tabs.map((tab: TabItem, index) => (
+              <TabPanel key={index}>{tab.component}</TabPanel>
             ))}
           </TabPanels>
         </Tabs>

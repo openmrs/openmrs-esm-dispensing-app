@@ -81,7 +81,11 @@ const PrescriptionTabLists: React.FC = () => {
           tabContentClassName={styles.hiddenTabsContent}
           onSelectionChange={setSelectedTab}
         >
-          <TabList contained className={styles.tabsContainer}>
+          <TabList
+            aria-label="Tab List"
+            contained
+            className={styles.tabsContainer}
+          >
             {labelMap.map((label, index) => {
               return (
                 <Tab

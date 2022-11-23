@@ -7,13 +7,14 @@ import {
 } from "../types";
 import styles from "./medication-event-card.scss";
 import { getDosageInstruction, getQuantity, getRefillsAllowed } from "../utils";
-import { Tile } from "@carbon/react";
+import { Tile, OverflowMenu } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 
 // can render MedicationRequest or MedicationDispense
 const MedicationEventCard: React.FC<{
   medication: MedicationRequest | MedicationDispense;
-}> = ({ medication }) => {
+  actionMenu?: OverflowMenu;
+}> = ({ medication, actionMenu = null }) => {
   const { t } = useTranslation();
   const dosageInstruction: DosageInstruction = getDosageInstruction(
     medication.dosageInstruction
@@ -23,6 +24,7 @@ const MedicationEventCard: React.FC<{
 
   return (
     <Tile className={styles.medicationEventTile}>
+      {actionMenu}
       <div>
         <p className={styles.medicationName}>
           <strong>
@@ -39,12 +41,12 @@ const MedicationEventCard: React.FC<{
             <>
               <span className={styles.dosage}>
                 {dosageInstruction.doseAndRate &&
-                  dosageInstruction?.doseAndRate.map((doseAndRate) => {
+                  dosageInstruction?.doseAndRate.map((doseAndRate, index) => {
                     return (
-                      <>
+                      <span key={index}>
                         {doseAndRate?.doseQuantity?.value}{" "}
                         {doseAndRate?.doseQuantity?.unit}
-                      </>
+                      </span>
                     );
                   })}
               </span>{" "}
