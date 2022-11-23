@@ -158,6 +158,8 @@ const PrescriptionTabLists: React.FC = () => {
                                           ? formatDatetime(
                                               parseDate(cell.value)
                                             )
+                                          : cell.id.endsWith("status")
+                                          ? t(cell.value)
                                           : cell.value}
                                       </TableCell>
                                     ))}

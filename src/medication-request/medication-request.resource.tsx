@@ -114,7 +114,16 @@ function buildPrescriptionsTableRow(
 }
 
 function computeStatus(orderStatuses: Array<string>) {
-  return orderStatuses.filter((s) => s)[0];
+  if (orderStatuses.includes("active")) {
+    // if any if active, return active
+    return "active";
+  } else if (orderStatuses.includes("cancelled")) {
+    // if none are active, then if any are cancelled, return cancelled
+    return "cancelled";
+  } else {
+    // otherwise unknown
+    return "unknown";
+  }
 }
 
 export function usePrescriptionDetails(encounterUuid: string) {

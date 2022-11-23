@@ -32,5 +32,8 @@
   "dispensedMedication": "dispensed medication",
   "orderedMedication": "ordered medication",
   "prescribed": "Prescribed",
-  "allergies": "Allergies"
+  "allergies": "Allergies",
+  "active": "Active",
+  "cancelled": "Cancelled",
+  "unknown": "Unknown"
 }

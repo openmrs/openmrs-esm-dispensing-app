@@ -4,7 +4,6 @@ import { Tab, Tabs, TabList, TabPanels, TabPanel, Button } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import HistoryAndComments from "./history-and-comments.component";
 import styles from "./order-expanded.scss";
-import PatientDetails from "./patient-details.component";
 import PrescriptionDetails from "./prescription-details.component";
 import { TrashCan } from "@carbon/react/icons";
 import DispenseForm from "../forms/dispense-form.component";
