@@ -19,7 +19,7 @@ export function usePrescriptionsTable(
   pageOffset: number = 0,
   patientSearchTerm: string = ""
 ) {
-  const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
+  const { data, mutate, error } = useSWR<{ data: EncounterResponse }, Error>(
     getPrescriptionTableEndpoint(pageOffset, pageSize, patientSearchTerm),
     openmrsFetch
   );
@@ -73,6 +73,7 @@ export function usePrescriptionsTable(
 
   return {
     prescriptionsTableRows,
+    mutate,
     isError: error,
     isLoading: !prescriptionsTableRows && !error,
     totalOrders: data?.data.total,
@@ -132,11 +133,11 @@ export function usePrescriptionDetails(encounterUuid: string) {
   let prescriptionDate: Date;
   let isLoading = true;
 
-  // TODO this fetch is duplicative; all the data necessary is fetched in the original request... we could refactor to use the original request, *but* I'm waiting on that because we may be refactoring the original request into something more performant, in which case would make sense fo this to be separate (MG)
-  const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
-    getPrescriptionDetailsEndpoint(encounterUuid),
-    openmrsFetch
-  );
+  // TODO this fetch is duplicative; all the data necessary is fetched in the original request... we could refactor to use the original request, *but* I'm waiting on that because we may be refactoring the original request into something more performant, in which case would make sense for this to be separate (MG)
+  const { data, mutate, error } = useSWR<
+    { data: MedicationRequestResponse },
+    Error
+  >(getPrescriptionDetailsEndpoint(encounterUuid), openmrsFetch);
 
   if (data) {
     const results = data?.data.entry;
@@ -167,6 +168,7 @@ export function usePrescriptionDetails(encounterUuid: string) {
     requests,
     dispenses,
     prescriptionDate,
+    mutate,
     isError: error,
     isLoading,
   };

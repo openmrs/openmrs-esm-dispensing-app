@@ -17,6 +17,15 @@ export function saveMedicationDispense(
   });
 }
 
+export function deleteMedicationDispense(medicationDispenseUuid: string) {
+  return openmrsFetch(
+    `${fhirBaseUrl}/MedicationDispense/${medicationDispenseUuid}`,
+    {
+      method: "DELETE",
+    }
+  );
+}
+
 export function useOrderConfig() {
   const { data, error, isValidating } = useSWR<{ data: OrderConfig }, Error>(
     `/ws/rest/v1/orderentryconfig`,

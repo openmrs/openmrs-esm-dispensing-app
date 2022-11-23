@@ -6,7 +6,6 @@ import {
   showNotification,
   useLayoutType,
 } from "@openmrs/esm-framework";
-import { useSWRConfig } from "swr";
 import { Button, FormLabel, DataTableSkeleton } from "@carbon/react";
 import styles from "./dispense-form.scss";
 import { closeOverlay } from "../hooks/useOverlay";
@@ -18,24 +17,23 @@ import {
 } from "../medication-dispense/medication-dispense.resource";
 import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
 import MedicationDispenseReview from "../components/medication-dispense-review.component";
-import { getPrescriptionDetailsEndpoint } from "../utils";
 
 interface DispenseFormProps {
   patientUuid: string;
   encounterUuid: string;
+  mutatePrescriptionTableRows: Function;
 }
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
   patientUuid,
   encounterUuid,
+  mutatePrescriptionTableRows,
 }) => {
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
   const session = useSession();
-  const { requests, isError, isLoading } =
-    usePrescriptionDetails(encounterUuid);
+  const { requests, mutate, isLoading } = usePrescriptionDetails(encounterUuid);
   const { orderConfigObject } = useOrderConfig();
-  const { mutate } = useSWRConfig();
 
   // Keep track of medication dispense payload
   const [medicationDispenseRequests, setMedicationDispenseRequests] = useState(
@@ -67,7 +65,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           ({ status }) => {
             if (status === 201 || status === 200) {
               closeOverlay();
-              mutate(getPrescriptionDetailsEndpoint(encounterUuid));
+              mutate(); // update prescription details
+              mutatePrescriptionTableRows(); // update the entire table
               showToast({
                 critical: true,
                 kind: "success",
@@ -207,6 +206,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           {medicationDispenseRequests &&
             medicationDispenseRequests.map((medicationDispense, index) => (
               <MedicationDispenseReview
+                key={index}
                 medicationDispense={medicationDispense}
                 updateMedicationDispense={updateMedicationDispenseRequest}
                 index={index}

@@ -1,28 +1,52 @@
 import React from "react";
-import { DataTableSkeleton, Button, Form, TextInput } from "@carbon/react";
-import { OverflowMenuVertical } from "@carbon/react/icons";
+import {
+  DataTableSkeleton,
+  OverflowMenu,
+  OverflowMenuItem,
+} from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import { parseDate, formatDatetime } from "@openmrs/esm-framework";
 import styles from "./history-and-comments.scss";
 import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
+import { deleteMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationEventCard from "./medication-event-card.component";
 
-const HistoryAndComments: React.FC<{ encounterUuid: string }> = ({
-  encounterUuid,
-}) => {
+const HistoryAndComments: React.FC<{
+  encounterUuid: string;
+  mutatePrescriptionTableRows: Function;
+}> = ({ encounterUuid, mutatePrescriptionTableRows }) => {
   const { t } = useTranslation();
-  const { requests, dispenses, prescriptionDate, isError, isLoading } =
+  const { requests, dispenses, mutate, prescriptionDate, isError, isLoading } =
     usePrescriptionDetails(encounterUuid);
 
-  // TODO: assumption is dispenses always are after requqests?
+  const generateMedicationDispenseActionMenu: Function = (
+    medicationDispenseUuid: string
+  ) => (
+    <OverflowMenu
+      ariaLabel="Medication Dispense Action Menu"
+      flipped={true}
+      className={styles.medicationEventActionMenu}
+    >
+      <OverflowMenuItem
+        onClick={() => {
+          deleteMedicationDispense(medicationDispenseUuid);
+          mutate();
+          mutatePrescriptionTableRows();
+        }}
+        itemText={t("delete", "Delete")}
+      ></OverflowMenuItem>
+    </OverflowMenu>
+  );
+
+  // TODO: assumption is dispenses always are after requests?
   return (
     <div className={styles.historyAndCommentsContainer}>
       {isLoading && <DataTableSkeleton role="progressbar" />}
       {isError && <p>Error</p>}
       {dispenses &&
-        dispenses.map((medication) => {
+        dispenses.map((dispense) => {
           return (
-            <div>
+            <div key={dispense.id}>
               <h5
                 style={{
                   paddingTop: "8px",
@@ -30,19 +54,21 @@ const HistoryAndComments: React.FC<{ encounterUuid: string }> = ({
                   fontSize: "0.9rem",
                 }}
               >
-                {medication.performer &&
-                  medication.performer[0]?.actor?.display}{" "}
+                {dispense.performer && dispense.performer[0]?.actor?.display}{" "}
                 {t("dispensedMedication", "dispensed medication")} -{" "}
-                {formatDatetime(parseDate(medication.whenHandedOver))}
+                {formatDatetime(parseDate(dispense.whenHandedOver))}
               </h5>
-              <MedicationEventCard medication={medication} />
+              <MedicationEventCard
+                medication={dispense}
+                actionMenu={generateMedicationDispenseActionMenu(dispense.id)}
+              />
             </div>
           );
         })}
       {requests &&
-        requests.map((medication) => {
+        requests.map((request) => {
           return (
-            <div>
+            <div key={request.id}>
               <h5
                 style={{
                   paddingTop: "8px",
@@ -50,32 +76,14 @@ const HistoryAndComments: React.FC<{ encounterUuid: string }> = ({
                   fontSize: "0.9rem",
                 }}
               >
-                {medication.requester.display}{" "}
+                {request.requester.display}{" "}
                 {t("orderedMedication ", "ordered medication")} -{" "}
                 {formatDatetime(prescriptionDate)}
               </h5>
-              <MedicationEventCard medication={medication} />
+              <MedicationEventCard medication={request} />
             </div>
           );
         })}
-
-      {/* <Form>
-        <TextInput
-          id="test2"
-          invalidText="Invalid error message."
-          placeholder="Add note"
-          labelText={""}
-        />
-        <Button kind="primary" tabIndex={0} type="submit">
-          {t("post", "Post")}
-        </Button>
-        <Button
-          kind="ghost"
-          renderIcon={(props) => <OverflowMenuVertical size={16} />}
-        >
-          {t("addItem", "Add item")}
-        </Button>
-      </Form>*/}
     </div>
   );
 };
