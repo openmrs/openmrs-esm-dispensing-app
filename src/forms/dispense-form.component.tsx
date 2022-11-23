@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  useSession,
   showToast,
   showNotification,
   useLayoutType,
@@ -11,33 +10,33 @@ import styles from "./dispense-form.scss";
 import { closeOverlay } from "../hooks/useOverlay";
 import { MedicationDispense } from "../types";
 import {
-  initiateMedicationDispenseBody,
   saveMedicationDispense,
   useOrderConfig,
 } from "../medication-dispense/medication-dispense.resource";
-import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
 import MedicationDispenseReview from "../components/medication-dispense-review.component";
 
 interface DispenseFormProps {
-  patientUuid: string;
-  encounterUuid: string;
+  medicationDispenses: Array<MedicationDispense>;
+  mutatePrescriptionDetails: Function;
   mutatePrescriptionTableRows: Function;
+  isLoading: Boolean;
+  mode: string;
 }
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
-  patientUuid,
-  encounterUuid,
+  medicationDispenses,
+  mutatePrescriptionDetails,
   mutatePrescriptionTableRows,
+  isLoading,
+  mode,
 }) => {
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
-  const session = useSession();
-  const { requests, mutate, isLoading } = usePrescriptionDetails(encounterUuid);
   const { orderConfigObject } = useOrderConfig();
 
   // Keep track of medication dispense payload
-  const [medicationDispenseRequests, setMedicationDispenseRequests] = useState(
-    Array<MedicationDispense>
+  const [medicationDispensesPayload, setMedicationDispensesPayload] = useState(
+    []
   );
 
   // Dosing Unit eg Tablets
@@ -60,12 +59,12 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
-      medicationDispenseRequests.map((dispenseRequest) => {
+      medicationDispensesPayload.map((dispenseRequest) => {
         saveMedicationDispense(dispenseRequest, abortController).then(
           ({ status }) => {
             if (status === 201 || status === 200) {
               closeOverlay();
-              mutate(); // update prescription details
+              mutatePrescriptionDetails(); // update prescription details
               mutatePrescriptionTableRows(); // update the entire table
               showToast({
                 critical: true,
@@ -75,8 +74,12 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                   "Medication dispense list has been updated."
                 ),
                 title: t(
-                  "medicationDispensed",
-                  "Medication successfully dispensed."
+                  mode === "enter"
+                    ? "medicationDispensed"
+                    : "medicationDispenseUpdated",
+                  mode === "enter"
+                    ? "Medication successfully dispensed."
+                    : "Dispense record successfully updated."
                 ),
               });
             }
@@ -84,8 +87,12 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           (error) => {
             showNotification({
               title: t(
-                "medicationDispenseError",
-                "Error dispensing medication."
+                mode === "enter"
+                  ? "medicationDispenseError"
+                  : "medicationDispenseUpdatedError",
+                mode === "enter"
+                  ? "Error dispensing medication."
+                  : "Error updating dispense record"
               ),
               kind: "error",
               critical: true,
@@ -103,8 +110,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     medicationDispenseRequest: MedicationDispense,
     index: number
   ) => {
-    setMedicationDispenseRequests(
-      medicationDispenseRequests.map((element: MedicationDispense, i) => {
+    setMedicationDispensesPayload(
+      medicationDispensesPayload.map((element: MedicationDispense, i) => {
         if (index === i) {
           return medicationDispenseRequest;
         } else {
@@ -115,9 +122,9 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   };
 
   const checkIsValid = () => {
-    if (medicationDispenseRequests) {
+    if (medicationDispensesPayload) {
       setIsValid(
-        medicationDispenseRequests.every((request) => {
+        medicationDispensesPayload.every((request) => {
           return (
             request.quantity?.value &&
             request.quantity?.code &&
@@ -133,18 +140,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     }
   };
 
-  useEffect(checkIsValid, [medicationDispenseRequests]);
+  // initialize the internal dispense payload with the dispenses passed in as props
+  useEffect(
+    () => setMedicationDispensesPayload(medicationDispenses),
+    [medicationDispenses]
+  );
 
-  useEffect(() => {
-    if (requests) {
-      let dispenseMedications = initiateMedicationDispenseBody(
-        requests,
-        session
-      );
-      setMedicationDispenseRequests(dispenseMedications);
-      checkIsValid();
-    }
-  }, []);
+  useEffect(checkIsValid, [medicationDispensesPayload]);
 
   useEffect(() => {
     if (orderConfigObject) {
@@ -203,8 +205,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
               "You may edit the formulation and quantity dispensed here"
             )}
           </FormLabel>
-          {medicationDispenseRequests &&
-            medicationDispenseRequests.map((medicationDispense, index) => (
+          {medicationDispensesPayload &&
+            medicationDispensesPayload.map((medicationDispense, index) => (
               <MedicationDispenseReview
                 key={index}
                 medicationDispense={medicationDispense}
@@ -239,7 +241,10 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             {t("cancel", "Cancel")}
           </Button>
           <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
-            {t("dispensePrescription", "Dispense prescription")}
+            {t(
+              mode === "enter" ? "dispensePrescription" : "saveChanges",
+              mode === "enter" ? "Dispense prescription" : "Save changes"
+            )}
           </Button>
         </section>
       </div>

@@ -7,8 +7,15 @@ export function saveMedicationDispense(
   medicationDispense: MedicationDispense,
   abortController: AbortController
 ) {
-  return openmrsFetch(`${fhirBaseUrl}/MedicationDispense`, {
-    method: "POST",
+  // if we have an id, this is an update, otherwise it's a create
+  const url = medicationDispense.id
+    ? `${fhirBaseUrl}/MedicationDispense/${medicationDispense.id}`
+    : `${fhirBaseUrl}/MedicationDispense`;
+
+  const method = medicationDispense.id ? "PUT" : "POST";
+
+  return openmrsFetch(url, {
+    method: method,
     signal: abortController.signal,
     headers: {
       "Content-Type": "application/json",

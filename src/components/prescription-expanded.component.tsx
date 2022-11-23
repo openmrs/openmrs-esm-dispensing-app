@@ -6,7 +6,7 @@ import HistoryAndComments from "./history-and-comments.component";
 import styles from "./prescription-expanded.scss";
 import PrescriptionDetails from "./prescription-details.component";
 import { TrashCan } from "@carbon/react/icons";
-import DispenseForm from "../forms/dispense-form.component";
+import InitializeDispenseFormFromRequests from "../forms/initialize-dispense-form-from-requests.component";
 import { launchOverlay } from "../hooks/useOverlay";
 
 interface TabItem {
@@ -82,8 +82,7 @@ const PrescriptionExpanded: React.FC<{
           onClick={() =>
             launchOverlay(
               t("dispensePrescription", "Dispense prescription"),
-              <DispenseForm
-                patientUuid={patientUuid}
+              <InitializeDispenseFormFromRequests
                 encounterUuid={encounterUuid}
                 mutatePrescriptionTableRows={mutatePrescriptionTableRows}
               />
