@@ -19,7 +19,7 @@ interface DispenseFormProps {
   medicationDispenses: Array<MedicationDispense>;
   mutate: Function;
   isLoading: Boolean;
-  mode: string;
+  mode: "enter" | "edit";
 }
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
