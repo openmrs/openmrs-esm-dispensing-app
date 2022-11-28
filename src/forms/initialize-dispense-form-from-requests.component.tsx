@@ -7,7 +7,7 @@ import DispenseForm from "./dispense-form.component";
 
 interface NewDispenseFormProps {
   encounterUuid: string;
-  mutatePrescriptionTableRows: Function;
+  mutate: Function;
 }
 
 /**
@@ -18,9 +18,13 @@ interface NewDispenseFormProps {
  */
 const InitializeDispenseFormFromRequests: React.FC<NewDispenseFormProps> = ({
   encounterUuid,
-  mutatePrescriptionTableRows,
+  mutate,
 }) => {
-  const { requests, mutate, isLoading } = usePrescriptionDetails(encounterUuid);
+  const {
+    requests,
+    mutate: mutatePrescriptionDetails,
+    isLoading,
+  } = usePrescriptionDetails(encounterUuid);
   const session = useSession();
 
   const [medicationDispenses, setMedicationDispenses] = useState(
@@ -42,8 +46,10 @@ const InitializeDispenseFormFromRequests: React.FC<NewDispenseFormProps> = ({
       isLoading={isLoading}
       medicationDispenses={medicationDispenses}
       mode="enter"
-      mutatePrescriptionDetails={mutate}
-      mutatePrescriptionTableRows={mutatePrescriptionTableRows}
+      mutate={() => {
+        mutate();
+        mutatePrescriptionDetails();
+      }}
     />
   );
 };

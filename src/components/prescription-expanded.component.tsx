@@ -17,8 +17,8 @@ interface TabItem {
 const PrescriptionExpanded: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
-  mutatePrescriptionTableRows: Function;
-}> = ({ encounterUuid, patientUuid, mutatePrescriptionTableRows }) => {
+  mutate: Function;
+}> = ({ encounterUuid, patientUuid, mutate }) => {
   const { t } = useTranslation();
 
   const tabs: TabItem[] = [
@@ -34,10 +34,7 @@ const PrescriptionExpanded: React.FC<{
     {
       name: t("historyComments", "History and comments"),
       component: (
-        <HistoryAndComments
-          encounterUuid={encounterUuid}
-          mutatePrescriptionTableRows={mutatePrescriptionTableRows}
-        />
+        <HistoryAndComments encounterUuid={encounterUuid} mutate={mutate} />
       ),
     },
     /* {
@@ -84,7 +81,7 @@ const PrescriptionExpanded: React.FC<{
               t("dispensePrescription", "Dispense prescription"),
               <InitializeDispenseFormFromRequests
                 encounterUuid={encounterUuid}
-                mutatePrescriptionTableRows={mutatePrescriptionTableRows}
+                mutate={mutate}
               />
             )
           }

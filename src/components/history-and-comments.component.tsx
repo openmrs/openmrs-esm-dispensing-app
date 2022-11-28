@@ -16,11 +16,17 @@ import { MedicationDispense } from "../types";
 
 const HistoryAndComments: React.FC<{
   encounterUuid: string;
-  mutatePrescriptionTableRows: Function;
-}> = ({ encounterUuid, mutatePrescriptionTableRows }) => {
+  mutate: Function;
+}> = ({ encounterUuid, mutate }) => {
   const { t } = useTranslation();
-  const { requests, dispenses, mutate, prescriptionDate, isError, isLoading } =
-    usePrescriptionDetails(encounterUuid);
+  const {
+    requests,
+    dispenses,
+    mutate: mutatePrescriptionDetails,
+    prescriptionDate,
+    isError,
+    isLoading,
+  } = usePrescriptionDetails(encounterUuid);
 
   const generateMedicationDispenseActionMenu: Function = (
     medicationDispense: MedicationDispense
@@ -37,8 +43,10 @@ const HistoryAndComments: React.FC<{
             <DispenseForm
               medicationDispenses={[medicationDispense]}
               mode="edit"
-              mutatePrescriptionDetails={mutate}
-              mutatePrescriptionTableRows={mutatePrescriptionTableRows}
+              mutate={() => {
+                mutate();
+                mutatePrescriptionDetails();
+              }}
               isLoading={false}
             />
           )
@@ -49,7 +57,7 @@ const HistoryAndComments: React.FC<{
         onClick={() => {
           deleteMedicationDispense(medicationDispense.id);
           mutate();
-          mutatePrescriptionTableRows();
+          mutatePrescriptionDetails();
         }}
         itemText={t("delete", "Delete")}
       ></OverflowMenuItem>

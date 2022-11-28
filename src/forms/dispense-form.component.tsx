@@ -17,16 +17,14 @@ import MedicationDispenseReview from "../components/medication-dispense-review.c
 
 interface DispenseFormProps {
   medicationDispenses: Array<MedicationDispense>;
-  mutatePrescriptionDetails: Function;
-  mutatePrescriptionTableRows: Function;
+  mutate: Function;
   isLoading: Boolean;
   mode: string;
 }
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
   medicationDispenses,
-  mutatePrescriptionDetails,
-  mutatePrescriptionTableRows,
+  mutate,
   isLoading,
   mode,
 }) => {
@@ -64,8 +62,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           ({ status }) => {
             if (status === 201 || status === 200) {
               closeOverlay();
-              mutatePrescriptionDetails(); // update prescription details
-              mutatePrescriptionTableRows(); // update the entire table
+              mutate();
               showToast({
                 critical: true,
                 kind: "success",
