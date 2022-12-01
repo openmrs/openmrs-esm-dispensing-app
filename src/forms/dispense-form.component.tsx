@@ -195,7 +195,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
       {isLoading && <DataTableSkeleton role="progressbar" />}
       <div className={styles.formWrapper}>
         <section className={styles.formGroup}>
-          <span style={{ marginTop: "1rem" }}>1. {t("drug", "Drug")}</span>
+          {/* <span style={{ marginTop: "1rem" }}>1. {t("drug", "Drug")}</span>*/}
           <FormLabel>
             {t(
               "drugHelpText",
