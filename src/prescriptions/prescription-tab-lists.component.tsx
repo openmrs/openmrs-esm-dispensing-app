@@ -176,7 +176,7 @@ const PrescriptionTabLists: React.FC = () => {
                                       patientUuid={
                                         encounterToPatientMap[row.id]
                                       }
-                                      mutatePrescriptionTableRows={mutate}
+                                      mutate={mutate}
                                     />
                                   </TableExpandedRow>
                                 </React.Fragment>

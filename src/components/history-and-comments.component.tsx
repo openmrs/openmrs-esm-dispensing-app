@@ -10,17 +10,26 @@ import styles from "./history-and-comments.scss";
 import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
 import { deleteMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationEventCard from "./medication-event-card.component";
+import { launchOverlay } from "../hooks/useOverlay";
+import DispenseForm from "../forms/dispense-form.component";
+import { MedicationDispense } from "../types";
 
 const HistoryAndComments: React.FC<{
   encounterUuid: string;
-  mutatePrescriptionTableRows: Function;
-}> = ({ encounterUuid, mutatePrescriptionTableRows }) => {
+  mutate: Function;
+}> = ({ encounterUuid, mutate }) => {
   const { t } = useTranslation();
-  const { requests, dispenses, mutate, prescriptionDate, isError, isLoading } =
-    usePrescriptionDetails(encounterUuid);
+  const {
+    requests,
+    dispenses,
+    mutate: mutatePrescriptionDetails,
+    prescriptionDate,
+    isError,
+    isLoading,
+  } = usePrescriptionDetails(encounterUuid);
 
   const generateMedicationDispenseActionMenu: Function = (
-    medicationDispenseUuid: string
+    medicationDispense: MedicationDispense
   ) => (
     <OverflowMenu
       ariaLabel="Medication Dispense Action Menu"
@@ -28,10 +37,27 @@ const HistoryAndComments: React.FC<{
       className={styles.medicationEventActionMenu}
     >
       <OverflowMenuItem
+        onClick={() =>
+          launchOverlay(
+            t("editDispenseRecord", "Edit Dispense Record"),
+            <DispenseForm
+              medicationDispenses={[medicationDispense]}
+              mode="edit"
+              mutate={() => {
+                mutate();
+                mutatePrescriptionDetails();
+              }}
+              isLoading={false}
+            />
+          )
+        }
+        itemText={t("editRecord", "Edit Record")}
+      ></OverflowMenuItem>
+      <OverflowMenuItem
         onClick={() => {
-          deleteMedicationDispense(medicationDispenseUuid);
+          deleteMedicationDispense(medicationDispense.id);
           mutate();
-          mutatePrescriptionTableRows();
+          mutatePrescriptionDetails();
         }}
         itemText={t("delete", "Delete")}
       ></OverflowMenuItem>
@@ -60,7 +86,7 @@ const HistoryAndComments: React.FC<{
               </h5>
               <MedicationEventCard
                 medication={dispense}
-                actionMenu={generateMedicationDispenseActionMenu(dispense.id)}
+                actionMenu={generateMedicationDispenseActionMenu(dispense)}
               />
             </div>
           );
