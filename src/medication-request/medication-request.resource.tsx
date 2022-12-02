@@ -17,10 +17,16 @@ import {
 export function usePrescriptionsTable(
   pageSize: number = 10,
   pageOffset: number = 0,
-  patientSearchTerm: string = ""
+  patientSearchTerm: string = "",
+  status: string = ""
 ) {
   const { data, mutate, error } = useSWR<{ data: EncounterResponse }, Error>(
-    getPrescriptionTableEndpoint(pageOffset, pageSize, patientSearchTerm),
+    getPrescriptionTableEndpoint(
+      pageOffset,
+      pageSize,
+      patientSearchTerm,
+      status
+    ),
     openmrsFetch
   );
 
@@ -116,10 +122,14 @@ function buildPrescriptionsTableRow(
 
 function computeStatus(orderStatuses: Array<string>) {
   if (orderStatuses.includes("active")) {
-    // if any if active, return active
+    // if any are active, return active
     return "active";
-  } else if (orderStatuses.includes("cancelled")) {
-    // if none are active, then if any are cancelled, return cancelled
+  } else if (orderStatuses.includes("stopped")) {
+    // if none are active, and any are stopped, return expired
+    return "expired";
+  }
+  if (orderStatuses.includes("cancelled")) {
+    // if none are active or stopped, then if any are cancelled, return cancelled
     return "cancelled";
   } else {
     // otherwise unknown
