@@ -87,7 +87,8 @@ export function getPrescriptionDetailsEndpoint(encounterUuid: string) {
 export function getPrescriptionTableEndpoint(
   pageOffset: number,
   pageSize: number,
-  patientSearchTerm: string
+  patientSearchTerm: string,
+  status: string
 ) {
-  return `${fhirBaseUrl}/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_revinclude:iterate=MedicationDispense:prescription&_has:MedicationRequest:encounter:intent=order&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
+  return `${fhirBaseUrl}/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_revinclude:iterate=MedicationDispense:prescription&_has:MedicationRequest:encounter:status=${status}&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
 }

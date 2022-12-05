@@ -1,8 +1,10 @@
 {
   "active": "Active",
+  "activePrescriptions": "Active prescriptions",
   "addItem": "Add item",
   "addNoteText": "Add a note to the prescription history",
   "allergies": "Allergies",
+  "allPrescriptions": "All prescriptions",
   "appName": "Pharmacy",
   "billing": "Billing",
   "cancel": "Cancel",
@@ -20,6 +22,7 @@
   "drugHelpText": "You may edit the formulation and quantity dispensed here",
   "editDispenseRecord": "Edit Dispense Record",
   "editRecord": "Edit Record",
+  "expired": "Expired",
   "fillPrescription": "Fill prescription",
   "frequency": "Frequency",
   "historyComments": "History and comments",
