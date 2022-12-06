@@ -52,7 +52,7 @@ export function getQuantity(
   resource: MedicationRequest | MedicationDispense
 ): Quantity {
   if (resource.resourceType == "MedicationRequest") {
-    return (resource as MedicationRequest).dispenseRequest.quantity;
+    return (resource as MedicationRequest).dispenseRequest?.quantity;
   }
   if (resource.resourceType == "MedicationDispense") {
     return (resource as MedicationDispense).quantity;
