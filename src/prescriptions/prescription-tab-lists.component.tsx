@@ -12,15 +12,23 @@ enum TabTypes {
   ALL,
 }
 
-const tabs = [
-  { label: "activePrescriptions", status: "ACTIVE" },
-  { label: "allPrescriptions", status: "" },
-];
-
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState(TabTypes.STARRED);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const tabs = [
+    {
+      key: "activePrescriptions",
+      header: t("activePrescriptions", "Active Prescriptions"),
+      status: "ACTIVE",
+    },
+    {
+      key: "allPrescriptions",
+      header: t("allPrescriptions", "All Prescriptions"),
+      status: "",
+    },
+  ];
 
   return (
     <main className={`omrs-main-content ${styles.prescriptionListContainer}`}>
@@ -39,12 +47,12 @@ const PrescriptionTabLists: React.FC = () => {
             {tabs.map((tab, index) => {
               return (
                 <Tab
-                  title={t(tab.label)}
+                  title={t(tab.key)}
                   key={index}
                   id={"tab-" + index}
                   className={styles.tab}
                 >
-                  {t(tab.label)}
+                  {t(tab.header)}
                 </Tab>
               );
             })}

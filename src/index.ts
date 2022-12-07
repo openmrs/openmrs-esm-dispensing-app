@@ -43,6 +43,16 @@ function setupOpenMRS() {
         online: true,
         offline: false,
       },
+      {
+        name: "dispensing-dashboard",
+        slot: "dispensing-dashboard-slot",
+        load: getAsyncLifecycle(
+          () => import("./dashboard/dispensing-dashboard.component"),
+          options
+        ),
+        online: true,
+        offline: true,
+      },
     ],
   };
 }
