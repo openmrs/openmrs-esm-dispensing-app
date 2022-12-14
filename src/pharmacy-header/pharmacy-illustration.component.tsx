@@ -16,14 +16,14 @@ const PharmacyIllustration: React.FC = () => {
         <g opacity=".193" transform="matrix(-1 0 0 1 62 26.571)">
           <path
             d="M62 0c0 16.85-13.916 30.508-31.037 30.508S0 16.849 0 0h62z"
-            fill="#007D79"
+            fill="var(--brand-03)"
             mask="url(#rt0c8mo6eb)"
           />
         </g>
         <g opacity=".396" transform="matrix(-1 0 0 1 60.032 0)">
           <path
             d="m24.603 26.571-13.35-23.51C9.592.141 5.884-.869 3.011.817.138 2.503-.855 6.272.804 9.193l9.874 17.378"
-            fill="#007D79"
+            fill="var(--brand-03)"
             mask="url(#hgianthqwd)"
           />
         </g>
