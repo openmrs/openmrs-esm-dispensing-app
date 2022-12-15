@@ -67,13 +67,6 @@ const PrescriptionExpanded: React.FC<{
       </div>
       <div className={styles.prescriptionActions}>
         <Button
-          kind="ghost"
-          renderIcon={() => <TrashCan />}
-          className={styles.deletePrescriptionBtn}
-        >
-          {t("deletePrescription", "Delete prescription")}
-        </Button>
-        <Button
           kind="primary"
           className={styles.dispenseBtn}
           onClick={() =>
