@@ -165,11 +165,16 @@ export function usePrescriptionDetails(encounterUuid: string) {
     dispenses = results
       ?.filter((entry) => entry?.resource?.resourceType == "MedicationDispense")
       .map((entry) => entry.resource as MedicationDispense)
-      .sort(
-        (a, b) =>
+      .sort((a, b) => {
+        const dateDiff =
           parseDate(b.whenHandedOver).getTime() -
-          parseDate(a.whenHandedOver).getTime()
-      );
+          parseDate(a.whenHandedOver).getTime();
+        if (dateDiff !== 0) {
+          return dateDiff;
+        } else {
+          a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
+        }
+      });
   }
 
   isLoading = !requests && !error;

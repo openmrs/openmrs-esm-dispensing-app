@@ -86,7 +86,12 @@ export function initiateMedicationDispenseBody(
           },
         ],
       },
-      quantity: medicationRequest.dispenseRequest.quantity,
+      quantity: {
+        value: medicationRequest.dispenseRequest?.quantity?.value,
+        code: medicationRequest.dispenseRequest?.quantity?.code,
+        unit: medicationRequest.dispenseRequest?.quantity?.unit,
+        system: medicationRequest.dispenseRequest?.quantity?.system,
+      },
       whenPrepared: dayjs(),
       whenHandedOver: dayjs(),
       dosageInstruction: [

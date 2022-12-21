@@ -1,7 +1,7 @@
 import React from "react";
 import { CommonConfigProps, MedicationDispense } from "../types";
 import MedicationCard from "./medication-card.component";
-import { TextArea, Column, ComboBox, Grid, NumberInput } from "@carbon/react";
+import { TextArea, ComboBox, NumberInput } from "@carbon/react";
 import { useLayoutType } from "@openmrs/esm-framework";
 import { useTranslation } from "react-i18next";
 import { getMedication } from "../utils";
@@ -47,9 +47,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               {
                 ...medicationDispense,
                 quantity: {
+                  ...medicationDispense.quantity,
                   value: e.target.value,
-                  unit: medicationDispense.quantity.unit,
-                  code: medicationDispense.quantity.code,
                 },
               },
               index
@@ -71,6 +70,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             updateMedicationDispense(
               {
                 ...medicationDispense,
+                // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
                 quantity: {
                   value: medicationDispense.quantity.value,
                   code: selectedItem?.id,
@@ -108,11 +108,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                         ...medicationDispense.dosageInstruction[0]
                           .doseAndRate[0],
                         doseQuantity: {
+                          ...medicationDispense.dosageInstruction[0]
+                            .doseAndRate[0].doseQuantity,
                           value: e.target.value,
-                          unit: medicationDispense.dosageInstruction[0]
-                            .doseAndRate[0].doseQuantity.unit,
-                          code: medicationDispense.dosageInstruction[0]
-                            .doseAndRate[0].doseQuantity.code,
                         },
                       },
                     ],
@@ -150,6 +148,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                     doseAndRate: [
                       {
                         doseQuantity: {
+                          // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
                           value:
                             medicationDispense.dosageInstruction[0]
                               .doseAndRate[0].doseQuantity?.value,
