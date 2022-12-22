@@ -172,7 +172,7 @@ export function usePrescriptionDetails(encounterUuid: string) {
         if (dateDiff !== 0) {
           return dateDiff;
         } else {
-          a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
+          return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
         }
       });
   }
