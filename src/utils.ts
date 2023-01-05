@@ -100,11 +100,19 @@ export function getMedicationsByConceptEndpoint(conceptUuid: string) {
   return `${fhirBaseUrl}/Medication?code=${conceptUuid}`;
 }
 
+/**
+ * Given an array of CodeableConcept condings, return the first one without an associated system (which should be the uuid of the underyling concept)
+ * @param codings
+ */
 export function getConceptUuidCoding(codings: Coding[]) {
   // the concept uuid code is always the one without a system
   return codings ? codings.find((c) => !("system" in c))?.code : null;
 }
 
+/**
+ * Given a FHIR Medication, returns the string value stored in the "http://fhir.openmrs.org/ext/medicine#drugName" extension
+ * @param medication
+ */
 export function getOpenMRSMedicineDrugName(medication: Medication) {
   if (!medication || !medication.extension) {
     return null;
