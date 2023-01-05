@@ -5,6 +5,7 @@
 .medicationDispenseReviewContainer {
   display: flex;
   flex-direction: column;
+  padding-bottom: 10px;
 
   :global(.cds--css-grid) {
     padding-left:0 !important;

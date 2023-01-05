@@ -1,27 +1,23 @@
 import React from "react";
 import { Tile } from "@carbon/react";
-import { Medication } from "../types";
+import { Edit } from "@carbon/react/icons";
+import { MedicationReferenceOrCodeableConcept } from "../types";
 import styles from "./medication-card.scss";
-import { useTranslation } from "react-i18next";
-
-// TODO this will probably need a fair amount of updates to allow editing
 
 const MedicationCard: React.FC<{
-  medication: Medication;
-}> = ({ medication }) => {
-  const { t } = useTranslation();
-
+  medication: MedicationReferenceOrCodeableConcept;
+  editAction?: Function;
+}> = ({ medication, editAction }) => {
   return (
     <Tile className={styles.medicationTile}>
-      <div>
-        <p className={styles.medicationName}>
-          <strong>
-            {medication.medicationReference
-              ? medication.medicationReference.display
-              : medication?.medicationCodeableConcept.text}
-          </strong>
-        </p>
-      </div>
+      <p className={styles.medicationName}>
+        <strong>
+          {medication.medicationReference
+            ? medication.medicationReference.display
+            : medication?.medicationCodeableConcept.text}
+        </strong>
+      </p>
+      {editAction && <Edit onClick={editAction} />}
     </Tile>
   );
 };
