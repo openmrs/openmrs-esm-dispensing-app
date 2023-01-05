@@ -105,7 +105,6 @@ export function getMedicationsByConceptEndpoint(conceptUuid: string) {
  * @param codings
  */
 export function getConceptUuidCoding(codings: Coding[]) {
-  // the concept uuid code is always the one without a system
   return codings ? codings.find((c) => !("system" in c))?.code : null;
 }
 
