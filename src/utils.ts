@@ -1,11 +1,14 @@
 import {
   DosageInstruction,
-  Medication,
+  MedicationReferenceOrCodeableConcept,
   MedicationDispense,
   MedicationRequest,
   Quantity,
+  Coding,
+  Medication,
 } from "./types";
 import { fhirBaseUrl } from "@openmrs/esm-framework";
+import { OPENMRS_FHIR_EXT_MEDICINE } from "./constants";
 
 /* TODO: confirm we can remove, not used but looks like it might do wrong thing anyway
 export function getDosage(strength: string, doseNumber: number) {
@@ -66,14 +69,14 @@ export function getRefillsAllowed(
     return (resource as MedicationRequest).dispenseRequest
       ?.numberOfRepeatsAllowed;
   } else {
-    return null; // dispense doesn'r haee a "refills allowed" component
+    return null; // dispense doesn't haee a "refills allowed" component
   }
 }
 
 // TODO does this need to null-check
-export function getMedication(
+export function getMedicationReferenceOrCodeableConcept(
   resource: MedicationRequest | MedicationDispense
-): Medication {
+): MedicationReferenceOrCodeableConcept {
   return {
     medicationReference: resource.medicationReference,
     medicationCodeableConcept: resource.medicationCodeableConcept,
@@ -91,4 +94,42 @@ export function getPrescriptionTableEndpoint(
   status: string
 ) {
   return `${fhirBaseUrl}/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_revinclude:iterate=MedicationDispense:prescription&_has:MedicationRequest:encounter:status=${status}&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
+}
+
+export function getMedicationsByConceptEndpoint(conceptUuid: string) {
+  return `${fhirBaseUrl}/Medication?code=${conceptUuid}`;
+}
+
+/**
+ * Given an array of CodeableConcept condings, return the first one without an associated system (which should be the uuid of the underyling concept)
+ * @param codings
+ */
+export function getConceptUuidCoding(codings: Coding[]) {
+  return codings ? codings.find((c) => !("system" in c))?.code : null;
+}
+
+/**
+ * Given a FHIR Medication, returns the string value stored in the "http://fhir.openmrs.org/ext/medicine#drugName" extension
+ * @param medication
+ */
+export function getOpenMRSMedicineDrugName(medication: Medication) {
+  if (!medication || !medication.extension) {
+    return null;
+  }
+
+  const medicineExtension = medication.extension.find(
+    (ext) => ext.url === OPENMRS_FHIR_EXT_MEDICINE
+  );
+
+  if (!medicineExtension || !medicineExtension.extension) {
+    return null;
+  }
+
+  const medicationExtensionDrugName = medicineExtension.extension.find(
+    (ext) => ext.url === OPENMRS_FHIR_EXT_MEDICINE + "#drugName"
+  );
+
+  return medicationExtensionDrugName
+    ? medicationExtensionDrugName.valueString
+    : null;
 }

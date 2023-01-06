@@ -101,11 +101,6 @@ export interface Coding {
   code: string;
   display: string;
 }
-
-export interface CodingArray {
-  [index: number]: Coding;
-}
-
 export interface CommonConfigProps {
   uuid: string;
   display: string;
@@ -181,15 +176,27 @@ export interface EncounterResponse {
 }
 
 export interface Medication {
-  medicationReference: {
-    reference: string;
-    type: string;
-    display: string;
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
   };
-  medicationCodeableConcept?: {
-    coding: CodingArray;
+  extension: [
+    {
+      url: string;
+      extension: [
+        {
+          url: string;
+          valueString: string;
+        }
+      ];
+    }
+  ];
+  code: {
+    coding: Coding[];
     text: string;
   };
+  status: string;
 }
 
 export interface MedicationDispense {
@@ -212,7 +219,7 @@ export interface MedicationDispense {
     display: string;
   };
   medicationCodeableConcept?: {
-    coding: CodingArray;
+    coding: Coding[];
     text: string;
   };
   subject: {
@@ -253,6 +260,19 @@ export interface MedicationDispense {
   };
 }
 
+export interface MedicationFormulationsResponse {
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
+  };
+  type: string;
+  total: number;
+  entry: Array<{
+    resource: Medication;
+  }>;
+}
+
 export interface MedicationRequest {
   resourceType: string;
   id: string;
@@ -268,7 +288,7 @@ export interface MedicationRequest {
     display: string;
   };
   medicationCodeableConcept?: {
-    coding: CodingArray;
+    coding: Coding[];
     text: string;
   };
   subject: {
@@ -306,6 +326,18 @@ export interface MedicationRequestResponse {
   entry: Array<{
     resource: MedicationRequest | MedicationDispense;
   }>;
+}
+
+export interface MedicationReferenceOrCodeableConcept {
+  medicationReference: {
+    reference: string;
+    type: string;
+    display: string;
+  };
+  medicationCodeableConcept?: {
+    coding: Coding[];
+    text: string;
+  };
 }
 
 export interface OrderConfig {

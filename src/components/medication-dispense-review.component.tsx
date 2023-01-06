@@ -1,11 +1,19 @@
-import React from "react";
-import { CommonConfigProps, MedicationDispense } from "../types";
+import React, { useState } from "react";
+import { CommonConfigProps, Medication, MedicationDispense } from "../types";
 import MedicationCard from "./medication-card.component";
-import { TextArea, ComboBox, NumberInput } from "@carbon/react";
+import { TextArea, ComboBox, Dropdown, NumberInput } from "@carbon/react";
 import { useLayoutType } from "@openmrs/esm-framework";
 import { useTranslation } from "react-i18next";
-import { getMedication } from "../utils";
+import {
+  getConceptUuidCoding,
+  getMedicationReferenceOrCodeableConcept,
+  getOpenMRSMedicineDrugName,
+} from "../utils";
 import styles from "./medication-dispense-review.scss";
+import {
+  useMedicationCodeableConcept,
+  useMedicationFormulations,
+} from "../medication/medication.resource";
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
@@ -27,12 +35,69 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   orderFrequencies,
 }) => {
   const { t } = useTranslation();
+  const [isEditingFormulation, setIsEditingFormulation] = useState(false);
   const isTablet = useLayoutType() === "tablet";
+
+  // if this an order for a drug by concept, but not a particular formulation, we already have access to concept uuid
+  const existingMedicationCodeableConceptUuid = getConceptUuidCoding(
+    getMedicationReferenceOrCodeableConcept(medicationDispense)
+      ?.medicationCodeableConcept?.coding
+  );
+  // otherwise we need to fetch the medication details to get the codeable concept
+  // (note that React Hooks should not be called conditionally, so we *always* call this hook, but it will return null if existingMedicationCodeableConcept is defined
+  const { medicationCodeableConceptUuid } = useMedicationCodeableConcept(
+    existingMedicationCodeableConceptUuid,
+    getMedicationReferenceOrCodeableConcept(medicationDispense)
+      .medicationReference?.reference
+  );
+  // get the formulations
+  const { medicationFormulations } = useMedicationFormulations(
+    existingMedicationCodeableConceptUuid
+      ? existingMedicationCodeableConceptUuid
+      : medicationCodeableConceptUuid
+      ? medicationCodeableConceptUuid
+      : null
+  );
 
   return (
     <div className={styles.medicationDispenseReviewContainer}>
-      <MedicationCard medication={getMedication(medicationDispense)} />
-
+      {!isEditingFormulation ? (
+        <MedicationCard
+          medication={getMedicationReferenceOrCodeableConcept(
+            medicationDispense
+          )}
+          editAction={() => setIsEditingFormulation(true)}
+        />
+      ) : (
+        <Dropdown
+          id="medicationFormulation"
+          light={isTablet}
+          items={medicationFormulations}
+          itemToString={(item: Medication) => getOpenMRSMedicineDrugName(item)}
+          initialSelectedItem={{
+            ...medicationFormulations?.find(
+              (formulation) =>
+                formulation.id ===
+                medicationDispense.medicationReference?.reference.split("/")[1]
+            ),
+          }}
+          onChange={({ selectedItem }) => {
+            updateMedicationDispense(
+              {
+                ...medicationDispense,
+                medicationCodeableConcept: undefined,
+                medicationReference: {
+                  reference: "Medication/" + selectedItem?.id,
+                  display: getOpenMRSMedicineDrugName(selectedItem),
+                },
+              },
+              index
+            );
+            setIsEditingFormulation(false);
+          }}
+          required
+        />
+      )}
       <div className={styles.dispenseDetailsContainer}>
         <NumberInput
           allowEmpty={false}
