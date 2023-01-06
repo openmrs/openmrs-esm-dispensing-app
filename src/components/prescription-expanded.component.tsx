@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import HistoryAndComments from "./history-and-comments.component";
 import styles from "./prescription-expanded.scss";
 import PrescriptionDetails from "./prescription-details.component";
-import { TrashCan } from "@carbon/react/icons";
 import InitializeDispenseFormFromRequests from "../forms/initialize-dispense-form-from-requests.component";
 import { launchOverlay } from "../hooks/useOverlay";
 
