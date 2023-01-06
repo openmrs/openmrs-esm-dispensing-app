@@ -114,6 +114,11 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
                               encounterUuid={row.id}
                               patientUuid={encounterToPatientMap[row.id]}
                               mutate={mutate}
+                              status={
+                                row.cells.find((cell) =>
+                                  cell.id.endsWith("status")
+                                ).value
+                              }
                             />
                           </TableExpandedRow>
                         </React.Fragment>
