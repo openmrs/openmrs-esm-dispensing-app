@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import HistoryAndComments from "./history-and-comments.component";
 import styles from "./prescription-expanded.scss";
 import PrescriptionDetails from "./prescription-details.component";
-import { TrashCan } from "@carbon/react/icons";
 import InitializeDispenseFormFromRequests from "../forms/initialize-dispense-form-from-requests.component";
 import { launchOverlay } from "../hooks/useOverlay";
 
@@ -18,7 +17,8 @@ const PrescriptionExpanded: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
   mutate: Function;
-}> = ({ encounterUuid, patientUuid, mutate }) => {
+  status: string;
+}> = ({ encounterUuid, patientUuid, mutate, status }) => {
   const { t } = useTranslation();
 
   const tabs: TabItem[] = [
@@ -65,26 +65,28 @@ const PrescriptionExpanded: React.FC<{
           </TabPanels>
         </Tabs>
       </div>
-      <div className={styles.prescriptionActions}>
-        <Button
-          kind="primary"
-          className={styles.dispenseBtn}
-          onClick={() =>
-            launchOverlay(
-              t("dispensePrescription", "Dispense prescription"),
-              <InitializeDispenseFormFromRequests
-                encounterUuid={encounterUuid}
-                mutate={mutate}
-              />
-            )
-          }
-        >
-          {t("dispense", "Dispense")}
-        </Button>
-        <Button kind="secondary" className={styles.returnToPrescriberBtn}>
-          {t("sendBackToPrescriber", "Send back to prescriber")}
-        </Button>
-      </div>
+      {status === "active" && (
+        <div className={styles.prescriptionActions}>
+          <Button
+            kind="primary"
+            className={styles.dispenseBtn}
+            onClick={() =>
+              launchOverlay(
+                t("dispensePrescription", "Dispense prescription"),
+                <InitializeDispenseFormFromRequests
+                  encounterUuid={encounterUuid}
+                  mutate={mutate}
+                />
+              )
+            }
+          >
+            {t("dispense", "Dispense")}
+          </Button>
+          <Button kind="secondary" className={styles.returnToPrescriberBtn}>
+            {t("sendBackToPrescriber", "Send back to prescriber")}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

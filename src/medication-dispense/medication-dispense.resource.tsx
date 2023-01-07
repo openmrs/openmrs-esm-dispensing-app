@@ -52,63 +52,65 @@ export function initiateMedicationDispenseBody(
   session: Session
 ) {
   let dispenseBody = [];
-  medicationRequests.map((medicationRequest) => {
-    let dispense = {
-      resourceType: "MedicationDispense",
-      status: "completed", // might need to change this to appropriate status
-      authorizingPrescription: [
-        {
-          reference: "MedicationRequest/" + medicationRequest.id,
-          type: "MedicationRequest",
-        },
-      ],
-      medicationReference: medicationRequest.medicationReference,
-      medicationCodeableConcept: medicationRequest.medicationCodeableConcept,
-      subject: medicationRequest.subject,
-      performer: [
-        {
-          actor: {
-            reference: session?.currentProvider
-              ? `Practitioner/${session.currentProvider.uuid}`
-              : "",
-          },
-        },
-      ],
-      location: {
-        reference: session?.sessionLocation
-          ? `Location/${session.sessionLocation.uuid}`
-          : "",
-      },
-      type: {
-        coding: [
+  medicationRequests
+    .filter((medicationRequest) => medicationRequest.status === "active")
+    .map((medicationRequest) => {
+      let dispense = {
+        resourceType: "MedicationDispense",
+        status: "completed", // might need to change this to appropriate status
+        authorizingPrescription: [
           {
-            code: "04affd1a-49ab-44e5-a6d1-c0a3fffceb7d", // what is this?
+            reference: "MedicationRequest/" + medicationRequest.id,
+            type: "MedicationRequest",
           },
         ],
-      },
-      quantity: {
-        value: medicationRequest.dispenseRequest?.quantity?.value,
-        code: medicationRequest.dispenseRequest?.quantity?.code,
-        unit: medicationRequest.dispenseRequest?.quantity?.unit,
-        system: medicationRequest.dispenseRequest?.quantity?.system,
-      },
-      whenPrepared: dayjs(),
-      whenHandedOver: dayjs(),
-      dosageInstruction: [
-        {
-          text: medicationRequest.dosageInstruction[0].text,
-          timing: medicationRequest.dosageInstruction[0].timing,
-          asNeededBoolean: false,
-          route: medicationRequest.dosageInstruction[0].route,
-          doseAndRate: medicationRequest.dosageInstruction[0].doseAndRate,
+        medicationReference: medicationRequest.medicationReference,
+        medicationCodeableConcept: medicationRequest.medicationCodeableConcept,
+        subject: medicationRequest.subject,
+        performer: [
+          {
+            actor: {
+              reference: session?.currentProvider
+                ? `Practitioner/${session.currentProvider.uuid}`
+                : "",
+            },
+          },
+        ],
+        location: {
+          reference: session?.sessionLocation
+            ? `Location/${session.sessionLocation.uuid}`
+            : "",
         },
-      ],
-      substitution: {
-        wasSubstituted: false,
-      },
-    };
-    dispenseBody.push(dispense);
-  });
+        type: {
+          coding: [
+            {
+              code: "04affd1a-49ab-44e5-a6d1-c0a3fffceb7d", // what is this?
+            },
+          ],
+        },
+        quantity: {
+          value: medicationRequest.dispenseRequest?.quantity?.value,
+          code: medicationRequest.dispenseRequest?.quantity?.code,
+          unit: medicationRequest.dispenseRequest?.quantity?.unit,
+          system: medicationRequest.dispenseRequest?.quantity?.system,
+        },
+        whenPrepared: dayjs(),
+        whenHandedOver: dayjs(),
+        dosageInstruction: [
+          {
+            text: medicationRequest.dosageInstruction[0].text,
+            timing: medicationRequest.dosageInstruction[0].timing,
+            asNeededBoolean: false,
+            route: medicationRequest.dosageInstruction[0].route,
+            doseAndRate: medicationRequest.dosageInstruction[0].doseAndRate,
+          },
+        ],
+        substitution: {
+          wasSubstituted: false,
+        },
+      };
+      dispenseBody.push(dispense);
+    });
 
   return dispenseBody;
 }
