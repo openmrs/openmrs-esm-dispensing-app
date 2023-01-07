@@ -1,4 +1,4 @@
-import { Type, validator } from "@openmrs/esm-framework";
+import { Type } from "@openmrs/esm-framework";
 
 /**
  * This is the config schema. It expects a configuration object which

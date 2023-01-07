@@ -1,19 +1,14 @@
 import React, { useEffect } from "react";
 import {
   attach,
-  ConfigurableLink,
   detach,
   ExtensionSlot,
-  formatDate,
-  interpolateString,
-  parseDate,
   PatientUuid,
   useConfig,
   usePatient,
 } from "@openmrs/esm-framework";
 import styles from "./patient-details.scss";
 import { useTranslation } from "react-i18next";
-import { Patient } from "../types";
 
 const PatientDetails: React.FC<{
   patientUuid: PatientUuid;

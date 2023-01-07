@@ -1,6 +1,7 @@
 {
   "extends": ["ts-react-important-stuff", "plugin:prettier/recommended"],
   "parser": "@typescript-eslint/parser",
+  "plugins": ["unused-imports"],
   "ignorePatterns": ["**/*.test.tsx"],
   "rules": {
     "no-restricted-imports": [
@@ -27,6 +28,7 @@
           }
         ]
       }
-    ]
+    ],
+    "unused-imports/no-unused-imports-ts": "error"
   }
 }
