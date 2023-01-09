@@ -103,8 +103,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           allowEmpty={false}
           hideSteppers={true}
           id="quantity"
-          invalidText="Number is not valid"
-          label="Quantity"
+          invalidText={t("numberIsNotValid", "Number is not valid")}
+          label={t("quantity", "Quantity")}
           min={0}
           value={medicationDispense.quantity.value}
           onChange={(e) => {
@@ -154,9 +154,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           hideSteppers={true}
           id="dosingQuanity"
           light={isTablet}
-          invalidText="Number is not valid"
+          invalidText={t("numberIsNotValid", "Number is not valid")}
           min={0}
-          label="Dose"
+          label={t("dose", "Dose")}
           value={
             medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity
               .value

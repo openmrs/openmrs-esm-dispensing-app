@@ -55,7 +55,7 @@ const PrescriptionDetails: React.FC<{
       </h5>
 
       {isLoading && <DataTableSkeleton role="progressbar" />}
-      {isError && <p>Error</p>}
+      {isError && <p>{t("error", "Error")}</p>}
       {requests &&
         requests.map((request) => {
           return <MedicationEventCard key={request.id} medication={request} />;

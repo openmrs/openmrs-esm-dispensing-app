@@ -40,7 +40,7 @@ const PrescriptionTabLists: React.FC = () => {
           onSelectionChange={setSelectedTab}
         >
           <TabList
-            aria-label="Tab List"
+            aria-label={t("tabList", "Tab List")}
             contained
             className={styles.tabsContainer}
           >
@@ -67,10 +67,10 @@ const PrescriptionTabLists: React.FC = () => {
               {t("fillPrescription", "Fill prescription")}
             </Button>
             <Search
-              closeButtonLabelText="Clear search input"
+              closeButtonLabelText={t("clearSearchInput", "Clear search input")}
               defaultValue={searchTerm}
-              placeholder={t("searchPrescription", "Search prescription")}
-              labelText="Search prescriptions"
+              placeholder={t("searchPrescriptions", "Search prescriptions")}
+              labelText={t("searchPrescriptions", "Search prescriptions")}
               onChange={(e) => {
                 e.preventDefault();
                 setSearchTerm(e.target.value);

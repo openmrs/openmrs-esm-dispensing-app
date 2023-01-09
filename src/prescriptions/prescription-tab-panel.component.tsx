@@ -24,15 +24,6 @@ import { usePrescriptionsTable } from "../medication-request/medication-request.
 import { PrescriptionsTableRow } from "../types";
 import styles from "./prescriptions.scss";
 
-const columns = [
-  { header: "Created", key: "created" },
-  { header: "Patient name", key: "patientName" },
-  { header: "Prescriber", key: "prescriber" },
-  { header: "Drugs", key: "drugs" },
-  { header: "Last dispenser", key: "lastDispenser" },
-  { header: "Status", key: "status" },
-];
-
 interface PrescriptionTabPanelProps {
   searchTerm: string;
   status: string;
@@ -49,6 +40,15 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   const { prescriptionsTableRows, mutate, isError, isLoading, totalOrders } =
     usePrescriptionsTable(pageSize, nextOffSet, searchTerm, status);
   const encounterToPatientMap = {};
+
+  const columns = [
+    { header: t("created", "Created"), key: "created" },
+    { header: t("patientName", "Patient name"), key: "patientName" },
+    { header: t("prescriber", "Prescriber"), key: "prescriber" },
+    { header: t("drugs", "Drugs"), key: "drugs" },
+    { header: t("lastDispenser", "Last dispenser"), key: "lastDispenser" },
+    { header: t("status", "Status"), key: "status" },
+  ];
 
   useEffect(() => {
     if (prescriptionsTableRows?.length > 0) {
