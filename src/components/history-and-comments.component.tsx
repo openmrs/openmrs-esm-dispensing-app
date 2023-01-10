@@ -32,7 +32,10 @@ const HistoryAndComments: React.FC<{
     medicationDispense: MedicationDispense
   ) => (
     <OverflowMenu
-      ariaLabel="Medication Dispense Action Menu"
+      ariaLabel={t(
+        "medicationDispenseActionMenu",
+        "Medication Dispense Action Menu"
+      )}
       flipped={true}
       className={styles.medicationEventActionMenu}
     >
@@ -68,7 +71,7 @@ const HistoryAndComments: React.FC<{
   return (
     <div className={styles.historyAndCommentsContainer}>
       {isLoading && <DataTableSkeleton role="progressbar" />}
-      {isError && <p>Error</p>}
+      {isError && <p>{t("error", "Error")}</p>}
       {dispenses &&
         dispenses.map((dispense) => {
           return (

@@ -4,10 +4,12 @@ import { ArrowLeft, Close } from "@carbon/react/icons";
 import { useLayoutType } from "@openmrs/esm-framework";
 import { closeOverlay, useOverlay } from "../../hooks/useOverlay";
 import styles from "./overlay.scss";
+import { useTranslation } from "react-i18next";
 
 const Overlay: React.FC = () => {
   const { header, component, isOverlayOpen } = useOverlay();
   const layout = useLayoutType();
+  const { t } = useTranslation();
   return (
     <>
       {isOverlayOpen && (
@@ -31,7 +33,7 @@ const Overlay: React.FC = () => {
           ) : (
             <Header
               onClick={() => closeOverlay()}
-              aria-label="Tablet overlay"
+              aria-label={t("tabletOverlay", "Tablet overlay")}
               className={styles.tabletOverlayHeader}
             >
               <Button hasIconOnly>
