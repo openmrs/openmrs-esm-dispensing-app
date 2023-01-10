@@ -101,11 +101,44 @@ export function getMedicationsByConceptEndpoint(conceptUuid: string) {
 }
 
 /**
- * Given an array of CodeableConcept condings, return the first one without an associated system (which should be the uuid of the underyling concept)
+ * Given an array of CodeableConcept codings, return the first one without an associated system (which should be the concept-referenced-by-uuid coding)
  * @param codings
  */
-export function getConceptUuidCoding(codings: Coding[]) {
-  return codings ? codings.find((c) => !("system" in c))?.code : null;
+export function getConceptCoding(codings: Coding[]) {
+  return codings ? codings.find((c) => !("system" in c)) : null;
+}
+
+/**
+ * Given an array of CodeableConcept codings, return the code for the first one without an associated system (which should be the concept-referenced-by-uuid coding)
+ * @param codings
+ */
+export function getConceptCodingUuid(codings: Coding[]) {
+  return getConceptCoding(codings)?.code;
+}
+
+/**
+ * Given an array of CodeableConcept codings, return the display for the first one without an associated system (which should be the concept-referenced-by-uuid coding)
+ * @param codings
+ */
+export function getConceptCodingDisplay(codings: Coding[]) {
+  return getConceptCoding(codings)?.display;
+}
+
+/**
+ * Given a medication reference/codeable concept, format for display
+ * When we have a medication reference (ie a coded Drug reference in the OpenMRS model) we simply use the display property associated with the medication reference
+ * When we do not have medication reference, we display the associated concept and the OpenMRS DrugOrder.drugNonCoded string (which is stored in the codeable concept text field)
+ *  (this may be slightly duplicative, but protects against the case when the provider only enters the formulation, not the drug, in the drugNonCoded field)
+ * @param medication
+ */
+export function getMedicationDisplay(
+  medication: MedicationReferenceOrCodeableConcept
+) {
+  return medication.medicationReference
+    ? medication.medicationReference.display
+    : getConceptCodingDisplay(medication?.medicationCodeableConcept.coding) +
+        ": " +
+        medication?.medicationCodeableConcept.text;
 }
 
 /**

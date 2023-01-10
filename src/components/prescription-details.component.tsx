@@ -58,7 +58,9 @@ const PrescriptionDetails: React.FC<{
       {isError && <p>{t("error", "Error")}</p>}
       {requests &&
         requests.map((request) => {
-          return <MedicationEventCard key={request.id} medication={request} />;
+          return (
+            <MedicationEventCard key={request.id} medicationEvent={request} />
+          );
         })}
     </div>
   );

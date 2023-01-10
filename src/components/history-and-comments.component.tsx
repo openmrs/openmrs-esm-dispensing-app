@@ -88,7 +88,7 @@ const HistoryAndComments: React.FC<{
                 {formatDatetime(parseDate(dispense.whenHandedOver))}
               </h5>
               <MedicationEventCard
-                medication={dispense}
+                medicationEvent={dispense}
                 actionMenu={generateMedicationDispenseActionMenu(dispense)}
               />
             </div>
@@ -109,7 +109,7 @@ const HistoryAndComments: React.FC<{
                 {t("orderedMedication ", "ordered medication")} -{" "}
                 {formatDatetime(prescriptionDate)}
               </h5>
-              <MedicationEventCard medication={request} />
+              <MedicationEventCard medicationEvent={request} />
             </div>
           );
         })}

@@ -5,7 +5,7 @@ import { TextArea, ComboBox, Dropdown, NumberInput } from "@carbon/react";
 import { useLayoutType } from "@openmrs/esm-framework";
 import { useTranslation } from "react-i18next";
 import {
-  getConceptUuidCoding,
+  getConceptCodingUuid,
   getMedicationReferenceOrCodeableConcept,
   getOpenMRSMedicineDrugName,
 } from "../utils";
@@ -39,7 +39,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const isTablet = useLayoutType() === "tablet";
 
   // if this an order for a drug by concept, but not a particular formulation, we already have access to concept uuid
-  const existingMedicationCodeableConceptUuid = getConceptUuidCoding(
+  const existingMedicationCodeableConceptUuid = getConceptCodingUuid(
     getMedicationReferenceOrCodeableConcept(medicationDispense)
       ?.medicationCodeableConcept?.coding
   );

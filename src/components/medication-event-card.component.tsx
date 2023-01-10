@@ -6,21 +6,27 @@ import {
   Quantity,
 } from "../types";
 import styles from "./medication-event-card.scss";
-import { getDosageInstruction, getQuantity, getRefillsAllowed } from "../utils";
+import {
+  getDosageInstruction,
+  getQuantity,
+  getRefillsAllowed,
+  getMedicationDisplay,
+  getMedicationReferenceOrCodeableConcept,
+} from "../utils";
 import { Tile, OverflowMenu } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 
 // can render MedicationRequest or MedicationDispense
 const MedicationEventCard: React.FC<{
-  medication: MedicationRequest | MedicationDispense;
+  medicationEvent: MedicationRequest | MedicationDispense;
   actionMenu?: OverflowMenu;
-}> = ({ medication, actionMenu = null }) => {
+}> = ({ medicationEvent, actionMenu = null }) => {
   const { t } = useTranslation();
   const dosageInstruction: DosageInstruction = getDosageInstruction(
-    medication.dosageInstruction
+    medicationEvent.dosageInstruction
   );
-  const quantity: Quantity = getQuantity(medication);
-  const refillsAllowed: number = getRefillsAllowed(medication);
+  const quantity: Quantity = getQuantity(medicationEvent);
+  const refillsAllowed: number = getRefillsAllowed(medicationEvent);
 
   return (
     <Tile className={styles.medicationEventTile}>
@@ -28,9 +34,9 @@ const MedicationEventCard: React.FC<{
       <div>
         <p className={styles.medicationName}>
           <strong>
-            {medication.medicationReference
-              ? medication.medicationReference.display
-              : medication?.medicationCodeableConcept.text}
+            {getMedicationDisplay(
+              getMedicationReferenceOrCodeableConcept(medicationEvent)
+            )}
           </strong>
         </p>
         <p className={styles.bodyLong01}>

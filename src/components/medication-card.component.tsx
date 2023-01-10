@@ -3,6 +3,7 @@ import { Tile } from "@carbon/react";
 import { Edit } from "@carbon/react/icons";
 import { MedicationReferenceOrCodeableConcept } from "../types";
 import styles from "./medication-card.scss";
+import { getMedicationDisplay } from "../utils";
 
 const MedicationCard: React.FC<{
   medication: MedicationReferenceOrCodeableConcept;
@@ -11,11 +12,7 @@ const MedicationCard: React.FC<{
   return (
     <Tile className={styles.medicationTile}>
       <p className={styles.medicationName}>
-        <strong>
-          {medication.medicationReference
-            ? medication.medicationReference.display
-            : medication?.medicationCodeableConcept.text}
-        </strong>
+        <strong>{getMedicationDisplay(medication)}</strong>
       </p>
       {editAction && <Edit onClick={editAction} />}
     </Tile>
