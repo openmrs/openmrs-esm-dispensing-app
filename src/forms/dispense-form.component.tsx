@@ -125,10 +125,10 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           return (
             request.quantity?.value &&
             request.quantity?.code &&
-            request.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity.value &&
-            request.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity.code &&
-            request.dosageInstruction[0]?.route.coding[0].code &&
-            request.dosageInstruction[0]?.timing.code.coding[0].code
+            request.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value &&
+            request.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
+            request.dosageInstruction[0]?.route?.coding[0].code &&
+            request.dosageInstruction[0]?.timing?.code.coding[0].code
           );
         })
       );
