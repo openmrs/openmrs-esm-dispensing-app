@@ -194,14 +194,10 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           titleText={t("doseUnit", "Dose unit")}
           itemToString={(item) => item?.text}
           initialSelectedItem={{
-            id: medicationDispense.dosageInstruction[0].doseAndRate
-              ? medicationDispense.dosageInstruction[0].doseAndRate[0]
-                  .doseQuantity?.code
-              : null,
-            text: medicationDispense.dosageInstruction[0].doseAndRate
-              ? medicationDispense.dosageInstruction[0].doseAndRate[0]
-                  .doseQuantity?.unit
-              : null,
+            id: medicationDispense.dosageInstruction[0].doseAndRate[0]
+              .doseQuantity?.code,
+            text: medicationDispense.dosageInstruction[0].doseAndRate[0]
+              .doseQuantity?.unit,
           }}
           onChange={({ selectedItem }) => {
             updateMedicationDispense(
@@ -269,9 +265,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         light={isTablet}
         items={orderFrequencies}
         initialSelectedItem={{
-          id: medicationDispense.dosageInstruction[0].timing.code?.coding[0]
+          id: medicationDispense.dosageInstruction[0].timing?.code?.coding[0]
             ?.code,
-          text: medicationDispense.dosageInstruction[0].timing.code?.text,
+          text: medicationDispense.dosageInstruction[0].timing?.code?.text,
         }}
         titleText={t("frequency", "Frequency")}
         itemToString={(item) => item?.text}

@@ -102,7 +102,17 @@ export function initiateMedicationDispenseBody(
             timing: medicationRequest.dosageInstruction[0].timing,
             asNeededBoolean: false,
             route: medicationRequest.dosageInstruction[0].route,
-            doseAndRate: medicationRequest.dosageInstruction[0].doseAndRate,
+            doseAndRate: medicationRequest.dosageInstruction[0].doseAndRate
+              ? medicationRequest.dosageInstruction[0].doseAndRate
+              : [
+                  {
+                    doseQuantity: {
+                      value: null,
+                      code: null,
+                      unit: null,
+                    },
+                  },
+                ],
           },
         ],
         substitution: {
