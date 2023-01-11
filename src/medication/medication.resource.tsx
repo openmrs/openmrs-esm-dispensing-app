@@ -2,7 +2,7 @@ import useSWR from "swr";
 import { Medication, MedicationFormulationsResponse } from "../types";
 import { fhirBaseUrl, openmrsFetch } from "@openmrs/esm-framework";
 import {
-  getConceptUuidCoding,
+  getConceptCodingUuid,
   getMedicationsByConceptEndpoint,
 } from "../utils";
 
@@ -26,7 +26,7 @@ export function useMedicationCodeableConcept(
 
   return {
     medicationCodeableConceptUuid: data
-      ? getConceptUuidCoding(data.data.code.coding)
+      ? getConceptCodingUuid(data.data.code.coding)
       : null,
   };
 }

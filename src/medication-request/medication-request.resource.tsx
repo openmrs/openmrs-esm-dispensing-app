@@ -12,6 +12,8 @@ import {
 import {
   getPrescriptionTableEndpoint,
   getPrescriptionDetailsEndpoint,
+  getMedicationDisplay,
+  getMedicationReferenceOrCodeableConcept,
 } from "../utils";
 
 export function usePrescriptionsTable(
@@ -98,10 +100,10 @@ function buildPrescriptionsTableRow(
     drugs: [
       ...new Set(
         medicationRequests
-          .map((o) =>
-            o.medicationReference
-              ? o.medicationReference.display
-              : o.medicationCodeableConcept?.text
+          .map((medicationRequest) =>
+            getMedicationDisplay(
+              getMedicationReferenceOrCodeableConcept(medicationRequest)
+            )
           )
           .sort((a, b) => {
             return a.localeCompare(b);
