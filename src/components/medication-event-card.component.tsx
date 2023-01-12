@@ -15,6 +15,7 @@ import {
 } from "../utils";
 import { Tile, OverflowMenu } from "@carbon/react";
 import { useTranslation } from "react-i18next";
+import MedicationEventStatusTag from "./medication-event-status-tag";
 
 // can render MedicationRequest or MedicationDispense
 const MedicationEventCard: React.FC<{
@@ -33,6 +34,7 @@ const MedicationEventCard: React.FC<{
       {actionMenu}
       <div>
         <p className={styles.medicationName}>
+          <MedicationEventStatusTag medicationEvent={medicationEvent} />
           <strong>
             {getMedicationDisplay(
               getMedicationReferenceOrCodeableConcept(medicationEvent)
