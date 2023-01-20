@@ -3,13 +3,15 @@ import {
   DataTableSkeleton,
   OverflowMenu,
   OverflowMenuItem,
+  Tag,
+  Tile,
 } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import { parseDate, formatDatetime } from "@openmrs/esm-framework";
 import styles from "./history-and-comments.scss";
 import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
 import { deleteMedicationDispense } from "../medication-dispense/medication-dispense.resource";
-import MedicationEventCard from "./medication-event-card.component";
+import MedicationEvent from "../components/medication-event.component";
 import { launchOverlay } from "../hooks/useOverlay";
 import DispenseForm from "../forms/dispense-form.component";
 import { MedicationDispense } from "../types";
@@ -87,10 +89,11 @@ const HistoryAndComments: React.FC<{
                 {t("dispensedMedication", "dispensed medication")} -{" "}
                 {formatDatetime(parseDate(dispense.whenHandedOver))}
               </h5>
-              <MedicationEventCard
-                medicationEvent={dispense}
-                actionMenu={generateMedicationDispenseActionMenu(dispense)}
-              />
+              <Tile className={styles.dispenseTile}>
+                {generateMedicationDispenseActionMenu(dispense)}
+                <Tag type="red">{t("dispense", "Dispense")}</Tag>
+                <MedicationEvent medicationEvent={dispense} />
+              </Tile>
             </div>
           );
         })}
@@ -109,7 +112,10 @@ const HistoryAndComments: React.FC<{
                 {t("orderedMedication ", "ordered medication")} -{" "}
                 {formatDatetime(prescriptionDate)}
               </h5>
-              <MedicationEventCard medicationEvent={request} />
+              <Tile className={styles.requestTile}>
+                <Tag type="green">{t("order", "Order")}</Tag>
+                <MedicationEvent medicationEvent={request} />
+              </Tile>
             </div>
           );
         })}

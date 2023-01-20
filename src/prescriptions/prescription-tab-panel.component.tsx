@@ -19,7 +19,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { formatDatetime, parseDate } from "@openmrs/esm-framework";
-import PrescriptionExpanded from "../components/prescription-expanded.component";
+import PrescriptionExpanded from "./prescription-expanded.component";
 import { usePrescriptionsTable } from "../medication-request/medication-request.resource";
 import { PrescriptionsTableRow } from "../types";
 import styles from "./prescriptions.scss";
