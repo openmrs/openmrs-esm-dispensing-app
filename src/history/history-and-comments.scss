@@ -1,0 +1,57 @@
+@use '@carbon/styles/scss/spacing';
+@use '@carbon/styles/scss/type';
+@import "~@openmrs/esm-styleguide/src/vars";
+
+.historyAndCommentsContainer {
+  max-width: 80%;
+
+  form {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+  }
+
+  form input {
+    vertical-align: middle;
+    margin: 0 10px 0 0;
+    padding: 10px;
+    border: 1px solid #8d8d8d !important;
+    background-color: white;
+  }
+  form button {
+    width: 90px;
+    height: 20px;
+    min-height: 2.5rem !important;
+  }
+
+  form :global(.cds--btn--ghost) {
+    width: 8rem !important;
+  }
+
+  .requestTile {
+    width: 100%;
+    margin: 2px 0 8px;
+    padding: 0 8px 0 8px;
+    background-color: #fff;
+    border-left: 4px solid var(--brand-03);
+    color: $text-02;
+    margin-bottom: 1rem !important;
+  }
+
+  .dispenseTile {
+    width: 100%;
+    margin: 2px 0 8px;
+    padding: 0 8px 0 8px;
+    background-color: #fff;
+    border-left: 4px solid red;
+    color: $text-02;
+    margin-bottom: 1rem !important;
+  }
+
+  .medicationEventActionMenu {
+    float: right;
+  }
+
+}
+
+

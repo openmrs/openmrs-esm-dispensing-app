@@ -2,7 +2,7 @@ import React from "react";
 import { PatientUuid } from "@openmrs/esm-framework";
 import { Tab, Tabs, TabList, TabPanels, TabPanel, Button } from "@carbon/react";
 import { useTranslation } from "react-i18next";
-import HistoryAndComments from "./history-and-comments.component";
+import HistoryAndComments from "../history/history-and-comments.component";
 import styles from "./prescription-expanded.scss";
 import PrescriptionDetails from "./prescription-details.component";
 import InitializeDispenseFormFromRequests from "../forms/initialize-dispense-form-from-requests.component";

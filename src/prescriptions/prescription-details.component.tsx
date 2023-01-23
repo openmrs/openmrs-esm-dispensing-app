@@ -1,4 +1,4 @@
-import { DataTableSkeleton, Tile } from "@carbon/react";
+import { DataTableSkeleton, Tile, Tag } from "@carbon/react";
 import React, { useEffect, useState } from "react";
 import styles from "./prescription-details.scss";
 import { WarningFilled } from "@carbon/react/icons";
@@ -7,8 +7,9 @@ import {
   usePatientAllergies,
 } from "../medication-request/medication-request.resource";
 import { useTranslation } from "react-i18next";
-import MedicationEventCard from "./medication-event-card.component";
+import MedicationEvent from "../components/medication-event.component";
 import { PatientUuid } from "@openmrs/esm-framework";
+import { MedicationRequest } from "../types";
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -25,6 +26,25 @@ const PrescriptionDetails: React.FC<{
       setAllergiesLoadedStatus(false);
     }
   }, [totalAllergies]);
+
+  const generateStatusTag: Function = (
+    medicationRequest: MedicationRequest
+  ) => {
+    if (!medicationRequest.status || medicationRequest.status === "active") {
+      return null;
+    }
+
+    if (medicationRequest.status === "stopped") {
+      return <Tag type="red">{t("expired", "Expired")}</Tag>;
+    }
+
+    if (medicationRequest.status === "cancelled") {
+      return <Tag type="red">{t("cancelled", "Cancelled")}</Tag>;
+    }
+    // TODO support completed status & will need to change expired once we change the definition of expired
+    // TODO will need to support potential Medication Dispense statuses or refactor into different request and dispense components
+    return null;
+  };
 
   return (
     <div className={styles.prescriptionContainer}>
@@ -59,7 +79,13 @@ const PrescriptionDetails: React.FC<{
       {requests &&
         requests.map((request) => {
           return (
-            <MedicationEventCard key={request.id} medicationEvent={request} />
+            <Tile className={styles.prescriptionTile}>
+              <MedicationEvent
+                key={request.id}
+                medicationEvent={request}
+                status={generateStatusTag(request)}
+              />
+            </Tile>
           );
         })}
     </div>
