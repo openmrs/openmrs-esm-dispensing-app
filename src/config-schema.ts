@@ -25,8 +25,15 @@ export const configSchema = {
     _type: Type.String,
     _default: "Pharmacy",
   },
+  medicationRequestExpirationPeriodInDays: {
+    _type: Type.Number,
+    _description:
+      "Medication Requests older that this will be considered expired",
+    _default: 90,
+  },
 };
 
 export type PharmacyConfig = {
   appName: String;
+  medicationRequestExpirationPeriodInDays;
 };

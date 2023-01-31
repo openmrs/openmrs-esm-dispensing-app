@@ -1,5 +1,6 @@
 import { DataTableSkeleton, Tile, Tag } from "@carbon/react";
 import React, { useEffect, useState } from "react";
+import dayjs from "dayjs";
 import styles from "./prescription-details.scss";
 import { WarningFilled } from "@carbon/react/icons";
 import {
@@ -8,14 +9,16 @@ import {
 } from "../medication-request/medication-request.resource";
 import { useTranslation } from "react-i18next";
 import MedicationEvent from "../components/medication-event.component";
-import { PatientUuid } from "@openmrs/esm-framework";
+import { PatientUuid, useConfig } from "@openmrs/esm-framework";
 import { MedicationRequest } from "../types";
+import { PharmacyConfig } from "../config-schema";
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
+  const config = useConfig() as PharmacyConfig;
   const [isAllergiesLoaded, setAllergiesLoadedStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
   const { requests, isError, isLoading } =
@@ -30,19 +33,27 @@ const PrescriptionDetails: React.FC<{
   const generateStatusTag: Function = (
     medicationRequest: MedicationRequest
   ) => {
-    if (!medicationRequest.status || medicationRequest.status === "active") {
-      return null;
-    }
-
-    if (medicationRequest.status === "stopped") {
-      return <Tag type="red">{t("expired", "Expired")}</Tag>;
-    }
-
     if (medicationRequest.status === "cancelled") {
       return <Tag type="red">{t("cancelled", "Cancelled")}</Tag>;
     }
-    // TODO support completed status & will need to change expired once we change the definition of expired
-    // TODO will need to support potential Medication Dispense statuses or refactor into different request and dispense components
+
+    if (medicationRequest.status === "completed") {
+      return <Tag type="red">{t("completed", "Completed")}</Tag>;
+    }
+
+    // expired is not based on based actual medication request expired status, but calculated from our configurable expiration period in days
+    // NOTE: the assumption here is that the validityPeriod.start is equal to encounter datetime of the associated encounter, because we use the encounter date when querying and calculating the status of the overall encounter
+    if (
+      medicationRequest.dispenseRequest?.validityPeriod?.start &&
+      dayjs(medicationRequest.dispenseRequest.validityPeriod.start).isBefore(
+        dayjs(new Date())
+          .startOf("day")
+          .subtract(config.medicationRequestExpirationPeriodInDays, "day")
+      )
+    ) {
+      return <Tag type="red">{t("expired", "Expired")}</Tag>;
+    }
+
     return null;
   };
 
