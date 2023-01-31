@@ -1,10 +1,5 @@
 import useSWR from "swr";
-import {
-  fhirBaseUrl,
-  openmrsFetch,
-  parseDate,
-  useConfig,
-} from "@openmrs/esm-framework";
+import { fhirBaseUrl, openmrsFetch, parseDate } from "@openmrs/esm-framework";
 import {
   AllergyIntoleranceResponse,
   EncounterResponse,
