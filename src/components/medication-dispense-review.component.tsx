@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { CommonConfigProps, Medication, MedicationDispense } from "../types";
+import { Medication, MedicationDispense } from "../types";
 import MedicationCard from "./medication-card.component";
 import { TextArea, ComboBox, Dropdown, NumberInput } from "@carbon/react";
-import { useLayoutType } from "@openmrs/esm-framework";
+import { useLayoutType, useConfig } from "@openmrs/esm-framework";
 import { useTranslation } from "react-i18next";
 import {
   getConceptCodingUuid,
@@ -15,34 +15,133 @@ import {
   useMedicationFormulations,
 } from "../medication/medication.resource";
 import { useMedicationRequest } from "../medication-request/medication-request.resource";
+import { PharmacyConfig } from "../config-schema";
+import {
+  useOrderConfig,
+  useSubstitutionReasonValueSet,
+  useSubstitutionTypeValueSet,
+} from "../medication-dispense/medication-dispense.resource";
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
   index: number;
   updateMedicationDispense: Function;
-  drugDosingUnits: Array<CommonConfigProps>;
-  drugDispensingUnits: Array<CommonConfigProps>;
-  drugRoutes: Array<CommonConfigProps>;
-  orderFrequencies: Array<CommonConfigProps>;
-  substitutionReasons: Array<CommonConfigProps>;
-  substitutionTypes: Array<CommonConfigProps>;
 }
 
 const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   medicationDispense,
   index,
   updateMedicationDispense,
-  drugDosingUnits,
-  drugDispensingUnits,
-  drugRoutes,
-  orderFrequencies,
-  substitutionReasons,
-  substitutionTypes,
 }) => {
   const { t } = useTranslation();
+  const config = useConfig() as PharmacyConfig;
   const [isEditingFormulation, setIsEditingFormulation] = useState(false);
   const [isSubstitution, setIsSubstitution] = useState(false);
+  // Dosing Unit eg Tablets
+  const [drugDosingUnits, setDrugDosingUnits] = useState([]);
+  // Dispensing Unit eg Tablets
+  const [drugDispensingUnits, setDrugDispensingUnits] = useState([]);
+  // Route eg Oral
+  const [drugRoutes, setDrugRoutes] = useState([]);
+  // Frequency eg Twice daily
+  const [orderFrequencies, setOrderFrequencies] = useState([]);
+  // type of substitution question
+  const [substitutionTypes, setSubstitutionTypes] = useState([]);
+  // reason for substitution question
+  const [substitutionReasons, setSubstitutionReasons] = useState([]);
+
   const isTablet = useLayoutType() === "tablet";
+
+  const { orderConfigObject } = useOrderConfig();
+  const { substitutionTypeValueSet } = useSubstitutionTypeValueSet(
+    config.substitutionType.uuid
+  );
+  const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(
+    config.substitutionReason.uuid
+  );
+
+  useEffect(() => {
+    if (orderConfigObject) {
+      // sync drug route options order config
+      const availableRoutes = drugRoutes.map((x) => x.id);
+      const otherRouteOptions = [];
+      orderConfigObject.drugRoutes.forEach(
+        (x) =>
+          availableRoutes.includes(x.uuid) ||
+          otherRouteOptions.push({ id: x.uuid, text: x.display })
+      );
+      setDrugRoutes([...drugRoutes, ...otherRouteOptions]);
+
+      // sync dosage.unit options with what's defined in the order config
+      const availableDosingUnits = drugDosingUnits.map((x) => x.id);
+      const otherDosingUnits = [];
+      orderConfigObject.drugDosingUnits.forEach(
+        (x) =>
+          availableDosingUnits.includes(x.uuid) ||
+          otherDosingUnits.push({ id: x.uuid, text: x.display })
+      );
+      setDrugDosingUnits([...drugDosingUnits, ...otherDosingUnits]);
+
+      // sync dispensing unit options with what's defined in the order config
+      const availableDispensingUnits = drugDispensingUnits.map((x) => x.id);
+      const otherDispensingUnits = [];
+      orderConfigObject.drugDispensingUnits.forEach(
+        (x) =>
+          availableDispensingUnits.includes(x.uuid) ||
+          otherDispensingUnits.push({ id: x.uuid, text: x.display })
+      );
+      setDrugDispensingUnits([...drugDispensingUnits, ...otherDispensingUnits]);
+
+      // sync order frequency options with order config
+      const availableFrequencies = orderFrequencies.map((x) => x.id);
+      const otherFrequencyOptions = [];
+      orderConfigObject.orderFrequencies.forEach(
+        (x) =>
+          availableFrequencies.includes(x.uuid) ||
+          otherFrequencyOptions.push({ id: x.uuid, text: x.display })
+      );
+      setOrderFrequencies([...orderFrequencies, ...otherFrequencyOptions]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderConfigObject]);
+
+  useEffect(() => {
+    const substitutionTypeOptions = [];
+
+    if (substitutionTypeValueSet?.compose?.include) {
+      const uuidValueSet = substitutionTypeValueSet.compose.include.find(
+        (include) => !include.system
+      );
+      if (uuidValueSet) {
+        uuidValueSet.concept?.forEach((concept) =>
+          substitutionTypeOptions.push({
+            id: concept.code,
+            text: concept.display,
+          })
+        );
+      }
+    }
+    setSubstitutionTypes(substitutionTypeOptions);
+  }, [substitutionTypeValueSet]);
+
+  useEffect(() => {
+    const substitutionReasonOptions = [];
+
+    if (substitutionReasonValueSet?.compose?.include) {
+      const uuidValueSet = substitutionReasonValueSet.compose.include.find(
+        (include) => !include.system
+      );
+      if (uuidValueSet) {
+        uuidValueSet.concept?.forEach((concept) =>
+          substitutionReasonOptions.push({
+            id: concept.code,
+            text: concept.display,
+          })
+        );
+      }
+    }
+    setSubstitutionReasons(substitutionReasonOptions);
+  }, [substitutionReasonValueSet]);
 
   // if this an order for a drug by concept, but not a particular formulation, we already have access to concept uuid
   const existingMedicationCodeableConceptUuid = getConceptCodingUuid(

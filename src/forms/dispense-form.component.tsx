@@ -4,19 +4,12 @@ import {
   showToast,
   showNotification,
   useLayoutType,
-  useConfig,
 } from "@openmrs/esm-framework";
 import { Button, FormLabel, DataTableSkeleton } from "@carbon/react";
 import styles from "./dispense-form.scss";
 import { closeOverlay } from "../hooks/useOverlay";
 import { MedicationDispense } from "../types";
-import {
-  saveMedicationDispense,
-  useOrderConfig,
-  useSubstitutionReasonValueSet,
-  useSubstitutionTypeValueSet,
-} from "../medication-dispense/medication-dispense.resource";
-import { PharmacyConfig } from "../config-schema";
+import { saveMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationDispenseReview from "../components/medication-dispense-review.component";
 
 interface DispenseFormProps {
@@ -34,32 +27,11 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
 }) => {
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
-  const config = useConfig() as PharmacyConfig;
-  const { orderConfigObject } = useOrderConfig();
-  const { substitutionTypeValueSet } = useSubstitutionTypeValueSet(
-    config.substitutionType.uuid
-  );
-  const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(
-    config.substitutionReason.uuid
-  );
 
   // Keep track of medication dispense payload
   const [medicationDispensesPayload, setMedicationDispensesPayload] = useState(
     []
   );
-
-  // Dosing Unit eg Tablets
-  const [drugDosingUnits, setDrugDosingUnits] = useState([]);
-  // Dispensing Unit eg Tablets
-  const [drugDispensingUnits, setDrugDispensingUnits] = useState([]);
-  // Route eg Oral
-  const [drugRoutes, setDrugRoutes] = useState([]);
-  // Frequency eg Twice daily
-  const [orderFrequencies, setOrderFrequencies] = useState([]);
-  // type of substitution question
-  const [substitutionTypes, setSubstitutionTypes] = useState([]);
-  // reason for substitution question
-  const [substitutionReasons, setSubstitutionReasons] = useState([]);
 
   // whether or note the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
@@ -164,89 +136,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
 
   useEffect(checkIsValid, [medicationDispensesPayload]);
 
-  useEffect(() => {
-    if (orderConfigObject) {
-      // sync drug route options order config
-      const availableRoutes = drugRoutes.map((x) => x.id);
-      const otherRouteOptions = [];
-      orderConfigObject.drugRoutes.forEach(
-        (x) =>
-          availableRoutes.includes(x.uuid) ||
-          otherRouteOptions.push({ id: x.uuid, text: x.display })
-      );
-      setDrugRoutes([...drugRoutes, ...otherRouteOptions]);
-
-      // sync dosage.unit options with what's defined in the order config
-      const availableDosingUnits = drugDosingUnits.map((x) => x.id);
-      const otherDosingUnits = [];
-      orderConfigObject.drugDosingUnits.forEach(
-        (x) =>
-          availableDosingUnits.includes(x.uuid) ||
-          otherDosingUnits.push({ id: x.uuid, text: x.display })
-      );
-      setDrugDosingUnits([...drugDosingUnits, ...otherDosingUnits]);
-
-      // sync dispensing unit options with what's defined in the order config
-      const availableDispensingUnits = drugDispensingUnits.map((x) => x.id);
-      const otherDispensingUnits = [];
-      orderConfigObject.drugDispensingUnits.forEach(
-        (x) =>
-          availableDispensingUnits.includes(x.uuid) ||
-          otherDispensingUnits.push({ id: x.uuid, text: x.display })
-      );
-      setDrugDispensingUnits([...drugDispensingUnits, ...otherDispensingUnits]);
-
-      // sync order frequency options with order config
-      const availableFrequencies = orderFrequencies.map((x) => x.id);
-      const otherFrequencyOptions = [];
-      orderConfigObject.orderFrequencies.forEach(
-        (x) =>
-          availableFrequencies.includes(x.uuid) ||
-          otherFrequencyOptions.push({ id: x.uuid, text: x.display })
-      );
-      setOrderFrequencies([...orderFrequencies, ...otherFrequencyOptions]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderConfigObject]);
-
-  useEffect(() => {
-    const substitutionTypeOptions = [];
-
-    if (substitutionTypeValueSet?.compose?.include) {
-      const uuidValueSet = substitutionTypeValueSet.compose.include.find(
-        (include) => !include.system
-      );
-      if (uuidValueSet) {
-        uuidValueSet.concept?.forEach((concept) =>
-          substitutionTypeOptions.push({
-            id: concept.code,
-            text: concept.display,
-          })
-        );
-      }
-    }
-    setSubstitutionTypes(substitutionTypeOptions);
-  }, [substitutionTypeValueSet]);
-
-  useEffect(() => {
-    const substitutionReasonOptions = [];
-
-    if (substitutionReasonValueSet?.compose?.include) {
-      const uuidValueSet = substitutionReasonValueSet.compose.include.find(
-        (include) => !include.system
-      );
-      if (uuidValueSet) {
-        uuidValueSet.concept?.forEach((concept) =>
-          substitutionReasonOptions.push({
-            id: concept.code,
-            text: concept.display,
-          })
-        );
-      }
-    }
-    setSubstitutionReasons(substitutionReasonOptions);
-  }, [substitutionReasonValueSet]);
-
   return (
     <div className="">
       {isLoading && <DataTableSkeleton role="progressbar" />}
@@ -266,12 +155,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 medicationDispense={medicationDispense}
                 updateMedicationDispense={updateMedicationDispenseRequest}
                 index={index}
-                drugDosingUnits={drugDosingUnits}
-                drugDispensingUnits={drugDispensingUnits}
-                drugRoutes={drugRoutes}
-                orderFrequencies={orderFrequencies}
-                substitutionReasons={substitutionReasons}
-                substitutionTypes={substitutionTypes}
               />
             ))}
         </section>
