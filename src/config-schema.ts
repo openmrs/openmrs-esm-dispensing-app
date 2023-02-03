@@ -29,7 +29,7 @@ export const configSchema = {
     uuid: {
       _type: Type.UUID,
       _description:
-        "UUID for the Value Set of valid answers to the 'Reason for Substitution' question",
+        "UUID for the Value Set of valid answers to the 'Reason for Substitution' question. Sample CIEL concept: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167862/",
       _default: "",
     },
   },
@@ -37,7 +37,7 @@ export const configSchema = {
     uuid: {
       _type: Type.UUID,
       _description:
-        "UUID for the Value Set of valid answers to the 'Type of Substitution' question",
+        "UUID for the Value Set of valid answers to the 'Type of Substitution' question. Sample CIEL concept: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167859/",
       _default: "",
     },
   },
