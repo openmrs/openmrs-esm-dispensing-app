@@ -167,8 +167,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   // get the medication request associated with this dispense event
   // (we fetch this so that we can use it below to determine if the formulation dispensed varies from what was
   // ordered; it's slightly inefficient/awkward to fetch it from the server here because we *have* fetched it earlier,
-  // it just seems cleaner to fetch it here rather than to make sure we pass it down through various components; and
-  // SWR should handle caching properly)
+  // it just seems cleaner to fetch it here rather than to make sure we pass it down through various components; with
+  // SWR handling caching, we may want to consider pulling more down into this)
   const { medicationRequest } = useMedicationRequest(
     medicationDispense.authorizingPrescription
       ? medicationDispense.authorizingPrescription[0].reference
