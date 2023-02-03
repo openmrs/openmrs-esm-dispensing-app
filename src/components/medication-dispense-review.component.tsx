@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CommonConfigProps, Medication, MedicationDispense } from "../types";
 import MedicationCard from "./medication-card.component";
 import { TextArea, ComboBox, Dropdown, NumberInput } from "@carbon/react";
@@ -14,6 +14,7 @@ import {
   useMedicationCodeableConcept,
   useMedicationFormulations,
 } from "../medication/medication.resource";
+import { useMedicationRequest } from "../medication-request/medication-request.resource";
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
@@ -23,6 +24,8 @@ interface MedicationDispenseReviewProps {
   drugDispensingUnits: Array<CommonConfigProps>;
   drugRoutes: Array<CommonConfigProps>;
   orderFrequencies: Array<CommonConfigProps>;
+  substitutionReasons: Array<CommonConfigProps>;
+  substitutionTypes: Array<CommonConfigProps>;
 }
 
 const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
@@ -33,9 +36,12 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   drugDispensingUnits,
   drugRoutes,
   orderFrequencies,
+  substitutionReasons,
+  substitutionTypes,
 }) => {
   const { t } = useTranslation();
   const [isEditingFormulation, setIsEditingFormulation] = useState(false);
+  const [isSubstitution, setIsSubstitution] = useState(false);
   const isTablet = useLayoutType() === "tablet";
 
   // if this an order for a drug by concept, but not a particular formulation, we already have access to concept uuid
@@ -58,6 +64,59 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       ? medicationCodeableConceptUuid
       : null
   );
+
+  // get the medication request associated with this dispense event
+  // (we fetch this so that we can use it below to determine if the formulation dispensed varies from what was
+  // ordered; it's slightly inefficient/awkward to fetch it from the server here because we *have* fetched it earlier,
+  // it just seems cleaner to fetch it here rather than to make sure we pass it down through various components; and
+  // SWR should handle caching properly)
+  const { medicationRequest } = useMedicationRequest(
+    medicationDispense.authorizingPrescription
+      ? medicationDispense.authorizingPrescription[0].reference
+      : null
+  );
+
+  // check to see if the current dispense would be a substitution, and update accordingly
+  useEffect(() => {
+    if (
+      medicationRequest?.medicationReference?.reference &&
+      medicationDispense?.medicationReference?.reference &&
+      medicationRequest.medicationReference.reference !=
+        medicationDispense.medicationReference.reference
+    ) {
+      setIsSubstitution(true);
+      updateMedicationDispense(
+        {
+          ...medicationDispense,
+          substitution: {
+            ...medicationDispense.substitution,
+            wasSubstituted: true,
+          },
+        },
+        index
+      );
+    } else {
+      setIsSubstitution(false);
+      updateMedicationDispense(
+        {
+          ...medicationDispense,
+          substitution: {
+            wasSubstituted: false,
+            reason: [
+              {
+                coding: [{ code: null }],
+              },
+            ],
+            type: { coding: [{ code: null }] },
+          },
+        },
+        index
+      );
+    }
+  }, [
+    medicationDispense.medicationReference,
+    medicationRequest?.medicationReference,
+  ]);
 
   return (
     <div className={styles.medicationDispenseReviewContainer}>
@@ -98,6 +157,79 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           required
         />
       )}
+
+      {isSubstitution && (
+        <div className={styles.dispenseDetailsContainer}>
+          <ComboBox
+            className={styles.substitutionType}
+            id="substitutionType"
+            light={isTablet}
+            items={substitutionTypes}
+            titleText={t("substitutionType", "Type of substitution")}
+            itemToString={(item) => item?.text}
+            initialSelectedItem={{
+              id: medicationDispense.substitution.type?.coding[0]?.code,
+              text: medicationDispense.substitution.type?.text,
+            }}
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  substitution: {
+                    ...medicationDispense.substitution,
+                    type: {
+                      coding: [
+                        {
+                          code: selectedItem?.id,
+                        },
+                      ],
+                    },
+                  },
+                },
+                index
+              );
+            }}
+          />
+        </div>
+      )}
+
+      {isSubstitution && (
+        <div className={styles.dispenseDetailsContainer}>
+          <ComboBox
+            className={styles.substitutionReason}
+            id="substitutionReason"
+            light={isTablet}
+            items={substitutionReasons}
+            titleText={t("substitutionReason", "Reason for substitution")}
+            itemToString={(item) => item?.text}
+            initialSelectedItem={{
+              id: medicationDispense.substitution.reason[0]?.coding[0]?.code,
+              text: medicationDispense.substitution.reason[0]?.text,
+            }}
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense(
+                {
+                  ...medicationDispense,
+                  substitution: {
+                    ...medicationDispense.substitution,
+                    reason: [
+                      {
+                        coding: [
+                          {
+                            code: selectedItem?.id,
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+                index
+              );
+            }}
+          />
+        </div>
+      )}
+
       <div className={styles.dispenseDetailsContainer}>
         <NumberInput
           allowEmpty={false}

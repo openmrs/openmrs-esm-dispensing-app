@@ -20,6 +20,14 @@
   gap: spacing.$spacing-05;
 }
 
+.substitutionReason {
+  width:100%;
+}
+
+.substitutionType {
+  width: 100%;
+}
+
 .productiveHeading02 {
   color: $color-gray-70;
   @include type.type-style('productive-heading-02');

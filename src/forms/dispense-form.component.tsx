@@ -4,6 +4,7 @@ import {
   showToast,
   showNotification,
   useLayoutType,
+  useConfig,
 } from "@openmrs/esm-framework";
 import { Button, FormLabel, DataTableSkeleton } from "@carbon/react";
 import styles from "./dispense-form.scss";
@@ -12,7 +13,10 @@ import { MedicationDispense } from "../types";
 import {
   saveMedicationDispense,
   useOrderConfig,
+  useSubstitutionReasonValueSet,
+  useSubstitutionTypeValueSet,
 } from "../medication-dispense/medication-dispense.resource";
+import { PharmacyConfig } from "../config-schema";
 import MedicationDispenseReview from "../components/medication-dispense-review.component";
 
 interface DispenseFormProps {
@@ -30,7 +34,14 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
 }) => {
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
+  const config = useConfig() as PharmacyConfig;
   const { orderConfigObject } = useOrderConfig();
+  const { substitutionTypeValueSet } = useSubstitutionTypeValueSet(
+    config.substitutionType.uuid
+  );
+  const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(
+    config.substitutionReason.uuid
+  );
 
   // Keep track of medication dispense payload
   const [medicationDispensesPayload, setMedicationDispensesPayload] = useState(
@@ -45,6 +56,10 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const [drugRoutes, setDrugRoutes] = useState([]);
   // Frequency eg Twice daily
   const [orderFrequencies, setOrderFrequencies] = useState([]);
+  // type of substitution question
+  const [substitutionTypes, setSubstitutionTypes] = useState([]);
+  // reason for substitution question
+  const [substitutionReasons, setSubstitutionReasons] = useState([]);
 
   // whether or note the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
@@ -121,14 +136,18 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const checkIsValid = () => {
     if (medicationDispensesPayload) {
       setIsValid(
-        medicationDispensesPayload.every((request) => {
+        medicationDispensesPayload.every((dispense: MedicationDispense) => {
           return (
-            request.quantity?.value &&
-            request.quantity?.code &&
-            request.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value &&
-            request.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
-            request.dosageInstruction[0]?.route?.coding[0].code &&
-            request.dosageInstruction[0]?.timing?.code.coding[0].code
+            dispense.quantity?.value &&
+            dispense.quantity?.code &&
+            dispense.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity
+              ?.value &&
+            dispense.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
+            dispense.dosageInstruction[0]?.route?.coding[0].code &&
+            dispense.dosageInstruction[0]?.timing?.code.coding[0].code &&
+            (!dispense.substitution.wasSubstituted ||
+              (dispense.substitution.reason[0]?.coding[0].code &&
+                dispense.substitution.type?.coding[0].code))
           );
         })
       );
@@ -190,6 +209,44 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderConfigObject]);
 
+  useEffect(() => {
+    const substitutionTypeOptions = [];
+
+    if (substitutionTypeValueSet?.compose?.include) {
+      const uuidValueSet = substitutionTypeValueSet.compose.include.find(
+        (include) => !include.system
+      );
+      if (uuidValueSet) {
+        uuidValueSet.concept?.forEach((concept) =>
+          substitutionTypeOptions.push({
+            id: concept.code,
+            text: concept.display,
+          })
+        );
+      }
+    }
+    setSubstitutionTypes(substitutionTypeOptions);
+  }, [substitutionTypeValueSet]);
+
+  useEffect(() => {
+    const substitutionReasonOptions = [];
+
+    if (substitutionReasonValueSet?.compose?.include) {
+      const uuidValueSet = substitutionReasonValueSet.compose.include.find(
+        (include) => !include.system
+      );
+      if (uuidValueSet) {
+        uuidValueSet.concept?.forEach((concept) =>
+          substitutionReasonOptions.push({
+            id: concept.code,
+            text: concept.display,
+          })
+        );
+      }
+    }
+    setSubstitutionReasons(substitutionReasonOptions);
+  }, [substitutionReasonValueSet]);
+
   return (
     <div className="">
       {isLoading && <DataTableSkeleton role="progressbar" />}
@@ -213,6 +270,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 drugDispensingUnits={drugDispensingUnits}
                 drugRoutes={drugRoutes}
                 orderFrequencies={orderFrequencies}
+                substitutionReasons={substitutionReasons}
+                substitutionTypes={substitutionTypes}
               />
             ))}
         </section>

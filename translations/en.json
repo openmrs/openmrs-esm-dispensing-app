@@ -63,6 +63,8 @@
   "searchPrescriptions": "Search prescriptions",
   "sendBackToPrescriber": "Send back to prescriber",
   "status": "Status",
+  "substitutionReason": "Reason for substitution",
+  "substitutionType": "Type of substitution",
   "tabletOverlay": "Tablet overlay",
   "tabList": "Tab List",
   "today": "Today",

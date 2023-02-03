@@ -25,8 +25,30 @@ export const configSchema = {
     _type: Type.String,
     _default: "Pharmacy",
   },
+  substitutionReason: {
+    uuid: {
+      _type: Type.UUID,
+      _description:
+        "UUID for the Value Set of valid answers to the 'Reason for Substitution' question",
+      _default: "",
+    },
+  },
+  substitutionType: {
+    uuid: {
+      _type: Type.UUID,
+      _description:
+        "UUID for the Value Set of valid answers to the 'Type of Substitution' question",
+      _default: "",
+    },
+  },
 };
 
 export type PharmacyConfig = {
-  appName: String;
+  appName: string;
+  substitutionReason: {
+    uuid: string;
+  };
+  substitutionType: {
+    uuid: string;
+  };
 };
