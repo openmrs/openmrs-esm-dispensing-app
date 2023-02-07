@@ -219,3 +219,21 @@ export function usePatientAllergies(patientUuid: string) {
     isLoading: !allergiesArray && !error,
   };
 }
+
+// supports passing just the uuid/code or the entire reference, ie either: "MedicationReference/123-abc" or "123-abc"
+// TODO: do we need a refresh interval?
+export function useMedicationRequest(reference: string) {
+  reference = reference
+    ? reference.startsWith("MedicationRequest")
+      ? reference
+      : `MedicationRequest/${reference}`
+    : null;
+
+  const { data } = useSWR<{ data: MedicationRequest }, Error>(
+    reference ? `${fhirBaseUrl}/${reference}` : null,
+    openmrsFetch
+  );
+  return {
+    medicationRequest: data ? data.data : null,
+  };
+}

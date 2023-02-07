@@ -1,7 +1,12 @@
 import { fhirBaseUrl, openmrsFetch, Session } from "@openmrs/esm-framework";
 import dayjs from "dayjs";
 import useSWR from "swr";
-import { MedicationDispense, MedicationRequest, OrderConfig } from "../types";
+import {
+  MedicationDispense,
+  MedicationRequest,
+  OrderConfig,
+  ValueSet,
+} from "../types";
 
 export function saveMedicationDispense(
   medicationDispense: MedicationDispense,
@@ -43,6 +48,26 @@ export function useOrderConfig() {
     isLoading: !data && !error,
     isError: error,
     isValidating,
+  };
+}
+
+export function useSubstitutionTypeValueSet(uuid: string) {
+  const { data } = useSWR<{ data: ValueSet }, Error>(
+    `${fhirBaseUrl}/ValueSet/${uuid}`,
+    openmrsFetch
+  );
+  return {
+    substitutionTypeValueSet: data ? data.data : null,
+  };
+}
+
+export function useSubstitutionReasonValueSet(uuid: string) {
+  const { data } = useSWR<{ data: ValueSet }, Error>(
+    `${fhirBaseUrl}/ValueSet/${uuid}`,
+    openmrsFetch
+  );
+  return {
+    substitutionReasonValueSet: data ? data.data : null,
   };
 }
 
@@ -117,6 +142,12 @@ export function initiateMedicationDispenseBody(
         ],
         substitution: {
           wasSubstituted: false,
+          reason: [
+            {
+              coding: [{ code: null }],
+            },
+          ],
+          type: { coding: [{ code: null }] },
         },
       };
       dispenseBody.push(dispense);
