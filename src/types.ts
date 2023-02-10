@@ -96,6 +96,11 @@ export interface Attribute {
   value: string | number;
 }
 
+export interface CodeableConcept {
+  coding: Coding[];
+  text: string;
+}
+
 export interface Coding {
   system?: string;
   code: string;
@@ -242,21 +247,15 @@ export interface MedicationDispense {
     type: string;
     display: string;
   };
-  type: {
-    coding: [
-      Array<{
-        code: string;
-        display: string;
-      }>
-    ];
-    text: string;
-  };
+  type: CodeableConcept;
   quantity: Quantity;
   whenPrepared: string;
   whenHandedOver: string;
   dosageInstruction: Array<DosageInstruction>;
   substitution: {
     wasSubstituted: boolean;
+    reason: CodeableConcept[];
+    type: CodeableConcept;
   };
 }
 
@@ -385,4 +384,25 @@ export interface Quantity {
   unit: string;
   code: string;
   system: string;
+}
+
+export interface ValueSet {
+  id: string;
+  title: string;
+  status: string;
+  date: string;
+  description: string;
+  compose: {
+    include: [
+      {
+        system: string;
+        concept: [
+          {
+            code: string;
+            display: string;
+          }
+        ];
+      }
+    ];
+  };
 }

@@ -31,9 +31,31 @@ export const configSchema = {
       "Medication Requests older that this will be considered expired",
     _default: 90,
   },
+  substitutionReason: {
+    uuid: {
+      _type: Type.UUID,
+      _description:
+        "UUID for the Value Set of valid answers to the 'Reason for Substitution' question. Sample CIEL concept: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167862/",
+      _default: "",
+    },
+  },
+  substitutionType: {
+    uuid: {
+      _type: Type.UUID,
+      _description:
+        "UUID for the Value Set of valid answers to the 'Type of Substitution' question. Sample CIEL concept: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167859/",
+      _default: "",
+    },
+  },
 };
 
 export type PharmacyConfig = {
-  appName: String;
-  medicationRequestExpirationPeriodInDays;
+  appName: string;
+  substitutionReason: {
+    uuid: string;
+  };
+  substitutionType: {
+    uuid: string;
+  };
+  medicationRequestExpirationPeriodInDays: number;
 };
