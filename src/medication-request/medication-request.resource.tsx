@@ -31,11 +31,10 @@ export function usePrescriptionsTable(
           pageOffset,
           pageSize,
           patientSearchTerm,
-          "ge" +
-            dayjs(new Date())
-              .startOf("day")
-              .subtract(medicationRequestExpirationPeriodInDays, "day")
-              .toISOString()
+          dayjs(new Date())
+            .startOf("day")
+            .subtract(medicationRequestExpirationPeriodInDays, "day")
+            .toISOString()
         )
       : getPrescriptionTableAllMedicationRequestsEnpointEndpoint(
           pageOffset,

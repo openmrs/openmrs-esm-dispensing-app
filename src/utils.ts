@@ -93,7 +93,7 @@ export function getPrescriptionTableActiveMedicationRequestsEndpoint(
   patientSearchTerm: string,
   date: string
 ) {
-  return `${fhirBaseUrl}/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&date=${date}&_revinclude=MedicationRequest:encounter&_revinclude:iterate=MedicationDispense:prescription&_has:MedicationRequest:encounter:status:not=cancelled&_has:MedicationRequest:encounter:status:not=completed&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
+  return `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}&patientSearchTerm=${patientSearchTerm}&date=${date}&status=active`;
 }
 
 export function getPrescriptionTableAllMedicationRequestsEnpointEndpoint(
@@ -101,7 +101,7 @@ export function getPrescriptionTableAllMedicationRequestsEnpointEndpoint(
   pageSize: number,
   patientSearchTerm: string
 ) {
-  return `${fhirBaseUrl}/Encounter?_getpagesoffset=${pageOffset}&_count=${pageSize}&subject.name=${patientSearchTerm}&_revinclude=MedicationRequest:encounter&_revinclude:iterate=MedicationDispense:prescription&_has:MedicationRequest:encounter:intent=order&_sort=-date&_tag=http%3A%2F%2Ffhir.openmrs.org%2Fext%2Fencounter-tag%7Cencounter`;
+  return `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}&patientSearchTerm=${patientSearchTerm}`;
 }
 
 export function getMedicationsByConceptEndpoint(conceptUuid: string) {
