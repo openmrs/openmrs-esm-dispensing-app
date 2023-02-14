@@ -93,7 +93,7 @@ export function getPrescriptionTableActiveMedicationRequestsEndpoint(
   patientSearchTerm: string,
   date: string
 ) {
-  return `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}&patientSearchTerm=${patientSearchTerm}&date=${date}&status=active`;
+  return `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}&patientSearchTerm=${patientSearchTerm}&date=ge${date}&status=active`;
 }
 
 export function getPrescriptionTableAllMedicationRequestsEnpointEndpoint(
