@@ -9,6 +9,7 @@ import {
 } from "./types";
 import { fhirBaseUrl } from "@openmrs/esm-framework";
 import { OPENMRS_FHIR_EXT_MEDICINE } from "./constants";
+import dayjs from "dayjs";
 
 /* TODO: confirm we can remove, not used but looks like it might do wrong thing anyway
 export function getDosage(strength: string, doseNumber: number) {
@@ -173,4 +174,31 @@ export function getOpenMRSMedicineDrugName(medication: Medication) {
   return medicationExtensionDrugName
     ? medicationExtensionDrugName.valueString
     : null;
+}
+
+export function computeStatus(
+  medicationRequest: MedicationRequest,
+  medicationRequestExpirationPeriodInDays: number
+) {
+  if (medicationRequest.status === "cancelled") {
+    return "cancelled";
+  }
+  if (medicationRequest.status === "completed") {
+    return "completed";
+  }
+
+  // expired is not based on based actual medication request expired status, but calculated from our configurable expiration period in days
+  // NOTE: the assumption here is that the validityPeriod.start is equal to encounter datetime of the associated encounter, because we use the encounter date when querying and calculating the status of the overall encounter
+  if (
+    medicationRequest.dispenseRequest?.validityPeriod?.start &&
+    dayjs(medicationRequest.dispenseRequest.validityPeriod.start).isBefore(
+      dayjs(new Date())
+        .startOf("day")
+        .subtract(medicationRequestExpirationPeriodInDays, "day")
+    )
+  ) {
+    return "expired";
+  }
+
+  return "active";
 }

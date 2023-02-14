@@ -1,6 +1,5 @@
 import { DataTableSkeleton, Tile, Tag } from "@carbon/react";
 import React, { useEffect, useState } from "react";
-import dayjs from "dayjs";
 import styles from "./prescription-details.scss";
 import { WarningFilled } from "@carbon/react/icons";
 import {
@@ -12,6 +11,7 @@ import MedicationEvent from "../components/medication-event.component";
 import { PatientUuid, useConfig } from "@openmrs/esm-framework";
 import { MedicationRequest } from "../types";
 import { PharmacyConfig } from "../config-schema";
+import { computeStatus } from "../utils";
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -33,24 +33,19 @@ const PrescriptionDetails: React.FC<{
   const generateStatusTag: Function = (
     medicationRequest: MedicationRequest
   ) => {
-    if (medicationRequest.status === "cancelled") {
+    const status = computeStatus(
+      medicationRequest,
+      config.medicationRequestExpirationPeriodInDays
+    );
+    if (status === "cancelled") {
       return <Tag type="red">{t("cancelled", "Cancelled")}</Tag>;
     }
 
-    if (medicationRequest.status === "completed") {
+    if (status === "completed") {
       return <Tag type="red">{t("completed", "Completed")}</Tag>;
     }
 
-    // expired is not based on based actual medication request expired status, but calculated from our configurable expiration period in days
-    // NOTE: the assumption here is that the validityPeriod.start is equal to encounter datetime of the associated encounter, because we use the encounter date when querying and calculating the status of the overall encounter
-    if (
-      medicationRequest.dispenseRequest?.validityPeriod?.start &&
-      dayjs(medicationRequest.dispenseRequest.validityPeriod.start).isBefore(
-        dayjs(new Date())
-          .startOf("day")
-          .subtract(config.medicationRequestExpirationPeriodInDays, "day")
-      )
-    ) {
+    if (status === "expired") {
       return <Tag type="red">{t("expired", "Expired")}</Tag>;
     }
 

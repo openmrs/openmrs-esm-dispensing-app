@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
-import { useSession } from "@openmrs/esm-framework";
+import { useConfig, useSession } from "@openmrs/esm-framework";
 import { initiateMedicationDispenseBody } from "../medication-dispense/medication-dispense.resource";
 import { MedicationDispense } from "../types";
+import { PharmacyConfig } from "../config-schema";
 import DispenseForm from "./dispense-form.component";
 
 interface NewDispenseFormProps {
@@ -26,6 +27,7 @@ const InitializeDispenseFormFromRequests: React.FC<NewDispenseFormProps> = ({
     isLoading,
   } = usePrescriptionDetails(encounterUuid);
   const session = useSession();
+  const config = useConfig() as PharmacyConfig;
 
   const [medicationDispenses, setMedicationDispenses] = useState(
     Array<MedicationDispense>
@@ -35,11 +37,12 @@ const InitializeDispenseFormFromRequests: React.FC<NewDispenseFormProps> = ({
     if (requests) {
       let dispenseMedications = initiateMedicationDispenseBody(
         requests,
-        session
+        session,
+        config.medicationRequestExpirationPeriodInDays
       );
       setMedicationDispenses(dispenseMedications);
     }
-  }, []);
+  }, [requests, session, config.medicationRequestExpirationPeriodInDays]);
 
   return (
     <DispenseForm

@@ -131,7 +131,7 @@ function buildPrescriptionsTableRow(
     prescriber: [
       ...new Set(medicationRequests.map((o) => o.requester.display)),
     ].join(", "),
-    status: computeStatus(
+    status: computePrescriptionStatus(
       medicationRequests.map((o) => o.status),
       encounter?.period?.start,
       medicationRequestExpirationPeriodInDays
@@ -140,7 +140,7 @@ function buildPrescriptionsTableRow(
   };
 }
 
-function computeStatus(
+function computePrescriptionStatus(
   orderStatuses: Array<string>,
   encounterDatetime: string,
   medicationRequestExpirationPeriodInDays

@@ -7,6 +7,7 @@ import {
   OrderConfig,
   ValueSet,
 } from "../types";
+import { computeStatus } from "../utils";
 
 export function saveMedicationDispense(
   medicationDispense: MedicationDispense,
@@ -74,11 +75,18 @@ export function useSubstitutionReasonValueSet(uuid: string) {
 // TODO: should more be stripped out of here when initializing... ie don't copy over all the display data?
 export function initiateMedicationDispenseBody(
   medicationRequests: Array<MedicationRequest>,
-  session: Session
+  session: Session,
+  medicationRequestExpirationPeriodInDays: number
 ) {
   let dispenseBody = [];
   medicationRequests
-    .filter((medicationRequest) => medicationRequest.status === "active")
+    .filter(
+      (medicationRequest) =>
+        computeStatus(
+          medicationRequest,
+          medicationRequestExpirationPeriodInDays
+        ) === "active"
+    )
     .map((medicationRequest) => {
       let dispense = {
         resourceType: "MedicationDispense",
