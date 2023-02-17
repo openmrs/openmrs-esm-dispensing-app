@@ -7,7 +7,13 @@ import {
   Tile,
 } from "@carbon/react";
 import { useTranslation } from "react-i18next";
-import { parseDate, formatDatetime } from "@openmrs/esm-framework";
+import {
+  parseDate,
+  formatDatetime,
+  useSession,
+  userHasAccess,
+  Session,
+} from "@openmrs/esm-framework";
 import styles from "./history-and-comments.scss";
 import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
 import { deleteMedicationDispense } from "../medication-dispense/medication-dispense.resource";
@@ -21,6 +27,7 @@ const HistoryAndComments: React.FC<{
   mutate: Function;
 }> = ({ encounterUuid, mutate }) => {
   const { t } = useTranslation();
+  const session = useSession();
   const {
     requests,
     dispenses,
@@ -29,6 +36,36 @@ const HistoryAndComments: React.FC<{
     isError,
     isLoading,
   } = usePrescriptionDetails(encounterUuid);
+
+  const userCanEdit: Function = (session: Session) =>
+    session?.user &&
+    userHasAccess("o3.dispensing-app.dispense.edit", session.user);
+
+  const userCanDelete: Function = (
+    session: Session,
+    medicationDispense: MedicationDispense
+  ) => {
+    if (session?.user) {
+      if (userHasAccess("o3.dispensing-app.dispense.delete", session.user)) {
+        return true;
+      } else if (
+        userHasAccess(
+          "o3.dispensing-app.dispense.delete.thisProviderOnly",
+          session.user
+        ) &&
+        session.currentProvider?.uuid &&
+        medicationDispense.performer?.find(
+          (performer) =>
+            performer?.actor?.reference?.length > 1 &&
+            performer.actor.reference.split("/")[1] ===
+              session.currentProvider.uuid
+        ) != null
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   const generateMedicationDispenseActionMenu: Function = (
     medicationDispense: MedicationDispense
@@ -41,31 +78,35 @@ const HistoryAndComments: React.FC<{
       flipped={true}
       className={styles.medicationEventActionMenu}
     >
-      <OverflowMenuItem
-        onClick={() =>
-          launchOverlay(
-            t("editDispenseRecord", "Edit Dispense Record"),
-            <DispenseForm
-              medicationDispenses={[medicationDispense]}
-              mode="edit"
-              mutate={() => {
-                mutate();
-                mutatePrescriptionDetails();
-              }}
-              isLoading={false}
-            />
-          )
-        }
-        itemText={t("editRecord", "Edit Record")}
-      ></OverflowMenuItem>
-      <OverflowMenuItem
-        onClick={() => {
-          deleteMedicationDispense(medicationDispense.id);
-          mutate();
-          mutatePrescriptionDetails();
-        }}
-        itemText={t("delete", "Delete")}
-      ></OverflowMenuItem>
+      {userCanEdit(session) && (
+        <OverflowMenuItem
+          onClick={() =>
+            launchOverlay(
+              t("editDispenseRecord", "Edit Dispense Record"),
+              <DispenseForm
+                medicationDispenses={[medicationDispense]}
+                mode="edit"
+                mutate={() => {
+                  mutate();
+                  mutatePrescriptionDetails();
+                }}
+                isLoading={false}
+              />
+            )
+          }
+          itemText={t("editRecord", "Edit Record")}
+        ></OverflowMenuItem>
+      )}
+      {userCanDelete(session, medicationDispense) && (
+        <OverflowMenuItem
+          onClick={() => {
+            deleteMedicationDispense(medicationDispense.id);
+            mutate();
+            mutatePrescriptionDetails();
+          }}
+          itemText={t("delete", "Delete")}
+        ></OverflowMenuItem>
+      )}
     </OverflowMenu>
   );
 

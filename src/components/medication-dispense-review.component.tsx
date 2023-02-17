@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Medication, MedicationDispense } from "../types";
 import MedicationCard from "./medication-card.component";
 import { TextArea, ComboBox, Dropdown, NumberInput } from "@carbon/react";
-import { useLayoutType, useConfig } from "@openmrs/esm-framework";
+import {
+  useLayoutType,
+  useConfig,
+  useSession,
+  userHasAccess,
+} from "@openmrs/esm-framework";
 import { useTranslation } from "react-i18next";
 import {
   getConceptCodingUuid,
@@ -35,6 +40,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
+  const session = useSession();
   const [isEditingFormulation, setIsEditingFormulation] = useState(false);
   const [isSubstitution, setIsSubstitution] = useState(false);
   // Dosing Unit eg Tablets
@@ -49,6 +55,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const [substitutionTypes, setSubstitutionTypes] = useState([]);
   // reason for substitution question
   const [substitutionReasons, setSubstitutionReasons] = useState([]);
+  const [userCanModify, setUserCanModify] = useState(false);
 
   const isTablet = useLayoutType() === "tablet";
 
@@ -217,6 +224,16 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     medicationRequest?.medicationReference,
   ]);
 
+  useEffect(() => {
+    setUserCanModify(
+      session?.user &&
+        userHasAccess(
+          "o3.dispense-app.dispense.create.modifyDetails",
+          session.user
+        )
+    );
+  }, [session]);
+
   return (
     <div className={styles.medicationDispenseReviewContainer}>
       {!isEditingFormulation ? (
@@ -224,7 +241,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           medication={getMedicationReferenceOrCodeableConcept(
             medicationDispense
           )}
-          editAction={() => setIsEditingFormulation(true)}
+          editAction={
+            userCanModify ? () => setIsEditingFormulation(true) : null
+          }
         />
       ) : (
         <Dropdown
@@ -332,6 +351,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       <div className={styles.dispenseDetailsContainer}>
         <NumberInput
           allowEmpty={false}
+          disabled={!userCanModify}
           hideSteppers={true}
           id="quantity"
           invalidText={t("numberIsNotValid", "Number is not valid")}
@@ -354,6 +374,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
         <ComboBox
           id="quantityUnits"
+          disabled={!userCanModify}
           light={isTablet}
           items={drugDispensingUnits}
           titleText={t("drugDispensingUnit", "Dispensing unit")}
@@ -382,6 +403,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       <div className={styles.dispenseDetailsContainer}>
         <NumberInput
           allowEmpty={false}
+          disabled={!userCanModify}
           hideSteppers={true}
           id="dosingQuanity"
           light={isTablet}
@@ -420,6 +442,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
         <ComboBox
           id="dosingUnits"
+          disabled={!userCanModify}
           light={isTablet}
           items={drugDosingUnits}
           titleText={t("doseUnit", "Dose unit")}
@@ -459,6 +482,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
         <ComboBox
           id="editRoute"
+          disabled={!userCanModify}
           light={isTablet}
           items={drugRoutes}
           initialSelectedItem={{
@@ -493,6 +517,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
       <ComboBox
         id="frequency"
+        disabled={!userCanModify}
         light={isTablet}
         items={orderFrequencies}
         initialSelectedItem={{

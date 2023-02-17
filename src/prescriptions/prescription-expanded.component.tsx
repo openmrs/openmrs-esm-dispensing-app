@@ -1,5 +1,5 @@
 import React from "react";
-import { PatientUuid } from "@openmrs/esm-framework";
+import { PatientUuid, UserHasAccess } from "@openmrs/esm-framework";
 import { Tab, Tabs, TabList, TabPanels, TabPanel, Button } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import HistoryAndComments from "../history/history-and-comments.component";
@@ -67,24 +67,26 @@ const PrescriptionExpanded: React.FC<{
       </div>
       {status === "active" && (
         <div className={styles.prescriptionActions}>
-          <Button
-            kind="primary"
-            className={styles.dispenseBtn}
-            onClick={() =>
-              launchOverlay(
-                t("dispensePrescription", "Dispense prescription"),
-                <InitializeDispenseFormFromRequests
-                  encounterUuid={encounterUuid}
-                  mutate={mutate}
-                />
-              )
-            }
-          >
-            {t("dispense", "Dispense")}
-          </Button>
-          <Button kind="secondary" className={styles.returnToPrescriberBtn}>
+          <UserHasAccess privilege="o3.dispensing-app.dispense.create">
+            <Button
+              kind="primary"
+              className={styles.dispenseBtn}
+              onClick={() =>
+                launchOverlay(
+                  t("dispensePrescription", "Dispense prescription"),
+                  <InitializeDispenseFormFromRequests
+                    encounterUuid={encounterUuid}
+                    mutate={mutate}
+                  />
+                )
+              }
+            >
+              {t("dispense", "Dispense")}
+            </Button>
+          </UserHasAccess>
+          {/*  <Button kind="secondary" className={styles.returnToPrescriberBtn}>
             {t("sendBackToPrescriber", "Send back to prescriber")}
-          </Button>
+          </Button>*/}
         </div>
       )}
     </div>
