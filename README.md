@@ -5,6 +5,16 @@
 This repository is for the OpenMRS Dispensing App. For more information, please see the
 [Design Documentation](https://wiki.openmrs.org/display/projects/Dispensing+Design+Components).
 
+## Required privileges
+
+Note that following privileges need to be installed and assigned to roles:
+
+* o3.dispensing-app.dispense.create: Allows user to Dispense Medication
+* o3.dispense-app.dispense.create.modifyDetails: Allows user to modify the Quantity, Drug, Formulation and Dose Instructions (from the values specified in the Order / Medication Request) when Dispensing
+* o3.dispensing-app.dispense.edit: Allows user to edit an existing Medication Dispense
+* o3.dispensing-app.dispense.delete: Allows user to delete an existing Medication Dispense 
+* o3.dispensing.delete.thisProviderOnly: Allows user to delete an existing Medication Dispense, *but only* if they created it originally
+
 ## Running this code
 
 ```sh
