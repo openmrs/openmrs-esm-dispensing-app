@@ -18,10 +18,11 @@ import {
 
 import { useTranslation } from "react-i18next";
 
-import { formatDatetime, parseDate } from "@openmrs/esm-framework";
+import { formatDatetime, parseDate, useConfig } from "@openmrs/esm-framework";
 import PrescriptionExpanded from "./prescription-expanded.component";
 import { usePrescriptionsTable } from "../medication-request/medication-request.resource";
 import { PrescriptionsTableRow } from "../types";
+import { PharmacyConfig } from "../config-schema";
 import styles from "./prescriptions.scss";
 
 interface PrescriptionTabPanelProps {
@@ -34,11 +35,18 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   status,
 }) => {
   const { t } = useTranslation();
+  const config = useConfig() as PharmacyConfig;
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
   const { prescriptionsTableRows, mutate, isError, isLoading, totalOrders } =
-    usePrescriptionsTable(pageSize, nextOffSet, searchTerm, status);
+    usePrescriptionsTable(
+      pageSize,
+      nextOffSet,
+      searchTerm,
+      status,
+      config.medicationRequestExpirationPeriodInDays
+    );
   const encounterToPatientMap = {};
 
   const columns = [

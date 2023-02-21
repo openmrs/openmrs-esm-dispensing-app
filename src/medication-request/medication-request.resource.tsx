@@ -10,25 +10,37 @@ import {
   Encounter,
 } from "../types";
 import {
-  getPrescriptionTableEndpoint,
   getPrescriptionDetailsEndpoint,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
+  getPrescriptionTableActiveMedicationRequestsEndpoint,
+  getPrescriptionTableAllMedicationRequestsEnpointEndpoint,
 } from "../utils";
+import dayjs from "dayjs";
 
 export function usePrescriptionsTable(
   pageSize: number = 10,
   pageOffset: number = 0,
   patientSearchTerm: string = "",
-  status: string = ""
+  status: string = "",
+  medicationRequestExpirationPeriodInDays: number
 ) {
   const { data, mutate, error } = useSWR<{ data: EncounterResponse }, Error>(
-    getPrescriptionTableEndpoint(
-      pageOffset,
-      pageSize,
-      patientSearchTerm,
-      status
-    ),
+    status === "ACTIVE"
+      ? getPrescriptionTableActiveMedicationRequestsEndpoint(
+          pageOffset,
+          pageSize,
+          patientSearchTerm,
+          dayjs(new Date())
+            .startOf("day")
+            .subtract(medicationRequestExpirationPeriodInDays, "day")
+            .toISOString()
+        )
+      : getPrescriptionTableAllMedicationRequestsEnpointEndpoint(
+          pageOffset,
+          pageSize,
+          patientSearchTerm
+        ),
     openmrsFetch
   );
 
@@ -70,7 +82,8 @@ export function usePrescriptionsTable(
         return buildPrescriptionsTableRow(
           encounter,
           medicationRequestsForEncounter,
-          medicationDispensesForMedicationRequests
+          medicationDispensesForMedicationRequests,
+          medicationRequestExpirationPeriodInDays
         );
       });
       prescriptionsTableRows.sort((a, b) => (a.created < b.created ? 1 : -1));
@@ -91,7 +104,8 @@ export function usePrescriptionsTable(
 function buildPrescriptionsTableRow(
   encounter: Encounter,
   medicationRequests: Array<MedicationRequest>,
-  medicationDispense: Array<MedicationDispense>
+  medicationDispense: Array<MedicationDispense>,
+  medicationRequestExpirationPeriodInDays: number
 ): PrescriptionsTableRow {
   return {
     id: encounter?.id,
@@ -117,25 +131,63 @@ function buildPrescriptionsTableRow(
     prescriber: [
       ...new Set(medicationRequests.map((o) => o.requester.display)),
     ].join(", "),
-    status: computeStatus(medicationRequests.map((o) => o.status)),
+    status: computePrescriptionStatus(
+      medicationRequests.map((o) => o.status),
+      encounter?.period?.start,
+      medicationRequestExpirationPeriodInDays
+    ),
     patientUuid: encounter?.subject?.reference?.split("/")[1],
   };
 }
 
-function computeStatus(orderStatuses: Array<string>) {
-  if (orderStatuses.includes("active")) {
-    // if any are active, return active
-    return "active";
-  } else if (orderStatuses.includes("stopped")) {
-    // if none are active, and any are stopped, return expired
-    return "expired";
+function computePrescriptionStatus(
+  orderStatuses: Array<string>,
+  encounterDatetime: string,
+  medicationRequestExpirationPeriodInDays
+) {
+  // first, test the encounter against the expiry period
+  var isExpired = false;
+  if (
+    encounterDatetime &&
+    dayjs(encounterDatetime).isBefore(
+      dayjs(new Date())
+        .startOf("day")
+        .subtract(medicationRequestExpirationPeriodInDays, "day")
+    )
+  ) {
+    isExpired = true;
   }
-  if (orderStatuses.includes("cancelled")) {
-    // if none are active or stopped, then if any are cancelled, return cancelled
-    return "cancelled";
+
+  // handle cases when the overall set isn't expired
+  if (!isExpired) {
+    if (orderStatuses.includes("active") || orderStatuses.includes("stopped")) {
+      // if any are active or expired, set as active (since, confusingly, we aren't using the  ORDER API idea of stopped/autoexpired for dispensing purposes
+      return "active";
+    } else if (orderStatuses.includes("completed")) {
+      // otherwise, if any are completed, return completed
+      return "completed";
+    } else if (orderStatuses.includes("cancelled")) {
+      // otherwise, if any are cancelled, return cancelled
+      return "cancelled";
+    } else {
+      return "unknown";
+    }
   } else {
-    // otherwise unknown
-    return "unknown";
+    // handle cases where the overall set is expired
+    if (orderStatuses.every((status) => status === "cancelled")) {
+      // if every one is cancelled, return cancelled
+      return "cancelled";
+    } else if (
+      orderStatuses.every(
+        (status) => status === "completed" || status === "cancelled"
+      )
+    ) {
+      // if every one is completed or cancelled, return completed
+      return "completed";
+    } else {
+      /// otherwise, expired
+      return "expired";
+    }
   }
 }
 
@@ -155,7 +207,7 @@ export function usePrescriptionDetails(encounterUuid: string) {
     const results = data?.data.entry;
 
     const encounter = results
-      .filter((entry) => entry?.resource?.resourceType == "Encounter")
+      ?.filter((entry) => entry?.resource?.resourceType == "Encounter")
       .map((entry) => entry.resource as Encounter);
 
     // by definition of the request (search by encounter) there should be one and only one encounter

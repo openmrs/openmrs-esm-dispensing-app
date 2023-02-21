@@ -8,14 +8,17 @@ import {
 } from "../medication-request/medication-request.resource";
 import { useTranslation } from "react-i18next";
 import MedicationEvent from "../components/medication-event.component";
-import { PatientUuid } from "@openmrs/esm-framework";
+import { PatientUuid, useConfig } from "@openmrs/esm-framework";
 import { MedicationRequest } from "../types";
+import { PharmacyConfig } from "../config-schema";
+import { computeStatus } from "../utils";
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
+  const config = useConfig() as PharmacyConfig;
   const [isAllergiesLoaded, setAllergiesLoadedStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
   const { requests, isError, isLoading } =
@@ -30,19 +33,22 @@ const PrescriptionDetails: React.FC<{
   const generateStatusTag: Function = (
     medicationRequest: MedicationRequest
   ) => {
-    if (!medicationRequest.status || medicationRequest.status === "active") {
-      return null;
+    const status = computeStatus(
+      medicationRequest,
+      config.medicationRequestExpirationPeriodInDays
+    );
+    if (status === "cancelled") {
+      return <Tag type="red">{t("cancelled", "Cancelled")}</Tag>;
     }
 
-    if (medicationRequest.status === "stopped") {
+    if (status === "completed") {
+      return <Tag type="red">{t("completed", "Completed")}</Tag>;
+    }
+
+    if (status === "expired") {
       return <Tag type="red">{t("expired", "Expired")}</Tag>;
     }
 
-    if (medicationRequest.status === "cancelled") {
-      return <Tag type="red">{t("cancelled", "Cancelled")}</Tag>;
-    }
-    // TODO support completed status & will need to change expired once we change the definition of expired
-    // TODO will need to support potential Medication Dispense statuses or refactor into different request and dispense components
     return null;
   };
 

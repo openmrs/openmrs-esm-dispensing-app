@@ -311,6 +311,9 @@ export interface MedicationRequest {
   dispenseRequest: {
     numberOfRepeatsAllowed: number;
     quantity: Quantity;
+    validityPeriod: {
+      start: string;
+    };
   };
 }
 
