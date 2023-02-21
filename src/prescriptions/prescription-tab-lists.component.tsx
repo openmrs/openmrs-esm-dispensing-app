@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tab, Tabs, TabList, TabPanels, Search, Button } from "@carbon/react";
 import { Add } from "@carbon/react/icons";
 import { useTranslation } from "react-i18next";
@@ -15,6 +15,7 @@ enum TabTypes {
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState(TabTypes.STARRED);
+  const [searchTermUserInput, setSearchTermUserInput] = useState(""); // we have a separate "searchTermUserInput" and "searchTerm" in order to debounce
   const [searchTerm, setSearchTerm] = useState("");
 
   const tabs = [
@@ -29,6 +30,15 @@ const PrescriptionTabLists: React.FC = () => {
       status: "",
     },
   ];
+
+  // debounce: delay the search term update so that a search isn't triggered on every single keystroke
+  useEffect(() => {
+    const debounceFn = setTimeout(() => {
+      setSearchTerm(searchTermUserInput);
+    }, 500);
+
+    return () => clearTimeout(debounceFn);
+  }, [searchTermUserInput]);
 
   return (
     <main className={`omrs-main-content ${styles.prescriptionListContainer}`}>
@@ -68,12 +78,12 @@ const PrescriptionTabLists: React.FC = () => {
             </Button>
             <Search
               closeButtonLabelText={t("clearSearchInput", "Clear search input")}
-              defaultValue={searchTerm}
+              defaultValue={searchTermUserInput}
               placeholder={t("searchPrescriptions", "Search prescriptions")}
               labelText={t("searchPrescriptions", "Search prescriptions")}
               onChange={(e) => {
                 e.preventDefault();
-                setSearchTerm(e.target.value);
+                setSearchTermUserInput(e.target.value);
               }}
               size="md"
               className={styles.patientSearch}
