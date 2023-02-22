@@ -7,6 +7,7 @@ import styles from "./prescription-expanded.scss";
 import PrescriptionDetails from "./prescription-details.component";
 import InitializeDispenseFormFromRequests from "../forms/initialize-dispense-form-from-requests.component";
 import { launchOverlay } from "../hooks/useOverlay";
+import { PRIVILEGE_CREATE_DISPENSE } from "../constants";
 
 interface TabItem {
   name: string;
@@ -67,7 +68,7 @@ const PrescriptionExpanded: React.FC<{
       </div>
       {status === "active" && (
         <div className={styles.prescriptionActions}>
-          <UserHasAccess privilege="o3.dispensing-app.dispense.create">
+          <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
             <Button
               kind="primary"
               className={styles.dispenseBtn}

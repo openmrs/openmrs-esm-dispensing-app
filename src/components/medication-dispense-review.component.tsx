@@ -26,6 +26,7 @@ import {
   useSubstitutionReasonValueSet,
   useSubstitutionTypeValueSet,
 } from "../medication-dispense/medication-dispense.resource";
+import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from "../constants";
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
@@ -227,10 +228,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   useEffect(() => {
     setUserCanModify(
       session?.user &&
-        userHasAccess(
-          "o3.dispense-app.dispense.create.modifyDetails",
-          session.user
-        )
+        userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user)
     );
   }, [session]);
 

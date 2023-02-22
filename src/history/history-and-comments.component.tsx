@@ -21,6 +21,11 @@ import MedicationEvent from "../components/medication-event.component";
 import { launchOverlay } from "../hooks/useOverlay";
 import DispenseForm from "../forms/dispense-form.component";
 import { MedicationDispense } from "../types";
+import {
+  PRIVILEGE_DELETE_DISPENSE,
+  PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
+  PRIVILEGE_EDIT_DISPENSE,
+} from "../constants";
 
 const HistoryAndComments: React.FC<{
   encounterUuid: string;
@@ -38,19 +43,18 @@ const HistoryAndComments: React.FC<{
   } = usePrescriptionDetails(encounterUuid);
 
   const userCanEdit: Function = (session: Session) =>
-    session?.user &&
-    userHasAccess("o3.dispensing-app.dispense.edit", session.user);
+    session?.user && userHasAccess(PRIVILEGE_EDIT_DISPENSE, session.user);
 
   const userCanDelete: Function = (
     session: Session,
     medicationDispense: MedicationDispense
   ) => {
     if (session?.user) {
-      if (userHasAccess("o3.dispensing-app.dispense.delete", session.user)) {
+      if (userHasAccess(PRIVILEGE_DELETE_DISPENSE, session.user)) {
         return true;
       } else if (
         userHasAccess(
-          "o3.dispensing-app.dispense.delete.thisProviderOnly",
+          PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
           session.user
         ) &&
         session.currentProvider?.uuid &&
@@ -69,46 +73,55 @@ const HistoryAndComments: React.FC<{
 
   const generateMedicationDispenseActionMenu: Function = (
     medicationDispense: MedicationDispense
-  ) => (
-    <OverflowMenu
-      ariaLabel={t(
-        "medicationDispenseActionMenu",
-        "Medication Dispense Action Menu"
-      )}
-      flipped={true}
-      className={styles.medicationEventActionMenu}
-    >
-      {userCanEdit(session) && (
-        <OverflowMenuItem
-          onClick={() =>
-            launchOverlay(
-              t("editDispenseRecord", "Edit Dispense Record"),
-              <DispenseForm
-                medicationDispenses={[medicationDispense]}
-                mode="edit"
-                mutate={() => {
-                  mutate();
-                  mutatePrescriptionDetails();
-                }}
-                isLoading={false}
-              />
-            )
-          }
-          itemText={t("editRecord", "Edit Record")}
-        ></OverflowMenuItem>
-      )}
-      {userCanDelete(session, medicationDispense) && (
-        <OverflowMenuItem
-          onClick={() => {
-            deleteMedicationDispense(medicationDispense.id);
-            mutate();
-            mutatePrescriptionDetails();
-          }}
-          itemText={t("delete", "Delete")}
-        ></OverflowMenuItem>
-      )}
-    </OverflowMenu>
-  );
+  ) => {
+    const editable = userCanEdit(session);
+    const deletable = userCanDelete(session, medicationDispense);
+
+    if (!editable && !deletable) {
+      return null;
+    } else {
+      return (
+        <OverflowMenu
+          ariaLabel={t(
+            "medicationDispenseActionMenu",
+            "Medication Dispense Action Menu"
+          )}
+          flipped={true}
+          className={styles.medicationEventActionMenu}
+        >
+          {editable && (
+            <OverflowMenuItem
+              onClick={() =>
+                launchOverlay(
+                  t("editDispenseRecord", "Edit Dispense Record"),
+                  <DispenseForm
+                    medicationDispenses={[medicationDispense]}
+                    mode="edit"
+                    mutate={() => {
+                      mutate();
+                      mutatePrescriptionDetails();
+                    }}
+                    isLoading={false}
+                  />
+                )
+              }
+              itemText={t("editRecord", "Edit Record")}
+            ></OverflowMenuItem>
+          )}
+          {deletable && (
+            <OverflowMenuItem
+              onClick={() => {
+                deleteMedicationDispense(medicationDispense.id);
+                mutate();
+                mutatePrescriptionDetails();
+              }}
+              itemText={t("delete", "Delete")}
+            ></OverflowMenuItem>
+          )}
+        </OverflowMenu>
+      );
+    }
+  };
 
   // TODO: assumption is dispenses always are after requests?
   return (
