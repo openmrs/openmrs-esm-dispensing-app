@@ -9,11 +9,11 @@ This repository is for the OpenMRS Dispensing App. For more information, please 
 
 Note that following privileges need to be installed and assigned to roles:
 
-* o3.dispensing-app.dispense.create: Allows user to Dispense Medication
-* o3.dispense-app.dispense.create.modifyDetails: Allows user to modify the Quantity, Drug, Formulation and Dose Instructions (from the values specified in the Order / Medication Request) when Dispensing
-* o3.dispensing-app.dispense.edit: Allows user to edit an existing Medication Dispense
-* o3.dispensing-app.dispense.delete: Allows user to delete an existing Medication Dispense 
-* o3.dispensing.delete.thisProviderOnly: Allows user to delete an existing Medication Dispense, *but only* if they created it originally
+* "Task: dispensing.create.dispense" - Allows user to Dispense Medication
+* "Task: dispensing.create.dispense.andModifyDetails" - Allows user to modify the Quantity, Drug, Formulation and Dose Instructions (from the values specified in the Order / Medication Request) when Dispensing
+* "Task: dispensing.edit.dispense" - Allows user to edit an existing Medication Dispense
+* "Task: dispensing.delete.dispense" - Allows user to delete an existing Medication Dispense 
+* "Task: dispensing.delete.dispense.ifCreator" - Allows user to delete an existing Medication Dispense, *but only* if they created it originally
 
 ## Running this code
 
@@ -40,3 +40,4 @@ For more information, please see the
 
 In particular, the [Setup](https://openmrs.github.io/openmrs-esm-core/#/getting_started/setup)
 section can help you get started developing microfrontends in general.
+
