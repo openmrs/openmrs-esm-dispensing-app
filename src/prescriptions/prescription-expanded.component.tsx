@@ -1,5 +1,5 @@
 import React from "react";
-import { PatientUuid } from "@openmrs/esm-framework";
+import { PatientUuid, UserHasAccess } from "@openmrs/esm-framework";
 import { Tab, Tabs, TabList, TabPanels, TabPanel, Button } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import HistoryAndComments from "../history/history-and-comments.component";
@@ -7,6 +7,7 @@ import styles from "./prescription-expanded.scss";
 import PrescriptionDetails from "./prescription-details.component";
 import InitializeDispenseFormFromRequests from "../forms/initialize-dispense-form-from-requests.component";
 import { launchOverlay } from "../hooks/useOverlay";
+import { PRIVILEGE_CREATE_DISPENSE } from "../constants";
 
 interface TabItem {
   name: string;
@@ -67,24 +68,26 @@ const PrescriptionExpanded: React.FC<{
       </div>
       {status === "active" && (
         <div className={styles.prescriptionActions}>
-          <Button
-            kind="primary"
-            className={styles.dispenseBtn}
-            onClick={() =>
-              launchOverlay(
-                t("dispensePrescription", "Dispense prescription"),
-                <InitializeDispenseFormFromRequests
-                  encounterUuid={encounterUuid}
-                  mutate={mutate}
-                />
-              )
-            }
-          >
-            {t("dispense", "Dispense")}
-          </Button>
-          <Button kind="secondary" className={styles.returnToPrescriberBtn}>
+          <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
+            <Button
+              kind="primary"
+              className={styles.dispenseBtn}
+              onClick={() =>
+                launchOverlay(
+                  t("dispensePrescription", "Dispense prescription"),
+                  <InitializeDispenseFormFromRequests
+                    encounterUuid={encounterUuid}
+                    mutate={mutate}
+                  />
+                )
+              }
+            >
+              {t("dispense", "Dispense")}
+            </Button>
+          </UserHasAccess>
+          {/*  <Button kind="secondary" className={styles.returnToPrescriberBtn}>
             {t("sendBackToPrescriber", "Send back to prescriber")}
-          </Button>
+          </Button>*/}
         </div>
       )}
     </div>
