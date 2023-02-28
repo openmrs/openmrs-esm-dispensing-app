@@ -42,7 +42,11 @@ const InitializeDispenseFormFromRequests: React.FC<NewDispenseFormProps> = ({
       );
       setMedicationDispenses(dispenseMedications);
     }
-  }, [requests, session, config.medicationRequestExpirationPeriodInDays]);
+  }, [
+    requests.length,
+    session,
+    config.medicationRequestExpirationPeriodInDays,
+  ]);
 
   return (
     <DispenseForm
