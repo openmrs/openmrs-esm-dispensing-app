@@ -98,13 +98,13 @@ export interface Attribute {
 
 export interface CodeableConcept {
   coding: Coding[];
-  text: string;
+  text?: string;
 }
 
 export interface Coding {
   system?: string;
   code: string;
-  display: string;
+  display?: string;
 }
 export interface CommonConfigProps {
   uuid: string;
@@ -112,31 +112,21 @@ export interface CommonConfigProps {
 }
 
 export interface DosageInstruction {
-  text: string;
+  text?: string;
   timing: {
-    repeat: {
+    repeat?: {
       duration: number;
       durationUnit: string;
     };
     code: {
-      coding: [
-        {
-          code: string;
-          display: string;
-        }
-      ];
-      text: string;
+      coding: Array<Coding>;
+      text?: string;
     };
   };
   asNeededBoolean: boolean;
   route: {
-    coding: [
-      {
-        code: string;
-        display: string;
-      }
-    ];
-    text: string;
+    coding: Array<Coding>;
+    text?: string;
   };
   doseAndRate: Array<{
     doseQuantity: Quantity;
@@ -206,22 +196,21 @@ export interface Medication {
 
 export interface MedicationDispense {
   resourceType: string;
-  id: string;
-  meta: {
+  id?: string;
+  meta?: {
     lastUpdated: string;
   };
   status: string;
-  intent: string;
-  priority: string;
   authorizingPrescription?: [
     {
       reference: string;
+      type: string;
     }
   ];
   medicationReference: {
     reference: string;
-    type: string;
-    display: string;
+    type?: string;
+    display?: string;
   };
   medicationCodeableConcept?: {
     coding: Coding[];
@@ -229,33 +218,33 @@ export interface MedicationDispense {
   };
   subject: {
     reference: string;
-    type: string;
-    display: string;
+    type?: string;
+    display?: string;
   };
   performer: Array<{
     actor: {
       reference: string;
-      type: string;
-      identifier: {
-        value: string;
+      type?: string;
+      identifier?: {
+        value?: string;
       };
-      display: string;
+      display?: string;
     };
   }>;
   location: {
     reference: string;
-    type: string;
-    display: string;
+    type?: string;
+    display?: string;
   };
   type: CodeableConcept;
   quantity: Quantity;
-  whenPrepared: string;
-  whenHandedOver: string;
+  whenPrepared: any;
+  whenHandedOver: any;
   dosageInstruction: Array<DosageInstruction>;
   substitution: {
     wasSubstituted: boolean;
-    reason: CodeableConcept[];
-    type: CodeableConcept;
+    reason?: CodeableConcept[];
+    type?: CodeableConcept;
   };
 }
 
@@ -283,8 +272,8 @@ export interface MedicationRequest {
   priority: string;
   medicationReference: {
     reference: string;
-    type: string;
-    display: string;
+    type?: string;
+    display?: string;
   };
   medicationCodeableConcept?: {
     coding: Coding[];
@@ -292,8 +281,8 @@ export interface MedicationRequest {
   };
   subject: {
     reference: string;
-    type: string;
-    display: string;
+    type?: string;
+    display?: string;
   };
   encounter: {
     reference: string;
@@ -331,10 +320,10 @@ export interface MedicationRequestResponse {
 }
 
 export interface MedicationReferenceOrCodeableConcept {
-  medicationReference: {
+  medicationReference?: {
     reference: string;
-    type: string;
-    display: string;
+    type?: string;
+    display?: string;
   };
   medicationCodeableConcept?: {
     coding: Coding[];
@@ -383,7 +372,7 @@ export interface Quantity {
   value: number;
   unit: string;
   code: string;
-  system: string;
+  system?: string;
 }
 
 export interface ValueSet {

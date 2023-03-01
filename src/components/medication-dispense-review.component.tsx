@@ -404,7 +404,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           disabled={!userCanModify}
           hideSteppers={true}
           id="dosingQuanity"
-          light={isTablet}
           invalidText={t("numberIsNotValid", "Number is not valid")}
           min={0}
           label={t("dose", "Dose")}
