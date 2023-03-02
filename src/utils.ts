@@ -70,7 +70,7 @@ export function getRefillsAllowed(
     return (resource as MedicationRequest).dispenseRequest
       ?.numberOfRepeatsAllowed;
   } else {
-    return null; // dispense doesn't haee a "refills allowed" component
+    return null; // dispense doesn't have a "refills allowed" component
   }
 }
 
@@ -97,7 +97,7 @@ export function getPrescriptionTableActiveMedicationRequestsEndpoint(
   return `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}&patientSearchTerm=${patientSearchTerm}&date=ge${date}&status=active`;
 }
 
-export function getPrescriptionTableAllMedicationRequestsEnpointEndpoint(
+export function getPrescriptionTableAllMedicationRequestsEndpoint(
   pageOffset: number,
   pageSize: number,
   patientSearchTerm: string
@@ -114,7 +114,9 @@ export function getMedicationsByConceptEndpoint(conceptUuid: string) {
  * @param codings
  */
 export function getConceptCoding(codings: Coding[]) {
-  return codings ? codings.find((c) => !("system" in c)) : null;
+  return codings
+    ? codings.find((c) => !("system" in c) || c.system === undefined)
+    : null;
 }
 
 /**
@@ -192,7 +194,7 @@ export function computeStatus(
   if (
     medicationRequest.dispenseRequest?.validityPeriod?.start &&
     dayjs(medicationRequest.dispenseRequest.validityPeriod.start).isBefore(
-      dayjs(new Date())
+      dayjs()
         .startOf("day")
         .subtract(medicationRequestExpirationPeriodInDays, "day")
     )

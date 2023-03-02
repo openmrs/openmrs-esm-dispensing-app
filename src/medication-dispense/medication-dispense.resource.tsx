@@ -72,12 +72,13 @@ export function useSubstitutionReasonValueSet(uuid: string) {
   };
 }
 
-// TODO: should more be stripped out of here when initializing... ie don't copy over all the display data?
+// TODO: should more be stripped out of here when initializing?... ie don't copy over all the display data?
+// TODO: what about the issue with the repetitive reloading?
 export function initiateMedicationDispenseBody(
   medicationRequests: Array<MedicationRequest>,
   session: Session,
   medicationRequestExpirationPeriodInDays: number
-) {
+): Array<MedicationDispense> {
   let dispenseBody = [];
   medicationRequests
     .filter(
@@ -88,7 +89,7 @@ export function initiateMedicationDispenseBody(
         ) === "active"
     )
     .map((medicationRequest) => {
-      let dispense = {
+      let dispense: MedicationDispense = {
         resourceType: "MedicationDispense",
         status: "completed", // might need to change this to appropriate status
         authorizingPrescription: [

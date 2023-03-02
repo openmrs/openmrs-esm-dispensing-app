@@ -14,7 +14,7 @@ import {
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
   getPrescriptionTableActiveMedicationRequestsEndpoint,
-  getPrescriptionTableAllMedicationRequestsEnpointEndpoint,
+  getPrescriptionTableAllMedicationRequestsEndpoint,
 } from "../utils";
 import dayjs from "dayjs";
 
@@ -36,7 +36,7 @@ export function usePrescriptionsTable(
             .subtract(medicationRequestExpirationPeriodInDays, "day")
             .toISOString()
         )
-      : getPrescriptionTableAllMedicationRequestsEnpointEndpoint(
+      : getPrescriptionTableAllMedicationRequestsEndpoint(
           pageOffset,
           pageSize,
           patientSearchTerm
@@ -140,7 +140,7 @@ function buildPrescriptionsTableRow(
   };
 }
 
-function computePrescriptionStatus(
+export function computePrescriptionStatus(
   orderStatuses: Array<string>,
   encounterDatetime: string,
   medicationRequestExpirationPeriodInDays
@@ -210,25 +210,31 @@ export function usePrescriptionDetails(encounterUuid: string) {
       ?.filter((entry) => entry?.resource?.resourceType == "Encounter")
       .map((entry) => entry.resource as Encounter);
 
-    // by definition of the request (search by encounter) there should be one and only one encounter
-    prescriptionDate = parseDate(encounter[0]?.period.start);
+    if (encounter) {
+      // by definition of the request (search by encounter) there should be one and only one encounter
+      prescriptionDate = parseDate(encounter[0]?.period.start);
 
-    requests = results
-      ?.filter((entry) => entry?.resource?.resourceType == "MedicationRequest")
-      .map((entry) => entry.resource as MedicationRequest);
-    dispenses = results
-      ?.filter((entry) => entry?.resource?.resourceType == "MedicationDispense")
-      .map((entry) => entry.resource as MedicationDispense)
-      .sort((a, b) => {
-        const dateDiff =
-          parseDate(b.whenHandedOver).getTime() -
-          parseDate(a.whenHandedOver).getTime();
-        if (dateDiff !== 0) {
-          return dateDiff;
-        } else {
-          return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
-        }
-      });
+      requests = results
+        ?.filter(
+          (entry) => entry?.resource?.resourceType == "MedicationRequest"
+        )
+        .map((entry) => entry.resource as MedicationRequest);
+      dispenses = results
+        ?.filter(
+          (entry) => entry?.resource?.resourceType == "MedicationDispense"
+        )
+        .map((entry) => entry.resource as MedicationDispense)
+        .sort((a, b) => {
+          const dateDiff =
+            parseDate(b.whenHandedOver).getTime() -
+            parseDate(a.whenHandedOver).getTime();
+          if (dateDiff !== 0) {
+            return dateDiff;
+          } else {
+            return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
+          }
+        });
+    }
   }
 
   isLoading = !requests && !error;
