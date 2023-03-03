@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Tab, Tabs, TabList, TabPanels, Search, Button } from "@carbon/react";
+import {
+  Tab,
+  Tabs,
+  TabList,
+  TabPanels,
+  Search,
+  Button,
+  ComboBox,
+} from "@carbon/react";
 import { Add } from "@carbon/react/icons";
 import { useTranslation } from "react-i18next";
 import PrescriptionTabPanel from "./prescription-tab-panel.component";
 import styles from "./prescriptions.scss";
+import { useLoginLocations } from "../location/location.resource";
+import { LoginLocation } from "../types";
 
 enum TabTypes {
   STARRED,
@@ -14,9 +24,12 @@ enum TabTypes {
 
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
+  const { loginLocations, isLoading: isLoginLocationsLoading } =
+    useLoginLocations();
   const [selectedTab, setSelectedTab] = useState(TabTypes.STARRED);
   const [searchTermUserInput, setSearchTermUserInput] = useState(""); // we have a separate "searchTermUserInput" and "searchTerm" in order to debounce
   const [searchTerm, setSearchTerm] = useState("");
+  const [location, setLocation] = useState("");
 
   const tabs = [
     {
@@ -88,11 +101,24 @@ const PrescriptionTabLists: React.FC = () => {
               size="md"
               className={styles.patientSearch}
             />
+            {!isLoginLocationsLoading && loginLocations?.length > 1 && (
+              <ComboBox
+                id="locationFilter"
+                placeholder={t("filterByLocation", "Filter by location")}
+                items={isLoginLocationsLoading ? [] : loginLocations}
+                itemToString={(item: LoginLocation) => item?.name}
+                onChange={({ selectedItem }) => {
+                  setLocation(selectedItem?.id);
+                }}
+                className={styles.locationFilter}
+              />
+            )}
           </div>
           <TabPanels>
             {tabs.map((tab, index) => {
               return (
                 <PrescriptionTabPanel
+                  location={location}
                   searchTerm={searchTerm}
                   status={tab.status}
                 />

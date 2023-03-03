@@ -22,6 +22,7 @@ export function usePrescriptionsTable(
   pageSize: number = 10,
   pageOffset: number = 0,
   patientSearchTerm: string = "",
+  location: string = "",
   status: string = "",
   medicationRequestExpirationPeriodInDays: number
 ) {
@@ -30,16 +31,18 @@ export function usePrescriptionsTable(
       ? getPrescriptionTableActiveMedicationRequestsEndpoint(
           pageOffset,
           pageSize,
-          patientSearchTerm,
           dayjs(new Date())
             .startOf("day")
             .subtract(medicationRequestExpirationPeriodInDays, "day")
-            .toISOString()
+            .toISOString(),
+          patientSearchTerm,
+          location
         )
       : getPrescriptionTableAllMedicationRequestsEndpoint(
           pageOffset,
           pageSize,
-          patientSearchTerm
+          patientSearchTerm,
+          location
         ),
     openmrsFetch
   );
@@ -137,6 +140,9 @@ function buildPrescriptionsTableRow(
       medicationRequestExpirationPeriodInDays
     ),
     patientUuid: encounter?.subject?.reference?.split("/")[1],
+    location: encounter?.location
+      ? encounter?.location[0]?.location.display
+      : null,
   };
 }
 

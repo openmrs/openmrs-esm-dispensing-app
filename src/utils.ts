@@ -91,18 +91,42 @@ export function getPrescriptionDetailsEndpoint(encounterUuid: string) {
 export function getPrescriptionTableActiveMedicationRequestsEndpoint(
   pageOffset: number,
   pageSize: number,
+  date: string,
   patientSearchTerm: string,
-  date: string
+  location: string
 ) {
-  return `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}&patientSearchTerm=${patientSearchTerm}&date=ge${date}&status=active`;
+  return appendSearchTermAndLocation(
+    `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=active`,
+    patientSearchTerm,
+    location
+  );
 }
 
 export function getPrescriptionTableAllMedicationRequestsEndpoint(
   pageOffset: number,
   pageSize: number,
-  patientSearchTerm: string
+  patientSearchTerm: string,
+  location: string
 ) {
-  return `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}&patientSearchTerm=${patientSearchTerm}`;
+  return appendSearchTermAndLocation(
+    `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}`,
+    patientSearchTerm,
+    location
+  );
+}
+
+function appendSearchTermAndLocation(
+  url: string,
+  patientSearchTerm: string,
+  location: string
+) {
+  if (patientSearchTerm) {
+    url = `${url}&patientSearchTerm=${patientSearchTerm}`;
+  }
+  if (location) {
+    url = `${url}&location=${location}`;
+  }
+  return url;
 }
 
 export function getMedicationsByConceptEndpoint(conceptUuid: string) {

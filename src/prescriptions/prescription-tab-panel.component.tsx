@@ -24,18 +24,23 @@ import { usePrescriptionsTable } from "../medication-request/medication-request.
 import { PrescriptionsTableRow } from "../types";
 import { PharmacyConfig } from "../config-schema";
 import styles from "./prescriptions.scss";
+import { useLoginLocations } from "../location/location.resource";
 
 interface PrescriptionTabPanelProps {
   searchTerm: string;
+  location: string;
   status: string;
 }
 
 const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   searchTerm,
+  location,
   status,
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
+  const { loginLocations, isLoading: isLoginLocationsLoading } =
+    useLoginLocations();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
@@ -44,12 +49,13 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
       pageSize,
       nextOffSet,
       searchTerm,
+      location,
       status,
       config.medicationRequestExpirationPeriodInDays
     );
   const encounterToPatientMap = {};
 
-  const columns = [
+  let columns = [
     { header: t("created", "Created"), key: "created" },
     { header: t("patientName", "Patient name"), key: "patientName" },
     { header: t("prescriber", "Prescriber"), key: "prescriber" },
@@ -57,6 +63,15 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
     { header: t("lastDispenser", "Last dispenser"), key: "lastDispenser" },
     { header: t("status", "Status"), key: "status" },
   ];
+
+  // add the locations column, but only for multli-location implementations
+  if (!isLoginLocationsLoading && loginLocations?.length > 1) {
+    columns = [
+      ...columns.slice(0, 3),
+      { header: t("location", "Location"), key: "location" },
+      ...columns.slice(3),
+    ];
+  }
 
   useEffect(() => {
     if (prescriptionsTableRows?.length > 0) {
