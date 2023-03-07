@@ -171,12 +171,6 @@ export interface EncounterResponse {
   }>;
 }
 
-// simple representation of a location
-export interface LoginLocation {
-  id: string;
-  name: string;
-}
-
 export interface LocationResponse {
   resourceType: string;
   id: string;
@@ -394,6 +388,12 @@ export interface Reference {
   reference: string;
   type?: string;
   display?: string;
+}
+
+// simple representation of a location
+export interface SimpleLocation {
+  id: string;
+  name: string;
 }
 
 export interface ValueSet {

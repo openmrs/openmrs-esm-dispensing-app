@@ -1,8 +1,8 @@
 import React from "react";
 import useSWR from "swr";
 import { openmrsFetch } from "@openmrs/esm-framework";
-import { useLoginLocations } from "./location.resource";
-import { LoginLocation } from "../types";
+import { useLocationForFiltering } from "./location.resource";
+import { PharmacyConfig } from "../config-schema";
 
 jest.mock("@openmrs/esm-framework", () => {
   const originalModule = jest.requireActual("@openmrs/esm-framework");
@@ -15,15 +15,27 @@ jest.mock("@openmrs/esm-framework", () => {
 
 jest.mock("swr");
 
+const pharmacyConfig: PharmacyConfig = {
+  appName: "",
+  locationBehavior: {
+    locationColumn: { enabled: false },
+    locationFilter: { enabled: false, tag: "Login Location" },
+  },
+  medicationRequestExpirationPeriodInDays: 0,
+  substitutionReason: { uuid: "" },
+  substitutionType: { uuid: "" },
+};
+
 describe("Location Resource tests", () => {
   test("useLoginLocations should call proper endpoint via SWR", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({
       data: { data: "mockedLoginLocations" },
     }));
-    const loginLocations = useLoginLocations();
+
+    useLocationForFiltering(pharmacyConfig);
     expect(useSWR).toHaveBeenCalledWith(
-      "/ws/fhir2/R4/Location?_tag=login%20location&_count=100",
+      "/ws/fhir2/R4/Location?_tag=Login%20Location&_count=100",
       openmrsFetch
     );
   });
@@ -148,13 +160,13 @@ describe("Location Resource tests", () => {
 
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: queryResultsBundle } }));
-    const { loginLocations } = useLoginLocations();
-    expect(loginLocations.length).toBe(3);
-    expect(loginLocations[0].id).toBe("11857d80-5959-11e4-8ed6-0800200c9a66");
-    expect(loginLocations[0].name).toBe("Inpatient Ward");
-    expect(loginLocations[1].id).toBe("11857d81-5959-11e4-8ed6-0800200c9a66");
-    expect(loginLocations[1].name).toBe("Men's Clinic");
-    expect(loginLocations[2].id).toBe("083e75b0-5959-11e4-8ed6-0800200c9a66");
-    expect(loginLocations[2].name).toBe("Women's Clinic");
+    const { filterLocations } = useLocationForFiltering(pharmacyConfig);
+    expect(filterLocations.length).toBe(3);
+    expect(filterLocations[0].id).toBe("11857d80-5959-11e4-8ed6-0800200c9a66");
+    expect(filterLocations[0].name).toBe("Inpatient Ward");
+    expect(filterLocations[1].id).toBe("11857d81-5959-11e4-8ed6-0800200c9a66");
+    expect(filterLocations[1].name).toBe("Men's Clinic");
+    expect(filterLocations[2].id).toBe("083e75b0-5959-11e4-8ed6-0800200c9a66");
+    expect(filterLocations[2].name).toBe("Women's Clinic");
   });
 });

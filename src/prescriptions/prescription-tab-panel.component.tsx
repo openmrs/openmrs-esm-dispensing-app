@@ -24,7 +24,6 @@ import { usePrescriptionsTable } from "../medication-request/medication-request.
 import { PrescriptionsTableRow } from "../types";
 import { PharmacyConfig } from "../config-schema";
 import styles from "./prescriptions.scss";
-import { useLoginLocations } from "../location/location.resource";
 
 interface PrescriptionTabPanelProps {
   searchTerm: string;
@@ -39,8 +38,6 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
-  const { loginLocations, isLoading: isLoginLocationsLoading } =
-    useLoginLocations();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
@@ -64,8 +61,8 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
     { header: t("status", "Status"), key: "status" },
   ];
 
-  // add the locations column, but only for multli-location implementations
-  if (!isLoginLocationsLoading && loginLocations?.length > 1) {
+  // add the locations column, if enabled
+  if (config.locationBehavior?.locationColumn?.enabled) {
     columns = [
       ...columns.slice(0, 3),
       { header: t("location", "Location"), key: "location" },
