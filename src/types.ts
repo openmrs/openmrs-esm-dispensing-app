@@ -141,7 +141,7 @@ export interface Drug {
   dosageForm: OpenmrsResource;
 }
 
-// add more properties, or fine just to keep the ones we are using
+// add more properties, or fine just to keep the ones we are using? is there a global definition of this resource?
 export interface Encounter {
   resourceType: string;
   id: string;
@@ -155,6 +155,7 @@ export interface Encounter {
     reference: string;
     display: string;
   };
+  location?: [{ location: Reference }];
 }
 
 export interface EncounterResponse {
@@ -168,6 +169,17 @@ export interface EncounterResponse {
   entry: Array<{
     resource: Encounter | MedicationRequest | MedicationDispense;
   }>;
+}
+
+export interface LocationResponse {
+  resourceType: string;
+  id: string;
+  meta: {
+    lastUpdated: string;
+  };
+  type: string;
+  total: number;
+  entry: Array<any>; // TODO: type this out better?
 }
 
 export interface Medication {
@@ -231,11 +243,7 @@ export interface MedicationDispense {
       display?: string;
     };
   }>;
-  location: {
-    reference: string;
-    type?: string;
-    display?: string;
-  };
+  location: Reference;
   type: CodeableConcept;
   quantity: Quantity;
   whenPrepared: any;
@@ -366,6 +374,7 @@ export interface PrescriptionsTableRow {
   lastDispenser: string;
   status: string;
   patientUuid: string;
+  location: string;
 }
 
 export interface Quantity {
@@ -373,6 +382,18 @@ export interface Quantity {
   unit: string;
   code: string;
   system?: string;
+}
+
+export interface Reference {
+  reference: string;
+  type?: string;
+  display?: string;
+}
+
+// simple representation of a location
+export interface SimpleLocation {
+  id: string;
+  name: string;
 }
 
 export interface ValueSet {

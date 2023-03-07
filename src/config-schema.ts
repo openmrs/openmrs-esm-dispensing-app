@@ -31,6 +31,30 @@ export const configSchema = {
       "Medication Requests older that this will be considered expired",
     _default: 90,
   },
+  locationBehavior: {
+    locationColumn: {
+      enabled: {
+        _type: Type.Boolean,
+        _description:
+          "Enabled/Disable including a Location column in the main prescriptions table showing ordering location",
+        _default: false,
+      },
+    },
+    locationFilter: {
+      enabled: {
+        _type: Type.Boolean,
+        _description:
+          "Enable/Disable Location filter on main prescriptions page",
+        _default: false,
+      },
+      tag: {
+        _type: Type.String,
+        _description:
+          "Name of the location tag to use when fetching locations to populate filter",
+        _default: "Login Location",
+      },
+    },
+  },
   substitutionReason: {
     uuid: {
       _type: Type.UUID,
@@ -51,11 +75,20 @@ export const configSchema = {
 
 export type PharmacyConfig = {
   appName: string;
+  medicationRequestExpirationPeriodInDays: number;
+  locationBehavior: {
+    locationColumn: {
+      enabled: boolean;
+    };
+    locationFilter: {
+      enabled: boolean;
+      tag: string;
+    };
+  };
   substitutionReason: {
     uuid: string;
   };
   substitutionType: {
     uuid: string;
   };
-  medicationRequestExpirationPeriodInDays: number;
 };

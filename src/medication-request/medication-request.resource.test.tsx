@@ -25,12 +25,12 @@ describe("Medication Request Resource Test", () => {
   test("usePrescriptionsTable should call active endpoint and proper date based on expiration period if status parameter is active", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: "mockedReturnData" } }));
-    usePrescriptionsTable(5, 5, "bob", "ACTIVE", 10);
+    usePrescriptionsTable(5, 5, "bob", null, "ACTIVE", 10);
     expect(useSWR).toHaveBeenCalledWith(
-      `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=5&_count=5&patientSearchTerm=bob&date=ge${dayjs()
+      `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=5&_count=5&date=ge${dayjs()
         .startOf("day")
         .subtract(10, "day")
-        .toISOString()}&status=active`,
+        .toISOString()}&status=active&patientSearchTerm=bob`,
       openmrsFetch
     );
   });
@@ -38,7 +38,7 @@ describe("Medication Request Resource Test", () => {
   test("usePrescriptionsTable should call all endpoint if status parameter is not active", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: "mockedReturnData" } }));
-    usePrescriptionsTable(5, 5, "bob", "", 10);
+    usePrescriptionsTable(5, 5, "bob", null, null, 10);
     expect(useSWR).toHaveBeenCalledWith(
       `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=5&_count=5&patientSearchTerm=bob`,
       openmrsFetch
@@ -110,6 +110,15 @@ describe("Medication Request Resource Test", () => {
             period: {
               start: "2023-01-24T19:02:04-05:00",
             },
+            location: [
+              {
+                location: {
+                  reference: "Location/083e75b0-5959-11e4-8ed6-0800200c9a66",
+                  type: "Location",
+                  display: "CDI Klinik Ekstèn Jeneral",
+                },
+              },
+            ],
           },
         },
         {
@@ -600,6 +609,7 @@ describe("Medication Request Resource Test", () => {
       0,
       "bob",
       "ACTIVE",
+      null,
       90
     );
     expect(totalOrders).toBe(26);
@@ -622,6 +632,9 @@ describe("Medication Request Resource Test", () => {
       "Goodrich, Mark (Identifier: MAADH)"
     );
     expect(prescriptionsTableRows[0].status).toBe("completed");
+    expect(prescriptionsTableRows[0].location).toBe(
+      "CDI Klinik Ekstèn Jeneral"
+    );
     expect(prescriptionsTableRows[1].id).toBe(
       "8be2352d-c10d-4111-ac01-0ccada4c54d2"
     );
@@ -642,6 +655,7 @@ describe("Medication Request Resource Test", () => {
       "Goodrich, Mark (Identifier: MAADH)"
     );
     expect(prescriptionsTableRows[1].status).toBe("active");
+    expect(prescriptionsTableRows[1].location).toBeNull();
   });
 
   test("computePrescriptionStatus should return active if all orders are active or stopped and encounter within expiry period", () => {

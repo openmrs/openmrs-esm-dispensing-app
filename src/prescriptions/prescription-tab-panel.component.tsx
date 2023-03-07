@@ -27,11 +27,13 @@ import styles from "./prescriptions.scss";
 
 interface PrescriptionTabPanelProps {
   searchTerm: string;
+  location: string;
   status: string;
 }
 
 const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   searchTerm,
+  location,
   status,
 }) => {
   const { t } = useTranslation();
@@ -44,12 +46,13 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
       pageSize,
       nextOffSet,
       searchTerm,
+      location,
       status,
       config.medicationRequestExpirationPeriodInDays
     );
   const encounterToPatientMap = {};
 
-  const columns = [
+  let columns = [
     { header: t("created", "Created"), key: "created" },
     { header: t("patientName", "Patient name"), key: "patientName" },
     { header: t("prescriber", "Prescriber"), key: "prescriber" },
@@ -57,6 +60,15 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
     { header: t("lastDispenser", "Last dispenser"), key: "lastDispenser" },
     { header: t("status", "Status"), key: "status" },
   ];
+
+  // add the locations column, if enabled
+  if (config.locationBehavior?.locationColumn?.enabled) {
+    columns = [
+      ...columns.slice(0, 3),
+      { header: t("location", "Location"), key: "location" },
+      ...columns.slice(3),
+    ];
+  }
 
   useEffect(() => {
     if (prescriptionsTableRows?.length > 0) {

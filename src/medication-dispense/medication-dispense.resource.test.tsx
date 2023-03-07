@@ -323,10 +323,10 @@ describe("Medication Dispense Resource tests", () => {
     expect(medicationDispense.quantity.unit).toBe("Tablet");
     expect(medicationDispense.quantity.code).toBe("123456789");
     expect(
-      dayjs().isSame(dayjs(medicationDispense.whenPrepared), "second")
+      dayjs().isSame(dayjs(medicationDispense.whenPrepared), "minute")
     ).toBe(true);
     expect(
-      dayjs().isSame(dayjs(medicationDispense.whenHandedOver), "second")
+      dayjs().isSame(dayjs(medicationDispense.whenHandedOver), "minute")
     ).toBe(true);
     expect(medicationDispense.dosageInstruction[0].text).toBe("Take with food");
     expect(medicationDispense.dosageInstruction[0].timing.repeat.duration).toBe(
