@@ -21,7 +21,6 @@ import { useTranslation } from "react-i18next";
 import { formatDatetime, parseDate, useConfig } from "@openmrs/esm-framework";
 import PrescriptionExpanded from "./prescription-expanded.component";
 import { usePrescriptionsTable } from "../medication-request/medication-request.resource";
-import { PrescriptionsTableRow } from "../types";
 import { PharmacyConfig } from "../config-schema";
 import styles from "./prescriptions.scss";
 
@@ -50,11 +49,10 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
       status,
       config.medicationRequestExpirationPeriodInDays
     );
-  const encounterToPatientMap = {};
 
   let columns = [
     { header: t("created", "Created"), key: "created" },
-    { header: t("patientName", "Patient name"), key: "patientName" },
+    { header: t("patientName", "Patient name"), key: "patient" },
     { header: t("prescriber", "Prescriber"), key: "prescriber" },
     { header: t("drugs", "Drugs"), key: "drugs" },
     { header: t("lastDispenser", "Last dispenser"), key: "lastDispenser" },
@@ -69,14 +67,6 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
       ...columns.slice(3),
     ];
   }
-
-  useEffect(() => {
-    if (prescriptionsTableRows?.length > 0) {
-      prescriptionsTableRows.map((order: PrescriptionsTableRow) => {
-        encounterToPatientMap[order.id] = order.patientUuid;
-      });
-    }
-  }, [prescriptionsTableRows]);
 
   // reset back to page 1 whenever search term changes
   useEffect(() => {
@@ -123,6 +113,8 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
                               <TableCell key={cell.id}>
                                 {cell.id.endsWith("created")
                                   ? formatDatetime(parseDate(cell.value))
+                                  : cell.id.endsWith("patient")
+                                  ? cell.value.name
                                   : cell.id.endsWith("status")
                                   ? t(cell.value)
                                   : cell.value}
@@ -132,7 +124,11 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
                           <TableExpandedRow colSpan={headers.length + 1}>
                             <PrescriptionExpanded
                               encounterUuid={row.id}
-                              patientUuid={encounterToPatientMap[row.id]}
+                              patientUuid={
+                                row.cells.find((cell) =>
+                                  cell.id.endsWith("patient")
+                                ).value.uuid
+                              }
                               mutate={mutate}
                               status={
                                 row.cells.find((cell) =>

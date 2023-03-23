@@ -622,10 +622,10 @@ describe("Medication Request Resource Test", () => {
       "Ascorbic acid (Vitamin C), 250mg tablet"
     );
     expect(prescriptionsTableRows[0].lastDispenser).toBeUndefined();
-    expect(prescriptionsTableRows[0].patientName).toBe(
+    expect(prescriptionsTableRows[0].patient.name).toBe(
       "Dylan, Bob (ZL EMR ID: Y2CK2G)"
     );
-    expect(prescriptionsTableRows[0].patientUuid).toBe(
+    expect(prescriptionsTableRows[0].patient.uuid).toBe(
       "558494fe-5850-4b34-a3bf-06550334ba4a"
     );
     expect(prescriptionsTableRows[0].prescriber).toBe(
@@ -645,10 +645,10 @@ describe("Medication Request Resource Test", () => {
     expect(prescriptionsTableRows[1].lastDispenser).toBe(
       "Goodrich, Mark (Identifier: MAADH)"
     );
-    expect(prescriptionsTableRows[1].patientName).toBe(
+    expect(prescriptionsTableRows[1].patient.name).toBe(
       "Dylan, Bob (ZL EMR ID: Y2CK2G)"
     );
-    expect(prescriptionsTableRows[1].patientUuid).toBe(
+    expect(prescriptionsTableRows[1].patient.uuid).toBe(
       "558494fe-5850-4b34-a3bf-06550334ba4a"
     );
     expect(prescriptionsTableRows[1].prescriber).toBe(

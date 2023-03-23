@@ -368,12 +368,14 @@ export interface Person {
 export interface PrescriptionsTableRow {
   id: string;
   created: string;
-  patientName: string;
+  patient: {
+    name: string;
+    uuid: string;
+  };
   prescriber: string;
   drugs: string;
   lastDispenser: string;
   status: string;
-  patientUuid: string;
   location: string;
 }
 

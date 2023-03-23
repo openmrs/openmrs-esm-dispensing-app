@@ -113,7 +113,10 @@ function buildPrescriptionsTableRow(
   return {
     id: encounter?.id,
     created: encounter?.period?.start,
-    patientName: encounter?.subject?.display,
+    patient: {
+      name: encounter?.subject?.display,
+      uuid: encounter?.subject?.reference?.split("/")[1],
+    },
     drugs: [
       ...new Set(
         medicationRequests
@@ -139,7 +142,6 @@ function buildPrescriptionsTableRow(
       encounter?.period?.start,
       medicationRequestExpirationPeriodInDays
     ),
-    patientUuid: encounter?.subject?.reference?.split("/")[1],
     location: encounter?.location
       ? encounter?.location[0]?.location.display
       : null,
@@ -261,26 +263,18 @@ export function usePatientAllergies(patientUuid: string) {
     openmrsFetch
   );
 
-  let allergiesArray = [];
+  let allergies = [];
   if (data) {
-    const allergyIntolerances = data?.data.entry;
-    allergyIntolerances?.map((allergy) => {
-      return allergiesArray.push(allergy.resource?.code?.text);
+    const entries = data?.data.entry;
+    entries?.map((allergy) => {
+      return allergies.push(allergy.resource);
     });
   }
 
-  let allergies = null;
-  if (allergiesArray.length > 0) {
-    allergies = allergiesArray.join(", ");
-  } else {
-    allergies = "No known allergies";
-  }
-
   return {
-    allergies: allergies,
+    allergies,
     totalAllergies: data?.data.total,
     isError: error,
-    isLoading: !allergiesArray && !error,
   };
 }
 
