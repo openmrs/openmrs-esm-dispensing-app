@@ -9,9 +9,9 @@ import {
 import { useTranslation } from "react-i18next";
 import MedicationEvent from "../components/medication-event.component";
 import { PatientUuid, useConfig } from "@openmrs/esm-framework";
-import { MedicationRequest } from "../types";
+import { AllergyIntolerance, MedicationRequest } from "../types";
 import { PharmacyConfig } from "../config-schema";
-import { computeStatus } from "../utils";
+import { computeStatus, getConceptCodingDisplay } from "../utils";
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -19,14 +19,14 @@ const PrescriptionDetails: React.FC<{
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
-  const [isAllergiesLoaded, setAllergiesLoadedStatus] = useState(true);
+  const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
   const { requests, isError, isLoading } =
     usePrescriptionDetails(encounterUuid);
 
   useEffect(() => {
     if (typeof totalAllergies == "number") {
-      setAllergiesLoadedStatus(false);
+      setAllergiesLoadingStatus(false);
     }
   }, [totalAllergies]);
 
@@ -52,23 +52,33 @@ const PrescriptionDetails: React.FC<{
     return null;
   };
 
+  const displayAllergies: Function = (allergies: Array<AllergyIntolerance>) => {
+    return allergies
+      .map((allergy) => getConceptCodingDisplay(allergy.code.coding))
+      .join(", ");
+  };
+
   return (
     <div className={styles.prescriptionContainer}>
-      {isAllergiesLoaded && <DataTableSkeleton role="progressbar" />}
-      {typeof totalAllergies == "number" && (
+      {isAllergiesLoading && <DataTableSkeleton role="progressbar" />}
+      {!isAllergiesLoading && (
         <Tile className={styles.allergiesTile}>
           <div className={styles.allergesContent}>
             <div>
               <WarningFilled size={24} className={styles.allergiesIcon} />
               <p>
-                <span style={{ fontWeight: "bold" }}>
-                  {totalAllergies} {t("allergies", "allergies").toLowerCase()}
-                </span>{" "}
-                {allergies}
+                {totalAllergies > 0 && (
+                  <span>
+                    <span style={{ fontWeight: "bold" }}>
+                      {totalAllergies}{" "}
+                      {t("allergies", "allergies").toLowerCase()}
+                    </span>{" "}
+                    {displayAllergies(allergies)}
+                  </span>
+                )}
+                {totalAllergies == 0 &&
+                  t("noAllergyDetailsFound", "No allergy details found")}
               </p>
-              <a href={`dispensing`} onClick={(e) => e.preventDefault()}>
-                View
-              </a>
             </div>
           </div>
         </Tile>

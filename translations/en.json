@@ -46,6 +46,7 @@
   "medicationDispenseUpdatedError": "Error updating dispense record",
   "medicationListUpdated": "Medication dispense list has been updated.",
   "missedCollections": "Missed collections",
+  "noAllergyDetailsFound": "No allergy details found",
   "numberIsNotValid": "Number is not valid",
   "orderedMedication": "ordered medication",
   "order": "Order",
