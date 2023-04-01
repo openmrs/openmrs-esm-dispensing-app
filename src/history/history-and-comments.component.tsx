@@ -145,7 +145,7 @@ const HistoryAndComments: React.FC<{
               </h5>
               <Tile className={styles.dispenseTile}>
                 {generateMedicationDispenseActionMenu(dispense)}
-                <Tag type="red">{t("dispense", "Dispense")}</Tag>
+                <Tag type="gray">{t("dispensed", "Dispensed")}</Tag>
                 <MedicationEvent medicationEvent={dispense} />
               </Tile>
             </div>
@@ -167,7 +167,7 @@ const HistoryAndComments: React.FC<{
                 {formatDatetime(prescriptionDate)}
               </h5>
               <Tile className={styles.requestTile}>
-                <Tag type="green">{t("order", "Order")}</Tag>
+                <Tag type="green">{t("ordered", "Ordered")}</Tag>
                 <MedicationEvent medicationEvent={request} />
               </Tile>
             </div>
