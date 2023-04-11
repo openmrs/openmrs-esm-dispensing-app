@@ -126,7 +126,6 @@ describe("Medication Dispense Review Component tests", () => {
     const { getByText, container } = render(
       <MedicationDispenseReview
         medicationDispense={medicationDispense}
-        index={0}
         updateMedicationDispense={mockUpdate}
       />
     );

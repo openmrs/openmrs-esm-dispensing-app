@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Medication, MedicationDispense } from "../types";
-import MedicationCard from "./medication-card.component";
+import MedicationCard from "../components/medication-card.component";
 import { TextArea, ComboBox, Dropdown, NumberInput } from "@carbon/react";
 import {
   useLayoutType,
@@ -14,7 +14,7 @@ import {
   getMedicationReferenceOrCodeableConcept,
   getOpenMRSMedicineDrugName,
 } from "../utils";
-import styles from "./medication-dispense-review.scss";
+import styles from "../components/medication-dispense-review.scss";
 import {
   useMedicationCodeableConcept,
   useMedicationFormulations,
@@ -30,13 +30,11 @@ import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from "../constants";
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
-  index: number;
   updateMedicationDispense: Function;
 }
 
 const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   medicationDispense,
-  index,
   updateMedicationDispense,
 }) => {
   const { t } = useTranslation();
@@ -192,33 +190,27 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         medicationDispense.medicationReference.reference
     ) {
       setIsSubstitution(true);
-      updateMedicationDispense(
-        {
-          ...medicationDispense,
-          substitution: {
-            ...medicationDispense.substitution,
-            wasSubstituted: true,
-          },
+      updateMedicationDispense({
+        ...medicationDispense,
+        substitution: {
+          ...medicationDispense.substitution,
+          wasSubstituted: true,
         },
-        index
-      );
+      });
     } else {
       setIsSubstitution(false);
-      updateMedicationDispense(
-        {
-          ...medicationDispense,
-          substitution: {
-            wasSubstituted: false,
-            reason: [
-              {
-                coding: [{ code: null }],
-              },
-            ],
-            type: { coding: [{ code: null }] },
-          },
+      updateMedicationDispense({
+        ...medicationDispense,
+        substitution: {
+          wasSubstituted: false,
+          reason: [
+            {
+              coding: [{ code: null }],
+            },
+          ],
+          type: { coding: [{ code: null }] },
         },
-        index
-      );
+      });
     }
   }, [
     medicationDispense.medicationReference,
@@ -257,17 +249,14 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             ),
           }}
           onChange={({ selectedItem }) => {
-            updateMedicationDispense(
-              {
-                ...medicationDispense,
-                medicationCodeableConcept: undefined,
-                medicationReference: {
-                  reference: "Medication/" + selectedItem?.id,
-                  display: getOpenMRSMedicineDrugName(selectedItem),
-                },
+            updateMedicationDispense({
+              ...medicationDispense,
+              medicationCodeableConcept: undefined,
+              medicationReference: {
+                reference: "Medication/" + selectedItem?.id,
+                display: getOpenMRSMedicineDrugName(selectedItem),
               },
-              index
-            );
+            });
             setIsEditingFormulation(false);
           }}
           required
@@ -288,22 +277,19 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               text: medicationDispense.substitution.type?.text,
             }}
             onChange={({ selectedItem }) => {
-              updateMedicationDispense(
-                {
-                  ...medicationDispense,
-                  substitution: {
-                    ...medicationDispense.substitution,
-                    type: {
-                      coding: [
-                        {
-                          code: selectedItem?.id,
-                        },
-                      ],
-                    },
+              updateMedicationDispense({
+                ...medicationDispense,
+                substitution: {
+                  ...medicationDispense.substitution,
+                  type: {
+                    coding: [
+                      {
+                        code: selectedItem?.id,
+                      },
+                    ],
                   },
                 },
-                index
-              );
+              });
             }}
           />
         </div>
@@ -323,24 +309,21 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               text: medicationDispense.substitution.reason[0]?.text,
             }}
             onChange={({ selectedItem }) => {
-              updateMedicationDispense(
-                {
-                  ...medicationDispense,
-                  substitution: {
-                    ...medicationDispense.substitution,
-                    reason: [
-                      {
-                        coding: [
-                          {
-                            code: selectedItem?.id,
-                          },
-                        ],
-                      },
-                    ],
-                  },
+              updateMedicationDispense({
+                ...medicationDispense,
+                substitution: {
+                  ...medicationDispense.substitution,
+                  reason: [
+                    {
+                      coding: [
+                        {
+                          code: selectedItem?.id,
+                        },
+                      ],
+                    },
+                  ],
                 },
-                index
-              );
+              });
             }}
           />
         </div>
@@ -357,16 +340,13 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           min={0}
           value={medicationDispense.quantity.value}
           onChange={(e) => {
-            updateMedicationDispense(
-              {
-                ...medicationDispense,
-                quantity: {
-                  ...medicationDispense.quantity,
-                  value: e.target.value,
-                },
+            updateMedicationDispense({
+              ...medicationDispense,
+              quantity: {
+                ...medicationDispense.quantity,
+                value: e.target.value,
               },
-              index
-            );
+            });
           }}
         />
 
@@ -382,17 +362,14 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             text: medicationDispense.quantity.unit,
           }}
           onChange={({ selectedItem }) => {
-            updateMedicationDispense(
-              {
-                ...medicationDispense,
-                // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
-                quantity: {
-                  value: medicationDispense.quantity.value,
-                  code: selectedItem?.id,
-                },
+            updateMedicationDispense({
+              ...medicationDispense,
+              // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
+              quantity: {
+                value: medicationDispense.quantity.value,
+                code: selectedItem?.id,
               },
-              index
-            );
+            });
           }}
           required
         />
@@ -412,28 +389,24 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               .value
           }
           onChange={(e) => {
-            updateMedicationDispense(
-              {
-                ...medicationDispense,
-                dosageInstruction: [
-                  {
-                    ...medicationDispense.dosageInstruction[0],
-                    doseAndRate: [
-                      {
+            updateMedicationDispense({
+              ...medicationDispense,
+              dosageInstruction: [
+                {
+                  ...medicationDispense.dosageInstruction[0],
+                  doseAndRate: [
+                    {
+                      ...medicationDispense.dosageInstruction[0].doseAndRate[0],
+                      doseQuantity: {
                         ...medicationDispense.dosageInstruction[0]
-                          .doseAndRate[0],
-                        doseQuantity: {
-                          ...medicationDispense.dosageInstruction[0]
-                            .doseAndRate[0].doseQuantity,
-                          value: e.target.value,
-                        },
+                          .doseAndRate[0].doseQuantity,
+                        value: e.target.value,
                       },
-                    ],
-                  },
-                ],
-              },
-              index
-            );
+                    },
+                  ],
+                },
+              ],
+            });
           }}
         />
 
@@ -451,28 +424,25 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               .doseQuantity?.unit,
           }}
           onChange={({ selectedItem }) => {
-            updateMedicationDispense(
-              {
-                ...medicationDispense,
-                dosageInstruction: [
-                  {
-                    ...medicationDispense.dosageInstruction[0],
-                    doseAndRate: [
-                      {
-                        doseQuantity: {
-                          // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
-                          value:
-                            medicationDispense.dosageInstruction[0]
-                              .doseAndRate[0].doseQuantity?.value,
-                          code: selectedItem?.id,
-                        },
+            updateMedicationDispense({
+              ...medicationDispense,
+              dosageInstruction: [
+                {
+                  ...medicationDispense.dosageInstruction[0],
+                  doseAndRate: [
+                    {
+                      doseQuantity: {
+                        // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
+                        value:
+                          medicationDispense.dosageInstruction[0].doseAndRate[0]
+                            .doseQuantity?.value,
+                        code: selectedItem?.id,
                       },
-                    ],
-                  },
-                ],
-              },
-              index
-            );
+                    },
+                  ],
+                },
+              ],
+            });
           }}
           required
         />
@@ -489,24 +459,21 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           titleText={t("route", "Route")}
           itemToString={(item) => item?.text}
           onChange={({ selectedItem }) => {
-            updateMedicationDispense(
-              {
-                ...medicationDispense,
-                dosageInstruction: [
-                  {
-                    ...medicationDispense.dosageInstruction[0],
-                    route: {
-                      coding: [
-                        {
-                          code: selectedItem?.id,
-                        },
-                      ],
-                    },
+            updateMedicationDispense({
+              ...medicationDispense,
+              dosageInstruction: [
+                {
+                  ...medicationDispense.dosageInstruction[0],
+                  route: {
+                    coding: [
+                      {
+                        code: selectedItem?.id,
+                      },
+                    ],
                   },
-                ],
-              },
-              index
-            );
+                },
+              ],
+            });
           }}
           required
         />
@@ -525,27 +492,24 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         titleText={t("frequency", "Frequency")}
         itemToString={(item) => item?.text}
         onChange={({ selectedItem }) => {
-          updateMedicationDispense(
-            {
-              ...medicationDispense,
-              dosageInstruction: [
-                {
-                  ...medicationDispense.dosageInstruction[0],
-                  timing: {
-                    ...medicationDispense.dosageInstruction[0].timing,
-                    code: {
-                      coding: [
-                        {
-                          code: selectedItem?.id,
-                        },
-                      ],
-                    },
+          updateMedicationDispense({
+            ...medicationDispense,
+            dosageInstruction: [
+              {
+                ...medicationDispense.dosageInstruction[0],
+                timing: {
+                  ...medicationDispense.dosageInstruction[0].timing,
+                  code: {
+                    coding: [
+                      {
+                        code: selectedItem?.id,
+                      },
+                    ],
                   },
                 },
-              ],
-            },
-            index
-          );
+              },
+            ],
+          });
         }}
         required
       />
@@ -555,18 +519,15 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         value={medicationDispense.dosageInstruction[0].text}
         maxLength={65535}
         onChange={(e) => {
-          updateMedicationDispense(
-            {
-              ...medicationDispense,
-              dosageInstruction: [
-                {
-                  ...medicationDispense.dosageInstruction[0],
-                  text: e.target.value,
-                },
-              ],
-            },
-            index
-          );
+          updateMedicationDispense({
+            ...medicationDispense,
+            dosageInstruction: [
+              {
+                ...medicationDispense.dosageInstruction[0],
+                text: e.target.value,
+              },
+            ],
+          });
         }}
       />
     </div>

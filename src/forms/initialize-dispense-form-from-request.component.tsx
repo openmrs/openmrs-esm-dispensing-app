@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
 import { useConfig, useSession } from "@openmrs/esm-framework";
 import { initiateMedicationDispenseBody } from "../medication-dispense/medication-dispense.resource";
-import { MedicationDispense } from "../types";
+import { MedicationDispense, MedicationRequest } from "../types";
 import { PharmacyConfig } from "../config-schema";
 import DispenseForm from "./dispense-form.component";
 
 interface NewDispenseFormProps {
-  encounterUuid: string;
+  medicationRequest: MedicationRequest;
   mutate: Function;
 }
 
@@ -17,47 +16,36 @@ interface NewDispenseFormProps {
  * @param mutatePrescriptionTableRows
  * @constructor
  */
-const InitializeDispenseFormFromRequests: React.FC<NewDispenseFormProps> = ({
-  encounterUuid,
+const InitializeDispenseFormFromRequest: React.FC<NewDispenseFormProps> = ({
+  medicationRequest,
   mutate,
 }) => {
-  const {
-    requests,
-    mutate: mutatePrescriptionDetails,
-    isLoading,
-  } = usePrescriptionDetails(encounterUuid);
   const session = useSession();
   const config = useConfig() as PharmacyConfig;
 
-  const [medicationDispenses, setMedicationDispenses] = useState(
-    Array<MedicationDispense>
-  );
-
+  const [medicationDispense, setMedicationDispense] =
+    useState<MedicationDispense>();
   useEffect(() => {
-    if (requests) {
-      let dispenseMedications = initiateMedicationDispenseBody(
-        requests,
+    if (medicationRequest) {
+      let medicationDispense = initiateMedicationDispenseBody(
+        medicationRequest,
         session,
         config.medicationRequestExpirationPeriodInDays
       );
-      setMedicationDispenses(dispenseMedications);
+      setMedicationDispense(medicationDispense);
     }
   }, [
-    requests.length,
+    medicationRequest,
     session,
     config.medicationRequestExpirationPeriodInDays,
   ]);
 
   return (
     <DispenseForm
-      isLoading={isLoading}
-      medicationDispenses={medicationDispenses}
+      medicationDispense={medicationDispense}
       mode="enter"
-      mutate={() => {
-        mutate();
-        mutatePrescriptionDetails();
-      }}
+      mutate={mutate}
     />
   );
 };
-export default InitializeDispenseFormFromRequests;
+export default InitializeDispenseFormFromRequest;
