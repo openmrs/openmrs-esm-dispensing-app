@@ -7,7 +7,6 @@ import {
   OrderConfig,
   ValueSet,
 } from "../types";
-import { computeStatus } from "../utils";
 
 export function saveMedicationDispense(
   medicationDispense: MedicationDispense,
@@ -75,92 +74,79 @@ export function useSubstitutionReasonValueSet(uuid: string) {
 // TODO: should more be stripped out of here when initializing?... ie don't copy over all the display data?
 // TODO: what about the issue with the repetitive reloading?
 export function initiateMedicationDispenseBody(
-  medicationRequests: Array<MedicationRequest>,
+  medicationRequest: MedicationRequest,
   session: Session,
   medicationRequestExpirationPeriodInDays: number
-): Array<MedicationDispense> {
-  let dispenseBody = [];
-  medicationRequests
-    .filter(
-      (medicationRequest) =>
-        computeStatus(
-          medicationRequest,
-          medicationRequestExpirationPeriodInDays
-        ) === "active"
-    )
-    .map((medicationRequest) => {
-      let dispense: MedicationDispense = {
-        resourceType: "MedicationDispense",
-        status: "completed", // might need to change this to appropriate status
-        authorizingPrescription: [
-          {
-            reference: "MedicationRequest/" + medicationRequest.id,
-            type: "MedicationRequest",
-          },
-        ],
-        medicationReference: medicationRequest.medicationReference,
-        medicationCodeableConcept: medicationRequest.medicationCodeableConcept,
-        subject: medicationRequest.subject,
-        performer: [
-          {
-            actor: {
-              reference: session?.currentProvider
-                ? `Practitioner/${session.currentProvider.uuid}`
-                : "",
-            },
-          },
-        ],
-        location: {
-          reference: session?.sessionLocation
-            ? `Location/${session.sessionLocation.uuid}`
+): MedicationDispense {
+  let medicationDispense: MedicationDispense = {
+    resourceType: "MedicationDispense",
+    status: "completed", // might need to change this to appropriate status
+    authorizingPrescription: [
+      {
+        reference: "MedicationRequest/" + medicationRequest.id,
+        type: "MedicationRequest",
+      },
+    ],
+    medicationReference: medicationRequest.medicationReference,
+    medicationCodeableConcept: medicationRequest.medicationCodeableConcept,
+    subject: medicationRequest.subject,
+    performer: [
+      {
+        actor: {
+          reference: session?.currentProvider
+            ? `Practitioner/${session.currentProvider.uuid}`
             : "",
         },
-        type: {
-          coding: [
-            {
-              code: "04affd1a-49ab-44e5-a6d1-c0a3fffceb7d", // what is this?
-            },
-          ],
+      },
+    ],
+    location: {
+      reference: session?.sessionLocation
+        ? `Location/${session.sessionLocation.uuid}`
+        : "",
+    },
+    type: {
+      coding: [
+        {
+          code: "04affd1a-49ab-44e5-a6d1-c0a3fffceb7d", // what is this?
         },
-        quantity: {
-          value: medicationRequest.dispenseRequest?.quantity?.value,
-          code: medicationRequest.dispenseRequest?.quantity?.code,
-          unit: medicationRequest.dispenseRequest?.quantity?.unit,
-          system: medicationRequest.dispenseRequest?.quantity?.system,
+      ],
+    },
+    quantity: {
+      value: medicationRequest.dispenseRequest?.quantity?.value,
+      code: medicationRequest.dispenseRequest?.quantity?.code,
+      unit: medicationRequest.dispenseRequest?.quantity?.unit,
+      system: medicationRequest.dispenseRequest?.quantity?.system,
+    },
+    whenPrepared: dayjs(),
+    whenHandedOver: dayjs(),
+    dosageInstruction: [
+      {
+        text: medicationRequest.dosageInstruction[0].text,
+        timing: medicationRequest.dosageInstruction[0].timing,
+        asNeededBoolean: false,
+        route: medicationRequest.dosageInstruction[0].route,
+        doseAndRate: medicationRequest.dosageInstruction[0].doseAndRate
+          ? medicationRequest.dosageInstruction[0].doseAndRate
+          : [
+              {
+                doseQuantity: {
+                  value: null,
+                  code: null,
+                  unit: null,
+                },
+              },
+            ],
+      },
+    ],
+    substitution: {
+      wasSubstituted: false,
+      reason: [
+        {
+          coding: [{ code: null }],
         },
-        whenPrepared: dayjs(),
-        whenHandedOver: dayjs(),
-        dosageInstruction: [
-          {
-            text: medicationRequest.dosageInstruction[0].text,
-            timing: medicationRequest.dosageInstruction[0].timing,
-            asNeededBoolean: false,
-            route: medicationRequest.dosageInstruction[0].route,
-            doseAndRate: medicationRequest.dosageInstruction[0].doseAndRate
-              ? medicationRequest.dosageInstruction[0].doseAndRate
-              : [
-                  {
-                    doseQuantity: {
-                      value: null,
-                      code: null,
-                      unit: null,
-                    },
-                  },
-                ],
-          },
-        ],
-        substitution: {
-          wasSubstituted: false,
-          reason: [
-            {
-              coding: [{ code: null }],
-            },
-          ],
-          type: { coding: [{ code: null }] },
-        },
-      };
-      dispenseBody.push(dispense);
-    });
-
-  return dispenseBody;
+      ],
+      type: { coding: [{ code: null }] },
+    },
+  };
+  return medicationDispense;
 }

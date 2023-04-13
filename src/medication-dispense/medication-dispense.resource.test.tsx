@@ -145,7 +145,7 @@ describe("Medication Dispense Resource tests", () => {
     );
   });
 
-  test("initiateMedicationDispenseBody should initialize medication dispense body from set of requests order", () => {
+  test("initiateMedicationDispenseBody should initialize medication dispense body from request", () => {
     const activeMedicationRequest: MedicationRequest = {
       intent: "",
       medicationReference: { reference: "Medication/123abc" },
@@ -209,69 +209,7 @@ describe("Medication Dispense Resource tests", () => {
       ],
       id: "456def",
     };
-    const cancelledMedicationRequest: MedicationRequest = {
-      intent: "",
-      medicationReference: { reference: "Medication/123abc" },
-      meta: { lastUpdated: "" },
-      priority: "",
-      resourceType: "MedicationDispense",
-      status: "cancelled",
-      subject: { reference: "Patient/765432" },
-      dispenseRequest: {
-        numberOfRepeatsAllowed: 0,
-        quantity: {
-          value: 20.0,
-          system: "http://snomed.info/sct",
-          code: "123456789",
-          unit: "Tablet",
-        },
-        validityPeriod: { start: "" },
-      },
-      encounter: { reference: "", type: "" },
-      requester: {
-        display: "",
-        identifier: { value: "" },
-        reference: "",
-        type: "",
-      },
-      dosageInstruction: [
-        {
-          text: "Take with food",
-          timing: {
-            repeat: {
-              duration: 30.0,
-              durationUnit: "d",
-            },
-            code: {
-              coding: [
-                {
-                  code: "",
-                },
-              ],
-            },
-          },
-          asNeededBoolean: false,
-          route: {
-            coding: [
-              {
-                code: "545767",
-              },
-            ],
-          },
-          doseAndRate: [
-            {
-              doseQuantity: {
-                value: 5.0,
-                unit: "Tablet",
-                system: "http://snomed.info/sct",
-                code: "385055001",
-              },
-            },
-          ],
-        },
-      ],
-      id: "456def",
-    };
+
     const session: Session = {
       authenticated: true,
       sessionId: "",
@@ -288,15 +226,13 @@ describe("Medication Dispense Resource tests", () => {
     };
     const medicationRequestExpirationPeriodInDay = 30;
 
-    const dispenseBody: Array<MedicationDispense> =
+    const medicationDispense: MedicationDispense =
       initiateMedicationDispenseBody(
-        [cancelledMedicationRequest, activeMedicationRequest],
+        activeMedicationRequest,
         session,
         medicationRequestExpirationPeriodInDay
       );
-    expect(dispenseBody.length).toBe(1); // the cancelled one should be filtered out (we test the computeStatus method more fully in util.ts
 
-    const medicationDispense = dispenseBody[0];
     expect(medicationDispense.id).toBeUndefined();
     expect(medicationDispense.resourceType).toBe("MedicationDispense");
     expect(medicationDispense.medicationReference.reference).toBe(

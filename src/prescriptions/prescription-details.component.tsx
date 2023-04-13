@@ -12,17 +12,23 @@ import { PatientUuid, useConfig } from "@openmrs/esm-framework";
 import { AllergyIntolerance, MedicationRequest } from "../types";
 import { PharmacyConfig } from "../config-schema";
 import { computeStatus, getConceptCodingDisplay } from "../utils";
+import ActionButtons from "../components/action-buttons.component";
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
-}> = ({ encounterUuid, patientUuid }) => {
+  mutate: Function;
+}> = ({ encounterUuid, patientUuid, mutate }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
   const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
-  const { requests, isError, isLoading } =
-    usePrescriptionDetails(encounterUuid);
+  const {
+    requests,
+    mutate: mutatePrescriptionDetails,
+    isError,
+    isLoading,
+  } = usePrescriptionDetails(encounterUuid);
 
   useEffect(() => {
     if (typeof totalAllergies == "number") {
@@ -96,6 +102,13 @@ const PrescriptionDetails: React.FC<{
         requests.map((request) => {
           return (
             <Tile className={styles.prescriptionTile}>
+              <ActionButtons
+                medicationRequest={request}
+                mutate={() => {
+                  mutate();
+                  mutatePrescriptionDetails();
+                }}
+              />
               <MedicationEvent
                 key={request.id}
                 medicationEvent={request}

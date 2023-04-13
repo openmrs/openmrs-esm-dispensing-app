@@ -95,13 +95,12 @@ const HistoryAndComments: React.FC<{
                 launchOverlay(
                   t("editDispenseRecord", "Edit Dispense Record"),
                   <DispenseForm
-                    medicationDispenses={[medicationDispense]}
+                    medicationDispense={medicationDispense}
                     mode="edit"
                     mutate={() => {
                       mutate();
                       mutatePrescriptionDetails();
                     }}
-                    isLoading={false}
                   />
                 )
               }
