@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Tab,
-  Tabs,
-  TabList,
-  TabPanels,
-  Search,
-  Button,
-  ComboBox,
-} from "@carbon/react";
-import { Add } from "@carbon/react/icons";
+import { Tab, Tabs, TabList, TabPanels, Search, ComboBox } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import PrescriptionTabPanel from "./prescription-tab-panel.component";
 import styles from "./prescriptions.scss";
@@ -84,14 +75,14 @@ const PrescriptionTabLists: React.FC = () => {
             })}
           </TabList>
           <div className={styles.searchContainer}>
-            <Button
+            {/* <Button
               kind="primary"
               renderIcon={(props) => <Add size={24} />}
               className={styles.addPrescriptionBtn}
               size="sm"
             >
               {t("fillPrescription", "Fill prescription")}
-            </Button>
+            </Button>*/}
             <Search
               closeButtonLabelText={t("clearSearchInput", "Clear search input")}
               defaultValue={searchTermUserInput}

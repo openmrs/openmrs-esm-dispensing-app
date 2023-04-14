@@ -25,6 +25,24 @@ export const configSchema = {
     _type: Type.String,
     _default: "Pharmacy",
   },
+  actionButtons: {
+    pauseButton: {
+      enabled: {
+        _type: Type.Boolean,
+        _description:
+          "Enabled/Disable including a Pause button in the button action bar",
+        _default: true,
+      },
+    },
+    closeButton: {
+      enabled: {
+        _type: Type.Boolean,
+        _description:
+          "Enabled/Disable including a Close button in the button action bar",
+        _default: true,
+      },
+    },
+  },
   medicationRequestExpirationPeriodInDays: {
     _type: Type.Number,
     _description:
@@ -75,6 +93,14 @@ export const configSchema = {
 
 export type PharmacyConfig = {
   appName: string;
+  actionButtons: {
+    pauseButton: {
+      enabled: boolean;
+    };
+    closeButton: {
+      enabled: boolean;
+    };
+  };
   medicationRequestExpirationPeriodInDays: number;
   locationBehavior: {
     locationColumn: {

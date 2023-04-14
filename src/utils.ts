@@ -1,14 +1,20 @@
 import {
-  DosageInstruction,
-  MedicationReferenceOrCodeableConcept,
-  MedicationDispense,
-  MedicationRequest,
-  Quantity,
   Coding,
+  DosageInstruction,
   Medication,
+  MedicationDispense,
+  MedicationDispenseStatus,
+  MedicationReferenceOrCodeableConcept,
+  MedicationRequest,
+  MedicationRequestMedicationDispenseCombinedStatus,
+  MedicationRequestStatus,
+  Quantity,
 } from "./types";
-import { fhirBaseUrl } from "@openmrs/esm-framework";
-import { OPENMRS_FHIR_EXT_MEDICINE } from "./constants";
+import { fhirBaseUrl, parseDate } from "@openmrs/esm-framework";
+import {
+  OPENMRS_FHIR_EXT_MEDICINE,
+  OPENMRS_FHIR_EXT_RECORDED,
+} from "./constants";
 import dayjs from "dayjs";
 
 /* TODO: confirm we can remove, not used but looks like it might do wrong thing anyway
@@ -46,7 +52,7 @@ export function getDosage(strength: string, doseNumber: number) {
 export function getDosageInstruction(
   dosageInstructions: Array<DosageInstruction>
 ) {
-  if (dosageInstructions.length > 0) {
+  if (dosageInstructions?.length > 0) {
     return dosageInstructions[0];
   }
   return null;
@@ -202,15 +208,15 @@ export function getOpenMRSMedicineDrugName(medication: Medication) {
     : null;
 }
 
-export function computeStatus(
+export function computeMedicationRequestStatus(
   medicationRequest: MedicationRequest,
   medicationRequestExpirationPeriodInDays: number
 ) {
-  if (medicationRequest.status === "cancelled") {
-    return "cancelled";
-  }
-  if (medicationRequest.status === "completed") {
-    return "completed";
+  if (
+    medicationRequest.status === MedicationRequestStatus.cancelled ||
+    medicationRequest.status === MedicationRequestStatus.completed
+  ) {
+    return medicationRequest.status;
   }
 
   // expired is not based on based actual medication request expired status, but calculated from our configurable expiration period in days
@@ -223,8 +229,87 @@ export function computeStatus(
         .subtract(medicationRequestExpirationPeriodInDays, "day")
     )
   ) {
-    return "expired";
+    return MedicationRequestStatus.expired;
   }
 
-  return "active";
+  return MedicationRequestStatus.active;
+}
+
+/**
+ * Fetch the "recorded" extension off a medication request
+ * @param medicationDispense
+ */
+export function getDateRecorded(medicationDispense: MedicationDispense) {
+  return medicationDispense?.extension?.find(
+    (ext) => ext.url === OPENMRS_FHIR_EXT_RECORDED
+  )?.valueDateTime;
+}
+
+/**
+ * Given a medication request and an array of medication dispenses, fetch all dispenses authorized by that request
+ *
+ * @param medicationRequest
+ * @param medicationDispenses
+ */
+export function getAssociatedMedicationDispenses(
+  medicationRequest: MedicationRequest,
+  medicationDispenses: Array<MedicationDispense>
+) {
+  return medicationDispenses?.filter((medicationDispense) =>
+    medicationDispense?.authorizingPrescription?.some((prescription) =>
+      prescription.reference.endsWith(medicationRequest.id)
+    )
+  );
+}
+
+/**
+ * Given a set of medication requests, return the status of the one with the most recent recorded date
+ */
+export function getMostRecentMedicationDispenseStatus(
+  medicationDispenses: Array<MedicationDispense>
+) {
+  const sorted = medicationDispenses?.sort(
+    sortMedicationDispensesByDateRecorded
+  );
+  return sorted && sorted.length > 0 ? sorted[0].status : null;
+}
+
+export function sortMedicationDispensesByDateRecorded(
+  a: MedicationDispense,
+  b: MedicationDispense
+) {
+  const dateDiff =
+    parseDate(getDateRecorded(b)).getTime() -
+    parseDate(getDateRecorded(a)).getTime();
+  if (dateDiff !== 0) {
+    return dateDiff;
+  } else {
+    return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
+  }
+}
+
+// TODO this may end up being handled by the enhanced medication request status?
+export function computeMedicationRequestMedicationDispenseCombinedStatus(
+  medicationRequestStatus: MedicationRequestStatus,
+  medicationDispenseStatus: MedicationDispenseStatus
+) {
+  // if the request is no longer active, that status takes precedent
+  if (medicationRequestStatus !== MedicationRequestStatus.active) {
+    if (medicationRequestStatus === MedicationRequestStatus.expired) {
+      return MedicationRequestMedicationDispenseCombinedStatus.expired;
+    } else if (medicationRequestStatus === MedicationRequestStatus.completed) {
+      return MedicationRequestMedicationDispenseCombinedStatus.completed;
+    } else if (medicationRequestStatus === MedicationRequestStatus.cancelled) {
+      return MedicationRequestMedicationDispenseCombinedStatus.cancelled;
+    }
+  }
+  // otherwise, if the medication dispense status is paused or closed, return that
+  if (medicationDispenseStatus === MedicationDispenseStatus.declined) {
+    return MedicationRequestMedicationDispenseCombinedStatus.declined;
+  } else if (medicationDispenseStatus === MedicationDispenseStatus.on_hold) {
+    return MedicationRequestMedicationDispenseCombinedStatus.on_hold;
+  }
+
+  // otherwise, return active
+  return MedicationRequestMedicationDispenseCombinedStatus.active;
 }

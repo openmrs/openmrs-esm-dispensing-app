@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  showToast,
   showNotification,
+  showToast,
   useLayoutType,
 } from "@openmrs/esm-framework";
 import { Button, FormLabel } from "@carbon/react";
-import styles from "./dispense-form.scss";
+import styles from "./forms.scss";
 import { closeOverlay } from "../hooks/useOverlay";
-import { MedicationDispense } from "../types";
+import { MedicationDispense, MedicationDispenseStatus } from "../types";
 import { saveMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationDispenseReview from "./medication-dispense-review.component";
 
@@ -41,7 +41,11 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
-      saveMedicationDispense(medicationDispensePayload, abortController).then(
+      saveMedicationDispense(
+        medicationDispensePayload,
+        MedicationDispenseStatus.completed,
+        abortController
+      ).then(
         ({ status }) => {
           if (status === 201 || status === 200) {
             closeOverlay();

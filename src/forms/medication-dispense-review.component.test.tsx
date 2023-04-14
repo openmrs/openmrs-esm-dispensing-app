@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import React from "react";
-import { MedicationDispense } from "../types";
+import { MedicationDispense, MedicationDispenseStatus } from "../types";
 import MedicationDispenseReview from "./medication-dispense-review.component";
 
 jest.mock("@openmrs/esm-framework", () => {
@@ -30,7 +30,7 @@ describe("Medication Dispense Review Component tests", () => {
       meta: {
         lastUpdated: "2023-01-10T10:52:36.000-05:00",
       },
-      status: "completed",
+      status: MedicationDispenseStatus.completed,
       medicationReference: {
         reference: "Medication/78f96684-dfbe-11e9-8a34-2a2ae2dbcce4",
         type: "Medication",
