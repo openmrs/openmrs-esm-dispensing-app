@@ -1,18 +1,30 @@
-import { DataTableSkeleton, Tile, Tag } from "@carbon/react";
+import { DataTableSkeleton, Tag, Tile } from "@carbon/react";
 import React, { useEffect, useState } from "react";
 import styles from "./prescription-details.scss";
 import { WarningFilled } from "@carbon/react/icons";
 import {
-  usePrescriptionDetails,
   usePatientAllergies,
+  usePrescriptionDetails,
 } from "../medication-request/medication-request.resource";
 import { useTranslation } from "react-i18next";
 import MedicationEvent from "../components/medication-event.component";
-import { PatientUuid, useConfig } from "@openmrs/esm-framework";
-import { AllergyIntolerance, MedicationRequest } from "../types";
+import { PatientUuid, useConfig, UserHasAccess } from "@openmrs/esm-framework";
+import {
+  AllergyIntolerance,
+  MedicationDispense,
+  MedicationRequest,
+  MedicationRequestMedicationDispenseCombinedStatus,
+} from "../types";
 import { PharmacyConfig } from "../config-schema";
-import { computeStatus, getConceptCodingDisplay } from "../utils";
+import {
+  computeMedicationRequestMedicationDispenseCombinedStatus,
+  computeMedicationRequestStatus,
+  getAssociatedMedicationDispenses,
+  getConceptCodingDisplay,
+  getMostRecentMedicationDispenseStatus,
+} from "../utils";
 import ActionButtons from "../components/action-buttons.component";
+import { PRIVILEGE_CREATE_DISPENSE } from "../constants";
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -25,6 +37,7 @@ const PrescriptionDetails: React.FC<{
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
   const {
     requests,
+    dispenses,
     mutate: mutatePrescriptionDetails,
     isError,
     isLoading,
@@ -37,22 +50,53 @@ const PrescriptionDetails: React.FC<{
   }, [totalAllergies]);
 
   const generateStatusTag: Function = (
-    medicationRequest: MedicationRequest
+    medicationRequest: MedicationRequest,
+    medicationDispenses: Array<MedicationDispense>
   ) => {
-    const status = computeStatus(
+    const medicationRequestStatus = computeMedicationRequestStatus(
       medicationRequest,
       config.medicationRequestExpirationPeriodInDays
     );
-    if (status === "cancelled") {
+    const medicationDispenseStatus =
+      getMostRecentMedicationDispenseStatus(medicationDispenses);
+    const combinedStatus: MedicationRequestMedicationDispenseCombinedStatus =
+      computeMedicationRequestMedicationDispenseCombinedStatus(
+        medicationRequestStatus,
+        medicationDispenseStatus
+      );
+    if (
+      combinedStatus ===
+      MedicationRequestMedicationDispenseCombinedStatus.cancelled
+    ) {
       return <Tag type="red">{t("cancelled", "Cancelled")}</Tag>;
     }
 
-    if (status === "completed") {
-      return <Tag type="red">{t("completed", "Completed")}</Tag>;
+    if (
+      combinedStatus ===
+      MedicationRequestMedicationDispenseCombinedStatus.completed
+    ) {
+      return <Tag type="green">{t("completed", "Completed")}</Tag>;
     }
 
-    if (status === "expired") {
+    if (
+      combinedStatus ===
+      MedicationRequestMedicationDispenseCombinedStatus.expired
+    ) {
       return <Tag type="red">{t("expired", "Expired")}</Tag>;
+    }
+
+    if (
+      combinedStatus ===
+      MedicationRequestMedicationDispenseCombinedStatus.declined
+    ) {
+      return <Tag type="red">{t("closed", "Closed")}</Tag>;
+    }
+
+    if (
+      combinedStatus ===
+      MedicationRequestMedicationDispenseCombinedStatus.on_hold
+    ) {
+      return <Tag type="red">{t("paused", "Paused")}</Tag>;
     }
 
     return null;
@@ -100,19 +144,27 @@ const PrescriptionDetails: React.FC<{
       {isError && <p>{t("error", "Error")}</p>}
       {requests &&
         requests.map((request) => {
+          const associatedMedicationDispenses =
+            getAssociatedMedicationDispenses(request, dispenses);
           return (
             <Tile className={styles.prescriptionTile}>
-              <ActionButtons
-                medicationRequest={request}
-                mutate={() => {
-                  mutate();
-                  mutatePrescriptionDetails();
-                }}
-              />
+              <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
+                <ActionButtons
+                  medicationRequest={request}
+                  associatedMedicationDispenses={associatedMedicationDispenses}
+                  mutate={() => {
+                    mutate();
+                    mutatePrescriptionDetails();
+                  }}
+                />
+              </UserHasAccess>
               <MedicationEvent
                 key={request.id}
                 medicationEvent={request}
-                status={generateStatusTag(request)}
+                status={generateStatusTag(
+                  request,
+                  associatedMedicationDispenses
+                )}
               />
             </Tile>
           );

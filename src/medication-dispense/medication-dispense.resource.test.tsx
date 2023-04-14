@@ -9,7 +9,12 @@ import {
   useSubstitutionReasonValueSet,
   useSubstitutionTypeValueSet,
 } from "./medication-dispense.resource";
-import { MedicationDispense, MedicationRequest } from "../types";
+import {
+  MedicationDispense,
+  MedicationDispenseStatus,
+  MedicationRequest,
+  MedicationRequestStatus,
+} from "../types";
 import dayjs from "dayjs";
 
 jest.mock("@openmrs/esm-framework", () => {
@@ -34,7 +39,7 @@ describe("Medication Dispense Resource tests", () => {
       quantity: undefined,
       performer: undefined,
       resourceType: "MedicationDispense",
-      status: "active",
+      status: null,
       subject: { display: "", reference: "", type: "" },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
@@ -46,7 +51,11 @@ describe("Medication Dispense Resource tests", () => {
       abort(reason?: any): void {},
     };
 
-    saveMedicationDispense(medicationDispense, abortController);
+    saveMedicationDispense(
+      medicationDispense,
+      MedicationDispenseStatus.completed,
+      abortController
+    );
     expect(openmrsFetch).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationDispense",
       {
@@ -69,8 +78,8 @@ describe("Medication Dispense Resource tests", () => {
       meta: { lastUpdated: "" },
       performer: undefined,
       quantity: undefined,
-      resourceType: "",
-      status: "",
+      resourceType: "MedicationDispense",
+      status: null,
       subject: { display: "", reference: "", type: "" },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
@@ -82,7 +91,11 @@ describe("Medication Dispense Resource tests", () => {
       abort(reason?: any): void {},
     };
 
-    saveMedicationDispense(medicationDispense, abortController);
+    saveMedicationDispense(
+      medicationDispense,
+      MedicationDispenseStatus.completed,
+      abortController
+    );
     expect(openmrsFetch).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationDispense/123abc",
       {
@@ -151,8 +164,8 @@ describe("Medication Dispense Resource tests", () => {
       medicationReference: { reference: "Medication/123abc" },
       meta: { lastUpdated: "" },
       priority: "",
-      resourceType: "MedicationDispense",
-      status: "active",
+      resourceType: "MedicationRequest",
+      status: MedicationRequestStatus.active,
       subject: { reference: "Patient/765432" },
       dispenseRequest: {
         numberOfRepeatsAllowed: 0,
@@ -227,18 +240,14 @@ describe("Medication Dispense Resource tests", () => {
     const medicationRequestExpirationPeriodInDay = 30;
 
     const medicationDispense: MedicationDispense =
-      initiateMedicationDispenseBody(
-        activeMedicationRequest,
-        session,
-        medicationRequestExpirationPeriodInDay
-      );
+      initiateMedicationDispenseBody(activeMedicationRequest, session, true);
 
     expect(medicationDispense.id).toBeUndefined();
     expect(medicationDispense.resourceType).toBe("MedicationDispense");
     expect(medicationDispense.medicationReference.reference).toBe(
       "Medication/123abc"
     );
-    expect(medicationDispense.status).toBe("completed");
+    expect(medicationDispense.status).toBeNull();
     expect(medicationDispense.authorizingPrescription[0].reference).toBe(
       "MedicationRequest/456def"
     );
@@ -251,19 +260,12 @@ describe("Medication Dispense Resource tests", () => {
       "Practitioner/ghi789"
     );
     expect(medicationDispense.location.reference).toBe("Location/987654");
-    expect(medicationDispense.type.coding[0].code).toBe(
-      "04affd1a-49ab-44e5-a6d1-c0a3fffceb7d"
-    );
     expect(medicationDispense.quantity.value).toBe(20.0);
     expect(medicationDispense.quantity.system).toBe("http://snomed.info/sct");
     expect(medicationDispense.quantity.unit).toBe("Tablet");
     expect(medicationDispense.quantity.code).toBe("123456789");
-    expect(
-      dayjs().isSame(dayjs(medicationDispense.whenPrepared), "minute")
-    ).toBe(true);
-    expect(
-      dayjs().isSame(dayjs(medicationDispense.whenHandedOver), "minute")
-    ).toBe(true);
+    expect(medicationDispense.whenPrepared).toBeNull();
+    expect(medicationDispense.whenHandedOver).toBeNull();
     expect(medicationDispense.dosageInstruction[0].text).toBe("Take with food");
     expect(medicationDispense.dosageInstruction[0].timing.repeat.duration).toBe(
       30.0

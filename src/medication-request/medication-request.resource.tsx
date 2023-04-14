@@ -15,6 +15,7 @@ import {
   getMedicationReferenceOrCodeableConcept,
   getPrescriptionTableActiveMedicationRequestsEndpoint,
   getPrescriptionTableAllMedicationRequestsEndpoint,
+  sortMedicationDispensesByDateRecorded,
 } from "../utils";
 import dayjs from "dayjs";
 
@@ -62,11 +63,7 @@ export function usePrescriptionsTable(
           (entry) => entry?.resource?.resourceType == "MedicationDispense"
         )
         .map((entry) => entry.resource as MedicationDispense)
-        .sort(
-          (a, b) =>
-            parseDate(b.whenHandedOver).getTime() -
-            parseDate(a.whenHandedOver).getTime()
-        );
+        .sort(sortMedicationDispensesByDateRecorded);
       prescriptionsTableRows = encounters.map((encounter) => {
         const medicationRequestsForEncounter = medicationRequests.filter(
           (medicationRequest) =>
@@ -166,6 +163,12 @@ export function computePrescriptionStatus(
     isExpired = true;
   }
 
+  // TODO make the order status and the prescription status be enums
+  // TODO the first determine status based on order status
+  // TODO then if and only if active:
+  // if *all* current dispense events are either paused or closed:
+  //    if any are paused, paused, otherwise closed
+
   // handle cases when the overall set isn't expired
   if (!isExpired) {
     if (orderStatuses.includes("active") || orderStatuses.includes("stopped")) {
@@ -205,6 +208,7 @@ export function usePrescriptionDetails(encounterUuid: string) {
   let prescriptionDate: Date;
   let isLoading = true;
 
+  // TODO is this TODO below still accurate? :)
   // TODO this fetch is duplicative; all the data necessary is fetched in the original request... we could refactor to use the original request, *but* I'm waiting on that because we may be refactoring the original request into something more performant, in which case would make sense for this to be separate (MG)
   const { data, mutate, error } = useSWR<
     { data: MedicationRequestResponse },
@@ -232,16 +236,7 @@ export function usePrescriptionDetails(encounterUuid: string) {
           (entry) => entry?.resource?.resourceType == "MedicationDispense"
         )
         .map((entry) => entry.resource as MedicationDispense)
-        .sort((a, b) => {
-          const dateDiff =
-            parseDate(b.whenHandedOver).getTime() -
-            parseDate(a.whenHandedOver).getTime();
-          if (dateDiff !== 0) {
-            return dateDiff;
-          } else {
-            return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
-          }
-        });
+        .sort(sortMedicationDispensesByDateRecorded);
     }
   }
 

@@ -3,11 +3,14 @@ import {
   DosageInstruction,
   Medication,
   MedicationDispense,
+  MedicationDispenseStatus,
   MedicationReferenceOrCodeableConcept,
   MedicationRequest,
+  MedicationRequestStatus,
 } from "./types";
 import {
-  computeStatus,
+  computeMedicationRequestStatus,
+  getAssociatedMedicationDispenses,
   getConceptCoding,
   getConceptCodingDisplay,
   getConceptCodingUuid,
@@ -15,6 +18,7 @@ import {
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
   getMedicationsByConceptEndpoint,
+  getMostRecentMedicationDispenseStatus,
   getOpenMRSMedicineDrugName,
   getPrescriptionDetailsEndpoint,
   getPrescriptionTableActiveMedicationRequestsEndpoint,
@@ -77,7 +81,7 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "MedicationRequest",
-      status: "",
+      status: null,
       subject: { display: "", reference: "", type: "" },
     };
     expect(getQuantity(medicationRequest).value).toBe(5);
@@ -97,7 +101,7 @@ describe("Util Tests", () => {
       },
       performer: undefined,
       resourceType: "MedicationDispense",
-      status: "active",
+      status: MedicationDispenseStatus.completed,
       subject: { display: "", reference: "", type: "" },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
@@ -132,7 +136,7 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "MedicationRequest",
-      status: "",
+      status: null,
       subject: { display: "", reference: "", type: "" },
     };
     expect(getRefillsAllowed(medicationRequest)).toBe(3);
@@ -152,7 +156,7 @@ describe("Util Tests", () => {
       },
       performer: undefined,
       resourceType: "MedicationDispense",
-      status: "active",
+      status: MedicationDispenseStatus.completed,
       subject: { display: "", reference: "", type: "" },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
@@ -195,7 +199,7 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "MedicationRequest",
-      status: "",
+      status: null,
       subject: { display: "", reference: "", type: "" },
     };
     expect(
@@ -230,7 +234,7 @@ describe("Util Tests", () => {
       },
       performer: undefined,
       resourceType: "MedicationDispense",
-      status: "active",
+      status: MedicationDispenseStatus.completed,
       subject: { display: "", reference: "", type: "" },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
@@ -509,10 +513,12 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "",
-      status: "cancelled",
+      status: MedicationRequestStatus.cancelled,
       subject: { display: "", reference: "", type: "" },
     };
-    expect(computeStatus(medicationRequest, 0)).toBe("cancelled");
+    expect(computeMedicationRequestStatus(medicationRequest, 0)).toBe(
+      MedicationRequestStatus.cancelled
+    );
   });
 
   test("computeStatus should return Completed if Medication Request has status completed", () => {
@@ -536,10 +542,12 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "",
-      status: "completed",
+      status: MedicationRequestStatus.completed,
       subject: { display: "", reference: "", type: "" },
     };
-    expect(computeStatus(medicationRequest, 0)).toBe("completed");
+    expect(computeMedicationRequestStatus(medicationRequest, 0)).toBe(
+      MedicationRequestStatus.completed
+    );
   });
 
   test("computeStatus should return Expired if Medication Request older than expired timeframe", () => {
@@ -563,10 +571,12 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "",
-      status: "",
+      status: null,
       subject: { display: "", reference: "", type: "" },
     };
-    expect(computeStatus(medicationRequest, 90)).toBe("expired");
+    expect(computeMedicationRequestStatus(medicationRequest, 90)).toBe(
+      MedicationRequestStatus.expired
+    );
   });
 
   test("computeStatus should return Expired if Medication Request age is passed expired timeframe", () => {
@@ -590,10 +600,12 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "",
-      status: "",
+      status: null,
       subject: { display: "", reference: "", type: "" },
     };
-    expect(computeStatus(medicationRequest, 90)).toBe("expired");
+    expect(computeMedicationRequestStatus(medicationRequest, 90)).toBe(
+      MedicationRequestStatus.expired
+    );
   });
 
   test("computeStatus should return Active if Medication Request age is equal to expired timeframe (even if status is expired)", () => {
@@ -619,10 +631,12 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "",
-      status: "expired",
+      status: MedicationRequestStatus.expired,
       subject: { display: "", reference: "", type: "" },
     };
-    expect(computeStatus(medicationRequest, 90)).toBe("active");
+    expect(computeMedicationRequestStatus(medicationRequest, 90)).toBe(
+      MedicationRequestStatus.active
+    );
   });
 
   test("computeStatus should return Active if Medication Request is age is less than expired timeframe (even if status is expired)", () => {
@@ -648,10 +662,12 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "",
-      status: "expired",
+      status: MedicationRequestStatus.expired,
       subject: { display: "", reference: "", type: "" },
     };
-    expect(computeStatus(medicationRequest, 90)).toBe("active");
+    expect(computeMedicationRequestStatus(medicationRequest, 90)).toBe(
+      MedicationRequestStatus.active
+    );
   });
 
   test("computeStatus should return Active as default", () => {
@@ -675,9 +691,324 @@ describe("Util Tests", () => {
         type: "",
       },
       resourceType: "",
-      status: "",
+      status: null,
       subject: { display: "", reference: "", type: "" },
     };
-    expect(computeStatus(medicationRequest, 90)).toBe("active");
+    expect(computeMedicationRequestStatus(medicationRequest, 90)).toBe(
+      MedicationRequestStatus.active
+    );
+  });
+
+  test("getAssociatedMedicationDispense should return medication dispenses associated with request", () => {
+    const medicationRequest: MedicationRequest = {
+      id: "1c1ad91e-8653-453a-9f59-8d5c36249aff",
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: null,
+      subject: { display: "", reference: "", type: "" },
+    };
+
+    const medicationDispenses: Array<MedicationDispense> = [
+      {
+        dosageInstruction: undefined,
+        id: "e74e74a1-6b70-40fd-8c44-485178c71721",
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+      {
+        dosageInstruction: undefined,
+        id: "f7b5585d-6867-4f3a-8151-da9ee1f70fab",
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+      {
+        dosageInstruction: undefined,
+        id: "a2121f8e-1bcc-4cf9-b1e8-1edace155e7f",
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+      {
+        dosageInstruction: undefined,
+        id: "b59a6c54-c178-4972-a33b-dfe9f968e71a",
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+    ];
+    const results: Array<MedicationDispense> = getAssociatedMedicationDispenses(
+      medicationRequest,
+      medicationDispenses
+    );
+    expect(results.length).toBe(2);
+    expect(results).toContain(medicationDispenses[1]);
+    expect(results).toContain(medicationDispenses[3]);
+  });
+
+  test("getAssociatedMedicationDispense should return empty list if no associated requests", () => {
+    const medicationRequest: MedicationRequest = {
+      id: "1c1ad91e-8653-453a-9f59-8d5c36249aff",
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: null,
+      subject: { display: "", reference: "", type: "" },
+    };
+
+    const medicationDispenses: Array<MedicationDispense> = [
+      {
+        dosageInstruction: undefined,
+        id: "e74e74a1-6b70-40fd-8c44-485178c71721",
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+    ];
+    const results: Array<MedicationDispense> = getAssociatedMedicationDispenses(
+      medicationRequest,
+      medicationDispenses
+    );
+    expect(results.length).toBe(0);
+  });
+
+  test("getMostRecentMedicationDispenseStatus should return most recent status", () => {
+    const medicationDispenses: Array<MedicationDispense> = [
+      {
+        dosageInstruction: undefined,
+        id: "e74e74a1-6b70-40fd-8c44-485178c71721",
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/recorded",
+            valueDateTime: "2023-01-05T14:00:00-05:00",
+          },
+        ],
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.on_hold,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+      {
+        dosageInstruction: undefined,
+        id: "f7b5585d-6867-4f3a-8151-da9ee1f70fab",
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/recorded",
+            valueDateTime: "2023-01-05T20:00:00-05:00",
+          },
+        ],
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+      {
+        dosageInstruction: undefined,
+        id: "a2121f8e-1bcc-4cf9-b1e8-1edace155e7f",
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/recorded",
+            valueDateTime: "2023-01-05T17:00:00-05:00",
+          },
+        ],
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.declined,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+    ];
+
+    expect(getMostRecentMedicationDispenseStatus(medicationDispenses)).toBe(
+      MedicationDispenseStatus.completed
+    );
+  });
+
+  test("getMostRecentMedicationDispenseStatus should return null for null input", () => {
+    expect(getMostRecentMedicationDispenseStatus(null)).toBeNull();
+  });
+
+  test("getMostRecentMedicationDispenseStatus should return null for empty list", () => {
+    expect(getMostRecentMedicationDispenseStatus([])).toBeNull();
   });
 });

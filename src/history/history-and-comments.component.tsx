@@ -8,11 +8,11 @@ import {
 } from "@carbon/react";
 import { useTranslation } from "react-i18next";
 import {
-  parseDate,
   formatDatetime,
-  useSession,
-  userHasAccess,
+  parseDate,
   Session,
+  userHasAccess,
+  useSession,
 } from "@openmrs/esm-framework";
 import styles from "./history-and-comments.scss";
 import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
@@ -20,12 +20,13 @@ import { deleteMedicationDispense } from "../medication-dispense/medication-disp
 import MedicationEvent from "../components/medication-event.component";
 import { launchOverlay } from "../hooks/useOverlay";
 import DispenseForm from "../forms/dispense-form.component";
-import { MedicationDispense } from "../types";
+import { MedicationDispense, MedicationDispenseStatus } from "../types";
 import {
   PRIVILEGE_DELETE_DISPENSE,
   PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
   PRIVILEGE_EDIT_DISPENSE,
 } from "../constants";
+import { getDateRecorded } from "../utils";
 
 const HistoryAndComments: React.FC<{
   encounterUuid: string;
@@ -74,7 +75,9 @@ const HistoryAndComments: React.FC<{
   const generateMedicationDispenseActionMenu: Function = (
     medicationDispense: MedicationDispense
   ) => {
-    const editable = userCanEdit(session);
+    const editable =
+      medicationDispense.status === MedicationDispenseStatus.completed &&
+      userCanEdit(session);
     const deletable = userCanDelete(session, medicationDispense);
 
     if (!editable && !deletable) {
@@ -122,6 +125,38 @@ const HistoryAndComments: React.FC<{
     }
   };
 
+  const generateDispenseTag: Function = (
+    medicationDispense: MedicationDispense
+  ) => {
+    if (medicationDispense.status === MedicationDispenseStatus.completed) {
+      return <Tag type="gray">{t("dispensed", "Dispensed")}</Tag>;
+    } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
+      return <Tag type="red">{t("paused", "Paused")}</Tag>;
+    } else if (
+      medicationDispense.status === MedicationDispenseStatus.declined
+    ) {
+      return <Tag type="red">{t("closed", "Closed")}</Tag>;
+    } else {
+      return null;
+    }
+  };
+
+  const generateDispenseVerbiage: Function = (
+    medicationDispense: MedicationDispense
+  ) => {
+    if (medicationDispense.status === MedicationDispenseStatus.completed) {
+      return t("dispensedMedication", "dispensed medication");
+    } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
+      return t("pausedDispense", "paused dispense");
+    } else if (
+      medicationDispense.status === MedicationDispenseStatus.declined
+    ) {
+      return t("closedDispense", "closed dispense");
+    } else {
+      return null;
+    }
+  };
+
   // TODO: assumption is dispenses always are after requests?
   return (
     <div className={styles.historyAndCommentsContainer}>
@@ -139,13 +174,15 @@ const HistoryAndComments: React.FC<{
                 }}
               >
                 {dispense.performer && dispense.performer[0]?.actor?.display}{" "}
-                {t("dispensedMedication", "dispensed medication")} -{" "}
-                {formatDatetime(parseDate(dispense.whenHandedOver))}
+                {generateDispenseVerbiage(dispense)} -{" "}
+                {formatDatetime(parseDate(getDateRecorded(dispense)))}
               </h5>
               <Tile className={styles.dispenseTile}>
                 {generateMedicationDispenseActionMenu(dispense)}
-                <Tag type="gray">{t("dispensed", "Dispensed")}</Tag>
-                <MedicationEvent medicationEvent={dispense} />
+                <MedicationEvent
+                  medicationEvent={dispense}
+                  status={generateDispenseTag(dispense)}
+                />
               </Tile>
             </div>
           );
@@ -166,8 +203,10 @@ const HistoryAndComments: React.FC<{
                 {formatDatetime(prescriptionDate)}
               </h5>
               <Tile className={styles.requestTile}>
-                <Tag type="green">{t("ordered", "Ordered")}</Tag>
-                <MedicationEvent medicationEvent={request} />
+                <MedicationEvent
+                  medicationEvent={request}
+                  status={<Tag type="green">{t("ordered", "Ordered")}</Tag>}
+                />
               </Tile>
             </div>
           );
