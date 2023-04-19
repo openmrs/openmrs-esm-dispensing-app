@@ -88,10 +88,10 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
       </section>
       <section className={styles.buttonGroup}>
         <Button onClick={() => closeOverlay()} kind="secondary">
-          {t("close", "Cancel")}
+          {t("cancel", "Cancel")}
         </Button>
         <Button disabled={isSubmitting} onClick={handleSubmit}>
-          {t("pause", "Close")}
+          {t("close", "Close")}
         </Button>
       </section>
     </div>
