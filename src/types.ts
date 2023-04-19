@@ -171,6 +171,12 @@ export interface EncounterResponse {
   }>;
 }
 
+// add other value types when we start using other extensions
+export interface Extension {
+  url: string;
+  valueDateTime: string;
+}
+
 export interface LocationResponse {
   resourceType: string;
   id: string;
@@ -212,7 +218,8 @@ export interface MedicationDispense {
   meta?: {
     lastUpdated: string;
   };
-  status: string;
+  extension?: Array<Extension>;
+  status: MedicationDispenseStatus;
   authorizingPrescription?: [
     {
       reference: string;
@@ -244,16 +251,23 @@ export interface MedicationDispense {
     };
   }>;
   location: Reference;
-  type: CodeableConcept;
-  quantity: Quantity;
-  whenPrepared: any;
-  whenHandedOver: any;
-  dosageInstruction: Array<DosageInstruction>;
-  substitution: {
+  type?: CodeableConcept;
+  quantity?: Quantity;
+  whenPrepared?: any;
+  whenHandedOver?: any;
+  dosageInstruction?: Array<DosageInstruction>;
+  substitution?: {
     wasSubstituted: boolean;
     reason?: CodeableConcept[];
     type?: CodeableConcept;
   };
+}
+
+export enum MedicationDispenseStatus {
+  in_progress = "in-progress",
+  on_hold = "on-hold",
+  completed = "completed",
+  declined = "declined",
 }
 
 export interface MedicationFormulationsResponse {
@@ -275,7 +289,7 @@ export interface MedicationRequest {
   meta: {
     lastUpdated: string;
   };
-  status: string;
+  status: MedicationRequestStatus;
   intent: string;
   priority: string;
   medicationReference: {
@@ -325,6 +339,26 @@ export interface MedicationRequestResponse {
   entry: Array<{
     resource: MedicationRequest | MedicationDispense;
   }>;
+}
+
+export enum MedicationRequestStatus {
+  active = "active",
+  cancelled = "cancelled",
+  completed = "completed",
+  expired = "expired",
+}
+
+// a status calculated from the status of the medication request + the status of the most recent associated medication dispense
+// TODO: this may be removed/updated dependong on how we handle things server-side?
+export enum MedicationRequestMedicationDispenseCombinedStatus {
+  active = "active",
+  cancelled = "cancelled",
+  completed = "completed",
+  expired = "expired",
+  in_progress = "in-progress",
+  on_hold = "on-hold",
+  declined = "declined",
+  unknown = "unknown",
 }
 
 export interface MedicationReferenceOrCodeableConcept {

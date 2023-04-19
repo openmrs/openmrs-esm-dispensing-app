@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import useSWR from "swr";
 import {
   MedicationDispense,
+  MedicationDispenseStatus,
   MedicationRequest,
   OrderConfig,
   ValueSet,
@@ -10,6 +11,7 @@ import {
 
 export function saveMedicationDispense(
   medicationDispense: MedicationDispense,
+  medicationDispenseStatus: MedicationDispenseStatus,
   abortController: AbortController
 ) {
   // if we have an id, this is an update, otherwise it's a create
@@ -19,6 +21,23 @@ export function saveMedicationDispense(
 
   const method = medicationDispense.id ? "PUT" : "POST";
 
+  medicationDispense.status = medicationDispenseStatus;
+
+  // timestamp if needed
+  if (medicationDispenseStatus === MedicationDispenseStatus.completed) {
+    if (medicationDispense.whenHandedOver === null) {
+      medicationDispense.whenHandedOver = dayjs();
+    }
+  }
+
+  if (
+    medicationDispenseStatus === MedicationDispenseStatus.in_progress ||
+    medicationDispenseStatus === MedicationDispenseStatus.completed
+  ) {
+    if (medicationDispense.whenPrepared === null) {
+      medicationDispense.whenPrepared = dayjs();
+    }
+  }
   return openmrsFetch(url, {
     method: method,
     signal: abortController.signal,
@@ -71,16 +90,15 @@ export function useSubstitutionReasonValueSet(uuid: string) {
   };
 }
 
-// TODO: should more be stripped out of here when initializing?... ie don't copy over all the display data?
 // TODO: what about the issue with the repetitive reloading?
 export function initiateMedicationDispenseBody(
   medicationRequest: MedicationRequest,
   session: Session,
-  medicationRequestExpirationPeriodInDays: number
+  populateDispenseInformation: boolean
 ): MedicationDispense {
   let medicationDispense: MedicationDispense = {
     resourceType: "MedicationDispense",
-    status: "completed", // might need to change this to appropriate status
+    status: null,
     authorizingPrescription: [
       {
         reference: "MedicationRequest/" + medicationRequest.id,
@@ -104,49 +122,48 @@ export function initiateMedicationDispenseBody(
         ? `Location/${session.sessionLocation.uuid}`
         : "",
     },
-    type: {
-      coding: [
-        {
-          code: "04affd1a-49ab-44e5-a6d1-c0a3fffceb7d", // what is this?
-        },
-      ],
-    },
-    quantity: {
-      value: medicationRequest.dispenseRequest?.quantity?.value,
-      code: medicationRequest.dispenseRequest?.quantity?.code,
-      unit: medicationRequest.dispenseRequest?.quantity?.unit,
-      system: medicationRequest.dispenseRequest?.quantity?.system,
-    },
-    whenPrepared: dayjs(),
-    whenHandedOver: dayjs(),
-    dosageInstruction: [
-      {
-        text: medicationRequest.dosageInstruction[0].text,
-        timing: medicationRequest.dosageInstruction[0].timing,
-        asNeededBoolean: false,
-        route: medicationRequest.dosageInstruction[0].route,
-        doseAndRate: medicationRequest.dosageInstruction[0].doseAndRate
-          ? medicationRequest.dosageInstruction[0].doseAndRate
-          : [
-              {
-                doseQuantity: {
-                  value: null,
-                  code: null,
-                  unit: null,
-                },
-              },
-            ],
-      },
-    ],
-    substitution: {
-      wasSubstituted: false,
-      reason: [
-        {
-          coding: [{ code: null }],
-        },
-      ],
-      type: { coding: [{ code: null }] },
-    },
   };
+
+  if (populateDispenseInformation) {
+    medicationDispense = {
+      ...medicationDispense,
+      quantity: {
+        value: medicationRequest.dispenseRequest?.quantity?.value,
+        code: medicationRequest.dispenseRequest?.quantity?.code,
+        unit: medicationRequest.dispenseRequest?.quantity?.unit,
+        system: medicationRequest.dispenseRequest?.quantity?.system,
+      },
+      whenPrepared: null,
+      whenHandedOver: null,
+      dosageInstruction: [
+        {
+          text: medicationRequest.dosageInstruction[0].text,
+          timing: medicationRequest.dosageInstruction[0].timing,
+          asNeededBoolean: false,
+          route: medicationRequest.dosageInstruction[0].route,
+          doseAndRate: medicationRequest.dosageInstruction[0].doseAndRate
+            ? medicationRequest.dosageInstruction[0].doseAndRate
+            : [
+                {
+                  doseQuantity: {
+                    value: null,
+                    code: null,
+                    unit: null,
+                  },
+                },
+              ],
+        },
+      ],
+      substitution: {
+        wasSubstituted: false,
+        reason: [
+          {
+            coding: [{ code: null }],
+          },
+        ],
+        type: { coding: [{ code: null }] },
+      },
+    };
+  }
   return medicationDispense;
 }

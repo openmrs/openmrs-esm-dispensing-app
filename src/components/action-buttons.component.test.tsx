@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import React from "react";
 import ActionButtons from "./action-buttons.component";
-import { MedicationRequest } from "../types";
+import { MedicationRequest, MedicationRequestStatus } from "../types";
 import { useConfig } from "@openmrs/esm-framework";
 
 const mockedUseConfig = useConfig as jest.Mock;
@@ -12,6 +12,14 @@ describe("Action Buttons Component tests", () => {
   beforeEach(() => {
     mockedUseConfig.mockReturnValue({
       medicationRequestExpirationPeriodInDays: 90,
+      actionButtons: {
+        pauseButton: {
+          enabled: true,
+        },
+        closeButton: {
+          enabled: true,
+        },
+      },
     });
   });
 
@@ -23,7 +31,7 @@ describe("Action Buttons Component tests", () => {
       meta: {
         lastUpdated: "2023-01-24T19:02:04.000-05:00",
       },
-      status: "active",
+      status: MedicationRequestStatus.active,
       intent: "order",
       priority: "routine",
       medicationReference: {
@@ -115,6 +123,7 @@ describe("Action Buttons Component tests", () => {
     const { getByText, container } = render(
       <ActionButtons
         medicationRequest={medicationRequest}
+        associatedMedicationDispenses={[]}
         mutate={mockedMutate}
       />
     );
@@ -130,7 +139,7 @@ describe("Action Buttons Component tests", () => {
       meta: {
         lastUpdated: "2023-01-24T19:02:04.000-05:00",
       },
-      status: "active",
+      status: MedicationRequestStatus.active,
       intent: "order",
       priority: "routine",
       medicationReference: {
@@ -222,6 +231,7 @@ describe("Action Buttons Component tests", () => {
     const { queryByText, container } = render(
       <ActionButtons
         medicationRequest={medicationRequest}
+        associatedMedicationDispenses={[]}
         mutate={mockedMutate}
       />
     );

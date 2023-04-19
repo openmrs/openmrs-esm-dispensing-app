@@ -17,6 +17,14 @@ jest.mock("swr");
 
 const pharmacyConfig: PharmacyConfig = {
   appName: "",
+  actionButtons: {
+    pauseButton: {
+      enabled: true,
+    },
+    closeButton: {
+      enabled: true,
+    },
+  },
   locationBehavior: {
     locationColumn: { enabled: false },
     locationFilter: { enabled: false, tag: "Login Location" },
