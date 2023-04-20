@@ -13,7 +13,7 @@ import {
 import { fhirBaseUrl, parseDate } from "@openmrs/esm-framework";
 import {
   OPENMRS_FHIR_EXT_MEDICINE,
-  OPENMRS_FHIR_EXT_RECORDED,
+  OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
 } from "./constants";
 import dayjs from "dayjs";
 
@@ -126,7 +126,7 @@ export function getConceptCodingUuid(codings: Coding[]) {
  */
 export function getDateRecorded(medicationDispense: MedicationDispense) {
   return medicationDispense?.extension?.find(
-    (ext) => ext.url === OPENMRS_FHIR_EXT_RECORDED
+    (ext) => ext.url === OPENMRS_FHIR_EXT_DISPENSE_RECORDED
   )?.valueDateTime;
 }
 

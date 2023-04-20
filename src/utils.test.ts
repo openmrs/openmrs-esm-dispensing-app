@@ -906,7 +906,7 @@ describe("Util Tests", () => {
         id: "e74e74a1-6b70-40fd-8c44-485178c71721",
         extension: [
           {
-            url: "http://fhir.openmrs.org/ext/recorded",
+            url: "http://fhir.openmrs.org/ext/dispense/recorded",
             valueDateTime: "2023-01-05T14:00:00-05:00",
           },
         ],
@@ -938,7 +938,7 @@ describe("Util Tests", () => {
         id: "f7b5585d-6867-4f3a-8151-da9ee1f70fab",
         extension: [
           {
-            url: "http://fhir.openmrs.org/ext/recorded",
+            url: "http://fhir.openmrs.org/ext/dispense/recorded",
             valueDateTime: "2023-01-05T20:00:00-05:00",
           },
         ],
@@ -970,7 +970,7 @@ describe("Util Tests", () => {
         id: "a2121f8e-1bcc-4cf9-b1e8-1edace155e7f",
         extension: [
           {
-            url: "http://fhir.openmrs.org/ext/recorded",
+            url: "http://fhir.openmrs.org/ext/dispense/recorded",
             valueDateTime: "2023-01-05T17:00:00-05:00",
           },
         ],

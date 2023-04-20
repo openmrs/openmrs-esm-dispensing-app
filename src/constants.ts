@@ -6,7 +6,8 @@ export const spaBasePath = `${window.spaBase}${basePath}`;
 export const OPENMRS_FHIR_PREFIX = "http://fhir.openmrs.org";
 export const OPENMRS_FHIR_EXT_PREFIX = OPENMRS_FHIR_PREFIX + "/ext";
 export const OPENMRS_FHIR_EXT_MEDICINE = OPENMRS_FHIR_EXT_PREFIX + "/medicine";
-export const OPENMRS_FHIR_EXT_RECORDED = OPENMRS_FHIR_EXT_PREFIX + "/recorded";
+export const OPENMRS_FHIR_EXT_DISPENSE_RECORDED =
+  OPENMRS_FHIR_EXT_PREFIX + "/dispense/recorded";
 
 export const PRIVILEGE_CREATE_DISPENSE = "Task: dispensing.create.dispense";
 export const PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS =
