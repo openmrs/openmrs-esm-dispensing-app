@@ -17,7 +17,14 @@ import {
 } from "./constants";
 import dayjs from "dayjs";
 
-// TODO this may end up being handled by the enhanced medication request status?
+/**
+ * This is a bit of a mouthful, but, within the UI, the "status" of a request we want to display to the pharmacist is
+ * a combination of the status of the request and the status of the most recent dispensing event; given a request
+ * status and a dispense status, this calculates the actual status we want to display to the pharmacist
+ *
+ * @param medicationRequestStatus
+ * @param medicationDispenseStatus
+ */
 export function computeMedicationRequestMedicationDispenseCombinedStatus(
   medicationRequestStatus: MedicationRequestStatus,
   medicationDispenseStatus: MedicationDispenseStatus

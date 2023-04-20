@@ -348,8 +348,12 @@ export enum MedicationRequestStatus {
   expired = "expired",
 }
 
-// a status calculated from the status of the medication request + the status of the most recent associated medication dispense
-// TODO: this may be removed/updated dependong on how we handle things server-side?
+/**
+ * This is a bit of a mouthful, but, within the UI, the "status" of a request we want to display to the pharmacist is
+ * a combination of the status of the request and the status of the most recent dispensing event; given a request
+ * status and a dispense status, this is the actual status we want to display to the pharmacist (see util method
+ * computeMedicationRequestMedicationDispenseCombinedStatus)
+ */
 export enum MedicationRequestMedicationDispenseCombinedStatus {
   active = "active",
   cancelled = "cancelled",
