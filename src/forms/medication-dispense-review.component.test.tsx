@@ -9,8 +9,10 @@ jest.mock("@openmrs/esm-framework", () => {
     __esModule: true,
     ...originalModule,
     useConfig: jest.fn(() => ({
-      substitutionType: { uuid: "123" },
-      substitutionReason: { uuid: "abc" },
+      valueSets: {
+        substitutionType: { uuid: "123" },
+        substitutionReason: { uuid: "abc" },
+      },
     })),
   };
 });

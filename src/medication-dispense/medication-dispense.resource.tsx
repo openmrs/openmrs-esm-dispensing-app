@@ -70,24 +70,32 @@ export function useOrderConfig() {
   };
 }
 
+export function useReasonForPauseValueSet(uuid: string) {
+  const valueSet = useValueSet(uuid);
+  return { reasonForPauseValueSet: valueSet };
+}
+
+export function useReasonForCloseValueSet(uuid: string) {
+  const valueSet = useValueSet(uuid);
+  return { reasonForCloseValueSet: valueSet };
+}
+
 export function useSubstitutionTypeValueSet(uuid: string) {
-  const { data } = useSWR<{ data: ValueSet }, Error>(
-    `${fhirBaseUrl}/ValueSet/${uuid}`,
-    openmrsFetch
-  );
-  return {
-    substitutionTypeValueSet: data ? data.data : null,
-  };
+  const valueSet = useValueSet(uuid);
+  return { substitutionTypeValueSet: valueSet };
 }
 
 export function useSubstitutionReasonValueSet(uuid: string) {
+  const valueSet = useValueSet(uuid);
+  return { substitutionReasonValueSet: valueSet };
+}
+
+export function useValueSet(uuid: string) {
   const { data } = useSWR<{ data: ValueSet }, Error>(
     `${fhirBaseUrl}/ValueSet/${uuid}`,
     openmrsFetch
   );
-  return {
-    substitutionReasonValueSet: data ? data.data : null,
-  };
+  return data ? data.data : null;
 }
 
 // TODO: what about the issue with the repetitive reloading?

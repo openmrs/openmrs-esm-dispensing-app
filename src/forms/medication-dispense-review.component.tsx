@@ -60,10 +60,10 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
   const { orderConfigObject } = useOrderConfig();
   const { substitutionTypeValueSet } = useSubstitutionTypeValueSet(
-    config.substitutionType.uuid
+    config.valueSets.substitutionType.uuid
   );
   const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(
-    config.substitutionReason.uuid
+    config.valueSets.substitutionReason.uuid
   );
 
   useEffect(() => {
