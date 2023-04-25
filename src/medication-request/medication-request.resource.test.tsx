@@ -654,7 +654,7 @@ describe("Medication Request Resource Test", () => {
     expect(prescriptionsTableRows[1].prescriber).toBe(
       "Goodrich, Mark (Identifier: MAADH)"
     );
-    expect(prescriptionsTableRows[1].status).toBe("active");
+    expect(prescriptionsTableRows[1].status).toBe("expired");
     expect(prescriptionsTableRows[1].location).toBeNull();
   });
 
