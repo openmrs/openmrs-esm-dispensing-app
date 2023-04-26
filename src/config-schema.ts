@@ -73,20 +73,38 @@ export const configSchema = {
       },
     },
   },
-  substitutionReason: {
-    uuid: {
-      _type: Type.UUID,
-      _description:
-        "UUID for the Value Set of valid answers to the 'Reason for Substitution' question. Sample CIEL concept: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167862/",
-      _default: "",
+  valueSets: {
+    reasonForPause: {
+      uuid: {
+        _type: Type.UUID,
+        _description:
+          "UUID for the Value Set of valid answers to the 'Reason for Pause' question.",
+        _default: "",
+      },
     },
-  },
-  substitutionType: {
-    uuid: {
-      _type: Type.UUID,
-      _description:
-        "UUID for the Value Set of valid answers to the 'Type of Substitution' question. Sample CIEL concept: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167859/",
-      _default: "",
+    reasonForClose: {
+      uuid: {
+        _type: Type.UUID,
+        _description:
+          "UUID for the Value Set of valid answers to the 'Reason for Close' question.",
+        _default: "",
+      },
+    },
+    substitutionReason: {
+      uuid: {
+        _type: Type.UUID,
+        _description:
+          "UUID for the Value Set of valid answers to the 'Reason for Substitution' question. Sample CIEL concept: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167862/",
+        _default: "",
+      },
+    },
+    substitutionType: {
+      uuid: {
+        _type: Type.UUID,
+        _description:
+          "UUID for the Value Set of valid answers to the 'Type of Substitution' question. Sample CIEL concept: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167859/",
+        _default: "",
+      },
     },
   },
 };
@@ -111,10 +129,18 @@ export type PharmacyConfig = {
       tag: string;
     };
   };
-  substitutionReason: {
-    uuid: string;
-  };
-  substitutionType: {
-    uuid: string;
+  valueSets: {
+    reasonForPause: {
+      uuid: string;
+    };
+    reasonForClose: {
+      uuid: string;
+    };
+    substitutionReason: {
+      uuid: string;
+    };
+    substitutionType: {
+      uuid: string;
+    };
   };
 };

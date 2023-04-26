@@ -30,8 +30,12 @@ const pharmacyConfig: PharmacyConfig = {
     locationFilter: { enabled: false, tag: "Login Location" },
   },
   medicationRequestExpirationPeriodInDays: 0,
-  substitutionReason: { uuid: "" },
-  substitutionType: { uuid: "" },
+  valueSets: {
+    reasonForPause: { uuid: "" },
+    reasonForClose: { uuid: "" },
+    substitutionReason: { uuid: "" },
+    substitutionType: { uuid: "" },
+  },
 };
 
 describe("Location Resource tests", () => {

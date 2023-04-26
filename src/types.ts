@@ -220,6 +220,7 @@ export interface MedicationDispense {
   };
   extension?: Array<Extension>;
   status: MedicationDispenseStatus;
+  statusReasonCodeableConcept?: CodeableConcept;
   authorizingPrescription?: [
     {
       reference: string;

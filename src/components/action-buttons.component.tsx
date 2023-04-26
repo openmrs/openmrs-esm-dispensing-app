@@ -90,6 +90,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                   session,
                   false
                 )}
+                mode="enter"
                 mutate={mutate}
               />
             )
@@ -110,6 +111,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                   session,
                   false
                 )}
+                mode="enter"
                 mutate={mutate}
               />
             )

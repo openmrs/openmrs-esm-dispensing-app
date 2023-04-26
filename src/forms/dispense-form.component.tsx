@@ -30,7 +30,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const [medicationDispensePayload, setMedicationDispensePayload] =
     useState<MedicationDispense>();
 
-  // whether or note the form is valid and ready to submit
+  // whether or not the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
 
   // to prevent duplicate submits

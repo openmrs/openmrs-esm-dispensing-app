@@ -27,6 +27,8 @@ import {
   PRIVILEGE_EDIT_DISPENSE,
 } from "../constants";
 import { getDateRecorded } from "../utils";
+import PauseDispenseForm from "../forms/pause-dispense-form.component";
+import CloseDispenseForm from "../forms/close-dispense-form.component";
 
 const HistoryAndComments: React.FC<{
   encounterUuid: string;
@@ -72,12 +74,67 @@ const HistoryAndComments: React.FC<{
     return false;
   };
 
+  const generateForm: Function = (
+    medicationDispense: MedicationDispense,
+    mutate: Function,
+    mutatePrescriptionDetails: Function
+  ) => {
+    if (medicationDispense.status === MedicationDispenseStatus.completed) {
+      return (
+        <DispenseForm
+          medicationDispense={medicationDispense}
+          mode="edit"
+          mutate={() => {
+            mutate();
+            mutatePrescriptionDetails();
+          }}
+        />
+      );
+    } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
+      return (
+        <PauseDispenseForm
+          medicationDispense={medicationDispense}
+          mode="edit"
+          mutate={() => {
+            mutate();
+            mutatePrescriptionDetails();
+          }}
+        />
+      );
+    } else if (
+      medicationDispense.status === MedicationDispenseStatus.declined
+    ) {
+      return (
+        <CloseDispenseForm
+          medicationDispense={medicationDispense}
+          mode="edit"
+          mutate={() => {
+            mutate();
+            mutatePrescriptionDetails();
+          }}
+        />
+      );
+    }
+  };
+
+  const generateOverlayText: Function = (
+    medicationDispense: MedicationDispense
+  ) => {
+    if (medicationDispense.status === MedicationDispenseStatus.completed) {
+      return t("editDispenseRecord", "Edit Dispense Record");
+    } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
+      return t("editPauseRecord", "Edit Pause Record");
+    } else if (
+      medicationDispense.status === MedicationDispenseStatus.declined
+    ) {
+      return t("editCloseeRecord", "Edit Close Record");
+    }
+  };
+
   const generateMedicationDispenseActionMenu: Function = (
     medicationDispense: MedicationDispense
   ) => {
-    const editable =
-      medicationDispense.status === MedicationDispenseStatus.completed &&
-      userCanEdit(session);
+    const editable = userCanEdit(session);
     const deletable = userCanDelete(session, medicationDispense);
 
     if (!editable && !deletable) {
@@ -96,15 +153,12 @@ const HistoryAndComments: React.FC<{
             <OverflowMenuItem
               onClick={() =>
                 launchOverlay(
-                  t("editDispenseRecord", "Edit Dispense Record"),
-                  <DispenseForm
-                    medicationDispense={medicationDispense}
-                    mode="edit"
-                    mutate={() => {
-                      mutate();
-                      mutatePrescriptionDetails();
-                    }}
-                  />
+                  generateOverlayText(medicationDispense),
+                  generateForm(
+                    medicationDispense,
+                    mutate,
+                    mutatePrescriptionDetails
+                  )
                 )
               }
               itemText={t("editRecord", "Edit Record")}
