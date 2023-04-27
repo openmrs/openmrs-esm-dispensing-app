@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@carbon/react";
-import { useConfig, usePatient, useSession } from "@openmrs/esm-framework";
+import { useConfig, useSession } from "@openmrs/esm-framework";
 import styles from "./action-buttons.scss";
 import { useTranslation } from "react-i18next";
 import {
@@ -24,19 +24,16 @@ interface ActionButtonsProps {
   medicationRequest: MedicationRequest;
   associatedMedicationDispenses: Array<MedicationDispense>;
   mutate: Function;
-  patientUuid?: string;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
   medicationRequest,
   associatedMedicationDispenses,
   mutate,
-  patientUuid,
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
   const session = useSession();
-  const { patient, isLoading } = usePatient(patientUuid);
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus =
     getMostRecentMedicationDispenseStatus(associatedMedicationDispenses);
   const medicationRequestStatus = computeMedicationRequestStatus(
@@ -58,20 +55,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     medicationRequestStatus === MedicationRequestStatus.active &&
     mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.declined;
 
-  const DesignName = () => {
-    const styles = { paddingLeft: "20px", color: "gray", fontWeight: 500 };
-
-    if (patient) {
-      return (
-        <span style={styles}>
-          {`${patient.name[0].given[0]} ${patient.name[0].family} — #${patient.identifier[0].value}`}
-        </span>
-      );
-    }
-
-    return <span style={styles}>--- --</span>;
-  };
-
   return (
     <div className={styles.actionBtns}>
       {dispensable ? (
@@ -79,10 +62,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           kind="primary"
           onClick={() =>
             launchOverlay(
-              <>
-                {t("dispensePrescription", "Dispense prescription")}
-                <DesignName />
-              </>,
+              t("dispensePrescription", "Dispense prescription"),
               <DispenseForm
                 medicationDispense={initiateMedicationDispenseBody(
                   medicationRequest,

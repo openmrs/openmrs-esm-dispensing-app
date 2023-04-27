@@ -152,7 +152,6 @@ const PrescriptionDetails: React.FC<{
                 <ActionButtons
                   medicationRequest={request}
                   associatedMedicationDispenses={associatedMedicationDispenses}
-                  patientUuid={patientUuid}
                   mutate={() => {
                     mutate();
                     mutatePrescriptionDetails();

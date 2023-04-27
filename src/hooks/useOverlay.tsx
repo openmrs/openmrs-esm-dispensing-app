@@ -4,23 +4,16 @@ import { useEffect, useState } from "react";
 interface OverlayStore {
   isOverlayOpen: boolean;
   component?: any;
-  header: string | JSX.Element;
+  header: string;
 }
 
-const initialState: OverlayStore = {
-  isOverlayOpen: false,
-  component: Function,
-  header: "",
-};
+const initialState = { isOverlayOpen: false, component: Function, header: "" };
 
 const getOverlayStore = () => {
   return getGlobalStore("dispensing-store", initialState);
 };
 
-export const launchOverlay = (
-  headerTitle: string | JSX.Element,
-  componentToRender
-) => {
+export const launchOverlay = (headerTitle: string, componentToRender) => {
   const store = getOverlayStore();
   store.setState({
     isOverlayOpen: true,
