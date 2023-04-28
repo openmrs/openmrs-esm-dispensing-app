@@ -150,6 +150,7 @@ const PrescriptionDetails: React.FC<{
             <Tile className={styles.prescriptionTile}>
               <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
                 <ActionButtons
+                  patientUuid={patientUuid}
                   medicationRequest={request}
                   associatedMedicationDispenses={associatedMedicationDispenses}
                   mutate={() => {

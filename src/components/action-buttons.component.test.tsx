@@ -5,6 +5,7 @@ import { MedicationRequest, MedicationRequestStatus } from "../types";
 import { useConfig } from "@openmrs/esm-framework";
 
 const mockedUseConfig = useConfig as jest.Mock;
+const mockPatientUuid = "f8f8728f-8f0c-4a4f-b7f6-72cf77138060";
 
 describe("Action Buttons Component tests", () => {
   const mockedMutate = jest.fn(() => "mocked mutate");
@@ -122,6 +123,7 @@ describe("Action Buttons Component tests", () => {
 
     const { getByText, container } = render(
       <ActionButtons
+        patientUuid={mockPatientUuid}
         medicationRequest={medicationRequest}
         associatedMedicationDispenses={[]}
         mutate={mockedMutate}
@@ -230,6 +232,7 @@ describe("Action Buttons Component tests", () => {
 
     const { queryByText, container } = render(
       <ActionButtons
+        patientUuid={mockPatientUuid}
         medicationRequest={medicationRequest}
         associatedMedicationDispenses={[]}
         mutate={mockedMutate}

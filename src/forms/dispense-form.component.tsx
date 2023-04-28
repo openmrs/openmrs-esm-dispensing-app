@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ExtensionSlot,
   showNotification,
   showToast,
   useLayoutType,
+  usePatient,
 } from "@openmrs/esm-framework";
-import { Button, FormLabel } from "@carbon/react";
+import { Button, FormLabel, InlineLoading } from "@carbon/react";
 import styles from "./forms.scss";
 import { closeOverlay } from "../hooks/useOverlay";
 import { MedicationDispense, MedicationDispenseStatus } from "../types";
@@ -16,15 +18,18 @@ interface DispenseFormProps {
   medicationDispense: MedicationDispense;
   mutate: Function;
   mode: "enter" | "edit";
+  patientUuid?: string;
 }
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
   medicationDispense,
   mutate,
   mode,
+  patientUuid,
 }) => {
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
+  const { patient, isLoading } = usePatient(patientUuid);
 
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] =
@@ -119,9 +124,33 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   // check is valid on any changes
   useEffect(checkIsValid, [medicationDispensePayload]);
 
+  const bannerState = useMemo(() => {
+    if (patient) {
+      return {
+        patient,
+        patientUuid,
+        hideActionsOverflow: true,
+      };
+    }
+  }, [patient, patientUuid]);
+
   return (
     <div className="">
       <div className={styles.formWrapper}>
+        {isLoading && (
+          <InlineLoading
+            className={styles.bannerLoading}
+            iconDescription="Loading"
+            description="Loading banner"
+            status="active"
+          />
+        )}
+        {patient && (
+          <ExtensionSlot
+            extensionSlotName="patient-header-slot"
+            state={bannerState}
+          />
+        )}
         <section className={styles.formGroup}>
           {/* <span style={{ marginTop: "1rem" }}>1. {t("drug", "Drug")}</span>*/}
           <FormLabel>

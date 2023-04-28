@@ -37,6 +37,12 @@ $color-blue-30: #a6c8ff;
   @extend .productiveHeading02;
 }
 
+.bannerLoading {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .patientInfo {
   position: sticky;
   z-index: 1000;
