@@ -24,12 +24,14 @@ interface ActionButtonsProps {
   medicationRequest: MedicationRequest;
   associatedMedicationDispenses: Array<MedicationDispense>;
   mutate: Function;
+  patientUuid: string;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
   medicationRequest,
   associatedMedicationDispenses,
   mutate,
+  patientUuid,
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
@@ -64,6 +66,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             launchOverlay(
               t("dispensePrescription", "Dispense prescription"),
               <DispenseForm
+                patientUuid={patientUuid}
                 medicationDispense={initiateMedicationDispenseBody(
                   medicationRequest,
                   session,
