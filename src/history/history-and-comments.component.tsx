@@ -226,7 +226,7 @@ const HistoryAndComments: React.FC<{
   };
 
   const handleDelete: Function = (medicationDispense: MedicationDispense) => {
-    // if this is the most recent dispense event that we are deleting, have to update the fulfiller status
+    // if this is the most recent dispense event that we are deleting, may have to update the fulfiller status
     // on the request
     // TODO extract out into an resource or a util?
     if (isMostRecentMedicationDispenseStatus(medicationDispense, dispenses)) {
