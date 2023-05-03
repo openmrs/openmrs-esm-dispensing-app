@@ -1,13 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { MedicationDispense, MedicationDispenseStatus } from "../types";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  MedicationDispense,
+  MedicationDispenseStatus,
+  MedicationRequestFulfillerStatus,
+} from "../types";
 import { useTranslation } from "react-i18next";
 import {
+  ExtensionSlot,
   showNotification,
   showToast,
   useConfig,
   useLayoutType,
+  usePatient,
 } from "@openmrs/esm-framework";
-import { Button, ComboBox } from "@carbon/react";
+import { Button, ComboBox, InlineLoading } from "@carbon/react";
 import {
   saveMedicationDispense,
   useReasonForPauseValueSet,
@@ -15,26 +21,34 @@ import {
 import { closeOverlay } from "../hooks/useOverlay";
 import styles from "./forms.scss";
 import { PharmacyConfig } from "../config-schema";
+import { updateMedicationRequestFulfillerStatus } from "../medication-request/medication-request.resource";
+import { getUuidFromReference } from "../utils";
 
 interface PauseDispenseFormProps {
   medicationDispense: MedicationDispense;
   mutate: Function;
   mode: "enter" | "edit";
+  patientUuid?: string;
 }
 
 const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   medicationDispense,
   mutate,
   mode,
+  patientUuid,
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
   const isTablet = useLayoutType() === "tablet";
+  const { patient, isLoading } = usePatient(patientUuid);
+
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] =
     useState<MedicationDispense>();
+
   // whether or not the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
+
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reasonsForPause, setReasonsForPause] = useState([]);
@@ -69,9 +83,22 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
         medicationDispensePayload,
         MedicationDispenseStatus.on_hold,
         abortController
-      ).then(
-        ({ status }) => {
-          if (status === 201 || status === 200) {
+      )
+        .then((response) => {
+          // only update request status when added a new dispense event, not updating
+          if (response.ok && !medicationDispense.id) {
+            return updateMedicationRequestFulfillerStatus(
+              getUuidFromReference(
+                medicationDispensePayload.authorizingPrescription[0].reference // assumes authorizing prescription exist
+              ),
+              MedicationRequestFulfillerStatus.on_hold
+            );
+          } else {
+            return response;
+          }
+        })
+        .then((response) => {
+          if (response.ok) {
             closeOverlay();
             mutate();
             showToast({
@@ -95,8 +122,8 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
               ),
             });
           }
-        },
-        (error) => {
+        })
+        .catch((error) => {
           showNotification({
             title: t(
               mode === "enter"
@@ -111,8 +138,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
             description: error?.message,
           });
           setIsSubmitting(false);
-        }
-      );
+        });
     }
   };
 
@@ -136,44 +162,71 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   // check is valid on any changes
   useEffect(checkIsValid, [medicationDispensePayload]);
 
+  const bannerState = useMemo(() => {
+    if (patient) {
+      return {
+        patient,
+        patientUuid,
+        hideActionsOverflow: true,
+      };
+    }
+  }, [patient, patientUuid]);
+
   return (
-    <div className={styles.formWrapper}>
-      <section className={styles.formGroup}>
-        <ComboBox
-          id="reasonForPause"
-          light={isTablet}
-          items={reasonsForPause}
-          titleText={t("reasonForPause", "Reason for pause")}
-          itemToString={(item) => item?.text}
-          initialSelectedItem={{
-            id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
-            text: medicationDispense.statusReasonCodeableConcept?.text,
-          }}
-          onChange={({ selectedItem }) => {
-            setMedicationDispensePayload({
-              ...medicationDispensePayload,
-              statusReasonCodeableConcept: {
-                coding: [
-                  {
-                    code: selectedItem?.id,
-                  },
-                ],
-              },
-            });
-          }}
-        />
-      </section>
-      <section className={styles.buttonGroup}>
-        <Button onClick={() => closeOverlay()} kind="secondary">
-          {t("cancel", "Cancel")}
-        </Button>
-        <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
-          {t(
-            mode === "enter" ? "pause" : "saveChanges",
-            mode === "enter" ? "Pause" : "Save changes"
-          )}
-        </Button>
-      </section>
+    <div className="">
+      <div className={styles.formWrapper}>
+        {isLoading && (
+          <InlineLoading
+            className={styles.bannerLoading}
+            iconDescription="Loading"
+            description="Loading banner"
+            status="active"
+          />
+        )}
+        {patient && (
+          <ExtensionSlot
+            extensionSlotName="patient-header-slot"
+            state={bannerState}
+          />
+        )}
+        <section className={styles.formGroup}>
+          <ComboBox
+            id="reasonForPause"
+            light={isTablet}
+            items={reasonsForPause}
+            titleText={t("reasonForPause", "Reason for pause")}
+            itemToString={(item) => item?.text}
+            initialSelectedItem={{
+              id: medicationDispense.statusReasonCodeableConcept?.coding[0]
+                ?.code,
+              text: medicationDispense.statusReasonCodeableConcept?.text,
+            }}
+            onChange={({ selectedItem }) => {
+              setMedicationDispensePayload({
+                ...medicationDispensePayload,
+                statusReasonCodeableConcept: {
+                  coding: [
+                    {
+                      code: selectedItem?.id,
+                    },
+                  ],
+                },
+              });
+            }}
+          />
+        </section>
+        <section className={styles.buttonGroup}>
+          <Button onClick={() => closeOverlay()} kind="secondary">
+            {t("cancel", "Cancel")}
+          </Button>
+          <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
+            {t(
+              mode === "enter" ? "pause" : "saveChanges",
+              mode === "enter" ? "Pause" : "Save changes"
+            )}
+          </Button>
+        </section>
+      </div>
     </div>
   );
 };

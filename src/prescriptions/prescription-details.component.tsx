@@ -11,17 +11,14 @@ import MedicationEvent from "../components/medication-event.component";
 import { PatientUuid, useConfig, UserHasAccess } from "@openmrs/esm-framework";
 import {
   AllergyIntolerance,
-  MedicationDispense,
   MedicationRequest,
-  MedicationRequestMedicationDispenseCombinedStatus,
+  MedicationRequestCombinedStatus,
 } from "../types";
 import { PharmacyConfig } from "../config-schema";
 import {
-  computeMedicationRequestMedicationDispenseCombinedStatus,
-  computeMedicationRequestStatus,
+  computeMedicationRequestCombinedStatus,
   getAssociatedMedicationDispenses,
   getConceptCodingDisplay,
-  getMostRecentMedicationDispenseStatus,
 } from "../utils";
 import ActionButtons from "../components/action-buttons.component";
 import { PRIVILEGE_CREATE_DISPENSE } from "../constants";
@@ -50,52 +47,30 @@ const PrescriptionDetails: React.FC<{
   }, [totalAllergies]);
 
   const generateStatusTag: Function = (
-    medicationRequest: MedicationRequest,
-    medicationDispenses: Array<MedicationDispense>
+    medicationRequest: MedicationRequest
   ) => {
-    const medicationRequestStatus = computeMedicationRequestStatus(
-      medicationRequest,
-      config.medicationRequestExpirationPeriodInDays
-    );
-    const medicationDispenseStatus =
-      getMostRecentMedicationDispenseStatus(medicationDispenses);
-    const combinedStatus: MedicationRequestMedicationDispenseCombinedStatus =
-      computeMedicationRequestMedicationDispenseCombinedStatus(
-        medicationRequestStatus,
-        medicationDispenseStatus
+    const combinedStatus: MedicationRequestCombinedStatus =
+      computeMedicationRequestCombinedStatus(
+        medicationRequest,
+        config.medicationRequestExpirationPeriodInDays
       );
-    if (
-      combinedStatus ===
-      MedicationRequestMedicationDispenseCombinedStatus.cancelled
-    ) {
+    if (combinedStatus === MedicationRequestCombinedStatus.cancelled) {
       return <Tag type="red">{t("cancelled", "Cancelled")}</Tag>;
     }
 
-    if (
-      combinedStatus ===
-      MedicationRequestMedicationDispenseCombinedStatus.completed
-    ) {
+    if (combinedStatus === MedicationRequestCombinedStatus.completed) {
       return <Tag type="green">{t("completed", "Completed")}</Tag>;
     }
 
-    if (
-      combinedStatus ===
-      MedicationRequestMedicationDispenseCombinedStatus.expired
-    ) {
+    if (combinedStatus === MedicationRequestCombinedStatus.expired) {
       return <Tag type="red">{t("expired", "Expired")}</Tag>;
     }
 
-    if (
-      combinedStatus ===
-      MedicationRequestMedicationDispenseCombinedStatus.declined
-    ) {
+    if (combinedStatus === MedicationRequestCombinedStatus.declined) {
       return <Tag type="red">{t("closed", "Closed")}</Tag>;
     }
 
-    if (
-      combinedStatus ===
-      MedicationRequestMedicationDispenseCombinedStatus.on_hold
-    ) {
+    if (combinedStatus === MedicationRequestCombinedStatus.on_hold) {
       return <Tag type="red">{t("paused", "Paused")}</Tag>;
     }
 

@@ -8,6 +8,7 @@ import {
   PrescriptionsTableRow,
   MedicationDispense,
   Encounter,
+  MedicationRequestFulfillerStatus,
 } from "../types";
 import {
   getPrescriptionDetailsEndpoint,
@@ -16,8 +17,10 @@ import {
   getPrescriptionTableActiveMedicationRequestsEndpoint,
   getPrescriptionTableAllMedicationRequestsEndpoint,
   sortMedicationDispensesByDateRecorded,
+  computePrescriptionStatusMessageCode,
 } from "../utils";
 import dayjs from "dayjs";
+import { OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from "../constants";
 
 export function usePrescriptionsTable(
   pageSize: number = 10,
@@ -134,72 +137,14 @@ function buildPrescriptionsTableRow(
     prescriber: [
       ...new Set(medicationRequests.map((o) => o.requester.display)),
     ].join(", "),
-    status: computePrescriptionStatus(
-      medicationRequests.map((o) => o.status),
-      encounter?.period?.start,
+    status: computePrescriptionStatusMessageCode(
+      medicationRequests,
       medicationRequestExpirationPeriodInDays
     ),
     location: encounter?.location
       ? encounter?.location[0]?.location.display
       : null,
   };
-}
-
-export function computePrescriptionStatus(
-  orderStatuses: Array<string>,
-  encounterDatetime: string,
-  medicationRequestExpirationPeriodInDays
-) {
-  // first, test the encounter against the expiry period
-  var isExpired = false;
-  if (
-    encounterDatetime &&
-    dayjs(encounterDatetime).isBefore(
-      dayjs(new Date())
-        .startOf("day")
-        .subtract(medicationRequestExpirationPeriodInDays, "day")
-    )
-  ) {
-    isExpired = true;
-  }
-
-  // TODO make the order status and the prescription status be enums
-  // TODO the first determine status based on order status
-  // TODO then if and only if active:
-  // if *all* current dispense events are either paused or closed:
-  //    if any are paused, paused, otherwise closed
-
-  // handle cases when the overall set isn't expired
-  if (!isExpired) {
-    if (orderStatuses.includes("active") || orderStatuses.includes("stopped")) {
-      // if any are active or expired, set as active (since, confusingly, we aren't using the  ORDER API idea of stopped/autoexpired for dispensing purposes
-      return "active";
-    } else if (orderStatuses.includes("completed")) {
-      // otherwise, if any are completed, return completed
-      return "completed";
-    } else if (orderStatuses.includes("cancelled")) {
-      // otherwise, if any are cancelled, return cancelled
-      return "cancelled";
-    } else {
-      return "unknown";
-    }
-  } else {
-    // handle cases where the overall set is expired
-    if (orderStatuses.every((status) => status === "cancelled")) {
-      // if every one is cancelled, return cancelled
-      return "cancelled";
-    } else if (
-      orderStatuses.every(
-        (status) => status === "completed" || status === "cancelled"
-      )
-    ) {
-      // if every one is completed or cancelled, return completed
-      return "completed";
-    } else {
-      /// otherwise, expired
-      return "expired";
-    }
-  }
 }
 
 export function usePrescriptionDetails(encounterUuid: string) {
@@ -289,4 +234,26 @@ export function useMedicationRequest(reference: string) {
   return {
     medicationRequest: data ? data.data : null,
   };
+}
+
+export function updateMedicationRequestFulfillerStatus(
+  medicationRequestUuid: string,
+  fulfillerStatus: MedicationRequestFulfillerStatus
+) {
+  const url = `${fhirBaseUrl}/MedicationRequest/${medicationRequestUuid}`;
+
+  return openmrsFetch(url, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json-patch+json", // this is really a JSON Merge Patch, not a JSON Patch, update if method is updated
+    },
+    body: {
+      extension: [
+        {
+          url: OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+          valueCode: fulfillerStatus,
+        },
+      ],
+    },
+  });
 }

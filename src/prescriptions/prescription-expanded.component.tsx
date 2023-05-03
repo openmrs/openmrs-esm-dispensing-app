@@ -33,7 +33,11 @@ const PrescriptionExpanded: React.FC<{
     {
       name: t("historyComments", "History and comments"),
       component: (
-        <HistoryAndComments encounterUuid={encounterUuid} mutate={mutate} />
+        <HistoryAndComments
+          encounterUuid={encounterUuid}
+          mutate={mutate}
+          patientUuid={patientUuid}
+        />
       ),
     },
     /* {

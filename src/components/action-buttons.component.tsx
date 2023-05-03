@@ -88,6 +88,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             launchOverlay(
               t("pausePrescription", "Pause prescription"),
               <PauseDispenseForm
+                patientUuid={patientUuid}
                 medicationDispense={initiateMedicationDispenseBody(
                   medicationRequest,
                   session,
@@ -109,6 +110,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             launchOverlay(
               t("closePrescription", "Close prescription"),
               <CloseDispenseForm
+                patientUuid={patientUuid}
                 medicationDispense={initiateMedicationDispenseBody(
                   medicationRequest,
                   session,
