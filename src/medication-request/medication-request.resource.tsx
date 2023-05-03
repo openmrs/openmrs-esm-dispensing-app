@@ -20,7 +20,10 @@ import {
   computePrescriptionStatusMessageCode,
 } from "../utils";
 import dayjs from "dayjs";
-import { OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from "../constants";
+import {
+  JSON_MERGE_PATH_MIME_TYPE,
+  OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+} from "../constants";
 
 export function usePrescriptionsTable(
   pageSize: number = 10,
@@ -245,7 +248,7 @@ export function updateMedicationRequestFulfillerStatus(
   return openmrsFetch(url, {
     method: "PATCH",
     headers: {
-      "Content-Type": "application/json-patch+json", // this is really a JSON Merge Patch, not a JSON Patch, update if method is updated
+      "Content-Type": JSON_MERGE_PATH_MIME_TYPE,
     },
     body: {
       extension: [

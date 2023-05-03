@@ -10,7 +10,10 @@ import {
 import { openmrsFetch, parseDate } from "@openmrs/esm-framework";
 import dayjs from "dayjs";
 import { MedicationDispense, MedicationRequestFulfillerStatus } from "../types";
-import { OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from "../constants";
+import {
+  JSON_MERGE_PATH_MIME_TYPE,
+  OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+} from "../constants";
 
 jest.mock("@openmrs/esm-framework", () => {
   const originalModule = jest.requireActual("@openmrs/esm-framework");
@@ -1355,7 +1358,7 @@ describe("Medication Request Resource Test", () => {
       {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json-patch+json",
+          "Content-Type": JSON_MERGE_PATH_MIME_TYPE,
         },
         body: {
           extension: [
