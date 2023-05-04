@@ -40,7 +40,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
-  const { prescriptionsTableRows, mutate, isError, isLoading, totalOrders } =
+  const { prescriptionsTableRows, isError, isLoading, totalOrders } =
     usePrescriptionsTable(
       pageSize,
       nextOffSet,
@@ -129,7 +129,6 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
                                   cell.id.endsWith("patient")
                                 ).value.uuid
                               }
-                              mutate={mutate}
                               status={
                                 row.cells.find((cell) =>
                                   cell.id.endsWith("status")

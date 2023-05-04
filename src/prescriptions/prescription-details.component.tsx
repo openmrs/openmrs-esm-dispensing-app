@@ -26,19 +26,13 @@ import { PRIVILEGE_CREATE_DISPENSE } from "../constants";
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
-  mutate: Function;
-}> = ({ encounterUuid, patientUuid, mutate }) => {
+}> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
   const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
-  const {
-    requests,
-    dispenses,
-    mutate: mutatePrescriptionDetails,
-    isError,
-    isLoading,
-  } = usePrescriptionDetails(encounterUuid);
+  const { requests, dispenses, isError, isLoading } =
+    usePrescriptionDetails(encounterUuid);
 
   useEffect(() => {
     if (typeof totalAllergies == "number") {
@@ -126,12 +120,9 @@ const PrescriptionDetails: React.FC<{
               <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
                 <ActionButtons
                   patientUuid={patientUuid}
+                  encounterUuid={encounterUuid}
                   medicationRequest={request}
                   associatedMedicationDispenses={associatedMedicationDispenses}
-                  mutate={() => {
-                    mutate();
-                    mutatePrescriptionDetails();
-                  }}
                 />
               </UserHasAccess>
               <MedicationEvent

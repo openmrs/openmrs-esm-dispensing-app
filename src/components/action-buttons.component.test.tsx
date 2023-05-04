@@ -5,11 +5,10 @@ import { MedicationRequest, MedicationRequestStatus } from "../types";
 import { useConfig } from "@openmrs/esm-framework";
 
 const mockedUseConfig = useConfig as jest.Mock;
-const mockPatientUuid = "f8f8728f-8f0c-4a4f-b7f6-72cf77138060";
+const mockPatientUuid = "558494fe-5850-4b34-a3bf-06550334ba4a";
+const mockEncounterUuid = "7aee7123-9e50-4f72-a636-895d77a63e98";
 
 describe("Action Buttons Component tests", () => {
-  const mockedMutate = jest.fn(() => "mocked mutate");
-
   beforeEach(() => {
     mockedUseConfig.mockReturnValue({
       medicationRequestExpirationPeriodInDays: 90,
@@ -124,9 +123,9 @@ describe("Action Buttons Component tests", () => {
     const { getByText, container } = render(
       <ActionButtons
         patientUuid={mockPatientUuid}
+        encounterUuid={mockEncounterUuid}
         medicationRequest={medicationRequest}
         associatedMedicationDispenses={[]}
-        mutate={mockedMutate}
       />
     );
     expect(getByText("Dispense")).toBeInTheDocument();
@@ -233,9 +232,9 @@ describe("Action Buttons Component tests", () => {
     const { queryByText, container } = render(
       <ActionButtons
         patientUuid={mockPatientUuid}
+        encounterUuid={mockEncounterUuid}
         medicationRequest={medicationRequest}
         associatedMedicationDispenses={[]}
-        mutate={mockedMutate}
       />
     );
     expect(queryByText("Dispense")).not.toBeInTheDocument();

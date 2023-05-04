@@ -1,9 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  MedicationDispense,
-  MedicationDispenseStatus,
-  MedicationRequestFulfillerStatus,
-} from "../types";
 import { useTranslation } from "react-i18next";
 import {
   ExtensionSlot,
@@ -22,20 +17,25 @@ import { closeOverlay } from "../hooks/useOverlay";
 import styles from "./forms.scss";
 import { PharmacyConfig } from "../config-schema";
 import { updateMedicationRequestFulfillerStatus } from "../medication-request/medication-request.resource";
-import { getUuidFromReference } from "../utils";
+import { getUuidFromReference, revalidate } from "../utils";
+import {
+  MedicationDispense,
+  MedicationDispenseStatus,
+  MedicationRequestFulfillerStatus,
+} from "../types";
 
 interface PauseDispenseFormProps {
   medicationDispense: MedicationDispense;
-  mutate: Function;
   mode: "enter" | "edit";
   patientUuid?: string;
+  encounterUuid: string;
 }
 
 const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   medicationDispense,
-  mutate,
   mode,
   patientUuid,
+  encounterUuid,
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
@@ -100,7 +100,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
         .then((response) => {
           if (response.ok) {
             closeOverlay();
-            mutate();
+            revalidate(encounterUuid);
             showToast({
               critical: true,
               kind: "success",

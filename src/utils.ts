@@ -1,3 +1,4 @@
+import { mutate } from "swr";
 import {
   Coding,
   DosageInstruction,
@@ -12,9 +13,11 @@ import {
 } from "./types";
 import { fhirBaseUrl, parseDate } from "@openmrs/esm-framework";
 import {
+  PRESCRIPTIONS_TABLE_ENDPOINT,
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+  PRESCRIPTION_DETAILS_ENDPOINT,
 } from "./constants";
 import dayjs from "dayjs";
 
@@ -367,7 +370,7 @@ export function getOpenMRSMedicineDrugName(medication: Medication) {
 }
 
 export function getPrescriptionDetailsEndpoint(encounterUuid: string) {
-  return `${fhirBaseUrl}/MedicationRequest?encounter=${encounterUuid}&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter`;
+  return `${fhirBaseUrl}/${PRESCRIPTION_DETAILS_ENDPOINT}?encounter=${encounterUuid}&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter`;
 }
 
 export function getQuantity(
@@ -389,7 +392,7 @@ export function getPrescriptionTableActiveMedicationRequestsEndpoint(
   location: string
 ) {
   return appendSearchTermAndLocation(
-    `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=active`,
+    `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=active`,
     patientSearchTerm,
     location
   );
@@ -402,7 +405,7 @@ export function getPrescriptionTableAllMedicationRequestsEndpoint(
   location: string
 ) {
   return appendSearchTermAndLocation(
-    `${fhirBaseUrl}/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=${pageOffset}&_count=${pageSize}`,
+    `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}`,
     patientSearchTerm,
     location
   );
@@ -461,6 +464,22 @@ export function isMostRecentMedicationDispenseStatus(
     sorted &&
     sorted.length > 0 &&
     sorted[0].id === medicationDispense.id ? true : false;
+}
+
+/**
+ * Revalidated (reloads) both the prescription associated with the encounter uuid,
+ * and the entire prescrption table
+ * @param encounterUuid
+ */
+export function revalidate(encounterUuid: string) {
+  mutate(
+    (key) =>
+      typeof key === "string" &&
+      (key.startsWith(`${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}`) ||
+        key.startsWith(
+          `${fhirBaseUrl}/${PRESCRIPTION_DETAILS_ENDPOINT}?encounter=${encounterUuid}`
+        ))
+  );
 }
 
 export function sortMedicationDispensesByDateRecorded(

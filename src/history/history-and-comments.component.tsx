@@ -38,25 +38,19 @@ import {
   getNextMostRecentMedicationDispenseStatus,
   getUuidFromReference,
   isMostRecentMedicationDispenseStatus,
+  revalidate,
 } from "../utils";
 import PauseDispenseForm from "../forms/pause-dispense-form.component";
 import CloseDispenseForm from "../forms/close-dispense-form.component";
 
 const HistoryAndComments: React.FC<{
   encounterUuid: string;
-  mutate: Function;
   patientUuid: string;
-}> = ({ encounterUuid, mutate, patientUuid }) => {
+}> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const session = useSession();
-  const {
-    requests,
-    dispenses,
-    mutate: mutatePrescriptionDetails,
-    prescriptionDate,
-    isError,
-    isLoading,
-  } = usePrescriptionDetails(encounterUuid);
+  const { requests, dispenses, prescriptionDate, isError, isLoading } =
+    usePrescriptionDetails(encounterUuid);
 
   const userCanEdit: Function = (session: Session) =>
     session?.user && userHasAccess(PRIVILEGE_EDIT_DISPENSE, session.user);
@@ -87,33 +81,23 @@ const HistoryAndComments: React.FC<{
     return false;
   };
 
-  const generateForm: Function = (
-    medicationDispense: MedicationDispense,
-    mutate: Function,
-    mutatePrescriptionDetails: Function
-  ) => {
+  const generateForm: Function = (medicationDispense: MedicationDispense) => {
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
       return (
         <DispenseForm
           patientUuid={patientUuid}
+          encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
           mode="edit"
-          mutate={() => {
-            mutate();
-            mutatePrescriptionDetails();
-          }}
         />
       );
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
       return (
         <PauseDispenseForm
           patientUuid={patientUuid}
+          encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
           mode="edit"
-          mutate={() => {
-            mutate();
-            mutatePrescriptionDetails();
-          }}
         />
       );
     } else if (
@@ -122,12 +106,9 @@ const HistoryAndComments: React.FC<{
       return (
         <CloseDispenseForm
           patientUuid={patientUuid}
+          encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
           mode="edit"
-          mutate={() => {
-            mutate();
-            mutatePrescriptionDetails();
-          }}
         />
       );
     }
@@ -170,11 +151,7 @@ const HistoryAndComments: React.FC<{
               onClick={() =>
                 launchOverlay(
                   generateOverlayText(medicationDispense),
-                  generateForm(
-                    medicationDispense,
-                    mutate,
-                    mutatePrescriptionDetails
-                  )
+                  generateForm(medicationDispense)
                 )
               }
               itemText={t("editRecord", "Edit Record")}
@@ -246,14 +223,12 @@ const HistoryAndComments: React.FC<{
         ),
         updatedFulfillerStatus
       ).then(() => {
-        mutate();
-        mutatePrescriptionDetails();
+        revalidate(encounterUuid);
       });
     }
 
     deleteMedicationDispense(medicationDispense.id).then(() => {
-      mutate();
-      mutatePrescriptionDetails();
+      revalidate(encounterUuid);
     });
   };
 
