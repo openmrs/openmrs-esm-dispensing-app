@@ -13,6 +13,8 @@ import { PharmacyConfig } from "../config-schema";
 import { launchOverlay } from "../hooks/useOverlay";
 import {
   computeMedicationRequestStatus,
+  computeQuantityRemaining,
+  getFulfillerStatus,
   getMostRecentMedicationDispenseStatus,
 } from "../utils";
 import DispenseForm from "../forms/dispense-form.component";
@@ -57,6 +59,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     medicationRequestStatus === MedicationRequestStatus.active &&
     mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.declined;
 
+  const quantityRemaining = config.dispenseBehavior
+    .restrictTotalQuantityDispensed
+    ? computeQuantityRemaining(medicationRequest, associatedMedicationDispenses)
+    : null;
+
   return (
     <div className={styles.actionBtns}>
       {dispensable ? (
@@ -73,6 +80,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                   session,
                   true
                 )}
+                currentFulfillerStatus={getFulfillerStatus(medicationRequest)}
+                quantityRemaining={quantityRemaining}
                 mode="enter"
               />
             )

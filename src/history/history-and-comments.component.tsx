@@ -11,6 +11,7 @@ import {
   formatDatetime,
   parseDate,
   Session,
+  useConfig,
   userHasAccess,
   useSession,
 } from "@openmrs/esm-framework";
@@ -22,6 +23,7 @@ import {
 import { deleteMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationEvent from "../components/medication-event.component";
 import { launchOverlay } from "../hooks/useOverlay";
+import { PharmacyConfig } from "../config-schema";
 import DispenseForm from "../forms/dispense-form.component";
 import {
   MedicationDispense,
@@ -34,7 +36,11 @@ import {
   PRIVILEGE_EDIT_DISPENSE,
 } from "../constants";
 import {
+  computeQuantityRemaining,
+  getAssociatedMedicationDispenses,
+  getAssociatedMedicationRequest,
   getDateRecorded,
+  getFulfillerStatus,
   getNextMostRecentMedicationDispenseStatus,
   getUuidFromReference,
   isMostRecentMedicationDispenseStatus,
@@ -49,6 +55,7 @@ const HistoryAndComments: React.FC<{
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const session = useSession();
+  const config = useConfig() as PharmacyConfig;
   const { requests, dispenses, prescriptionDate, isError, isLoading } =
     usePrescriptionDetails(encounterUuid);
 
@@ -83,11 +90,36 @@ const HistoryAndComments: React.FC<{
 
   const generateForm: Function = (medicationDispense: MedicationDispense) => {
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
+      // TODO error handle no request and unable to calculate quantity
+      // fetch the appropriate requests and associated dispense so we can calculate quantity
+      const associatedMedicationRequest = getAssociatedMedicationRequest(
+        medicationDispense,
+        requests
+      );
+      const associatedMedicationDispenses = getAssociatedMedicationDispenses(
+        associatedMedicationRequest,
+        dispenses
+      );
+
+      // note that since this is an edit, quantity remaining needs to include quantity that is part of this dispense
+      const quantityRemaining = config.dispenseBehavior
+        .restrictTotalQuantityDispensed
+        ? computeQuantityRemaining(
+            associatedMedicationRequest,
+            associatedMedicationDispenses
+          ) +
+          (medicationDispense?.quantity ? medicationDispense.quantity.value : 0)
+        : null;
+
       return (
         <DispenseForm
           patientUuid={patientUuid}
           encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
+          quantityRemaining={quantityRemaining}
+          currentFulfillerStatus={getFulfillerStatus(
+            associatedMedicationRequest
+          )}
           mode="edit"
         />
       );
@@ -222,6 +254,23 @@ const HistoryAndComments: React.FC<{
           medicationDispense.authorizingPrescription[0].reference // assumes authorizing prescription exist
         ),
         updatedFulfillerStatus
+      ).then(() => {
+        revalidate(encounterUuid);
+      });
+    }
+    // otherwise, if this is any kind of a "complete" dispense, make sure the prescription is no longer marked complete
+    // TODO do we always want to do this?
+    else if (
+      medicationDispense.status === MedicationDispenseStatus.completed &&
+      getFulfillerStatus(
+        getAssociatedMedicationRequest(medicationDispense, requests)
+      ) === MedicationRequestFulfillerStatus.completed
+    ) {
+      updateMedicationRequestFulfillerStatus(
+        getUuidFromReference(
+          medicationDispense.authorizingPrescription[0].reference // assumes authorizing prescription exist
+        ),
+        null
       ).then(() => {
         revalidate(encounterUuid);
       });

@@ -215,6 +215,79 @@ export function computePrescriptionStatusMessageCode(
   return null;
 }
 
+export function computeQuantityRemaining(
+  medicationRequest: MedicationRequest,
+  medicationDispenses: Array<MedicationDispense>
+) {
+  if (medicationRequest) {
+    // sanity check to make sure all medication dispenses are associated with the request
+    const associatedMedicationDispenses = getAssociatedMedicationDispenses(
+      medicationRequest,
+      medicationDispenses
+    );
+
+    // hard protect against quantity type mistmatch
+    if (
+      !getQuantityUnitsMatch([
+        medicationRequest,
+        ...associatedMedicationDispenses,
+      ])
+    ) {
+      throw new Error("Cannot calculate quantity remaining, units dont match");
+    }
+
+    return (
+      computeTotalQuantityOrdered(medicationRequest) -
+      computeTotalQuantityDispensed(associatedMedicationDispenses)
+    );
+  }
+  return 0;
+}
+
+/**
+ * Given a set of medication dispenses, calculate the total quantity dispensed
+ * @param medicationDispenses
+ */
+export function computeTotalQuantityDispensed(
+  medicationDispenses: Array<MedicationDispense>
+) {
+  if (medicationDispenses) {
+    if (!getQuantityUnitsMatch(medicationDispenses)) {
+      throw new Error(
+        "Can't calculate quantity dispensed if units don't match"
+      );
+    }
+    const quantity = medicationDispenses
+      .map((medicationDispense) =>
+        medicationDispense.quantity?.value
+          ? medicationDispense.quantity?.value
+          : 0
+      )
+      .reduce((acc, currentValue) => acc + currentValue, 0);
+    return quantity;
+  } else {
+    return 0;
+  }
+}
+
+/**
+ * Given a medication request, calculate the total quantity ordered (including all refills)
+ * @param medicationRequest
+ */
+export function computeTotalQuantityOrdered(
+  medicationRequest: MedicationRequest
+) {
+  const refillsAllowed = getRefillsAllowed(medicationRequest);
+  if (medicationRequest.dispenseRequest?.quantity?.value) {
+    return (
+      medicationRequest.dispenseRequest.quantity.value *
+      (1 + (refillsAllowed ? refillsAllowed : 0))
+    );
+  } else {
+    return null;
+  }
+}
+
 /**
  * Given a medication request and an array of medication dispenses, fetch all dispenses authorized by that request
  *
@@ -226,6 +299,23 @@ export function getAssociatedMedicationDispenses(
   medicationDispenses: Array<MedicationDispense>
 ) {
   return medicationDispenses?.filter((medicationDispense) =>
+    medicationDispense?.authorizingPrescription?.some((prescription) =>
+      prescription.reference.endsWith(medicationRequest.id)
+    )
+  );
+}
+
+/**
+ * Given a medication dispense and an array of medication requests, fetch request which authorized this request
+ *
+ * @param medicationDispense
+ * @param medicationRequests
+ */
+export function getAssociatedMedicationRequest(
+  medicationDispense: MedicationDispense,
+  medicationRequests: Array<MedicationRequest>
+) {
+  return medicationRequests.find((medicationRequest) =>
     medicationDispense?.authorizingPrescription?.some((prescription) =>
       prescription.reference.endsWith(medicationRequest.id)
     )
@@ -373,17 +463,6 @@ export function getPrescriptionDetailsEndpoint(encounterUuid: string) {
   return `${fhirBaseUrl}/${PRESCRIPTION_DETAILS_ENDPOINT}?encounter=${encounterUuid}&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter`;
 }
 
-export function getQuantity(
-  resource: MedicationRequest | MedicationDispense
-): Quantity {
-  if (resource.resourceType == "MedicationRequest") {
-    return (resource as MedicationRequest).dispenseRequest?.quantity;
-  }
-  if (resource.resourceType == "MedicationDispense") {
-    return (resource as MedicationDispense).quantity;
-  }
-}
-
 export function getPrescriptionTableActiveMedicationRequestsEndpoint(
   pageOffset: number,
   pageSize: number,
@@ -423,6 +502,40 @@ function appendSearchTermAndLocation(
     url = `${url}&location=${location}`;
   }
   return url;
+}
+
+export function getQuantity(
+  resource: MedicationRequest | MedicationDispense
+): Quantity {
+  if (resource.resourceType == "MedicationRequest") {
+    return (resource as MedicationRequest).dispenseRequest?.quantity;
+  }
+  if (resource.resourceType == "MedicationDispense") {
+    return (resource as MedicationDispense).quantity;
+  }
+}
+
+/**
+ * Returns true/false whether the quantity units on all the resources are identical (or match)
+ * @param resources
+ */
+export function getQuantityUnitsMatch(
+  resources: Array<MedicationRequest | MedicationDispense>
+) {
+  if (resources) {
+    const quantityUnitsArray = resources
+      .map((resource) => getQuantity(resource)?.code)
+      .filter((quantity) => quantity);
+    if (quantityUnitsArray.length > 0) {
+      return quantityUnitsArray.every(
+        (element) => element === quantityUnitsArray[0]
+      );
+    } else {
+      return true; // consider true if empty
+    }
+  } else {
+    return true; // consider true if null
+  }
 }
 
 export function getRefillsAllowed(

@@ -265,7 +265,7 @@ export interface MedicationDispense {
 }
 
 export enum MedicationDispenseStatus {
-  in_progress = "in-progress",
+  //in_progress = "in-progress",  NOT YET IMPLEMENTED
   on_hold = "on-hold",
   completed = "completed",
   declined = "declined",

@@ -43,6 +43,20 @@ export const configSchema = {
       },
     },
   },
+  dispenseBehavior: {
+    allowModifyingPrescription: {
+      _type: Type.Boolean,
+      _description:
+        "Enable/Disable editing the prescription. If Disabled, Quantity will be he only editable field on prescription form",
+      _default: false,
+    },
+    restrictTotalQuantityDispensed: {
+      _type: Type.Boolean,
+      _description:
+        "Enable/Disable restricting dispensing quantity greater than total quantity ordered. Marks prescription as complete when total quantity dispensed. If true, allowModifyingPrescription *must* be false, as this functionality relies solely on numeric quantity and assumes no change in formulation, dosage, unit, etc",
+      _default: false,
+    },
+  },
   medicationRequestExpirationPeriodInDays: {
     _type: Type.Number,
     _description:
@@ -118,6 +132,10 @@ export type PharmacyConfig = {
     closeButton: {
       enabled: boolean;
     };
+  };
+  dispenseBehavior: {
+    allowModifyingPrescription: boolean;
+    restrictTotalQuantityDispensed: boolean;
   };
   medicationRequestExpirationPeriodInDays: number;
   locationBehavior: {

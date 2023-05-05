@@ -4,22 +4,31 @@ import {
   ExtensionSlot,
   showNotification,
   showToast,
+  useConfig,
   useLayoutType,
   usePatient,
 } from "@openmrs/esm-framework";
 import { Button, FormLabel, InlineLoading } from "@carbon/react";
 import styles from "./forms.scss";
 import { closeOverlay } from "../hooks/useOverlay";
-import { MedicationDispense, MedicationDispenseStatus } from "../types";
+import {
+  MedicationDispense,
+  MedicationDispenseStatus,
+  MedicationRequestFulfillerStatus,
+} from "../types";
+import { PharmacyConfig } from "../config-schema";
 import { saveMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationDispenseReview from "./medication-dispense-review.component";
-import { revalidate } from "../utils";
+import { getQuantity, getUuidFromReference, revalidate } from "../utils";
+import { updateMedicationRequestFulfillerStatus } from "../medication-request/medication-request.resource";
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
   mode: "enter" | "edit";
   patientUuid?: string;
   encounterUuid: string;
+  currentFulfillerStatus: MedicationRequestFulfillerStatus;
+  quantityRemaining: number;
 }
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
@@ -27,10 +36,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   mode,
   patientUuid,
   encounterUuid,
+  currentFulfillerStatus,
+  quantityRemaining,
 }) => {
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
   const { patient, isLoading } = usePatient(patientUuid);
+  const config = useConfig() as PharmacyConfig;
 
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] =
@@ -51,46 +63,89 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         medicationDispensePayload,
         MedicationDispenseStatus.completed,
         abortController
-      ).then(
-        ({ status }) => {
-          if (status === 201 || status === 200) {
-            closeOverlay();
-            revalidate(encounterUuid);
-            showToast({
-              critical: true,
-              kind: "success",
-              description: t(
-                "medicationListUpdated",
-                "Medication dispense list has been updated."
-              ),
+      )
+        .then((response) => {
+          if (response.ok) {
+            if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
+              const reachedMaxQuantity =
+                getQuantity(medicationDispensePayload) &&
+                getQuantity(medicationDispensePayload).value >=
+                  quantityRemaining;
+              // if we've dispensed the entire prescription, mark the request as completed
+              if (
+                reachedMaxQuantity &&
+                currentFulfillerStatus !==
+                  MedicationRequestFulfillerStatus.completed
+              ) {
+                return updateMedicationRequestFulfillerStatus(
+                  getUuidFromReference(
+                    medicationDispensePayload.authorizingPrescription[0]
+                      .reference // assumes authorizing prescription exist
+                  ),
+                  MedicationRequestFulfillerStatus.completed
+                );
+              }
+              // if we have *not* dispensed the entire prescription, make sure *not* marked as completed
+              else if (
+                !reachedMaxQuantity &&
+                currentFulfillerStatus ===
+                  MedicationRequestFulfillerStatus.completed
+              ) {
+                return updateMedicationRequestFulfillerStatus(
+                  getUuidFromReference(
+                    medicationDispensePayload.authorizingPrescription[0]
+                      .reference // assumes authorizing prescription exist
+                  ),
+                  null
+                );
+              } else {
+                return response;
+              }
+            } else {
+              return response;
+            }
+          }
+        })
+        .then(
+          ({ status }) => {
+            if (status === 201 || status === 200) {
+              closeOverlay();
+              revalidate(encounterUuid);
+              showToast({
+                critical: true,
+                kind: "success",
+                description: t(
+                  "medicationListUpdated",
+                  "Medication dispense list has been updated."
+                ),
+                title: t(
+                  mode === "enter"
+                    ? "medicationDispensed"
+                    : "medicationDispenseUpdated",
+                  mode === "enter"
+                    ? "Medication successfully dispensed."
+                    : "Dispense record successfully updated."
+                ),
+              });
+            }
+          },
+          (error) => {
+            showNotification({
               title: t(
                 mode === "enter"
-                  ? "medicationDispensed"
-                  : "medicationDispenseUpdated",
+                  ? "medicationDispenseError"
+                  : "medicationDispenseUpdatedError",
                 mode === "enter"
-                  ? "Medication successfully dispensed."
-                  : "Dispense record successfully updated."
+                  ? "Error dispensing medication."
+                  : "Error updating dispense record"
               ),
+              kind: "error",
+              critical: true,
+              description: error?.message,
             });
+            setIsSubmitting(false);
           }
-        },
-        (error) => {
-          showNotification({
-            title: t(
-              mode === "enter"
-                ? "medicationDispenseError"
-                : "medicationDispenseUpdatedError",
-              mode === "enter"
-                ? "Error dispensing medication."
-                : "Error updating dispense record"
-            ),
-            kind: "error",
-            critical: true,
-            description: error?.message,
-          });
-          setIsSubmitting(false);
-        }
-      );
+        );
     }
   };
 
@@ -156,14 +211,19 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           {/* <span style={{ marginTop: "1rem" }}>1. {t("drug", "Drug")}</span>*/}
           <FormLabel>
             {t(
-              "drugHelpText",
-              "You may edit the formulation and quantity dispensed here"
+              config.dispenseBehavior.allowModifyingPrescription
+                ? "drugHelpText"
+                : "drugHelpTextNoEdit",
+              config.dispenseBehavior.allowModifyingPrescription
+                ? "You may edit the formulation and quantity dispensed here"
+                : "You may edit quantity dispensed here"
             )}
           </FormLabel>
           {medicationDispensePayload ? (
             <MedicationDispenseReview
               medicationDispense={medicationDispensePayload}
               updateMedicationDispense={setMedicationDispensePayload}
+              quantityRemaining={quantityRemaining}
             />
           ) : null}
         </section>

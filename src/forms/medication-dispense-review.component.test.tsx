@@ -129,6 +129,7 @@ describe("Medication Dispense Review Component tests", () => {
       <MedicationDispenseReview
         medicationDispense={medicationDispense}
         updateMedicationDispense={mockUpdate}
+        quantityRemaining={30}
       />
     );
 

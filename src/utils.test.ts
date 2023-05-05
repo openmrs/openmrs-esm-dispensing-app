@@ -14,7 +14,11 @@ import {
   computeMedicationRequestCombinedStatus,
   computeMedicationRequestStatus,
   computePrescriptionStatus,
+  computeQuantityRemaining,
+  computeTotalQuantityDispensed,
+  computeTotalQuantityOrdered,
   getAssociatedMedicationDispenses,
+  getAssociatedMedicationRequest,
   getConceptCoding,
   getConceptCodingDisplay,
   getConceptCodingUuid,
@@ -29,6 +33,7 @@ import {
   getPrescriptionTableActiveMedicationRequestsEndpoint,
   getPrescriptionTableAllMedicationRequestsEndpoint,
   getQuantity,
+  getQuantityUnitsMatch,
   getRefillsAllowed,
   isMostRecentMedicationDispenseStatus,
 } from "./utils";
@@ -1854,6 +1859,632 @@ describe("Util Tests", () => {
     });
     test("computePrescriptionStatus should return null for null input", () => {
       expect(computePrescriptionStatus(null, 90)).toBe(null);
+    });
+  });
+  describe("test computeTotalQuantityOrdered", () => {
+    test("should calculate total quantity ordered when refills set", () => {
+      const medicationRequest: MedicationRequest = {
+        dispenseRequest: {
+          numberOfRepeatsAllowed: 3,
+          quantity: {
+            value: 30,
+            unit: "mg",
+            code: "123abc",
+          },
+          validityPeriod: { start: "" },
+        },
+        dosageInstruction: undefined,
+        encounter: { reference: "", type: "" },
+        id: "",
+        intent: "",
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        priority: "",
+        requester: {
+          display: "",
+          identifier: { value: "" },
+          reference: "",
+          type: "",
+        },
+        resourceType: "MedicationRequest",
+        status: MedicationRequestStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+            valueCode: MedicationRequestFulfillerStatus.completed,
+          },
+        ],
+      };
+      expect(computeTotalQuantityOrdered(medicationRequest)).toBe(120);
+    });
+    test("should calculate total quantity ordered when refills not set", () => {
+      const medicationRequest: MedicationRequest = {
+        dispenseRequest: {
+          numberOfRepeatsAllowed: undefined,
+          quantity: {
+            value: 30,
+            unit: "mg",
+            code: "123abc",
+          },
+          validityPeriod: { start: "" },
+        },
+        dosageInstruction: undefined,
+        encounter: { reference: "", type: "" },
+        id: "",
+        intent: "",
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        priority: "",
+        requester: {
+          display: "",
+          identifier: { value: "" },
+          reference: "",
+          type: "",
+        },
+        resourceType: "MedicationRequest",
+        status: MedicationRequestStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+            valueCode: MedicationRequestFulfillerStatus.completed,
+          },
+        ],
+      };
+      expect(computeTotalQuantityOrdered(medicationRequest)).toBe(30);
+    });
+    test("should return null when no quantity", () => {
+      const medicationRequest: MedicationRequest = {
+        dispenseRequest: {
+          numberOfRepeatsAllowed: undefined,
+          quantity: undefined,
+          validityPeriod: { start: "" },
+        },
+        dosageInstruction: undefined,
+        encounter: { reference: "", type: "" },
+        id: "",
+        intent: "",
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        priority: "",
+        requester: {
+          display: "",
+          identifier: { value: "" },
+          reference: "",
+          type: "",
+        },
+        resourceType: "MedicationRequest",
+        status: MedicationRequestStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+            valueCode: MedicationRequestFulfillerStatus.completed,
+          },
+        ],
+      };
+      expect(computeTotalQuantityOrdered(medicationRequest)).toBe(null);
+    });
+  });
+
+  describe("test computerTotalQuantityDispensed", () => {
+    const medicationDispense1: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 5,
+        unit: "mg",
+        code: "123abc",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispense2: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 15,
+        unit: "mg",
+        code: "123abc",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispenseNoQuantity: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: undefined,
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispenseDifferentUnits: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 1,
+        unit: "kg",
+        code: "456ddef",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    test("should return 0 for null input", () => {
+      expect(computeTotalQuantityDispensed(null)).toBe(0);
+    });
+    test("should return 0 if no dispense events have quantity", () =>
+      expect(
+        computeTotalQuantityDispensed([medicationDispenseNoQuantity])
+      ).toBe(0));
+    test("should return total quantity dispensed", () => {
+      expect(
+        computeTotalQuantityDispensed([
+          medicationDispense1,
+          medicationDispenseNoQuantity,
+          medicationDispense2,
+        ])
+      ).toBe(20);
+    });
+    // TODO: figure out how to get this to work
+    /*test("should throw Error if unit mismatch", () => {
+      expect(
+        computeTotalQuantityDispensed([
+          medicationDispense1,
+          medicationDispenseNoQuantity,
+          medicationDispense2,
+          medicationDispenseDifferentUnits,
+        ])
+      ).toThrow("Can't calculate quantity dispensed if units don't match");
+    });*/
+  });
+  describe("test getQuantityUnitsMatch", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: undefined,
+        quantity: {
+          value: 30,
+          unit: "mg",
+          code: "123abc",
+        },
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "MedicationRequest",
+      status: MedicationRequestStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.completed,
+        },
+      ],
+    };
+    const medicationDispense: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 5,
+        unit: "mg",
+        code: "123abc",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispenseNoQuantity: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: undefined,
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispenseDifferentUnits: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 1,
+        unit: "kg",
+        code: "456ddef",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    test("should return true if all quantity units match or are undefined", () => {
+      expect(
+        getQuantityUnitsMatch([
+          medicationDispense,
+          medicationRequest,
+          medicationDispenseNoQuantity,
+        ])
+      ).toBe(true);
+    });
+    test("should return false if all quantity units don't match", () => {
+      expect(
+        getQuantityUnitsMatch([
+          medicationDispense,
+          medicationRequest,
+          medicationDispenseNoQuantity,
+          medicationDispenseDifferentUnits,
+        ])
+      ).toBe(false);
+    });
+    test("should return true for null input", () => {
+      expect(getQuantityUnitsMatch(null)).toBe(true);
+    });
+    test("should return true for empty input", () => {
+      expect(getQuantityUnitsMatch([])).toBe(true);
+    });
+    test("should return true if all quantity units undefined", () => {
+      expect(getQuantityUnitsMatch([medicationDispenseNoQuantity])).toBe(true);
+    });
+  });
+  describe("test computeRemainingQuantity", () => {
+    const medicationRequest: MedicationRequest = {
+      id: "1c1ad91e-8653-453a-9f59-8d5c36249aff",
+      dispenseRequest: {
+        numberOfRepeatsAllowed: undefined,
+        quantity: {
+          value: 30,
+          unit: "mg",
+          code: "123abc",
+        },
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "MedicationRequest",
+      status: MedicationRequestStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.completed,
+        },
+      ],
+    };
+
+    const medicationDispense1: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      authorizingPrescription: [
+        {
+          reference: "MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff",
+          type: "MedicationRequest",
+        },
+      ],
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 5,
+        unit: "mg",
+        code: "123abc",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispense2: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      authorizingPrescription: [
+        {
+          reference: "MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff",
+          type: "MedicationRequest",
+        },
+      ],
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 10,
+        unit: "mg",
+        code: "123abc",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispenseNoQuantity: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "",
+      authorizingPrescription: [
+        {
+          reference: "MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff",
+          type: "MedicationRequest",
+        },
+      ],
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: undefined,
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationRequestDifferentUnits: MedicationRequest = {
+      id: "1c1ad91e-8653-453a-9f59-8d5c36249aff",
+      dispenseRequest: {
+        numberOfRepeatsAllowed: undefined,
+        quantity: {
+          value: 30,
+          unit: "kg",
+          code: "456def",
+        },
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "MedicationRequest",
+      status: MedicationRequestStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.completed,
+        },
+      ],
+    };
+
+    test("should return quantity remaining", () => {
+      expect(
+        computeQuantityRemaining(medicationRequest, [
+          medicationDispense1,
+          medicationDispense2,
+          medicationDispenseNoQuantity,
+        ])
+      ).toBe(15);
+    });
+    test("should return quantity ordered if no dispense has happened", () => {
+      expect(
+        computeQuantityRemaining(medicationRequest, [
+          medicationDispenseNoQuantity,
+        ])
+      ).toBe(30);
+    });
+    test("should return amount orders if no dispenses", () => {
+      expect(computeQuantityRemaining(medicationRequest, [])).toBe(30);
+    });
+    test("should return zero for empty input", () => {
+      expect(computeQuantityRemaining(null, [])).toBe(0);
+    });
+    test("should return zero for null input", () => {
+      expect(computeQuantityRemaining(null, null)).toBe(0);
+    });
+    /*  // TODO: figure out how to get this to work
+    test("should throw Error if unit mismatch", () => {
+      expect(
+        computeQuantityRemaining(medicationRequestDifferentUnits, [
+          medicationDispense1,
+          medicationDispenseNoQuantity,
+          medicationDispense2,
+        ])
+      ).toThrow(Error);
+    });*/
+  });
+
+  describe("test getAssociatedRequest", () => {
+    test("should return medication request associated with dispense", () => {
+      const medicationRequest1: MedicationRequest = {
+        id: "0c26097a-e856-4c01-a6b4-7c8e6c636618",
+        dispenseRequest: {
+          numberOfRepeatsAllowed: undefined,
+          quantity: {
+            value: 30,
+            unit: "mg",
+            code: "123abc",
+          },
+          validityPeriod: { start: "" },
+        },
+        dosageInstruction: undefined,
+        encounter: { reference: "", type: "" },
+        intent: "",
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        priority: "",
+        requester: {
+          display: "",
+          identifier: { value: "" },
+          reference: "",
+          type: "",
+        },
+        resourceType: "MedicationRequest",
+        status: MedicationRequestStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+            valueCode: MedicationRequestFulfillerStatus.completed,
+          },
+        ],
+      };
+
+      const medicationRequest2: MedicationRequest = {
+        id: "1c1ad91e-8653-453a-9f59-8d5c36249aff",
+        dispenseRequest: {
+          numberOfRepeatsAllowed: undefined,
+          quantity: {
+            value: 30,
+            unit: "mg",
+            code: "123abc",
+          },
+          validityPeriod: { start: "" },
+        },
+        dosageInstruction: undefined,
+        encounter: { reference: "", type: "" },
+        intent: "",
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        priority: "",
+        requester: {
+          display: "",
+          identifier: { value: "" },
+          reference: "",
+          type: "",
+        },
+        resourceType: "MedicationRequest",
+        status: MedicationRequestStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+            valueCode: MedicationRequestFulfillerStatus.completed,
+          },
+        ],
+      };
+
+      const medicationDispense: MedicationDispense = {
+        dosageInstruction: undefined,
+        id: "998f4111-96e8-4cd6-aebd-7f55716621a0",
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 5,
+          unit: "mg",
+          code: "123abc",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      };
+
+      expect(
+        getAssociatedMedicationRequest(medicationDispense, [
+          medicationRequest1,
+          medicationRequest2,
+        ])
+      ).toBe(medicationRequest2);
     });
   });
 });
