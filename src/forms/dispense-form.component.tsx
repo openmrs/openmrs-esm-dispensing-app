@@ -19,7 +19,12 @@ import {
 import { PharmacyConfig } from "../config-schema";
 import { saveMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationDispenseReview from "./medication-dispense-review.component";
-import { getQuantity, getUuidFromReference, revalidate } from "../utils";
+import {
+  computeNewFulfillerStatusAfterDispenseEvent,
+  getQuantity,
+  getUuidFromReference,
+  revalidate,
+} from "../utils";
 import { updateMedicationRequestFulfillerStatus } from "../medication-request/medication-request.resource";
 
 interface DispenseFormProps {
@@ -66,45 +71,23 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
       )
         .then((response) => {
           if (response.ok) {
-            if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
-              const reachedMaxQuantity =
-                getQuantity(medicationDispensePayload) &&
-                getQuantity(medicationDispensePayload).value >=
-                  quantityRemaining;
-              // if we've dispensed the entire prescription, mark the request as completed
-              if (
-                reachedMaxQuantity &&
-                currentFulfillerStatus !==
-                  MedicationRequestFulfillerStatus.completed
-              ) {
-                return updateMedicationRequestFulfillerStatus(
-                  getUuidFromReference(
-                    medicationDispensePayload.authorizingPrescription[0]
-                      .reference // assumes authorizing prescription exist
-                  ),
-                  MedicationRequestFulfillerStatus.completed
-                );
-              }
-              // if we have *not* dispensed the entire prescription, make sure *not* marked as completed
-              else if (
-                !reachedMaxQuantity &&
-                currentFulfillerStatus ===
-                  MedicationRequestFulfillerStatus.completed
-              ) {
-                return updateMedicationRequestFulfillerStatus(
-                  getUuidFromReference(
-                    medicationDispensePayload.authorizingPrescription[0]
-                      .reference // assumes authorizing prescription exist
-                  ),
-                  null
-                );
-              } else {
-                return response;
-              }
-            } else {
-              return response;
+            const newFulfillerStatus =
+              computeNewFulfillerStatusAfterDispenseEvent(
+                config.dispenseBehavior.restrictTotalQuantityDispensed,
+                currentFulfillerStatus,
+                getQuantity(medicationDispensePayload)?.value,
+                quantityRemaining
+              );
+            if (currentFulfillerStatus !== newFulfillerStatus) {
+              return updateMedicationRequestFulfillerStatus(
+                getUuidFromReference(
+                  medicationDispensePayload.authorizingPrescription[0].reference // assumes authorizing prescription exist
+                ),
+                newFulfillerStatus
+              );
             }
           }
+          return response;
         })
         .then(
           ({ status }) => {

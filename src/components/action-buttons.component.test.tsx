@@ -20,6 +20,10 @@ describe("Action Buttons Component tests", () => {
           enabled: true,
         },
       },
+      dispenseBehavior: {
+        allowModifyingPrescription: false,
+        restrictTotalQuantityDispensed: false,
+      },
     });
   });
 

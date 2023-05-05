@@ -4,6 +4,7 @@ import {
   DosageInstruction,
   Medication,
   MedicationDispense,
+  MedicationDispenseStatus,
   MedicationReferenceOrCodeableConcept,
   MedicationRequest,
   MedicationRequestCombinedStatus,
@@ -13,11 +14,11 @@ import {
 } from "./types";
 import { fhirBaseUrl, parseDate } from "@openmrs/esm-framework";
 import {
-  PRESCRIPTIONS_TABLE_ENDPOINT,
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
   PRESCRIPTION_DETAILS_ENDPOINT,
+  PRESCRIPTIONS_TABLE_ENDPOINT,
 } from "./constants";
 import dayjs from "dayjs";
 
@@ -101,6 +102,81 @@ export function computeMedicationRequestStatus(
   }
 
   return MedicationRequestStatus.active;
+}
+
+/**
+ * Captures the logic to compute the new fulfiller status after a dispensing event
+ * @param currentFulfillerStatus
+ * @param quantityDispensed
+ * @param quanatityRemaining
+ */
+export function computeNewFulfillerStatusAfterDispenseEvent(
+  restrictTotalQuantityDispensed: boolean,
+  currentFulfillerStatus: MedicationRequestFulfillerStatus,
+  quantityDispensed: number,
+  quantityRemaining: number
+): MedicationRequestFulfillerStatus {
+  // currently we are only modifying fulfiller status if the restrict total quantity functionality is enabled
+  if (restrictTotalQuantityDispensed) {
+    // have we met or exceeded the total quantity allowed?
+    const reachedMaxQuantity =
+      quantityDispensed && quantityDispensed >= quantityRemaining;
+    if (reachedMaxQuantity) {
+      return MedicationRequestFulfillerStatus.completed;
+    }
+    // if we have not created max quantity, make sure status isn't completed (but don't modify if on on-hold or paused)
+    else if (
+      !reachedMaxQuantity &&
+      currentFulfillerStatus === MedicationRequestFulfillerStatus.completed
+    ) {
+      return null;
+    }
+  }
+
+  // in all other cases, no change, return current
+  return currentFulfillerStatus;
+}
+
+/**
+ * Captures the logic to compute the new fulfiller status after a dispense is deleted
+ */
+export function computeNewFulfillerStatusAfterDelete(
+  currentFulfillerStatus: MedicationRequestFulfillerStatus,
+  deletedMedicationDispense: MedicationDispense,
+  medicationDispenses: Array<MedicationDispense>
+): MedicationRequestFulfillerStatus {
+  // is this the most recent dispense event?
+  // if so, set the fulfiller status based on the next most recent
+  if (
+    isMostRecentMedicationDispense(
+      deletedMedicationDispense,
+      medicationDispenses
+    )
+  ) {
+    const nextMostRecentDispenseStatus =
+      getNextMostRecentMedicationDispenseStatus(medicationDispenses);
+    if (nextMostRecentDispenseStatus === MedicationDispenseStatus.declined) {
+      return MedicationRequestFulfillerStatus.declined;
+    } else if (
+      nextMostRecentDispenseStatus === MedicationDispenseStatus.on_hold
+    ) {
+      return MedicationRequestFulfillerStatus.on_hold;
+    } else {
+      // assumption: we've deleted an event, so fulfiller status should no longer be "conplete"
+      return null;
+    }
+  }
+  // otherwise, if this is a "complete" dispense event (as opposed to "on-hold" or "pause", make sure the
+  // prescription is no loner markers as complete
+  if (
+    deletedMedicationDispense.status === MedicationDispenseStatus.completed &&
+    currentFulfillerStatus === MedicationRequestFulfillerStatus.completed
+  ) {
+    return null;
+  }
+
+  // otherwise, no change
+  return currentFulfillerStatus;
 }
 
 /**
@@ -564,7 +640,7 @@ export function getUuidFromReference(reference: string) {
  * Returns true/false whether the most passed in medication dispense status is the most recent
  * @param medicationDispenses
  */
-export function isMostRecentMedicationDispenseStatus(
+export function isMostRecentMedicationDispense(
   medicationDispense: MedicationDispense,
   medicationDispenses: Array<MedicationDispense>
 ) {

@@ -59,10 +59,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     medicationRequestStatus === MedicationRequestStatus.active &&
     mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.declined;
 
-  const quantityRemaining = config.dispenseBehavior
-    .restrictTotalQuantityDispensed
-    ? computeQuantityRemaining(medicationRequest, associatedMedicationDispenses)
-    : null;
+  let quantityRemaining = null;
+  if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
+    quantityRemaining = computeQuantityRemaining(
+      medicationRequest,
+      associatedMedicationDispenses
+    );
+  }
 
   return (
     <div className={styles.actionBtns}>

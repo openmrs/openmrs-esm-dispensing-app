@@ -344,7 +344,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           invalidText={t("numberIsNotValid", "Number is not valid")}
           label={
             t("quantity", "Quantity") +
-            (quantityRemaining !== null
+            (config.dispenseBehavior.restrictTotalQuantityDispensed
               ? " (" +
                 t("maxQuantityRemaining", "Maximum quantity remaining:") +
                 " " +
@@ -353,7 +353,11 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               : "")
           }
           min={0}
-          max={quantityRemaining !== null ? quantityRemaining : undefined}
+          max={
+            config.dispenseBehavior.restrictTotalQuantityDispensed
+              ? quantityRemaining
+              : undefined
+          }
           value={medicationDispense.quantity.value}
           onChange={(e) => {
             updateMedicationDispense({

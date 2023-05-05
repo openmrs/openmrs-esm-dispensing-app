@@ -25,25 +25,20 @@ import MedicationEvent from "../components/medication-event.component";
 import { launchOverlay } from "../hooks/useOverlay";
 import { PharmacyConfig } from "../config-schema";
 import DispenseForm from "../forms/dispense-form.component";
-import {
-  MedicationDispense,
-  MedicationDispenseStatus,
-  MedicationRequestFulfillerStatus,
-} from "../types";
+import { MedicationDispense, MedicationDispenseStatus } from "../types";
 import {
   PRIVILEGE_DELETE_DISPENSE,
   PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
   PRIVILEGE_EDIT_DISPENSE,
 } from "../constants";
 import {
+  computeNewFulfillerStatusAfterDelete,
   computeQuantityRemaining,
   getAssociatedMedicationDispenses,
   getAssociatedMedicationRequest,
   getDateRecorded,
   getFulfillerStatus,
-  getNextMostRecentMedicationDispenseStatus,
   getUuidFromReference,
-  isMostRecentMedicationDispenseStatus,
   revalidate,
 } from "../utils";
 import PauseDispenseForm from "../forms/pause-dispense-form.component";
@@ -102,14 +97,17 @@ const HistoryAndComments: React.FC<{
       );
 
       // note that since this is an edit, quantity remaining needs to include quantity that is part of this dispense
-      const quantityRemaining = config.dispenseBehavior
-        .restrictTotalQuantityDispensed
-        ? computeQuantityRemaining(
+      let quantityRemaining = null;
+      if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
+        quantityRemaining =
+          computeQuantityRemaining(
             associatedMedicationRequest,
             associatedMedicationDispenses
           ) +
-          (medicationDispense?.quantity ? medicationDispense.quantity.value : 0)
-        : null;
+          (medicationDispense?.quantity
+            ? medicationDispense.quantity.value
+            : 0);
+      }
 
       return (
         <DispenseForm
@@ -237,45 +235,25 @@ const HistoryAndComments: React.FC<{
   const handleDelete: Function = (medicationDispense: MedicationDispense) => {
     // if this is the most recent dispense event that we are deleting, may have to update the fulfiller status
     // on the request
-    // TODO extract out into an resource or a util?
-    if (isMostRecentMedicationDispenseStatus(medicationDispense, dispenses)) {
-      const status = getNextMostRecentMedicationDispenseStatus(dispenses);
-      let updatedFulfillerStatus: MedicationRequestFulfillerStatus = null;
-      if (status !== null && status === MedicationDispenseStatus.declined) {
-        updatedFulfillerStatus = MedicationRequestFulfillerStatus.declined;
-      } else if (
-        status !== null &&
-        status == MedicationDispenseStatus.on_hold
-      ) {
-        updatedFulfillerStatus = MedicationRequestFulfillerStatus.on_hold;
-      }
+    const currentFulfillerStatus = getFulfillerStatus(
+      getAssociatedMedicationRequest(medicationDispense, requests)
+    );
+    const newFulfillerStatus = computeNewFulfillerStatusAfterDelete(
+      currentFulfillerStatus,
+      medicationDispense,
+      dispenses
+    );
+    if (currentFulfillerStatus !== newFulfillerStatus) {
       updateMedicationRequestFulfillerStatus(
         getUuidFromReference(
           medicationDispense.authorizingPrescription[0].reference // assumes authorizing prescription exist
         ),
-        updatedFulfillerStatus
+        newFulfillerStatus
       ).then(() => {
         revalidate(encounterUuid);
       });
     }
-    // otherwise, if this is any kind of a "complete" dispense, make sure the prescription is no longer marked complete
-    // TODO do we always want to do this?
-    else if (
-      medicationDispense.status === MedicationDispenseStatus.completed &&
-      getFulfillerStatus(
-        getAssociatedMedicationRequest(medicationDispense, requests)
-      ) === MedicationRequestFulfillerStatus.completed
-    ) {
-      updateMedicationRequestFulfillerStatus(
-        getUuidFromReference(
-          medicationDispense.authorizingPrescription[0].reference // assumes authorizing prescription exist
-        ),
-        null
-      ).then(() => {
-        revalidate(encounterUuid);
-      });
-    }
-
+    // do the actual delete
     deleteMedicationDispense(medicationDispense.id).then(() => {
       revalidate(encounterUuid);
     });

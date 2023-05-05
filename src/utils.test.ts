@@ -35,7 +35,7 @@ import {
   getQuantity,
   getQuantityUnitsMatch,
   getRefillsAllowed,
-  isMostRecentMedicationDispenseStatus,
+  isMostRecentMedicationDispense,
 } from "./utils";
 import dayjs from "dayjs";
 
@@ -1587,24 +1587,18 @@ describe("Util Tests", () => {
 
     test("should return true if most recent medication request", () => {
       expect(
-        isMostRecentMedicationDispenseStatus(
-          medicationDispense2,
-          medicationDispenses
-        )
+        isMostRecentMedicationDispense(medicationDispense2, medicationDispenses)
       ).toBe(true);
     });
     test("should return false if not most recent medication requst", () => {
       expect(
-        isMostRecentMedicationDispenseStatus(
-          medicationDispense1,
-          medicationDispenses
-        )
+        isMostRecentMedicationDispense(medicationDispense1, medicationDispenses)
       ).toBe(false);
     });
     test("should return false if null", () => {
-      expect(
-        isMostRecentMedicationDispenseStatus(null, medicationDispenses)
-      ).toBe(false);
+      expect(isMostRecentMedicationDispense(null, medicationDispenses)).toBe(
+        false
+      );
     });
   });
 
