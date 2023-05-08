@@ -33,7 +33,7 @@ import dayjs from "dayjs";
 export function computeMedicationRequestCombinedStatus(
   medicationRequest: MedicationRequest,
   medicationRequestExpirationPeriondInDays: number
-) {
+): MedicationRequestCombinedStatus {
   const medicationRequestStatus: MedicationRequestStatus =
     computeMedicationRequestStatus(
       medicationRequest,
@@ -80,7 +80,7 @@ export function computeMedicationRequestCombinedStatus(
 export function computeMedicationRequestStatus(
   medicationRequest: MedicationRequest,
   medicationRequestExpirationPeriodInDays: number
-) {
+): MedicationRequestStatus {
   if (
     medicationRequest.status === MedicationRequestStatus.cancelled ||
     medicationRequest.status === MedicationRequestStatus.completed
@@ -189,7 +189,7 @@ export function computeNewFulfillerStatusAfterDelete(
 export function computePrescriptionStatus(
   medicationRequests: Array<MedicationRequest>,
   medicationRequestExpirationPeriodInDays: number
-) {
+): MedicationRequestCombinedStatus {
   if (!medicationRequests || medicationRequests.length === 0) {
     return null;
   }
@@ -252,7 +252,7 @@ export function computePrescriptionStatus(
 export function computePrescriptionStatusMessageCode(
   medicationRequests: Array<MedicationRequest>,
   medicationRequestExpirationPeriodInDays: number
-) {
+): string {
   const medicationRequestCombinedStatus: MedicationRequestCombinedStatus =
     computePrescriptionStatus(
       medicationRequests,
@@ -294,7 +294,7 @@ export function computePrescriptionStatusMessageCode(
 export function computeQuantityRemaining(
   medicationRequest: MedicationRequest,
   medicationDispenses: Array<MedicationDispense>
-) {
+): number {
   if (medicationRequest) {
     // sanity check to make sure all medication dispenses are associated with the request
     const associatedMedicationDispenses = getAssociatedMedicationDispenses(
@@ -326,7 +326,7 @@ export function computeQuantityRemaining(
  */
 export function computeTotalQuantityDispensed(
   medicationDispenses: Array<MedicationDispense>
-) {
+): number {
   if (medicationDispenses) {
     if (!getQuantityUnitsMatch(medicationDispenses)) {
       throw new Error(
@@ -352,7 +352,7 @@ export function computeTotalQuantityDispensed(
  */
 export function computeTotalQuantityOrdered(
   medicationRequest: MedicationRequest
-) {
+): number {
   const refillsAllowed = getRefillsAllowed(medicationRequest);
   if (medicationRequest.dispenseRequest?.quantity?.value) {
     return (
@@ -373,7 +373,7 @@ export function computeTotalQuantityOrdered(
 export function getAssociatedMedicationDispenses(
   medicationRequest: MedicationRequest,
   medicationDispenses: Array<MedicationDispense>
-) {
+): Array<MedicationDispense> {
   return medicationDispenses?.filter((medicationDispense) =>
     medicationDispense?.authorizingPrescription?.some((prescription) =>
       prescription.reference.endsWith(medicationRequest.id)
@@ -390,7 +390,7 @@ export function getAssociatedMedicationDispenses(
 export function getAssociatedMedicationRequest(
   medicationDispense: MedicationDispense,
   medicationRequests: Array<MedicationRequest>
-) {
+): MedicationRequest {
   return medicationRequests.find((medicationRequest) =>
     medicationDispense?.authorizingPrescription?.some((prescription) =>
       prescription.reference.endsWith(medicationRequest.id)
@@ -402,7 +402,7 @@ export function getAssociatedMedicationRequest(
  * Given an array of CodeableConcept codings, return the first one without an associated system (which should be the concept-referenced-by-uuid coding)
  * @param codings
  */
-export function getConceptCoding(codings: Coding[]) {
+export function getConceptCoding(codings: Coding[]): Coding {
   return codings
     ? codings.find((c) => !("system" in c) || c.system === undefined)
     : null;
@@ -412,7 +412,7 @@ export function getConceptCoding(codings: Coding[]) {
  * Given an array of CodeableConcept codings, return the display for the first one without an associated system (which should be the concept-referenced-by-uuid coding)
  * @param codings
  */
-export function getConceptCodingDisplay(codings: Coding[]) {
+export function getConceptCodingDisplay(codings: Coding[]): string {
   return getConceptCoding(codings)?.display;
 }
 
@@ -420,7 +420,7 @@ export function getConceptCodingDisplay(codings: Coding[]) {
  * Given an array of CodeableConcept codings, return the code for the first one without an associated system (which should be the concept-referenced-by-uuid coding)
  * @param codings
  */
-export function getConceptCodingUuid(codings: Coding[]) {
+export function getConceptCodingUuid(codings: Coding[]): string {
   return getConceptCoding(codings)?.code;
 }
 
@@ -428,7 +428,9 @@ export function getConceptCodingUuid(codings: Coding[]) {
  * Fetch the "recorded" extension off a medication request
  * @param medicationDispense
  */
-export function getDateRecorded(medicationDispense: MedicationDispense) {
+export function getDateRecorded(
+  medicationDispense: MedicationDispense
+): string {
   return medicationDispense?.extension?.find(
     (ext) => ext.url === OPENMRS_FHIR_EXT_DISPENSE_RECORDED
   )?.valueDateTime;
@@ -436,7 +438,7 @@ export function getDateRecorded(medicationDispense: MedicationDispense) {
 
 export function getDosageInstruction(
   dosageInstructions: Array<DosageInstruction>
-) {
+): DosageInstruction {
   if (dosageInstructions?.length > 0) {
     return dosageInstructions[0];
   }
@@ -447,13 +449,15 @@ export function getDosageInstruction(
  * Fetch the "fulfiller status" extension off a medication request
  * @param medicationDispense
  */
-export function getFulfillerStatus(medicationRequest: MedicationRequest) {
+export function getFulfillerStatus(
+  medicationRequest: MedicationRequest
+): MedicationRequestFulfillerStatus {
   return medicationRequest?.extension?.find(
     (ext) => ext.url === OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS
   )?.valueCode;
 }
 
-export function getMedicationsByConceptEndpoint(conceptUuid: string) {
+export function getMedicationsByConceptEndpoint(conceptUuid: string): string {
   return `${fhirBaseUrl}/Medication?code=${conceptUuid}`;
 }
 
@@ -466,7 +470,7 @@ export function getMedicationsByConceptEndpoint(conceptUuid: string) {
  */
 export function getMedicationDisplay(
   medication: MedicationReferenceOrCodeableConcept
-) {
+): string {
   return medication.medicationReference
     ? medication.medicationReference.display
     : getConceptCodingDisplay(medication?.medicationCodeableConcept.coding) +
@@ -489,7 +493,7 @@ export function getMedicationReferenceOrCodeableConcept(
  */
 export function getMostRecentMedicationDispenseStatus(
   medicationDispenses: Array<MedicationDispense>
-) {
+): MedicationDispenseStatus {
   const sorted = medicationDispenses?.sort(
     sortMedicationDispensesByDateRecorded
   );
@@ -502,7 +506,7 @@ export function getMostRecentMedicationDispenseStatus(
  */
 export function getNextMostRecentMedicationDispenseStatus(
   medicationDispenses: Array<MedicationDispense>
-) {
+): MedicationDispenseStatus {
   const sorted = medicationDispenses?.sort(
     sortMedicationDispensesByDateRecorded
   );
@@ -513,7 +517,7 @@ export function getNextMostRecentMedicationDispenseStatus(
  * Given a FHIR Medication, returns the string value stored in the "http://fhir.openmrs.org/ext/medicine#drugName" extension
  * @param medication
  */
-export function getOpenMRSMedicineDrugName(medication: Medication) {
+export function getOpenMRSMedicineDrugName(medication: Medication): string {
   if (!medication || !medication.extension) {
     return null;
   }
@@ -535,7 +539,7 @@ export function getOpenMRSMedicineDrugName(medication: Medication) {
     : null;
 }
 
-export function getPrescriptionDetailsEndpoint(encounterUuid: string) {
+export function getPrescriptionDetailsEndpoint(encounterUuid: string): string {
   return `${fhirBaseUrl}/${PRESCRIPTION_DETAILS_ENDPOINT}?encounter=${encounterUuid}&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter`;
 }
 
@@ -545,7 +549,7 @@ export function getPrescriptionTableActiveMedicationRequestsEndpoint(
   date: string,
   patientSearchTerm: string,
   location: string
-) {
+): string {
   return appendSearchTermAndLocation(
     `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=active`,
     patientSearchTerm,
@@ -558,7 +562,7 @@ export function getPrescriptionTableAllMedicationRequestsEndpoint(
   pageSize: number,
   patientSearchTerm: string,
   location: string
-) {
+): string {
   return appendSearchTermAndLocation(
     `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}`,
     patientSearchTerm,
@@ -570,7 +574,7 @@ function appendSearchTermAndLocation(
   url: string,
   patientSearchTerm: string,
   location: string
-) {
+): string {
   if (patientSearchTerm) {
     url = `${url}&patientSearchTerm=${patientSearchTerm}`;
   }
@@ -597,7 +601,7 @@ export function getQuantity(
  */
 export function getQuantityUnitsMatch(
   resources: Array<MedicationRequest | MedicationDispense>
-) {
+): boolean {
   if (resources) {
     const quantityUnitsArray = resources
       .map((resource) => getQuantity(resource)?.code)
@@ -628,7 +632,7 @@ export function getRefillsAllowed(
 /**
  * Given a refernece in format "MedicationReference/uuid" or just "uuid", returns just the uuid compoennt
  */
-export function getUuidFromReference(reference: string) {
+export function getUuidFromReference(reference: string): string {
   if (reference?.includes("/")) {
     return reference.split("/")[1];
   } else {
@@ -643,7 +647,7 @@ export function getUuidFromReference(reference: string) {
 export function isMostRecentMedicationDispense(
   medicationDispense: MedicationDispense,
   medicationDispenses: Array<MedicationDispense>
-) {
+): boolean {
   const sorted = medicationDispenses?.sort(
     sortMedicationDispensesByDateRecorded
   );
@@ -674,7 +678,7 @@ export function revalidate(encounterUuid: string) {
 export function sortMedicationDispensesByDateRecorded(
   a: MedicationDispense,
   b: MedicationDispense
-) {
+): number {
   const dateDiff =
     parseDate(getDateRecorded(b)).getTime() -
     parseDate(getDateRecorded(a)).getTime();
