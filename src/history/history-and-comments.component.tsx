@@ -122,7 +122,7 @@ const HistoryAndComments: React.FC<{
           mode="edit"
           isMostRecentDispense={isMostRecentMedicationDispense(
             medicationDispense,
-            dispenses
+            associatedMedicationDispenses
           )}
         />
       );
@@ -238,14 +238,22 @@ const HistoryAndComments: React.FC<{
   };
 
   const handleDelete: Function = (medicationDispense: MedicationDispense) => {
+    const associatedMedicationRequest = getAssociatedMedicationRequest(
+      medicationDispense,
+      requests
+    );
+    const associatedMedicationDispenses = getAssociatedMedicationDispenses(
+      associatedMedicationRequest,
+      dispenses
+    );
     const currentFulfillerStatus = getFulfillerStatus(
-      getAssociatedMedicationRequest(medicationDispense, requests)
+      associatedMedicationRequest
     );
     const nextMostRecentDispenseStatus =
-      getNextMostRecentMedicationDispenseStatus(dispenses);
+      getNextMostRecentMedicationDispenseStatus(associatedMedicationDispenses);
     const isMostRecentDispense = isMostRecentMedicationDispense(
       medicationDispense,
-      dispenses
+      associatedMedicationDispenses
     );
     const newFulfillerStatus = computeNewFulfillerStatusAfterDelete(
       isMostRecentDispense,
