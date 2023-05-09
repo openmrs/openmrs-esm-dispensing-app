@@ -87,7 +87,6 @@ const HistoryAndComments: React.FC<{
 
   const generateForm: Function = (medicationDispense: MedicationDispense) => {
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
-      // TODO error handle no request and unable to calculate quantity
       // fetch the appropriate requests and associated dispense so we can calculate quantity
       const associatedMedicationRequest = getAssociatedMedicationRequest(
         medicationDispense,
