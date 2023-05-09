@@ -38,7 +38,9 @@ import {
   getAssociatedMedicationRequest,
   getDateRecorded,
   getFulfillerStatus,
+  getNextMostRecentMedicationDispenseStatus,
   getUuidFromReference,
+  isMostRecentMedicationDispense,
   revalidate,
 } from "../utils";
 import PauseDispenseForm from "../forms/pause-dispense-form.component";
@@ -119,6 +121,10 @@ const HistoryAndComments: React.FC<{
             associatedMedicationRequest
           )}
           mode="edit"
+          isMostRecentDispense={isMostRecentMedicationDispense(
+            medicationDispense,
+            dispenses
+          )}
         />
       );
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
@@ -233,15 +239,20 @@ const HistoryAndComments: React.FC<{
   };
 
   const handleDelete: Function = (medicationDispense: MedicationDispense) => {
-    // if this is the most recent dispense event that we are deleting, may have to update the fulfiller status
-    // on the request
     const currentFulfillerStatus = getFulfillerStatus(
       getAssociatedMedicationRequest(medicationDispense, requests)
     );
-    const newFulfillerStatus = computeNewFulfillerStatusAfterDelete(
-      currentFulfillerStatus,
+    const nextMostRecentDispenseStatus =
+      getNextMostRecentMedicationDispenseStatus(dispenses);
+    const isMostRecentDispense = isMostRecentMedicationDispense(
       medicationDispense,
       dispenses
+    );
+    const newFulfillerStatus = computeNewFulfillerStatusAfterDelete(
+      isMostRecentDispense,
+      currentFulfillerStatus,
+      medicationDispense.status,
+      nextMostRecentDispenseStatus
     );
     if (currentFulfillerStatus !== newFulfillerStatus) {
       updateMedicationRequestFulfillerStatus(

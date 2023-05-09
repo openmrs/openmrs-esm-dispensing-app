@@ -105,78 +105,86 @@ export function computeMedicationRequestStatus(
 }
 
 /**
- * Captures the logic to compute the new fulfiller status after a dispensing event
- * @param currentFulfillerStatus
- * @param quantityDispensed
- * @param quanatityRemaining
+ * Captures the logic to compute the new fulfiller status after a dispense event, where dispense event = a medication dispense where medication is actually dispensed (as opposed one with status "on_hold" or "declined")
+ *
+ * @param restrictTotalQuantityDispensed value of the "dispenseBehavior.restrictTotalQuantityDispensed"
+ * @param isMostRecentMedicationDisepnse whether the dispense event we are creating or editing is the most recent dispense for this medication request
+ * @param currentFulfillerStatus the current fulfiller status (prior to the changes being applied by the creation/edit of this dispense event)
+ * @param quantityDispensed the quantity dispensed as part of this dispense event
+ * @param quanatityRemaining the quantity remaining not including the amount in this dispense event
  */
 export function computeNewFulfillerStatusAfterDispenseEvent(
   restrictTotalQuantityDispensed: boolean,
+  isMostRecentMedicationDisepnse: boolean,
   currentFulfillerStatus: MedicationRequestFulfillerStatus,
   quantityDispensed: number,
   quantityRemaining: number
 ): MedicationRequestFulfillerStatus {
-  // currently we are only modifying fulfiller status if the restrict total quantity functionality is enabled
+  const reachedMaxQuantity =
+    quantityDispensed && quantityDispensed >= quantityRemaining;
   if (restrictTotalQuantityDispensed) {
-    // have we met or exceeded the total quantity allowed?
-    const reachedMaxQuantity =
-      quantityDispensed && quantityDispensed >= quantityRemaining;
+    // if are configured to restrict amount dispense
     if (reachedMaxQuantity) {
+      // if we've maxed out the quqntity, set complete, no matter what
       return MedicationRequestFulfillerStatus.completed;
-    }
-    // if we have not created max quantity, make sure status isn't completed (but don't modify if on on-hold or paused)
-    else if (
-      !reachedMaxQuantity &&
+    } else if (isMostRecentMedicationDisepnse) {
+      // otherwise, if this is the most recent, set status to null (ie, clear out "on-hold" if currently set)
+      return null;
+    } else if (
       currentFulfillerStatus === MedicationRequestFulfillerStatus.completed
     ) {
+      // handle the case where we are editing a previous entry and are decreasing the amount dispensed so the request is no longer "complete"
       return null;
+    } else {
+      // otherwise, no change
+      return currentFulfillerStatus;
+    }
+  } else {
+    // if we are not restricting the amount dispensed, we just need to make sure that any new dispense clears out any previous status
+    if (isMostRecentMedicationDisepnse) {
+      return null;
+    } else {
+      return currentFulfillerStatus;
     }
   }
-
-  // in all other cases, no change, return current
-  return currentFulfillerStatus;
 }
 
 /**
- * Captures the logic to compute the new fulfiller status after a dispense is deleted
+ * Captures the logic to compute the new fulfiller status after a medication dispense is deleted
+ *
+ * @param isMostRecentMedicationDisepnse whether the medication dispense we are deleting is the most recent dispense for this medication request
+ * @param currentFulfillerStatus the current fulfiller status (prior to deleting this medication dispense)
+ * @param deletedMedicationStatus the status of the medication dispense we are deleting
+ * @param nextMostRecentDispenseStatus the status of 2nd most recent medication dispense (if any) associated with this medication request
  */
 export function computeNewFulfillerStatusAfterDelete(
+  isMostRecentDispense: boolean,
   currentFulfillerStatus: MedicationRequestFulfillerStatus,
-  deletedMedicationDispense: MedicationDispense,
-  medicationDispenses: Array<MedicationDispense>
+  deletedMedicationStatus: MedicationDispenseStatus,
+  nextMostRecentDispenseStatus: MedicationDispenseStatus
 ): MedicationRequestFulfillerStatus {
-  // is this the most recent dispense event?
-  // if so, set the fulfiller status based on the next most recent
-  if (
-    isMostRecentMedicationDispense(
-      deletedMedicationDispense,
-      medicationDispenses
-    )
-  ) {
-    const nextMostRecentDispenseStatus =
-      getNextMostRecentMedicationDispenseStatus(medicationDispenses);
+  // if this the most recent dispense event we are deleting, set the fulfiller status based on the next most recent
+  if (isMostRecentDispense) {
     if (nextMostRecentDispenseStatus === MedicationDispenseStatus.declined) {
       return MedicationRequestFulfillerStatus.declined;
     } else if (
       nextMostRecentDispenseStatus === MedicationDispenseStatus.on_hold
     ) {
       return MedicationRequestFulfillerStatus.on_hold;
-    } else {
-      // assumption: we've deleted an event, so fulfiller status should no longer be "conplete"
+    }
+    // note that next most recent should never be "completed' as complete is a terminal statue
+    else {
       return null;
     }
   }
-  // otherwise, if this is a "complete" dispense event (as opposed to "on-hold" or "pause", make sure the
-  // prescription is no loner markers as complete
-  if (
-    deletedMedicationDispense.status === MedicationDispenseStatus.completed &&
-    currentFulfillerStatus === MedicationRequestFulfillerStatus.completed
-  ) {
+  // otherwise, if this is a "complete" dispense event, make sure the prescription is no loner marked as complete
+  // (assumption that a deletion of any medication dispense of type "complete" will lower the quantity dispenses, so therefore must be under total allowed amount)
+  else if (deletedMedicationStatus === MedicationDispenseStatus.completed) {
     return null;
+  } else {
+    // otherwise, no change
+    return currentFulfillerStatus;
   }
-
-  // otherwise, no change
-  return currentFulfillerStatus;
 }
 
 /**

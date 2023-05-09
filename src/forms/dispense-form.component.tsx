@@ -29,6 +29,7 @@ import { updateMedicationRequestFulfillerStatus } from "../medication-request/me
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
+  isMostRecentDispense: boolean;
   mode: "enter" | "edit";
   patientUuid?: string;
   encounterUuid: string;
@@ -38,6 +39,7 @@ interface DispenseFormProps {
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
   medicationDispense,
+  isMostRecentDispense,
   mode,
   patientUuid,
   encounterUuid,
@@ -74,6 +76,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             const newFulfillerStatus =
               computeNewFulfillerStatusAfterDispenseEvent(
                 config.dispenseBehavior.restrictTotalQuantityDispensed,
+                isMostRecentDispense,
                 currentFulfillerStatus,
                 getQuantity(medicationDispensePayload)?.value,
                 quantityRemaining

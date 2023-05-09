@@ -86,6 +86,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 currentFulfillerStatus={getFulfillerStatus(medicationRequest)}
                 quantityRemaining={quantityRemaining}
                 mode="enter"
+                isMostRecentDispense={true} // we are creating a new dispense, so must be most recent
               />
             )
           }

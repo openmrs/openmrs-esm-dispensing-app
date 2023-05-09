@@ -13,6 +13,8 @@ import {
 import {
   computeMedicationRequestCombinedStatus,
   computeMedicationRequestStatus,
+  computeNewFulfillerStatusAfterDelete,
+  computeNewFulfillerStatusAfterDispenseEvent,
   computePrescriptionStatus,
   computeQuantityRemaining,
   computeTotalQuantityDispensed,
@@ -40,7 +42,7 @@ import {
 import dayjs from "dayjs";
 
 describe("Util Tests", () => {
-  describe("computeMedicationRequestCombinedStatus", () => {
+  describe("test computeMedicationRequestCombinedStatus", () => {
     test("should return on-hold if status active and fulfiller status on-hold", () => {
       const medicationRequest: MedicationRequest = {
         dispenseRequest: {
@@ -539,6 +541,136 @@ describe("Util Tests", () => {
       );
     });
   });
+
+  describe("test computeNewFulfillerStatusAfterDelete", () => {
+    test("should return declined if most recent medication dispense and next most recent status declined", () => {
+      expect(
+        computeNewFulfillerStatusAfterDelete(
+          true,
+          null,
+          null,
+          MedicationDispenseStatus.declined
+        )
+      ).toBe(MedicationRequestFulfillerStatus.declined);
+    }),
+      test("should return on-hold if most recent medication dispense next most recent status on-hold", () => {
+        expect(
+          computeNewFulfillerStatusAfterDelete(
+            true,
+            null,
+            null,
+            MedicationDispenseStatus.on_hold
+          )
+        ).toBe(MedicationRequestFulfillerStatus.on_hold);
+      }),
+      test("should return null if most recent medication dispense and next most recent status null", () => {
+        expect(
+          computeNewFulfillerStatusAfterDelete(true, null, null, null)
+        ).toBeNull();
+      }),
+      test("should return null if not most recent medication dispense and deleted dispense has status of completed", () => {
+        expect(
+          computeNewFulfillerStatusAfterDelete(
+            false,
+            null,
+            MedicationDispenseStatus.completed,
+            null
+          )
+        ).toBeNull();
+      }),
+      test("should return current status if not most recent medication dispense and deleted dispense does not have status of completed", () => {
+        expect(
+          computeNewFulfillerStatusAfterDelete(
+            false,
+            MedicationRequestFulfillerStatus.completed,
+            MedicationDispenseStatus.on_hold,
+            MedicationDispenseStatus.declined
+          )
+        ).toBe(MedicationRequestFulfillerStatus.completed);
+      });
+  });
+
+  describe("test computeNewFulfillerStatusAfterDispenseEvent", () => {
+    test("should return null if restrict total quantity dispensed config is false and most recent dispense event", () => {
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          false,
+          true,
+          MedicationRequestFulfillerStatus.on_hold,
+          20,
+          20
+        )
+      ).toBeNull();
+    });
+    test("should return existing current status if restrict total quantity dispensed config is false and not most recent dispense event", () => {
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          false,
+          false,
+          MedicationRequestFulfillerStatus.on_hold,
+          20,
+          20
+        )
+      ).toBe(MedicationRequestFulfillerStatus.on_hold);
+    });
+    test("should return 'completed' if restrict total quantity dispensed config enabled and most recent dispense event and quantity dispensed equals quantity remaining", () => {
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          true,
+          true,
+          MedicationRequestFulfillerStatus.on_hold,
+          20,
+          20
+        )
+      ).toBe(MedicationRequestFulfillerStatus.completed);
+    });
+    test("should return null if restrict total quantity dispensed config enabled and most recent dispense event and quantity dispensed less than quantity remaining", () => {
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          true,
+          true,
+          MedicationRequestFulfillerStatus.on_hold,
+          10,
+          20
+        )
+      ).toBeNull();
+    });
+    test("should return 'completed' if restrict total quantity dispensed config enabled and not most recent dispense event and quantity dispensed equals quantity remained", () => {
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          true,
+          true,
+          MedicationRequestFulfillerStatus.on_hold,
+          20,
+          20
+        )
+      ).toBe(MedicationRequestFulfillerStatus.completed);
+    });
+    test("should return null if restrict total quantity dispensed config enabled and not most recent dispense event and quantity dispensed less than quantity remaining and current status 'completed'", () => {
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          true,
+          false,
+          MedicationRequestFulfillerStatus.completed,
+          10,
+          20
+        )
+      ).toBeNull();
+    });
+    test("should return existing current status if restrict total quantity dispensed config enabled and not most recent dispense event and quantity dispensed less than quantity remaining and current status not 'completed'", () => {
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          true,
+          false,
+          MedicationRequestFulfillerStatus.on_hold,
+          10,
+          20
+        )
+      ).toBe(MedicationRequestFulfillerStatus.on_hold);
+    });
+  });
+
+  describe("test computeNewFulfillerStatusAfterDelete", () => {});
 
   describe("test computePrescriptionStatus", () => {
     const activeMedicationRequest = {
