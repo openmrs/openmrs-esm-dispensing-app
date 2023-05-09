@@ -13,19 +13,20 @@ import { closeOverlay } from "../hooks/useOverlay";
 import { MedicationDispense, MedicationDispenseStatus } from "../types";
 import { saveMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationDispenseReview from "./medication-dispense-review.component";
+import { revalidate } from "../utils";
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
-  mutate: Function;
   mode: "enter" | "edit";
   patientUuid?: string;
+  encounterUuid: string;
 }
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
   medicationDispense,
-  mutate,
   mode,
   patientUuid,
+  encounterUuid,
 }) => {
   const { t } = useTranslation();
   const isTablet = useLayoutType() === "tablet";
@@ -54,7 +55,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         ({ status }) => {
           if (status === 201 || status === 200) {
             closeOverlay();
-            mutate();
+            revalidate(encounterUuid);
             showToast({
               critical: true,
               kind: "success",

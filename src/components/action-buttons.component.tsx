@@ -23,15 +23,15 @@ import CloseDispenseForm from "../forms/close-dispense-form.component";
 interface ActionButtonsProps {
   medicationRequest: MedicationRequest;
   associatedMedicationDispenses: Array<MedicationDispense>;
-  mutate: Function;
   patientUuid: string;
+  encounterUuid: string;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
   medicationRequest,
   associatedMedicationDispenses,
-  mutate,
   patientUuid,
+  encounterUuid,
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
@@ -67,13 +67,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
               t("dispensePrescription", "Dispense prescription"),
               <DispenseForm
                 patientUuid={patientUuid}
+                encounterUuid={encounterUuid}
                 medicationDispense={initiateMedicationDispenseBody(
                   medicationRequest,
                   session,
                   true
                 )}
                 mode="enter"
-                mutate={mutate}
               />
             )
           }
@@ -88,13 +88,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             launchOverlay(
               t("pausePrescription", "Pause prescription"),
               <PauseDispenseForm
+                patientUuid={patientUuid}
+                encounterUuid={encounterUuid}
                 medicationDispense={initiateMedicationDispenseBody(
                   medicationRequest,
                   session,
                   false
                 )}
                 mode="enter"
-                mutate={mutate}
               />
             )
           }
@@ -109,13 +110,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             launchOverlay(
               t("closePrescription", "Close prescription"),
               <CloseDispenseForm
+                patientUuid={patientUuid}
+                encounterUuid={encounterUuid}
                 medicationDispense={initiateMedicationDispenseBody(
                   medicationRequest,
                   session,
                   false
                 )}
                 mode="enter"
-                mutate={mutate}
               />
             )
           }

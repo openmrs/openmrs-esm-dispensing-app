@@ -171,10 +171,10 @@ export interface EncounterResponse {
   }>;
 }
 
-// add other value types when we start using other extensions
 export interface Extension {
   url: string;
-  valueDateTime: string;
+  valueDateTime?: string;
+  valueCode?: MedicationRequestFulfillerStatus; // add other possibilties once we start using other extensions
 }
 
 export interface LocationResponse {
@@ -290,6 +290,7 @@ export interface MedicationRequest {
   meta: {
     lastUpdated: string;
   };
+  extension?: Array<Extension>;
   status: MedicationRequestStatus;
   intent: string;
   priority: string;
@@ -350,17 +351,25 @@ export enum MedicationRequestStatus {
 }
 
 /**
- * This is a bit of a mouthful, but, within the UI, the "status" of a request we want to display to the pharmacist is
- * a combination of the status of the request and the status of the most recent dispensing event; given a request
- * status and a dispense status, this is the actual status we want to display to the pharmacist (see util method
- * computeMedicationRequestMedicationDispenseCombinedStatus)
+ * These fulfiller statuses are an OpenMRS defined status (as opposed to FHIR) that we define as upper-case,
+ * hence the case difference from the other statuses
  */
-export enum MedicationRequestMedicationDispenseCombinedStatus {
+export enum MedicationRequestFulfillerStatus {
+  on_hold = "ON_HOLD",
+  declined = "DECLINED",
+  completed = "COMPLETED",
+}
+
+/**
+ * Within the UI, the "status" of a request we want to display to the pharmacist is
+ * a combination of the status and fulfiller status; this is the actual status we want to display to the pharmacist (see util method
+ * computeMedicationRequestCombinedStatus)
+ */
+export enum MedicationRequestCombinedStatus {
   active = "active",
   cancelled = "cancelled",
   completed = "completed",
   expired = "expired",
-  in_progress = "in-progress",
   on_hold = "on-hold",
   declined = "declined",
   unknown = "unknown",

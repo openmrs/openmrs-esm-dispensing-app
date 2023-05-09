@@ -14,9 +14,8 @@ interface TabItem {
 const PrescriptionExpanded: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
-  mutate: Function;
   status: string;
-}> = ({ encounterUuid, patientUuid, mutate, status }) => {
+}> = ({ encounterUuid, patientUuid, status }) => {
   const { t } = useTranslation();
 
   const tabs: TabItem[] = [
@@ -26,14 +25,16 @@ const PrescriptionExpanded: React.FC<{
         <PrescriptionDetails
           encounterUuid={encounterUuid}
           patientUuid={patientUuid}
-          mutate={mutate}
         />
       ),
     },
     {
       name: t("historyComments", "History and comments"),
       component: (
-        <HistoryAndComments encounterUuid={encounterUuid} mutate={mutate} />
+        <HistoryAndComments
+          encounterUuid={encounterUuid}
+          patientUuid={patientUuid}
+        />
       ),
     },
     /* {

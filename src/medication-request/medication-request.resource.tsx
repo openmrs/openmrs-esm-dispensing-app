@@ -8,6 +8,7 @@ import {
   PrescriptionsTableRow,
   MedicationDispense,
   Encounter,
+  MedicationRequestFulfillerStatus,
 } from "../types";
 import {
   getPrescriptionDetailsEndpoint,
@@ -16,8 +17,13 @@ import {
   getPrescriptionTableActiveMedicationRequestsEndpoint,
   getPrescriptionTableAllMedicationRequestsEndpoint,
   sortMedicationDispensesByDateRecorded,
+  computePrescriptionStatusMessageCode,
 } from "../utils";
 import dayjs from "dayjs";
+import {
+  JSON_MERGE_PATH_MIME_TYPE,
+  OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+} from "../constants";
 
 export function usePrescriptionsTable(
   pageSize: number = 10,
@@ -27,7 +33,7 @@ export function usePrescriptionsTable(
   status: string = "",
   medicationRequestExpirationPeriodInDays: number
 ) {
-  const { data, mutate, error } = useSWR<{ data: EncounterResponse }, Error>(
+  const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
     status === "ACTIVE"
       ? getPrescriptionTableActiveMedicationRequestsEndpoint(
           pageOffset,
@@ -94,7 +100,6 @@ export function usePrescriptionsTable(
 
   return {
     prescriptionsTableRows,
-    mutate,
     isError: error,
     isLoading: !prescriptionsTableRows && !error,
     totalOrders: data?.data.total,
@@ -134,72 +139,14 @@ function buildPrescriptionsTableRow(
     prescriber: [
       ...new Set(medicationRequests.map((o) => o.requester.display)),
     ].join(", "),
-    status: computePrescriptionStatus(
-      medicationRequests.map((o) => o.status),
-      encounter?.period?.start,
+    status: computePrescriptionStatusMessageCode(
+      medicationRequests,
       medicationRequestExpirationPeriodInDays
     ),
     location: encounter?.location
       ? encounter?.location[0]?.location.display
       : null,
   };
-}
-
-export function computePrescriptionStatus(
-  orderStatuses: Array<string>,
-  encounterDatetime: string,
-  medicationRequestExpirationPeriodInDays
-) {
-  // first, test the encounter against the expiry period
-  var isExpired = false;
-  if (
-    encounterDatetime &&
-    dayjs(encounterDatetime).isBefore(
-      dayjs(new Date())
-        .startOf("day")
-        .subtract(medicationRequestExpirationPeriodInDays, "day")
-    )
-  ) {
-    isExpired = true;
-  }
-
-  // TODO make the order status and the prescription status be enums
-  // TODO the first determine status based on order status
-  // TODO then if and only if active:
-  // if *all* current dispense events are either paused or closed:
-  //    if any are paused, paused, otherwise closed
-
-  // handle cases when the overall set isn't expired
-  if (!isExpired) {
-    if (orderStatuses.includes("active") || orderStatuses.includes("stopped")) {
-      // if any are active or expired, set as active (since, confusingly, we aren't using the  ORDER API idea of stopped/autoexpired for dispensing purposes
-      return "active";
-    } else if (orderStatuses.includes("completed")) {
-      // otherwise, if any are completed, return completed
-      return "completed";
-    } else if (orderStatuses.includes("cancelled")) {
-      // otherwise, if any are cancelled, return cancelled
-      return "cancelled";
-    } else {
-      return "unknown";
-    }
-  } else {
-    // handle cases where the overall set is expired
-    if (orderStatuses.every((status) => status === "cancelled")) {
-      // if every one is cancelled, return cancelled
-      return "cancelled";
-    } else if (
-      orderStatuses.every(
-        (status) => status === "completed" || status === "cancelled"
-      )
-    ) {
-      // if every one is completed or cancelled, return completed
-      return "completed";
-    } else {
-      /// otherwise, expired
-      return "expired";
-    }
-  }
 }
 
 export function usePrescriptionDetails(encounterUuid: string) {
@@ -210,10 +157,10 @@ export function usePrescriptionDetails(encounterUuid: string) {
 
   // TODO is this TODO below still accurate? :)
   // TODO this fetch is duplicative; all the data necessary is fetched in the original request... we could refactor to use the original request, *but* I'm waiting on that because we may be refactoring the original request into something more performant, in which case would make sense for this to be separate (MG)
-  const { data, mutate, error } = useSWR<
-    { data: MedicationRequestResponse },
-    Error
-  >(getPrescriptionDetailsEndpoint(encounterUuid), openmrsFetch);
+  const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
+    getPrescriptionDetailsEndpoint(encounterUuid),
+    openmrsFetch
+  );
 
   if (data) {
     const results = data?.data.entry;
@@ -246,7 +193,6 @@ export function usePrescriptionDetails(encounterUuid: string) {
     requests,
     dispenses,
     prescriptionDate,
-    mutate,
     isError: error,
     isLoading,
   };
@@ -289,4 +235,26 @@ export function useMedicationRequest(reference: string) {
   return {
     medicationRequest: data ? data.data : null,
   };
+}
+
+export function updateMedicationRequestFulfillerStatus(
+  medicationRequestUuid: string,
+  fulfillerStatus: MedicationRequestFulfillerStatus
+) {
+  const url = `${fhirBaseUrl}/MedicationRequest/${medicationRequestUuid}`;
+
+  return openmrsFetch(url, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": JSON_MERGE_PATH_MIME_TYPE,
+    },
+    body: {
+      extension: [
+        {
+          url: OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+          valueCode: fulfillerStatus,
+        },
+      ],
+    },
+  });
 }

@@ -6,10 +6,14 @@ import {
   MedicationDispenseStatus,
   MedicationReferenceOrCodeableConcept,
   MedicationRequest,
+  MedicationRequestCombinedStatus,
+  MedicationRequestFulfillerStatus,
   MedicationRequestStatus,
 } from "./types";
 import {
+  computeMedicationRequestCombinedStatus,
   computeMedicationRequestStatus,
+  computePrescriptionStatus,
   getAssociatedMedicationDispenses,
   getConceptCoding,
   getConceptCodingDisplay,
@@ -19,12 +23,14 @@ import {
   getMedicationReferenceOrCodeableConcept,
   getMedicationsByConceptEndpoint,
   getMostRecentMedicationDispenseStatus,
+  getNextMostRecentMedicationDispenseStatus,
   getOpenMRSMedicineDrugName,
   getPrescriptionDetailsEndpoint,
   getPrescriptionTableActiveMedicationRequestsEndpoint,
   getPrescriptionTableAllMedicationRequestsEndpoint,
   getQuantity,
   getRefillsAllowed,
+  isMostRecentMedicationDispenseStatus,
 } from "./utils";
 import dayjs from "dayjs";
 
@@ -492,7 +498,7 @@ describe("Util Tests", () => {
     expect(getOpenMRSMedicineDrugName(medication)).toBe("Aspirin");
   });
 
-  test("computeStatus should return Cancelled if Medication Request has status cancelled", () => {
+  test("computeMedicationRequestStatus should return Cancelled if Medication Request has status cancelled", () => {
     const medicationRequest: MedicationRequest = {
       dispenseRequest: {
         numberOfRepeatsAllowed: 0,
@@ -521,7 +527,7 @@ describe("Util Tests", () => {
     );
   });
 
-  test("computeStatus should return Completed if Medication Request has status completed", () => {
+  test("computeMedicationRequestStatus should return Completed if Medication Request has status completed", () => {
     const medicationRequest: MedicationRequest = {
       dispenseRequest: {
         numberOfRepeatsAllowed: 0,
@@ -550,7 +556,7 @@ describe("Util Tests", () => {
     );
   });
 
-  test("computeStatus should return Expired if Medication Request older than expired timeframe", () => {
+  test("computeMedicationRequestStatus should return Expired if Medication Request older than expired timeframe", () => {
     const medicationRequest: MedicationRequest = {
       dispenseRequest: {
         numberOfRepeatsAllowed: 0,
@@ -579,7 +585,7 @@ describe("Util Tests", () => {
     );
   });
 
-  test("computeStatus should return Expired if Medication Request age is passed expired timeframe", () => {
+  test("computeMedicationRequestStatus should return Expired if Medication Request age is passed expired timeframe", () => {
     const medicationRequest: MedicationRequest = {
       dispenseRequest: {
         numberOfRepeatsAllowed: 0,
@@ -608,7 +614,7 @@ describe("Util Tests", () => {
     );
   });
 
-  test("computeStatus should return Active if Medication Request age is equal to expired timeframe (even if status is expired)", () => {
+  test("computeMedicationRequestStatus should return Active if Medication Request age is equal to expired timeframe (even if status is expired)", () => {
     const medicationRequest: MedicationRequest = {
       dispenseRequest: {
         numberOfRepeatsAllowed: 0,
@@ -639,7 +645,7 @@ describe("Util Tests", () => {
     );
   });
 
-  test("computeStatus should return Active if Medication Request is age is less than expired timeframe (even if status is expired)", () => {
+  test("computeMedicationRequestStatus should return Active if Medication Request is age is less than expired timeframe (even if status is expired)", () => {
     const medicationRequest: MedicationRequest = {
       dispenseRequest: {
         numberOfRepeatsAllowed: 0,
@@ -670,7 +676,7 @@ describe("Util Tests", () => {
     );
   });
 
-  test("computeStatus should return Active as default", () => {
+  test("computeMedicationRequestStatus should return Active as default", () => {
     const medicationRequest: MedicationRequest = {
       dispenseRequest: {
         numberOfRepeatsAllowed: 0,
@@ -696,6 +702,309 @@ describe("Util Tests", () => {
     };
     expect(computeMedicationRequestStatus(medicationRequest, 90)).toBe(
       MedicationRequestStatus.active
+    );
+  });
+
+  test("computeMedicationRequestCombinedStatus should return on-hold if status active and fulfiller status on-hold", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.active,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.on_hold,
+        },
+      ],
+    };
+    expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
+      MedicationRequestCombinedStatus.on_hold
+    );
+  });
+
+  test("computeMedicationRequestCombinedStatus should return declined if status active and fulfiller status declined", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.active,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.declined,
+        },
+      ],
+    };
+    expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
+      MedicationRequestCombinedStatus.declined
+    );
+  });
+
+  test("computeMedicationRequestCombinedStatus should return completed if status completed and fulfiller status completed", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.completed,
+        },
+      ],
+    };
+    expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
+      MedicationRequestCombinedStatus.completed
+    );
+  });
+
+  test("computeMedicationRequestCombinedStatus should return cancelled if status cancelled and no fulfiller status", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.cancelled,
+      subject: { display: "", reference: "", type: "" },
+    };
+    expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
+      MedicationRequestCombinedStatus.cancelled
+    );
+  });
+
+  test("computeMedicationRequestCombinedStatus should return cancelled if status cancelled and fulfiller on-hold", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.cancelled,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.on_hold,
+        },
+      ],
+    };
+    expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
+      MedicationRequestCombinedStatus.cancelled
+    );
+  });
+
+  test("computeMedicationRequestCombinedStatus should return cancelled if status cancelled and fulfiller declined", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.cancelled,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.declined,
+        },
+      ],
+    };
+    expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
+      MedicationRequestCombinedStatus.cancelled
+    );
+  });
+
+  test("computeMedicationRequestCombinedStatus should return expired if validity period over 90 days ago and no fulfiller status", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "2020-04-04" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.active,
+      subject: { display: "", reference: "", type: "" },
+    };
+    expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
+      MedicationRequestCombinedStatus.expired
+    );
+  });
+
+  test("computeMedicationRequestCombinedStatus should return expired if validity period over 90 days and fulfiller status on-hold", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "2020-04-04" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.active,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.on_hold,
+        },
+      ],
+    };
+    expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
+      MedicationRequestCombinedStatus.expired
+    );
+  });
+
+  test("computeMedicationRequestCombinedStatus should return expired if validity period over 90 days and fulfiller status declined", () => {
+    const medicationRequest: MedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "2020-04-04" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.active,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.declined,
+        },
+      ],
+    };
+    expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
+      MedicationRequestCombinedStatus.expired
     );
   });
 
@@ -1010,5 +1319,541 @@ describe("Util Tests", () => {
 
   test("getMostRecentMedicationDispenseStatus should return null for empty list", () => {
     expect(getMostRecentMedicationDispenseStatus([])).toBeNull();
+  });
+
+  test("getNextMostRecentMedicationDispenseStatus should return next most recent status", () => {
+    const medicationDispenses: Array<MedicationDispense> = [
+      {
+        dosageInstruction: undefined,
+        id: "e74e74a1-6b70-40fd-8c44-485178c71721",
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/medicationdispense/recorded",
+            valueDateTime: "2023-01-05T14:00:00-05:00",
+          },
+        ],
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.on_hold,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+      {
+        dosageInstruction: undefined,
+        id: "f7b5585d-6867-4f3a-8151-da9ee1f70fab",
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/medicationdispense/recorded",
+            valueDateTime: "2023-01-05T20:00:00-05:00",
+          },
+        ],
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.completed,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+      {
+        dosageInstruction: undefined,
+        id: "a2121f8e-1bcc-4cf9-b1e8-1edace155e7f",
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/medicationdispense/recorded",
+            valueDateTime: "2023-01-05T17:00:00-05:00",
+          },
+        ],
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.declined,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+    ];
+
+    expect(getNextMostRecentMedicationDispenseStatus(medicationDispenses)).toBe(
+      MedicationDispenseStatus.declined
+    );
+  });
+
+  test("getNextMostRecentMedicationDispenseStatus should return null if only one dispense", () => {
+    const medicationDispenses: Array<MedicationDispense> = [
+      {
+        dosageInstruction: undefined,
+        id: "e74e74a1-6b70-40fd-8c44-485178c71721",
+        extension: [
+          {
+            url: "http://fhir.openmrs.org/ext/medicationdispense/recorded",
+            valueDateTime: "2023-01-05T14:00:00-05:00",
+          },
+        ],
+        authorizingPrescription: [
+          {
+            reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+            type: "MedicationRequest",
+          },
+        ],
+        location: { display: "", reference: "", type: "" },
+        medicationReference: { display: "", reference: "", type: "" },
+        meta: { lastUpdated: "" },
+        quantity: {
+          value: 1,
+          unit: "",
+          code: "",
+        },
+        performer: undefined,
+        resourceType: "MedicationDispense",
+        status: MedicationDispenseStatus.on_hold,
+        subject: { display: "", reference: "", type: "" },
+        substitution: { reason: [], type: undefined, wasSubstituted: false },
+        type: undefined,
+        whenHandedOver: "",
+        whenPrepared: "",
+      },
+    ];
+    expect(
+      getNextMostRecentMedicationDispenseStatus(medicationDispenses)
+    ).toBeNull();
+  });
+
+  test("getNextMostRecentMedicationDispenseStatus should return null for null input", () => {
+    expect(getNextMostRecentMedicationDispenseStatus(null)).toBeNull();
+  });
+
+  test("getNextMostRecentMedicationDispenseStatus should return null for empty list", () => {
+    expect(getMostRecentMedicationDispenseStatus([])).toBeNull();
+  });
+
+  describe("should test isMostRecentMedicationDispenseStatus", () => {
+    const medicationDispense1: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "e74e74a1-6b70-40fd-8c44-485178c71721",
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationdispense/recorded",
+          valueDateTime: "2023-01-05T14:00:00-05:00",
+        },
+      ],
+      authorizingPrescription: [
+        {
+          reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+          type: "MedicationRequest",
+        },
+      ],
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 1,
+        unit: "",
+        code: "",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.on_hold,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispense2: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "f7b5585d-6867-4f3a-8151-da9ee1f70fab",
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationdispense/recorded",
+          valueDateTime: "2023-01-05T20:00:00-05:00",
+        },
+      ],
+      authorizingPrescription: [
+        {
+          reference: "MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff",
+          type: "MedicationRequest",
+        },
+      ],
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 1,
+        unit: "",
+        code: "",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispense3: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: "a2121f8e-1bcc-4cf9-b1e8-1edace155e7f",
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationdispense/recorded",
+          valueDateTime: "2023-01-05T17:00:00-05:00",
+        },
+      ],
+      authorizingPrescription: [
+        {
+          reference: "MedicationRequest/075318da-ce26-4de5-9700-e49820f9d974",
+          type: "MedicationRequest",
+        },
+      ],
+      location: { display: "", reference: "", type: "" },
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      quantity: {
+        value: 1,
+        unit: "",
+        code: "",
+      },
+      performer: undefined,
+      resourceType: "MedicationDispense",
+      status: MedicationDispenseStatus.declined,
+      subject: { display: "", reference: "", type: "" },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: "",
+      whenPrepared: "",
+    };
+
+    const medicationDispenses: Array<MedicationDispense> = [
+      medicationDispense1,
+      medicationDispense2,
+      medicationDispense3,
+    ];
+
+    test("should return true if most recent medication request", () => {
+      expect(
+        isMostRecentMedicationDispenseStatus(
+          medicationDispense2,
+          medicationDispenses
+        )
+      ).toBe(true);
+    });
+    test("should return false if not most recent medication requst", () => {
+      expect(
+        isMostRecentMedicationDispenseStatus(
+          medicationDispense1,
+          medicationDispenses
+        )
+      ).toBe(false);
+    });
+    test("should return false if null", () => {
+      expect(
+        isMostRecentMedicationDispenseStatus(null, medicationDispenses)
+      ).toBe(false);
+    });
+  });
+
+  describe("should test computePrescriptionStatus", () => {
+    const activeMedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.active,
+      subject: { display: "", reference: "", type: "" },
+    };
+    // sanity check
+    expect(
+      computeMedicationRequestCombinedStatus(activeMedicationRequest, 90)
+    ).toBe(MedicationRequestCombinedStatus.active);
+    const cancelledMedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.cancelled,
+      subject: { display: "", reference: "", type: "" },
+    };
+    // sanity check
+    expect(
+      computeMedicationRequestCombinedStatus(cancelledMedicationRequest, 90)
+    ).toBe(MedicationRequestCombinedStatus.cancelled);
+    const expiredMedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "2020-04-04" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.active,
+      subject: { display: "", reference: "", type: "" },
+    };
+    // sanity check
+    expect(
+      computeMedicationRequestCombinedStatus(expiredMedicationRequest, 90)
+    ).toBe(MedicationRequestCombinedStatus.expired);
+    const onHoldMedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.active,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.on_hold,
+        },
+      ],
+    };
+    // sanity check
+    expect(
+      computeMedicationRequestCombinedStatus(onHoldMedicationRequest, 90)
+    ).toBe(MedicationRequestCombinedStatus.on_hold);
+    const declinedMedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.active,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.declined,
+        },
+      ],
+    };
+    expect(
+      computeMedicationRequestCombinedStatus(declinedMedicationRequest, 90)
+    ).toBe(MedicationRequestCombinedStatus.declined);
+    const completedMedicationRequest = {
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: undefined,
+        validityPeriod: { start: "" },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: "", type: "" },
+      id: "",
+      intent: "",
+      medicationReference: { display: "", reference: "", type: "" },
+      meta: { lastUpdated: "" },
+      priority: "",
+      requester: {
+        display: "",
+        identifier: { value: "" },
+        reference: "",
+        type: "",
+      },
+      resourceType: "",
+      status: MedicationRequestStatus.completed,
+      subject: { display: "", reference: "", type: "" },
+      extension: [
+        {
+          url: "http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus",
+          valueCode: MedicationRequestFulfillerStatus.completed,
+        },
+      ],
+    };
+    expect(
+      computeMedicationRequestCombinedStatus(completedMedicationRequest, 90)
+    ).toBe(MedicationRequestCombinedStatus.completed);
+    test("computePrescriptionStatus should return active if any medication request combined status active", () => {
+      expect(
+        computePrescriptionStatus(
+          [
+            activeMedicationRequest,
+            cancelledMedicationRequest,
+            expiredMedicationRequest,
+            onHoldMedicationRequest,
+            declinedMedicationRequest,
+            completedMedicationRequest,
+          ],
+          90
+        )
+      ).toBe(MedicationRequestCombinedStatus.active);
+    });
+    test("computePrescriptionStatus should return on-hold if any medication request combined status on-hold, and none active", () => {
+      expect(
+        computePrescriptionStatus(
+          [
+            cancelledMedicationRequest,
+            expiredMedicationRequest,
+            onHoldMedicationRequest,
+            declinedMedicationRequest,
+            completedMedicationRequest,
+          ],
+          90
+        )
+      ).toBe(MedicationRequestCombinedStatus.on_hold);
+    });
+    test("computePrescriptionStatus should return completed if any medication request combined status completed, and none active or on hold", () => {
+      expect(
+        computePrescriptionStatus(
+          [
+            cancelledMedicationRequest,
+            expiredMedicationRequest,
+            declinedMedicationRequest,
+            completedMedicationRequest,
+          ],
+          90
+        )
+      ).toBe(MedicationRequestCombinedStatus.completed);
+    });
+    test("computePrescriptionStatus should return declined if any medication request combined status declined, and none active or on hold or completed", () => {
+      expect(
+        computePrescriptionStatus(
+          [
+            cancelledMedicationRequest,
+            expiredMedicationRequest,
+            declinedMedicationRequest,
+          ],
+          90
+        )
+      ).toBe(MedicationRequestCombinedStatus.declined);
+    });
+    test("computePrescriptionStatus should return cancelled if any medication request combined status cancelled, and none active or on hold or completed or declined", () => {
+      expect(
+        computePrescriptionStatus(
+          [cancelledMedicationRequest, expiredMedicationRequest],
+          90
+        )
+      ).toBe(MedicationRequestCombinedStatus.cancelled);
+    });
+    test("computePrescriptionStatus should return expired if any medication request combined status expired, and none active or on hold or completed or declined or cancelled", () => {
+      expect(computePrescriptionStatus([expiredMedicationRequest], 90)).toBe(
+        MedicationRequestCombinedStatus.expired
+      );
+    });
+    test("computePrescriptionStatus should return null for empty array", () => {
+      expect(computePrescriptionStatus([], 90)).toBe(null);
+    });
+    test("computePrescriptionStatus should return null for null input", () => {
+      expect(computePrescriptionStatus(null, 90)).toBe(null);
+    });
   });
 });

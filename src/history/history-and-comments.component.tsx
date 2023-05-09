@@ -15,35 +15,42 @@ import {
   useSession,
 } from "@openmrs/esm-framework";
 import styles from "./history-and-comments.scss";
-import { usePrescriptionDetails } from "../medication-request/medication-request.resource";
+import {
+  updateMedicationRequestFulfillerStatus,
+  usePrescriptionDetails,
+} from "../medication-request/medication-request.resource";
 import { deleteMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationEvent from "../components/medication-event.component";
 import { launchOverlay } from "../hooks/useOverlay";
 import DispenseForm from "../forms/dispense-form.component";
-import { MedicationDispense, MedicationDispenseStatus } from "../types";
+import {
+  MedicationDispense,
+  MedicationDispenseStatus,
+  MedicationRequestFulfillerStatus,
+} from "../types";
 import {
   PRIVILEGE_DELETE_DISPENSE,
   PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
   PRIVILEGE_EDIT_DISPENSE,
 } from "../constants";
-import { getDateRecorded } from "../utils";
+import {
+  getDateRecorded,
+  getNextMostRecentMedicationDispenseStatus,
+  getUuidFromReference,
+  isMostRecentMedicationDispenseStatus,
+  revalidate,
+} from "../utils";
 import PauseDispenseForm from "../forms/pause-dispense-form.component";
 import CloseDispenseForm from "../forms/close-dispense-form.component";
 
 const HistoryAndComments: React.FC<{
   encounterUuid: string;
-  mutate: Function;
-}> = ({ encounterUuid, mutate }) => {
+  patientUuid: string;
+}> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const session = useSession();
-  const {
-    requests,
-    dispenses,
-    mutate: mutatePrescriptionDetails,
-    prescriptionDate,
-    isError,
-    isLoading,
-  } = usePrescriptionDetails(encounterUuid);
+  const { requests, dispenses, prescriptionDate, isError, isLoading } =
+    usePrescriptionDetails(encounterUuid);
 
   const userCanEdit: Function = (session: Session) =>
     session?.user && userHasAccess(PRIVILEGE_EDIT_DISPENSE, session.user);
@@ -74,31 +81,23 @@ const HistoryAndComments: React.FC<{
     return false;
   };
 
-  const generateForm: Function = (
-    medicationDispense: MedicationDispense,
-    mutate: Function,
-    mutatePrescriptionDetails: Function
-  ) => {
+  const generateForm: Function = (medicationDispense: MedicationDispense) => {
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
       return (
         <DispenseForm
+          patientUuid={patientUuid}
+          encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
           mode="edit"
-          mutate={() => {
-            mutate();
-            mutatePrescriptionDetails();
-          }}
         />
       );
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
       return (
         <PauseDispenseForm
+          patientUuid={patientUuid}
+          encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
           mode="edit"
-          mutate={() => {
-            mutate();
-            mutatePrescriptionDetails();
-          }}
         />
       );
     } else if (
@@ -106,12 +105,10 @@ const HistoryAndComments: React.FC<{
     ) {
       return (
         <CloseDispenseForm
+          patientUuid={patientUuid}
+          encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
           mode="edit"
-          mutate={() => {
-            mutate();
-            mutatePrescriptionDetails();
-          }}
         />
       );
     }
@@ -154,11 +151,7 @@ const HistoryAndComments: React.FC<{
               onClick={() =>
                 launchOverlay(
                   generateOverlayText(medicationDispense),
-                  generateForm(
-                    medicationDispense,
-                    mutate,
-                    mutatePrescriptionDetails
-                  )
+                  generateForm(medicationDispense)
                 )
               }
               itemText={t("editRecord", "Edit Record")}
@@ -167,9 +160,7 @@ const HistoryAndComments: React.FC<{
           {deletable && (
             <OverflowMenuItem
               onClick={() => {
-                deleteMedicationDispense(medicationDispense.id);
-                mutate();
-                mutatePrescriptionDetails();
+                handleDelete(medicationDispense);
               }}
               itemText={t("delete", "Delete")}
             ></OverflowMenuItem>
@@ -209,6 +200,36 @@ const HistoryAndComments: React.FC<{
     } else {
       return null;
     }
+  };
+
+  const handleDelete: Function = (medicationDispense: MedicationDispense) => {
+    // if this is the most recent dispense event that we are deleting, may have to update the fulfiller status
+    // on the request
+    // TODO extract out into an resource or a util?
+    if (isMostRecentMedicationDispenseStatus(medicationDispense, dispenses)) {
+      const status = getNextMostRecentMedicationDispenseStatus(dispenses);
+      let updatedFulfillerStatus: MedicationRequestFulfillerStatus = null;
+      if (status !== null && status === MedicationDispenseStatus.declined) {
+        updatedFulfillerStatus = MedicationRequestFulfillerStatus.declined;
+      } else if (
+        status !== null &&
+        status == MedicationDispenseStatus.on_hold
+      ) {
+        updatedFulfillerStatus = MedicationRequestFulfillerStatus.on_hold;
+      }
+      updateMedicationRequestFulfillerStatus(
+        getUuidFromReference(
+          medicationDispense.authorizingPrescription[0].reference // assumes authorizing prescription exist
+        ),
+        updatedFulfillerStatus
+      ).then(() => {
+        revalidate(encounterUuid);
+      });
+    }
+
+    deleteMedicationDispense(medicationDispense.id).then(() => {
+      revalidate(encounterUuid);
+    });
   };
 
   // TODO: assumption is dispenses always are after requests?

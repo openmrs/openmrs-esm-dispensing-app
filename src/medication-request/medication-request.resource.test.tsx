@@ -1,7 +1,7 @@
 import React from "react";
 import useSWR from "swr";
 import {
-  computePrescriptionStatus,
+  updateMedicationRequestFulfillerStatus,
   useMedicationRequest,
   usePatientAllergies,
   usePrescriptionDetails,
@@ -9,6 +9,11 @@ import {
 } from "./medication-request.resource";
 import { openmrsFetch, parseDate } from "@openmrs/esm-framework";
 import dayjs from "dayjs";
+import { MedicationDispense, MedicationRequestFulfillerStatus } from "../types";
+import {
+  JSON_MERGE_PATH_MIME_TYPE,
+  OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+} from "../constants";
 
 jest.mock("@openmrs/esm-framework", () => {
   const originalModule = jest.requireActual("@openmrs/esm-framework");
@@ -656,79 +661,6 @@ describe("Medication Request Resource Test", () => {
     );
     expect(prescriptionsTableRows[1].status).toBe("expired");
     expect(prescriptionsTableRows[1].location).toBeNull();
-  });
-
-  test("computePrescriptionStatus should return active if all orders are active or stopped and encounter within expiry period", () => {
-    const status = computePrescriptionStatus(
-      ["stopped", "active", "stopped"],
-      dayjs().toISOString(),
-      10
-    );
-    expect(status).toBe("active");
-  });
-
-  test("computePrescriptionStatus should return active if any orders active and encounter within expiry period", () => {
-    const status = computePrescriptionStatus(
-      ["completed", "active", "cancelled"],
-      dayjs().toISOString(),
-      10
-    );
-    expect(status).toBe("active");
-  });
-
-  // because of the werid way that stopped (order expired) doesn't align with the idea of expired from a dispensing perspective
-  test("computePrescriptionStatus should return active if any orders stopped and encounter within expiry period", () => {
-    const status = computePrescriptionStatus(
-      ["completed", "stopped", "cancelled"],
-      dayjs().toISOString(),
-      10
-    );
-    expect(status).toBe("active");
-  });
-
-  test("computePrescriptionStatus should return active if any completed and none stopped or active and encounter within expiry period", () => {
-    const status = computePrescriptionStatus(
-      ["completed", "cancelled", "cancelled"],
-      dayjs().toISOString(),
-      10
-    );
-    expect(status).toBe("completed");
-  });
-
-  test("computePrescriptionStatus should return cancelled if all orders cancelled and encounter within expiry period", () => {
-    const status = computePrescriptionStatus(
-      ["cancelled", "cancelled", "cancelled"],
-      dayjs().toISOString(),
-      10
-    );
-    expect(status).toBe("cancelled");
-  });
-
-  test("computePrescriptionStatus should return expired if no orders are completed and encounter expired based expiry period", () => {
-    const status = computePrescriptionStatus(
-      ["active", "stopped", "cancelled"],
-      dayjs().subtract(20, "days").toISOString(),
-      10
-    );
-    expect(status).toBe("expired");
-  });
-
-  test("computePrescriptionStatus should return completed if all orders completed or cancelled, at least one is completed, and encounter expired based expiry period", () => {
-    const status = computePrescriptionStatus(
-      ["cancelled", "completed", "cancelled"],
-      dayjs().subtract(20, "days").toISOString(),
-      10
-    );
-    expect(status).toBe("completed");
-  });
-
-  test("computePrescriptionStatus should return cancelled if all orders cancelled and encounter expired based expiry period", () => {
-    const status = computePrescriptionStatus(
-      ["cancelled", "cancelled", "cancelled"],
-      dayjs().subtract(20, "days").toISOString(),
-      10
-    );
-    expect(status).toBe("cancelled");
   });
 
   test("usePrescriptionsDetails should call endpoint with encounter uuid", () => {
@@ -1411,6 +1343,32 @@ describe("Medication Request Resource Test", () => {
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationRequest/123abc",
       openmrsFetch
+    );
+  });
+
+  test("updateMedicationRequestFulfillerStatus should call medication request FHIR endpoint with appropriate data ", () => {
+    const medicationRequestUuid = "123abc";
+
+    updateMedicationRequestFulfillerStatus(
+      medicationRequestUuid,
+      MedicationRequestFulfillerStatus.completed
+    );
+    expect(openmrsFetch).toHaveBeenCalledWith(
+      `/ws/fhir2/R4/MedicationRequest/${medicationRequestUuid}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": JSON_MERGE_PATH_MIME_TYPE,
+        },
+        body: {
+          extension: [
+            {
+              url: OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+              valueCode: MedicationRequestFulfillerStatus.completed,
+            },
+          ],
+        },
+      }
     );
   });
 });
