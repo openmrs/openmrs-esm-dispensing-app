@@ -55,6 +55,8 @@ const HistoryAndComments: React.FC<{
   const config = useConfig() as PharmacyConfig;
   const { requests, dispenses, prescriptionDate, isError, isLoading } =
     usePrescriptionDetails(encounterUuid);
+  const { requests, dispenses, prescriptionDate, isError, isLoading } =
+    usePrescriptionDetails(encounterUuid);
 
   const userCanEdit: Function = (session: Session) =>
     session?.user && userHasAccess(PRIVILEGE_EDIT_DISPENSE, session.user);
@@ -113,8 +115,6 @@ const HistoryAndComments: React.FC<{
 
       return (
         <DispenseForm
-          patientUuid={patientUuid}
-          encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
           quantityRemaining={quantityRemaining}
           currentFulfillerStatus={getFulfillerStatus(

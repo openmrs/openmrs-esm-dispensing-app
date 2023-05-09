@@ -4,7 +4,6 @@ import {
   DosageInstruction,
   Medication,
   MedicationDispense,
-  MedicationDispenseStatus,
   MedicationReferenceOrCodeableConcept,
   MedicationRequest,
   MedicationRequestCombinedStatus,
@@ -14,11 +13,15 @@ import {
 } from "./types";
 import { fhirBaseUrl, parseDate } from "@openmrs/esm-framework";
 import {
+  PRESCRIPTIONS_TABLE_ENDPOINT,
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
   PRESCRIPTION_DETAILS_ENDPOINT,
   PRESCRIPTIONS_TABLE_ENDPOINT,
+  OPENMRS_FHIR_EXT_MEDICINE,
+  OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+  PRESCRIPTION_DETAILS_ENDPOINT,
 } from "./constants";
 import dayjs from "dayjs";
 
