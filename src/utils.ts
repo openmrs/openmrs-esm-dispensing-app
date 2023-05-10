@@ -108,14 +108,14 @@ export function computeMedicationRequestStatus(
  * Captures the logic to compute the new fulfiller status after a dispense event, where dispense event = a medication dispense where medication is actually dispensed (as opposed one with status "on_hold" or "declined")
  *
  * @param restrictTotalQuantityDispensed value of the "dispenseBehavior.restrictTotalQuantityDispensed"
- * @param isMostRecentMedicationDisepnse whether the dispense event we are creating or editing is the most recent dispense for this medication request
+ * @param isMostRecentMedicationDispense whether the dispense event we are creating or editing is the most recent dispense for this medication request
  * @param currentFulfillerStatus the current fulfiller status (prior to the changes being applied by the creation/edit of this dispense event)
  * @param quantityDispensed the quantity dispensed as part of this dispense event
  * @param quanatityRemaining the quantity remaining not including the amount in this dispense event
  */
 export function computeNewFulfillerStatusAfterDispenseEvent(
   restrictTotalQuantityDispensed: boolean,
-  isMostRecentMedicationDisepnse: boolean,
+  isMostRecentMedicationDispense: boolean,
   currentFulfillerStatus: MedicationRequestFulfillerStatus,
   quantityDispensed: number,
   quantityRemaining: number
@@ -127,7 +127,7 @@ export function computeNewFulfillerStatusAfterDispenseEvent(
     if (reachedMaxQuantity) {
       // if we've maxed out the quqntity, set complete, no matter what
       return MedicationRequestFulfillerStatus.completed;
-    } else if (isMostRecentMedicationDisepnse) {
+    } else if (isMostRecentMedicationDispense) {
       // otherwise, if this is the most recent, set status to null (ie, clear out "on-hold" if currently set)
       return null;
     } else if (
@@ -141,7 +141,7 @@ export function computeNewFulfillerStatusAfterDispenseEvent(
     }
   } else {
     // if we are not restricting the amount dispensed, we just need to make sure that any new dispense clears out any previous status
-    if (isMostRecentMedicationDisepnse) {
+    if (isMostRecentMedicationDispense) {
       return null;
     } else {
       return currentFulfillerStatus;

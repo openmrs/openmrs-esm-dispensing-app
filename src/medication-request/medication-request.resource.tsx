@@ -155,8 +155,6 @@ export function usePrescriptionDetails(encounterUuid: string) {
   let prescriptionDate: Date;
   let isLoading = true;
 
-  // TODO is this TODO below still accurate? :)
-  // TODO this fetch is duplicative; all the data necessary is fetched in the original request... we could refactor to use the original request, *but* I'm waiting on that because we may be refactoring the original request into something more performant, in which case would make sense for this to be separate (MG)
   const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
     getPrescriptionDetailsEndpoint(encounterUuid),
     openmrsFetch
@@ -190,6 +188,7 @@ export function usePrescriptionDetails(encounterUuid: string) {
   isLoading = !requests && !error;
 
   return {
+    // TODO: change to return the "bundle", what is the name of this event?
     requests,
     dispenses,
     prescriptionDate,
