@@ -65,3 +65,12 @@ dist/
 # Intellij integration
 *.iml
 .idea
+
+# ignores for Yarn v3 w/o PNP
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

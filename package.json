@@ -13,7 +13,7 @@
     "analyze": "webpack --mode=production --env.analyze=true",
     "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
     "lint": "eslint src --ext js,jsx,ts,tsx",
-    "test": "jest --config jest.config.json",
+    "test": "jest --config jest.config.js",
     "typescript": "tsc",
     "verify": "concurrently 'yarn:lint' 'yarn:test' 'yarn:typescript'",
     "coverage": "yarn test --coverage",
@@ -41,17 +41,15 @@
     "url": "https://github.com/openmrs/openmrs-esm-dispensing/issues"
   },
   "dependencies": {
-    "@carbon/react": "^1.9.0",
+    "@carbon/react": "^1.28.0",
     "lodash-es": "^4.17.15",
     "swr": "^2.1.0"
   },
   "peerDependencies": {
-    "@openmrs/esm-framework": "4.x",
-    "dayjs": "1.x",
+    "@openmrs/esm-framework": "*",
     "react": "18.x",
     "react-dom": "18.x",
     "react-i18next": "11.x",
-    "react-router-dom": "6.x",
     "rxjs": "6.x"
   },
   "devDependencies": {
@@ -70,6 +68,7 @@
     "@types/webpack-env": "^1.16.0",
     "@typescript-eslint/parser": "^4.26.0",
     "concurrently": "^6.2.0",
+    "dayjs": "^1.11.7",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-ts-react-important-stuff": "^3.0.0",
@@ -89,5 +88,6 @@
     "react-router-dom": "^6.3.0",
     "rxjs": "^6.5.4",
     "typescript": "^4.3.2"
-  }
+  },
+  "packageManager": "yarn@3.5.1"
 }
