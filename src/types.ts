@@ -375,6 +375,15 @@ export enum MedicationRequestCombinedStatus {
   unknown = "unknown",
 }
 
+/**
+ * Convenience object to group a medication request with all it's related medication dispenses
+ * Invalid if any of the dispenses point to a different request than the one referenced
+ */
+export interface MedicationRequestBundle {
+  request: MedicationRequest;
+  dispenses: Array<MedicationDispense>;
+}
+
 export interface MedicationReferenceOrCodeableConcept {
   medicationReference?: {
     reference: string;

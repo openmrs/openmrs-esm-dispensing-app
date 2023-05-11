@@ -128,8 +128,7 @@ describe("Action Buttons Component tests", () => {
       <ActionButtons
         patientUuid={mockPatientUuid}
         encounterUuid={mockEncounterUuid}
-        medicationRequest={medicationRequest}
-        associatedMedicationDispenses={[]}
+        medicationRequestBundle={{ request: medicationRequest, dispenses: [] }}
       />
     );
     expect(getByText("Dispense")).toBeInTheDocument();
@@ -237,8 +236,7 @@ describe("Action Buttons Component tests", () => {
       <ActionButtons
         patientUuid={mockPatientUuid}
         encounterUuid={mockEncounterUuid}
-        medicationRequest={medicationRequest}
-        associatedMedicationDispenses={[]}
+        medicationRequestBundle={{ request: medicationRequest, dispenses: [] }}
       />
     );
     expect(queryByText("Dispense")).not.toBeInTheDocument();

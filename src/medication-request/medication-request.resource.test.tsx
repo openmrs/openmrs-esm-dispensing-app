@@ -14,6 +14,7 @@ import {
   JSON_MERGE_PATH_MIME_TYPE,
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
 } from "../constants";
+import medicationCardComponent from "../components/medication-card.component";
 
 jest.mock("@openmrs/esm-framework", () => {
   const originalModule = jest.requireActual("@openmrs/esm-framework");
@@ -1068,14 +1069,19 @@ describe("Medication Request Resource Test", () => {
     };
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: queryRequestBundle } }));
-    const { requests, dispenses, prescriptionDate } = usePrescriptionDetails(
-      "1aafa3c6-83c2-4485-baaa-f700056e43c9"
+    const { medicationRequestBundles, prescriptionDate } =
+      usePrescriptionDetails("1aafa3c6-83c2-4485-baaa-f700056e43c9");
+    expect(medicationRequestBundles.length).toBe(1);
+    expect(medicationRequestBundles[0].request.id).toBe(
+      "1c1ad91e-8653-453a-9f59-8d5c36249aff"
     );
-    expect(requests.length).toBe(1);
-    expect(requests[0].id).toBe("1c1ad91e-8653-453a-9f59-8d5c36249aff");
-    expect(dispenses.length).toBe(2);
-    expect(dispenses[0].id).toBe("8841f349-0a86-43d2-80f5-020b70553a99");
-    expect(dispenses[1].id).toBe("d5eb4c01-01a8-44e5-8852-720c499d6260");
+    expect(medicationRequestBundles[0].dispenses.length).toBe(2);
+    expect(medicationRequestBundles[0].dispenses[0].id).toBe(
+      "8841f349-0a86-43d2-80f5-020b70553a99"
+    );
+    expect(medicationRequestBundles[0].dispenses[1].id).toBe(
+      "d5eb4c01-01a8-44e5-8852-720c499d6260"
+    );
     expect(prescriptionDate.toISOString()).toBe(
       parseDate("2023-01-24T18:42:09-05:00").toISOString()
     );

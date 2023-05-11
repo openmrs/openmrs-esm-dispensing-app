@@ -25,7 +25,11 @@ import MedicationEvent from "../components/medication-event.component";
 import { launchOverlay } from "../hooks/useOverlay";
 import { PharmacyConfig } from "../config-schema";
 import DispenseForm from "../forms/dispense-form.component";
-import { MedicationDispense, MedicationDispenseStatus } from "../types";
+import {
+  MedicationDispense,
+  MedicationDispenseStatus,
+  MedicationRequestBundle,
+} from "../types";
 import {
   PRIVILEGE_DELETE_DISPENSE,
   PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
@@ -34,14 +38,12 @@ import {
 import {
   computeNewFulfillerStatusAfterDelete,
   computeQuantityRemaining,
-  getAssociatedMedicationDispenses,
-  getAssociatedMedicationRequest,
   getDateRecorded,
   getFulfillerStatus,
-  getNextMostRecentMedicationDispenseStatus,
+  getMedicationRequestBundleContainingMedicationDispense,
   getUuidFromReference,
-  isMostRecentMedicationDispense,
   revalidate,
+  sortMedicationDispensesByDateRecorded,
 } from "../utils";
 import PauseDispenseForm from "../forms/pause-dispense-form.component";
 import CloseDispenseForm from "../forms/close-dispense-form.component";
@@ -53,7 +55,7 @@ const HistoryAndComments: React.FC<{
   const { t } = useTranslation();
   const session = useSession();
   const config = useConfig() as PharmacyConfig;
-  const { requests, dispenses, prescriptionDate, isError, isLoading } =
+  const { medicationRequestBundles, prescriptionDate, isError, isLoading } =
     usePrescriptionDetails(encounterUuid);
 
   const userCanEdit: Function = (session: Session) =>
@@ -85,26 +87,16 @@ const HistoryAndComments: React.FC<{
     return false;
   };
 
-  const generateForm: Function = (medicationDispense: MedicationDispense) => {
+  const generateForm: Function = (
+    medicationDispense: MedicationDispense,
+    medicationRequestBundle: MedicationRequestBundle
+  ) => {
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
-      // fetch the appropriate requests and associated dispense so we can calculate quantity
-      const associatedMedicationRequest = getAssociatedMedicationRequest(
-        medicationDispense,
-        requests
-      );
-      const associatedMedicationDispenses = getAssociatedMedicationDispenses(
-        associatedMedicationRequest,
-        dispenses
-      );
-
       // note that since this is an edit, quantity remaining needs to include quantity that is part of this dispense
       let quantityRemaining = null;
       if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
         quantityRemaining =
-          computeQuantityRemaining(
-            associatedMedicationRequest,
-            associatedMedicationDispenses
-          ) +
+          computeQuantityRemaining(medicationRequestBundle) +
           (medicationDispense?.quantity
             ? medicationDispense.quantity.value
             : 0);
@@ -115,15 +107,9 @@ const HistoryAndComments: React.FC<{
           patientUuid={patientUuid}
           encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
+          medicationRequestBundle={medicationRequestBundle}
           quantityRemaining={quantityRemaining}
-          currentFulfillerStatus={getFulfillerStatus(
-            associatedMedicationRequest
-          )}
           mode="edit"
-          isMostRecentDispense={isMostRecentMedicationDispense(
-            medicationDispense,
-            associatedMedicationDispenses
-          )}
         />
       );
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
@@ -164,7 +150,8 @@ const HistoryAndComments: React.FC<{
   };
 
   const generateMedicationDispenseActionMenu: Function = (
-    medicationDispense: MedicationDispense
+    medicationDispense: MedicationDispense,
+    medicationRequestBundle: MedicationRequestBundle
   ) => {
     const editable = userCanEdit(session);
     const deletable = userCanDelete(session, medicationDispense);
@@ -186,7 +173,7 @@ const HistoryAndComments: React.FC<{
               onClick={() =>
                 launchOverlay(
                   generateOverlayText(medicationDispense),
-                  generateForm(medicationDispense)
+                  generateForm(medicationDispense, medicationRequestBundle)
                 )
               }
               itemText={t("editRecord", "Edit Record")}
@@ -195,7 +182,7 @@ const HistoryAndComments: React.FC<{
           {deletable && (
             <OverflowMenuItem
               onClick={() => {
-                handleDelete(medicationDispense);
+                handleDelete(medicationDispense, medicationRequestBundle);
               }}
               itemText={t("delete", "Delete")}
             ></OverflowMenuItem>
@@ -237,29 +224,16 @@ const HistoryAndComments: React.FC<{
     }
   };
 
-  const handleDelete: Function = (medicationDispense: MedicationDispense) => {
-    const associatedMedicationRequest = getAssociatedMedicationRequest(
-      medicationDispense,
-      requests
-    );
-    const associatedMedicationDispenses = getAssociatedMedicationDispenses(
-      associatedMedicationRequest,
-      dispenses
-    );
+  const handleDelete: Function = (
+    medicationDispense: MedicationDispense,
+    medicationRequestBundle: MedicationRequestBundle
+  ) => {
     const currentFulfillerStatus = getFulfillerStatus(
-      associatedMedicationRequest
-    );
-    const nextMostRecentDispenseStatus =
-      getNextMostRecentMedicationDispenseStatus(associatedMedicationDispenses);
-    const isMostRecentDispense = isMostRecentMedicationDispense(
-      medicationDispense,
-      associatedMedicationDispenses
+      medicationRequestBundle.request
     );
     const newFulfillerStatus = computeNewFulfillerStatusAfterDelete(
-      isMostRecentDispense,
-      currentFulfillerStatus,
-      medicationDispense.status,
-      nextMostRecentDispenseStatus
+      medicationDispense,
+      medicationRequestBundle
     );
     if (currentFulfillerStatus !== newFulfillerStatus) {
       updateMedicationRequestFulfillerStatus(
@@ -282,55 +256,68 @@ const HistoryAndComments: React.FC<{
     <div className={styles.historyAndCommentsContainer}>
       {isLoading && <DataTableSkeleton role="progressbar" />}
       {isError && <p>{t("error", "Error")}</p>}
-      {dispenses &&
-        dispenses.map((dispense) => {
-          return (
-            <div key={dispense.id}>
-              <h5
-                style={{
-                  paddingTop: "8px",
-                  paddingBottom: "8px",
-                  fontSize: "0.9rem",
-                }}
-              >
-                {dispense.performer && dispense.performer[0]?.actor?.display}{" "}
-                {generateDispenseVerbiage(dispense)} -{" "}
-                {formatDatetime(parseDate(getDateRecorded(dispense)))}
-              </h5>
-              <Tile className={styles.dispenseTile}>
-                {generateMedicationDispenseActionMenu(dispense)}
-                <MedicationEvent
-                  medicationEvent={dispense}
-                  status={generateDispenseTag(dispense)}
-                />
-              </Tile>
-            </div>
-          );
-        })}
-      {requests &&
-        requests.map((request) => {
-          return (
-            <div key={request.id}>
-              <h5
-                style={{
-                  paddingTop: "8px",
-                  paddingBottom: "8px",
-                  fontSize: "0.9rem",
-                }}
-              >
-                {request.requester.display}{" "}
-                {t("orderedMedication ", "ordered medication")} -{" "}
-                {formatDatetime(prescriptionDate)}
-              </h5>
-              <Tile className={styles.requestTile}>
-                <MedicationEvent
-                  medicationEvent={request}
-                  status={<Tag type="green">{t("ordered", "Ordered")}</Tag>}
-                />
-              </Tile>
-            </div>
-          );
-        })}
+      {medicationRequestBundles &&
+        medicationRequestBundles
+          .flatMap(
+            (medicationDispenseBundle) => medicationDispenseBundle.dispenses
+          )
+          .sort(sortMedicationDispensesByDateRecorded)
+          .map((dispense) => {
+            return (
+              <div key={dispense.id}>
+                <h5
+                  style={{
+                    paddingTop: "8px",
+                    paddingBottom: "8px",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  {dispense.performer && dispense.performer[0]?.actor?.display}{" "}
+                  {generateDispenseVerbiage(dispense)} -{" "}
+                  {formatDatetime(parseDate(getDateRecorded(dispense)))}
+                </h5>
+                <Tile className={styles.dispenseTile}>
+                  {generateMedicationDispenseActionMenu(
+                    dispense,
+                    getMedicationRequestBundleContainingMedicationDispense(
+                      medicationRequestBundles,
+                      dispense
+                    )
+                  )}
+                  <MedicationEvent
+                    medicationEvent={dispense}
+                    status={generateDispenseTag(dispense)}
+                  />
+                </Tile>
+              </div>
+            );
+          })}
+      {medicationRequestBundles &&
+        medicationRequestBundles
+          .flatMap((medicationRequestBundle) => medicationRequestBundle.request)
+          .map((request) => {
+            return (
+              <div key={request.id}>
+                <h5
+                  style={{
+                    paddingTop: "8px",
+                    paddingBottom: "8px",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  {request.requester.display}{" "}
+                  {t("orderedMedication ", "ordered medication")} -{" "}
+                  {formatDatetime(prescriptionDate)}
+                </h5>
+                <Tile className={styles.requestTile}>
+                  <MedicationEvent
+                    medicationEvent={request}
+                    status={<Tag type="green">{t("ordered", "Ordered")}</Tag>}
+                  />
+                </Tile>
+              </div>
+            );
+          })}
     </div>
   );
 };

@@ -14,14 +14,14 @@ import { closeOverlay } from "../hooks/useOverlay";
 import {
   MedicationDispense,
   MedicationDispenseStatus,
-  MedicationRequestFulfillerStatus,
+  MedicationRequestBundle,
 } from "../types";
 import { PharmacyConfig } from "../config-schema";
 import { saveMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationDispenseReview from "./medication-dispense-review.component";
 import {
   computeNewFulfillerStatusAfterDispenseEvent,
-  getQuantity,
+  getFulfillerStatus,
   getUuidFromReference,
   revalidate,
 } from "../utils";
@@ -29,21 +29,19 @@ import { updateMedicationRequestFulfillerStatus } from "../medication-request/me
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
-  isMostRecentDispense: boolean;
+  medicationRequestBundle: MedicationRequestBundle;
   mode: "enter" | "edit";
   patientUuid?: string;
   encounterUuid: string;
-  currentFulfillerStatus: MedicationRequestFulfillerStatus;
   quantityRemaining: number;
 }
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
   medicationDispense,
-  isMostRecentDispense,
+  medicationRequestBundle,
   mode,
   patientUuid,
   encounterUuid,
-  currentFulfillerStatus,
   quantityRemaining,
 }) => {
   const { t } = useTranslation();
@@ -76,12 +74,14 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             const newFulfillerStatus =
               computeNewFulfillerStatusAfterDispenseEvent(
                 config.dispenseBehavior.restrictTotalQuantityDispensed,
-                isMostRecentDispense,
-                currentFulfillerStatus,
-                getQuantity(medicationDispensePayload)?.value,
+                medicationDispensePayload,
+                medicationRequestBundle,
                 quantityRemaining
               );
-            if (currentFulfillerStatus !== newFulfillerStatus) {
+            if (
+              getFulfillerStatus(medicationRequestBundle.request) !==
+              newFulfillerStatus
+            ) {
               return updateMedicationRequestFulfillerStatus(
                 getUuidFromReference(
                   medicationDispensePayload.authorizingPrescription[0].reference // assumes authorizing prescription exist

@@ -7,6 +7,7 @@ import {
   MedicationDispenseStatus,
   MedicationReferenceOrCodeableConcept,
   MedicationRequest,
+  MedicationRequestBundle,
   MedicationRequestCombinedStatus,
   MedicationRequestFulfillerStatus,
   MedicationRequestStatus,
@@ -108,43 +109,50 @@ export function computeMedicationRequestStatus(
  * Captures the logic to compute the new fulfiller status after a dispense event, where dispense event = a medication dispense where medication is actually dispensed (as opposed one with status "on_hold" or "declined")
  *
  * @param restrictTotalQuantityDispensed value of the "dispenseBehavior.restrictTotalQuantityDispensed"
- * @param isMostRecentMedicationDispense whether the dispense event we are creating or editing is the most recent dispense for this medication request
- * @param currentFulfillerStatus the current fulfiller status (prior to the changes being applied by the creation/edit of this dispense event)
- * @param quantityDispensed the quantity dispensed as part of this dispense event
- * @param quanatityRemaining the quantity remaining not including the amount in this dispense event
+ * @param medicationDispense the medication dispense being added or editing
+ * @param medicationRequestBundle the entire existing bundle associated with the dispense being added/edited
+ * @param quantityRemaining the current quantity remaining that can be dispensed (excludng the dispense being added/edited)
  */
 export function computeNewFulfillerStatusAfterDispenseEvent(
   restrictTotalQuantityDispensed: boolean,
-  isMostRecentMedicationDispense: boolean,
-  currentFulfillerStatus: MedicationRequestFulfillerStatus,
-  quantityDispensed: number,
+  medicationDispense: MedicationDispense,
+  medicationRequestBundle: MedicationRequestBundle,
   quantityRemaining: number
 ): MedicationRequestFulfillerStatus {
-  const reachedMaxQuantity =
-    quantityDispensed && quantityDispensed >= quantityRemaining;
+  const isMostRecent =
+    !medicationDispense.id || // if no id, then a new dispense, so de facto the most recent
+    isMostRecentMedicationDispense(
+      medicationDispense,
+      medicationRequestBundle.dispenses
+    );
+  // if are configured to restrict amount dispense
   if (restrictTotalQuantityDispensed) {
-    // if are configured to restrict amount dispense
+    const reachedMaxQuantity =
+      getQuantity(medicationDispense) &&
+      getQuantity(medicationDispense).value >= quantityRemaining;
     if (reachedMaxQuantity) {
-      // if we've maxed out the quqntity, set complete, no matter what
+      // if we've maxed out the quantity, set complete, no matter what
       return MedicationRequestFulfillerStatus.completed;
-    } else if (isMostRecentMedicationDispense) {
+    } else if (isMostRecent) {
       // otherwise, if this is the most recent, set status to null (ie, clear out "on-hold" if currently set)
       return null;
     } else if (
-      currentFulfillerStatus === MedicationRequestFulfillerStatus.completed
+      getFulfillerStatus(medicationRequestBundle.request) ===
+      MedicationRequestFulfillerStatus.completed
     ) {
-      // handle the case where we are editing a previous entry and are decreasing the amount dispensed so the request is no longer "complete"
+      // this isn't the most recent, but we still have quantity remaining, so we need to clear out the completed status if set
+      // (ie, handle the case where we are editing a previous entry and are decreasing the amount dispensed so the request is no longer "complete")
       return null;
     } else {
       // otherwise, no change
-      return currentFulfillerStatus;
+      return getFulfillerStatus(medicationRequestBundle.request);
     }
   } else {
     // if we are not restricting the amount dispensed, we just need to make sure that any new dispense clears out any previous status
-    if (isMostRecentMedicationDispense) {
+    if (isMostRecent) {
       return null;
     } else {
-      return currentFulfillerStatus;
+      return getFulfillerStatus(medicationRequestBundle.request);
     }
   }
 }
@@ -152,19 +160,24 @@ export function computeNewFulfillerStatusAfterDispenseEvent(
 /**
  * Captures the logic to compute the new fulfiller status after a medication dispense is deleted
  *
- * @param isMostRecentMedicationDisepnse whether the medication dispense we are deleting is the most recent dispense for this medication request
- * @param currentFulfillerStatus the current fulfiller status (prior to deleting this medication dispense)
- * @param deletedMedicationStatus the status of the medication dispense we are deleting
- * @param nextMostRecentDispenseStatus the status of 2nd most recent medication dispense (if any) associated with this medication request
+ * @param deletedMedicationDispense the medication dispense to be delete
+ * @param medicationRequestBundle the entire existing bundle associated with the dispense being delete
  */
 export function computeNewFulfillerStatusAfterDelete(
-  isMostRecentDispense: boolean,
-  currentFulfillerStatus: MedicationRequestFulfillerStatus,
-  deletedMedicationStatus: MedicationDispenseStatus,
-  nextMostRecentDispenseStatus: MedicationDispenseStatus
+  deletedMedicationDispense: MedicationDispense,
+  medicationRequestBundle: MedicationRequestBundle
 ): MedicationRequestFulfillerStatus {
   // if this the most recent dispense event we are deleting, set the fulfiller status based on the next most recent
-  if (isMostRecentDispense) {
+  if (
+    isMostRecentMedicationDispense(
+      deletedMedicationDispense,
+      medicationRequestBundle.dispenses
+    )
+  ) {
+    const nextMostRecentDispenseStatus =
+      getNextMostRecentMedicationDispenseStatus(
+        medicationRequestBundle.dispenses
+      );
     if (nextMostRecentDispenseStatus === MedicationDispenseStatus.declined) {
       return MedicationRequestFulfillerStatus.declined;
     } else if (
@@ -179,11 +192,13 @@ export function computeNewFulfillerStatusAfterDelete(
   }
   // otherwise, if this is a "complete" dispense event, make sure the prescription is no loner marked as complete
   // (assumption that a deletion of any medication dispense of type "complete" will lower the quantity dispenses, so therefore must be under total allowed amount)
-  else if (deletedMedicationStatus === MedicationDispenseStatus.completed) {
+  else if (
+    deletedMedicationDispense.status === MedicationDispenseStatus.completed
+  ) {
     return null;
   } else {
     // otherwise, no change
-    return currentFulfillerStatus;
+    return getFulfillerStatus(medicationRequestBundle.request);
   }
 }
 
@@ -299,30 +314,21 @@ export function computePrescriptionStatusMessageCode(
   return null;
 }
 
-export function computeQuantityRemaining(
-  medicationRequest: MedicationRequest,
-  medicationDispenses: Array<MedicationDispense>
-): number {
-  if (medicationRequest) {
-    // sanity check to make sure all medication dispenses are associated with the request
-    const associatedMedicationDispenses = getAssociatedMedicationDispenses(
-      medicationRequest,
-      medicationDispenses
-    );
-
+export function computeQuantityRemaining(medicationRequestBundle): number {
+  if (medicationRequestBundle) {
     // hard protect against quantity type mistmatch
     if (
       !getQuantityUnitsMatch([
-        medicationRequest,
-        ...associatedMedicationDispenses,
+        medicationRequestBundle.request,
+        ...medicationRequestBundle.dispenses,
       ])
     ) {
       throw new Error("Cannot calculate quantity remaining, units dont match");
     }
 
     return (
-      computeTotalQuantityOrdered(medicationRequest) -
-      computeTotalQuantityDispensed(associatedMedicationDispenses)
+      computeTotalQuantityOrdered(medicationRequestBundle.request) -
+      computeTotalQuantityDispensed(medicationRequestBundle.dispenses)
     );
   }
   return 0;
@@ -519,6 +525,15 @@ export function getNextMostRecentMedicationDispenseStatus(
     sortMedicationDispensesByDateRecorded
   );
   return sorted && sorted.length > 1 ? sorted[1].status : null;
+}
+
+export function getMedicationRequestBundleContainingMedicationDispense(
+  medicationRequestBundles: Array<MedicationRequestBundle>,
+  medicationDispense: MedicationDispense
+) {
+  return medicationRequestBundles.find((bundle) =>
+    bundle.dispenses.find((dispense) => dispense.id === medicationDispense.id)
+  );
 }
 
 /**

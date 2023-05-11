@@ -4,9 +4,8 @@ import { useConfig, useSession } from "@openmrs/esm-framework";
 import styles from "./action-buttons.scss";
 import { useTranslation } from "react-i18next";
 import {
-  MedicationDispense,
   MedicationDispenseStatus,
-  MedicationRequest,
+  MedicationRequestBundle,
   MedicationRequestStatus,
 } from "../types";
 import { PharmacyConfig } from "../config-schema";
@@ -14,7 +13,6 @@ import { launchOverlay } from "../hooks/useOverlay";
 import {
   computeMedicationRequestStatus,
   computeQuantityRemaining,
-  getFulfillerStatus,
   getMostRecentMedicationDispenseStatus,
 } from "../utils";
 import DispenseForm from "../forms/dispense-form.component";
@@ -23,15 +21,13 @@ import PauseDispenseForm from "../forms/pause-dispense-form.component";
 import CloseDispenseForm from "../forms/close-dispense-form.component";
 
 interface ActionButtonsProps {
-  medicationRequest: MedicationRequest;
-  associatedMedicationDispenses: Array<MedicationDispense>;
+  medicationRequestBundle: MedicationRequestBundle;
   patientUuid: string;
   encounterUuid: string;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
-  medicationRequest,
-  associatedMedicationDispenses,
+  medicationRequestBundle,
   patientUuid,
   encounterUuid,
 }) => {
@@ -39,9 +35,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   const config = useConfig() as PharmacyConfig;
   const session = useSession();
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus =
-    getMostRecentMedicationDispenseStatus(associatedMedicationDispenses);
+    getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
   const medicationRequestStatus = computeMedicationRequestStatus(
-    medicationRequest,
+    medicationRequestBundle.request,
     config.medicationRequestExpirationPeriodInDays
   );
   const dispensable =
@@ -61,10 +57,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
   let quantityRemaining = null;
   if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
-    quantityRemaining = computeQuantityRemaining(
-      medicationRequest,
-      associatedMedicationDispenses
-    );
+    quantityRemaining = computeQuantityRemaining(medicationRequestBundle);
   }
 
   return (
@@ -79,14 +72,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 patientUuid={patientUuid}
                 encounterUuid={encounterUuid}
                 medicationDispense={initiateMedicationDispenseBody(
-                  medicationRequest,
+                  medicationRequestBundle.request,
                   session,
                   true
                 )}
-                currentFulfillerStatus={getFulfillerStatus(medicationRequest)}
+                medicationRequestBundle={medicationRequestBundle}
                 quantityRemaining={quantityRemaining}
                 mode="enter"
-                isMostRecentDispense={true} // we are creating a new dispense, so must be most recent
               />
             )
           }
@@ -104,7 +96,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 patientUuid={patientUuid}
                 encounterUuid={encounterUuid}
                 medicationDispense={initiateMedicationDispenseBody(
-                  medicationRequest,
+                  medicationRequestBundle.request,
                   session,
                   false
                 )}
@@ -126,7 +118,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 patientUuid={patientUuid}
                 encounterUuid={encounterUuid}
                 medicationDispense={initiateMedicationDispenseBody(
-                  medicationRequest,
+                  medicationRequestBundle.request,
                   session,
                   false
                 )}

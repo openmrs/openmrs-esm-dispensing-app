@@ -9,6 +9,7 @@ import {
   MedicationDispense,
   Encounter,
   MedicationRequestFulfillerStatus,
+  MedicationRequestBundle,
 } from "../types";
 import {
   getPrescriptionDetailsEndpoint,
@@ -18,6 +19,7 @@ import {
   getPrescriptionTableAllMedicationRequestsEndpoint,
   sortMedicationDispensesByDateRecorded,
   computePrescriptionStatusMessageCode,
+  getAssociatedMedicationDispenses,
 } from "../utils";
 import dayjs from "dayjs";
 import {
@@ -150,8 +152,7 @@ function buildPrescriptionsTableRow(
 }
 
 export function usePrescriptionDetails(encounterUuid: string) {
-  let requests: Array<MedicationRequest> = [];
-  let dispenses: Array<MedicationDispense> = [];
+  let medicationRequestBundles: Array<MedicationRequestBundle> = [];
   let prescriptionDate: Date;
   let isLoading = true;
 
@@ -171,26 +172,37 @@ export function usePrescriptionDetails(encounterUuid: string) {
       // by definition of the request (search by encounter) there should be one and only one encounter
       prescriptionDate = parseDate(encounter[0]?.period.start);
 
-      requests = results
+      const medicationRequests = results
         ?.filter(
           (entry) => entry?.resource?.resourceType == "MedicationRequest"
         )
         .map((entry) => entry.resource as MedicationRequest);
-      dispenses = results
+
+      const medicationDispenses = results
         ?.filter(
           (entry) => entry?.resource?.resourceType == "MedicationDispense"
         )
         .map((entry) => entry.resource as MedicationDispense)
         .sort(sortMedicationDispensesByDateRecorded);
+
+      medicationRequests.every((medicationRequest) =>
+        medicationRequestBundles.push({
+          request: medicationRequest,
+          dispenses: getAssociatedMedicationDispenses(
+            medicationRequest,
+            medicationDispenses
+          ).sort(sortMedicationDispensesByDateRecorded),
+        })
+      );
     }
   }
 
-  isLoading = !requests && !error;
+  isLoading =
+    (!medicationRequestBundles || medicationRequestBundles.length == 0) &&
+    !error;
 
   return {
-    // TODO: change to return the "bundle", what is the name of this event?
-    requests,
-    dispenses,
+    medicationRequestBundles,
     prescriptionDate,
     isError: error,
     isLoading,
