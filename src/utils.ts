@@ -15,14 +15,48 @@ import {
 } from "./types";
 import { fhirBaseUrl, parseDate } from "@openmrs/esm-framework";
 import {
-  PRESCRIPTIONS_TABLE_ENDPOINT,
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
   PRESCRIPTION_DETAILS_ENDPOINT,
+  PRESCRIPTIONS_TABLE_ENDPOINT,
 } from "./constants";
 import dayjs from "dayjs";
 
+/**
+ * Computes the fulfiller status for a bundle
+ *
+ * @param medicationRequestBundle
+ * @param restrictTotalQuantityDispensed
+ */
+export function computeFulfillerStatus(
+  medicationRequestBundle: MedicationRequestBundle,
+  restrictTotalQuantityDispensed: boolean
+): MedicationRequestFulfillerStatus {
+  if (
+    restrictTotalQuantityDispensed &&
+    computeQuantityRemaining(medicationRequestBundle) <= 0
+  ) {
+    // if we set to restrict total quantity dispenses and quantity remaining less than 0, set status to completed
+    return MedicationRequestFulfillerStatus.completed;
+  }
+
+  // otherwise, set based on most recent dispense status as follows
+  const mostRecentMedicationDispenseStatus =
+    getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
+
+  if (
+    mostRecentMedicationDispenseStatus === MedicationDispenseStatus.declined
+  ) {
+    return MedicationRequestFulfillerStatus.declined;
+  }
+
+  if (mostRecentMedicationDispenseStatus === MedicationDispenseStatus.on_hold) {
+    return MedicationRequestFulfillerStatus.on_hold;
+  }
+
+  return null;
+}
 /**
  * Within the UI, the "status" of a request we want to display to the pharmacist is
  * a combination of the status and the fulfiller statuts; given a request
@@ -108,98 +142,60 @@ export function computeMedicationRequestStatus(
 /**
  * Captures the logic to compute the new fulfiller status after a dispense event, where dispense event = a medication dispense where medication is actually dispensed (as opposed one with status "on_hold" or "declined")
  *
- * @param restrictTotalQuantityDispensed value of the "dispenseBehavior.restrictTotalQuantityDispensed"
  * @param medicationDispense the medication dispense being added or editing
  * @param medicationRequestBundle the entire existing bundle associated with the dispense being added/edited
- * @param quantityRemaining the current quantity remaining that can be dispensed (excludng the dispense being added/edited)
+ * @param restrictTotalQuantityDispensed value of the "dispenseBehavior.restrictTotalQuantityDispensed"
  */
 export function computeNewFulfillerStatusAfterDispenseEvent(
-  restrictTotalQuantityDispensed: boolean,
   medicationDispense: MedicationDispense,
   medicationRequestBundle: MedicationRequestBundle,
-  quantityRemaining: number
-): MedicationRequestFulfillerStatus {
-  const isMostRecent =
-    !medicationDispense.id || // if no id, then a new dispense, so de facto the most recent
-    isMostRecentMedicationDispense(
-      medicationDispense,
-      medicationRequestBundle.dispenses
-    );
-  // if are configured to restrict amount dispense
-  if (restrictTotalQuantityDispensed) {
-    const reachedMaxQuantity =
-      getQuantity(medicationDispense) &&
-      getQuantity(medicationDispense).value >= quantityRemaining;
-    if (reachedMaxQuantity) {
-      // if we've maxed out the quantity, set complete, no matter what
-      return MedicationRequestFulfillerStatus.completed;
-    } else if (isMostRecent) {
-      // otherwise, if this is the most recent, set status to null (ie, clear out "on-hold" if currently set)
-      return null;
-    } else if (
-      getFulfillerStatus(medicationRequestBundle.request) ===
-      MedicationRequestFulfillerStatus.completed
-    ) {
-      // this isn't the most recent, but we still have quantity remaining, so we need to clear out the completed status if set
-      // (ie, handle the case where we are editing a previous entry and are decreasing the amount dispensed so the request is no longer "complete")
-      return null;
-    } else {
-      // otherwise, no change
-      return getFulfillerStatus(medicationRequestBundle.request);
-    }
+  restrictTotalQuantityDispensed: boolean
+) {
+  // add or edit the existing bundle as necessary
+  let dispenses = [...medicationRequestBundle.dispenses];
+
+  if (!medicationDispense.id) {
+    // new dispense, add to the array
+    dispenses = [medicationDispense, ...dispenses];
   } else {
-    // if we are not restricting the amount dispensed, we just need to make sure that any new dispense clears out any previous status
-    if (isMostRecent) {
-      return null;
-    } else {
-      return getFulfillerStatus(medicationRequestBundle.request);
-    }
+    // edited dispense, swap out
+    dispenses = dispenses.map((dispense) =>
+      dispense.id === medicationDispense.id ? medicationDispense : dispense
+    );
   }
+
+  // then call computeFulfillerStatus to compute status
+  return computeFulfillerStatus(
+    {
+      request: medicationRequestBundle.request,
+      dispenses: dispenses,
+    },
+    restrictTotalQuantityDispensed
+  );
 }
 
 /**
  * Captures the logic to compute the new fulfiller status after a medication dispense is deleted
  *
- * @param deletedMedicationDispense the medication dispense to be delete
+ * @param deletedMedicationDispense the medication dispense we are deleting delete
  * @param medicationRequestBundle the entire existing bundle associated with the dispense being delete
+ * @param restrictTotalQuantityDispensed value of the "dispenseBehavior.restrictTotalQuantityDispensed"
  */
 export function computeNewFulfillerStatusAfterDelete(
   deletedMedicationDispense: MedicationDispense,
-  medicationRequestBundle: MedicationRequestBundle
+  medicationRequestBundle: MedicationRequestBundle,
+  restrictTotalQuantityDispensed: boolean
 ): MedicationRequestFulfillerStatus {
-  // if this the most recent dispense event we are deleting, set the fulfiller status based on the next most recent
-  if (
-    isMostRecentMedicationDispense(
-      deletedMedicationDispense,
-      medicationRequestBundle.dispenses
-    )
-  ) {
-    const nextMostRecentDispenseStatus =
-      getNextMostRecentMedicationDispenseStatus(
-        medicationRequestBundle.dispenses
-      );
-    if (nextMostRecentDispenseStatus === MedicationDispenseStatus.declined) {
-      return MedicationRequestFulfillerStatus.declined;
-    } else if (
-      nextMostRecentDispenseStatus === MedicationDispenseStatus.on_hold
-    ) {
-      return MedicationRequestFulfillerStatus.on_hold;
-    }
-    // note that next most recent should never be "completed' as complete is a terminal statue
-    else {
-      return null;
-    }
-  }
-  // otherwise, if this is a "complete" dispense event, make sure the prescription is no loner marked as complete
-  // (assumption that a deletion of any medication dispense of type "complete" will lower the quantity dispenses, so therefore must be under total allowed amount)
-  else if (
-    deletedMedicationDispense.status === MedicationDispenseStatus.completed
-  ) {
-    return null;
-  } else {
-    // otherwise, no change
-    return getFulfillerStatus(medicationRequestBundle.request);
-  }
+  // filter out the dispense being deleted and call computeFulfillerStatus
+  return computeFulfillerStatus(
+    {
+      request: medicationRequestBundle.request,
+      dispenses: medicationRequestBundle.dispenses.filter(
+        (dispense) => dispense.id !== deletedMedicationDispense.id
+      ),
+    },
+    restrictTotalQuantityDispensed
+  );
 }
 
 /**
@@ -702,6 +698,11 @@ export function sortMedicationDispensesByDateRecorded(
   a: MedicationDispense,
   b: MedicationDispense
 ): number {
+  if (getDateRecorded(b) === null) {
+    return 1;
+  } else if (getDateRecorded(a) === null) {
+    return -1;
+  }
   const dateDiff =
     parseDate(getDateRecorded(b)).getTime() -
     parseDate(getDateRecorded(a)).getTime();

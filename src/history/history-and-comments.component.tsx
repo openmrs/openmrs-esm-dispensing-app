@@ -233,7 +233,8 @@ const HistoryAndComments: React.FC<{
     );
     const newFulfillerStatus = computeNewFulfillerStatusAfterDelete(
       medicationDispense,
-      medicationRequestBundle
+      medicationRequestBundle,
+      config.dispenseBehavior.restrictTotalQuantityDispensed
     );
     if (currentFulfillerStatus !== newFulfillerStatus) {
       updateMedicationRequestFulfillerStatus(

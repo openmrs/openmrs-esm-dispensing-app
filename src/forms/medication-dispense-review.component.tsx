@@ -364,7 +364,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               ...medicationDispense,
               quantity: {
                 ...medicationDispense.quantity,
-                value: e.target.value,
+                value: e.target?.value ? parseFloat(e.target.value) : "",
               },
             });
           }}
@@ -420,7 +420,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                       doseQuantity: {
                         ...medicationDispense.dosageInstruction[0]
                           .doseAndRate[0].doseQuantity,
-                        value: e.target.value,
+                        value: e.target?.value
+                          ? parseFloat(e.target.value)
+                          : "",
                       },
                     },
                   ],

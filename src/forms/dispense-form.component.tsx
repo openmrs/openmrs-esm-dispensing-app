@@ -73,10 +73,9 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           if (response.ok) {
             const newFulfillerStatus =
               computeNewFulfillerStatusAfterDispenseEvent(
-                config.dispenseBehavior.restrictTotalQuantityDispensed,
                 medicationDispensePayload,
                 medicationRequestBundle,
-                quantityRemaining
+                config.dispenseBehavior.restrictTotalQuantityDispensed
               );
             if (
               getFulfillerStatus(medicationRequestBundle.request) !==
