@@ -31,11 +31,13 @@ import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from "../constants";
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
   updateMedicationDispense: Function;
+  quantityRemaining: number;
 }
 
 const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   medicationDispense,
   updateMedicationDispense,
+  quantityRemaining,
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
@@ -65,6 +67,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(
     config.valueSets.substitutionReason.uuid
   );
+
+  const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
 
   useEffect(() => {
     if (orderConfigObject) {
@@ -232,7 +236,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             medicationDispense
           )}
           editAction={
-            userCanModify ? () => setIsEditingFormulation(true) : null
+            userCanModify && allowEditing
+              ? () => setIsEditingFormulation(true)
+              : null
           }
         />
       ) : (
@@ -336,15 +342,29 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           hideSteppers={true}
           id="quantity"
           invalidText={t("numberIsNotValid", "Number is not valid")}
-          label={t("quantity", "Quantity")}
+          label={
+            t("quantity", "Quantity") +
+            (config.dispenseBehavior.restrictTotalQuantityDispensed
+              ? " (" +
+                t("maxQuantityRemaining", "Maximum quantity remaining:") +
+                " " +
+                quantityRemaining +
+                ")"
+              : "")
+          }
           min={0}
+          max={
+            config.dispenseBehavior.restrictTotalQuantityDispensed
+              ? quantityRemaining
+              : undefined
+          }
           value={medicationDispense.quantity.value}
           onChange={(e) => {
             updateMedicationDispense({
               ...medicationDispense,
               quantity: {
                 ...medicationDispense.quantity,
-                value: e.target.value,
+                value: e.target?.value ? parseFloat(e.target.value) : "",
               },
             });
           }}
@@ -352,7 +372,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
         <ComboBox
           id="quantityUnits"
-          disabled={!userCanModify}
+          disabled={!userCanModify || !allowEditing}
           light={isTablet}
           items={drugDispensingUnits}
           titleText={t("drugDispensingUnit", "Dispensing unit")}
@@ -378,7 +398,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       <div className={styles.dispenseDetailsContainer}>
         <NumberInput
           allowEmpty={false}
-          disabled={!userCanModify}
+          disabled={!userCanModify || !allowEditing}
           hideSteppers={true}
           id="dosingQuanity"
           invalidText={t("numberIsNotValid", "Number is not valid")}
@@ -400,7 +420,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                       doseQuantity: {
                         ...medicationDispense.dosageInstruction[0]
                           .doseAndRate[0].doseQuantity,
-                        value: e.target.value,
+                        value: e.target?.value
+                          ? parseFloat(e.target.value)
+                          : "",
                       },
                     },
                   ],
@@ -412,7 +434,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
         <ComboBox
           id="dosingUnits"
-          disabled={!userCanModify}
+          disabled={!userCanModify || !allowEditing}
           light={isTablet}
           items={drugDosingUnits}
           titleText={t("doseUnit", "Dose unit")}
@@ -449,7 +471,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
         <ComboBox
           id="editRoute"
-          disabled={!userCanModify}
+          disabled={!userCanModify || !allowEditing}
           light={isTablet}
           items={drugRoutes}
           initialSelectedItem={{
@@ -481,7 +503,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
       <ComboBox
         id="frequency"
-        disabled={!userCanModify}
+        disabled={!userCanModify || !allowEditing}
         light={isTablet}
         items={orderFrequencies}
         initialSelectedItem={{

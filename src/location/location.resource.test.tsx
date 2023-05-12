@@ -25,6 +25,10 @@ const pharmacyConfig: PharmacyConfig = {
       enabled: true,
     },
   },
+  dispenseBehavior: {
+    allowModifyingPrescription: false,
+    restrictTotalQuantityDispensed: false,
+  },
   locationBehavior: {
     locationColumn: { enabled: false },
     locationFilter: { enabled: false, tag: "Login Location" },

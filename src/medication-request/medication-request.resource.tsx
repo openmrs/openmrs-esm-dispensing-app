@@ -9,6 +9,7 @@ import {
   MedicationDispense,
   Encounter,
   MedicationRequestFulfillerStatus,
+  MedicationRequestBundle,
 } from "../types";
 import {
   getPrescriptionDetailsEndpoint,
@@ -18,6 +19,7 @@ import {
   getPrescriptionTableAllMedicationRequestsEndpoint,
   sortMedicationDispensesByDateRecorded,
   computePrescriptionStatusMessageCode,
+  getAssociatedMedicationDispenses,
 } from "../utils";
 import dayjs from "dayjs";
 import {
@@ -150,13 +152,10 @@ function buildPrescriptionsTableRow(
 }
 
 export function usePrescriptionDetails(encounterUuid: string) {
-  let requests: Array<MedicationRequest> = [];
-  let dispenses: Array<MedicationDispense> = [];
+  let medicationRequestBundles: Array<MedicationRequestBundle> = [];
   let prescriptionDate: Date;
   let isLoading = true;
 
-  // TODO is this TODO below still accurate? :)
-  // TODO this fetch is duplicative; all the data necessary is fetched in the original request... we could refactor to use the original request, *but* I'm waiting on that because we may be refactoring the original request into something more performant, in which case would make sense for this to be separate (MG)
   const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
     getPrescriptionDetailsEndpoint(encounterUuid),
     openmrsFetch
@@ -173,25 +172,37 @@ export function usePrescriptionDetails(encounterUuid: string) {
       // by definition of the request (search by encounter) there should be one and only one encounter
       prescriptionDate = parseDate(encounter[0]?.period.start);
 
-      requests = results
+      const medicationRequests = results
         ?.filter(
           (entry) => entry?.resource?.resourceType == "MedicationRequest"
         )
         .map((entry) => entry.resource as MedicationRequest);
-      dispenses = results
+
+      const medicationDispenses = results
         ?.filter(
           (entry) => entry?.resource?.resourceType == "MedicationDispense"
         )
         .map((entry) => entry.resource as MedicationDispense)
         .sort(sortMedicationDispensesByDateRecorded);
+
+      medicationRequests.every((medicationRequest) =>
+        medicationRequestBundles.push({
+          request: medicationRequest,
+          dispenses: getAssociatedMedicationDispenses(
+            medicationRequest,
+            medicationDispenses
+          ).sort(sortMedicationDispensesByDateRecorded),
+        })
+      );
     }
   }
 
-  isLoading = !requests && !error;
+  isLoading =
+    (!medicationRequestBundles || medicationRequestBundles.length == 0) &&
+    !error;
 
   return {
-    requests,
-    dispenses,
+    medicationRequestBundles,
     prescriptionDate,
     isError: error,
     isLoading,

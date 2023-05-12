@@ -9,6 +9,10 @@ jest.mock("@openmrs/esm-framework", () => {
     __esModule: true,
     ...originalModule,
     useConfig: jest.fn(() => ({
+      dispenseBehavior: {
+        allowModifyingPrescription: false,
+        restrictTotalQuantityDispensed: false,
+      },
       valueSets: {
         substitutionType: { uuid: "123" },
         substitutionReason: { uuid: "abc" },
@@ -129,6 +133,7 @@ describe("Medication Dispense Review Component tests", () => {
       <MedicationDispenseReview
         medicationDispense={medicationDispense}
         updateMedicationDispense={mockUpdate}
+        quantityRemaining={30}
       />
     );
 

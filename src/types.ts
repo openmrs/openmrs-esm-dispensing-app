@@ -265,7 +265,7 @@ export interface MedicationDispense {
 }
 
 export enum MedicationDispenseStatus {
-  in_progress = "in-progress",
+  //in_progress = "in-progress",  NOT YET IMPLEMENTED
   on_hold = "on-hold",
   completed = "completed",
   declined = "declined",
@@ -373,6 +373,15 @@ export enum MedicationRequestCombinedStatus {
   on_hold = "on-hold",
   declined = "declined",
   unknown = "unknown",
+}
+
+/**
+ * Convenience object to group a medication request with all it's related medication dispenses
+ * Invalid if any of the dispenses point to a different request than the one referenced
+ */
+export interface MedicationRequestBundle {
+  request: MedicationRequest;
+  dispenses: Array<MedicationDispense>;
 }
 
 export interface MedicationReferenceOrCodeableConcept {

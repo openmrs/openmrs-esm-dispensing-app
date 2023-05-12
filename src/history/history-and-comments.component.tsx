@@ -11,6 +11,7 @@ import {
   formatDatetime,
   parseDate,
   Session,
+  useConfig,
   userHasAccess,
   useSession,
 } from "@openmrs/esm-framework";
@@ -22,11 +23,12 @@ import {
 import { deleteMedicationDispense } from "../medication-dispense/medication-dispense.resource";
 import MedicationEvent from "../components/medication-event.component";
 import { launchOverlay } from "../hooks/useOverlay";
+import { PharmacyConfig } from "../config-schema";
 import DispenseForm from "../forms/dispense-form.component";
 import {
   MedicationDispense,
   MedicationDispenseStatus,
-  MedicationRequestFulfillerStatus,
+  MedicationRequestBundle,
 } from "../types";
 import {
   PRIVILEGE_DELETE_DISPENSE,
@@ -34,11 +36,14 @@ import {
   PRIVILEGE_EDIT_DISPENSE,
 } from "../constants";
 import {
+  computeNewFulfillerStatusAfterDelete,
+  computeQuantityRemaining,
   getDateRecorded,
-  getNextMostRecentMedicationDispenseStatus,
+  getFulfillerStatus,
+  getMedicationRequestBundleContainingMedicationDispense,
   getUuidFromReference,
-  isMostRecentMedicationDispenseStatus,
   revalidate,
+  sortMedicationDispensesByDateRecorded,
 } from "../utils";
 import PauseDispenseForm from "../forms/pause-dispense-form.component";
 import CloseDispenseForm from "../forms/close-dispense-form.component";
@@ -49,7 +54,8 @@ const HistoryAndComments: React.FC<{
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const session = useSession();
-  const { requests, dispenses, prescriptionDate, isError, isLoading } =
+  const config = useConfig() as PharmacyConfig;
+  const { medicationRequestBundles, prescriptionDate, isError, isLoading } =
     usePrescriptionDetails(encounterUuid);
 
   const userCanEdit: Function = (session: Session) =>
@@ -81,13 +87,28 @@ const HistoryAndComments: React.FC<{
     return false;
   };
 
-  const generateForm: Function = (medicationDispense: MedicationDispense) => {
+  const generateForm: Function = (
+    medicationDispense: MedicationDispense,
+    medicationRequestBundle: MedicationRequestBundle
+  ) => {
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
+      // note that since this is an edit, quantity remaining needs to include quantity that is part of this dispense
+      let quantityRemaining = null;
+      if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
+        quantityRemaining =
+          computeQuantityRemaining(medicationRequestBundle) +
+          (medicationDispense?.quantity
+            ? medicationDispense.quantity.value
+            : 0);
+      }
+
       return (
         <DispenseForm
           patientUuid={patientUuid}
           encounterUuid={encounterUuid}
           medicationDispense={medicationDispense}
+          medicationRequestBundle={medicationRequestBundle}
+          quantityRemaining={quantityRemaining}
           mode="edit"
         />
       );
@@ -129,7 +150,8 @@ const HistoryAndComments: React.FC<{
   };
 
   const generateMedicationDispenseActionMenu: Function = (
-    medicationDispense: MedicationDispense
+    medicationDispense: MedicationDispense,
+    medicationRequestBundle: MedicationRequestBundle
   ) => {
     const editable = userCanEdit(session);
     const deletable = userCanDelete(session, medicationDispense);
@@ -151,7 +173,7 @@ const HistoryAndComments: React.FC<{
               onClick={() =>
                 launchOverlay(
                   generateOverlayText(medicationDispense),
-                  generateForm(medicationDispense)
+                  generateForm(medicationDispense, medicationRequestBundle)
                 )
               }
               itemText={t("editRecord", "Edit Record")}
@@ -160,7 +182,7 @@ const HistoryAndComments: React.FC<{
           {deletable && (
             <OverflowMenuItem
               onClick={() => {
-                handleDelete(medicationDispense);
+                handleDelete(medicationDispense, medicationRequestBundle);
               }}
               itemText={t("delete", "Delete")}
             ></OverflowMenuItem>
@@ -202,31 +224,29 @@ const HistoryAndComments: React.FC<{
     }
   };
 
-  const handleDelete: Function = (medicationDispense: MedicationDispense) => {
-    // if this is the most recent dispense event that we are deleting, may have to update the fulfiller status
-    // on the request
-    // TODO extract out into an resource or a util?
-    if (isMostRecentMedicationDispenseStatus(medicationDispense, dispenses)) {
-      const status = getNextMostRecentMedicationDispenseStatus(dispenses);
-      let updatedFulfillerStatus: MedicationRequestFulfillerStatus = null;
-      if (status !== null && status === MedicationDispenseStatus.declined) {
-        updatedFulfillerStatus = MedicationRequestFulfillerStatus.declined;
-      } else if (
-        status !== null &&
-        status == MedicationDispenseStatus.on_hold
-      ) {
-        updatedFulfillerStatus = MedicationRequestFulfillerStatus.on_hold;
-      }
+  const handleDelete: Function = (
+    medicationDispense: MedicationDispense,
+    medicationRequestBundle: MedicationRequestBundle
+  ) => {
+    const currentFulfillerStatus = getFulfillerStatus(
+      medicationRequestBundle.request
+    );
+    const newFulfillerStatus = computeNewFulfillerStatusAfterDelete(
+      medicationDispense,
+      medicationRequestBundle,
+      config.dispenseBehavior.restrictTotalQuantityDispensed
+    );
+    if (currentFulfillerStatus !== newFulfillerStatus) {
       updateMedicationRequestFulfillerStatus(
         getUuidFromReference(
           medicationDispense.authorizingPrescription[0].reference // assumes authorizing prescription exist
         ),
-        updatedFulfillerStatus
+        newFulfillerStatus
       ).then(() => {
         revalidate(encounterUuid);
       });
     }
-
+    // do the actual delete
     deleteMedicationDispense(medicationDispense.id).then(() => {
       revalidate(encounterUuid);
     });
@@ -237,55 +257,68 @@ const HistoryAndComments: React.FC<{
     <div className={styles.historyAndCommentsContainer}>
       {isLoading && <DataTableSkeleton role="progressbar" />}
       {isError && <p>{t("error", "Error")}</p>}
-      {dispenses &&
-        dispenses.map((dispense) => {
-          return (
-            <div key={dispense.id}>
-              <h5
-                style={{
-                  paddingTop: "8px",
-                  paddingBottom: "8px",
-                  fontSize: "0.9rem",
-                }}
-              >
-                {dispense.performer && dispense.performer[0]?.actor?.display}{" "}
-                {generateDispenseVerbiage(dispense)} -{" "}
-                {formatDatetime(parseDate(getDateRecorded(dispense)))}
-              </h5>
-              <Tile className={styles.dispenseTile}>
-                {generateMedicationDispenseActionMenu(dispense)}
-                <MedicationEvent
-                  medicationEvent={dispense}
-                  status={generateDispenseTag(dispense)}
-                />
-              </Tile>
-            </div>
-          );
-        })}
-      {requests &&
-        requests.map((request) => {
-          return (
-            <div key={request.id}>
-              <h5
-                style={{
-                  paddingTop: "8px",
-                  paddingBottom: "8px",
-                  fontSize: "0.9rem",
-                }}
-              >
-                {request.requester.display}{" "}
-                {t("orderedMedication ", "ordered medication")} -{" "}
-                {formatDatetime(prescriptionDate)}
-              </h5>
-              <Tile className={styles.requestTile}>
-                <MedicationEvent
-                  medicationEvent={request}
-                  status={<Tag type="green">{t("ordered", "Ordered")}</Tag>}
-                />
-              </Tile>
-            </div>
-          );
-        })}
+      {medicationRequestBundles &&
+        medicationRequestBundles
+          .flatMap(
+            (medicationDispenseBundle) => medicationDispenseBundle.dispenses
+          )
+          .sort(sortMedicationDispensesByDateRecorded)
+          .map((dispense) => {
+            return (
+              <div key={dispense.id}>
+                <h5
+                  style={{
+                    paddingTop: "8px",
+                    paddingBottom: "8px",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  {dispense.performer && dispense.performer[0]?.actor?.display}{" "}
+                  {generateDispenseVerbiage(dispense)} -{" "}
+                  {formatDatetime(parseDate(getDateRecorded(dispense)))}
+                </h5>
+                <Tile className={styles.dispenseTile}>
+                  {generateMedicationDispenseActionMenu(
+                    dispense,
+                    getMedicationRequestBundleContainingMedicationDispense(
+                      medicationRequestBundles,
+                      dispense
+                    )
+                  )}
+                  <MedicationEvent
+                    medicationEvent={dispense}
+                    status={generateDispenseTag(dispense)}
+                  />
+                </Tile>
+              </div>
+            );
+          })}
+      {medicationRequestBundles &&
+        medicationRequestBundles
+          .flatMap((medicationRequestBundle) => medicationRequestBundle.request)
+          .map((request) => {
+            return (
+              <div key={request.id}>
+                <h5
+                  style={{
+                    paddingTop: "8px",
+                    paddingBottom: "8px",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  {request.requester.display}{" "}
+                  {t("orderedMedication ", "ordered medication")} -{" "}
+                  {formatDatetime(prescriptionDate)}
+                </h5>
+                <Tile className={styles.requestTile}>
+                  <MedicationEvent
+                    medicationEvent={request}
+                    status={<Tag type="green">{t("ordered", "Ordered")}</Tag>}
+                  />
+                </Tile>
+              </div>
+            );
+          })}
     </div>
   );
 };

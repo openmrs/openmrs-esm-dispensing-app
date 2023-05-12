@@ -17,7 +17,6 @@ import {
 import { PharmacyConfig } from "../config-schema";
 import {
   computeMedicationRequestCombinedStatus,
-  getAssociatedMedicationDispenses,
   getConceptCodingDisplay,
 } from "../utils";
 import ActionButtons from "../components/action-buttons.component";
@@ -31,7 +30,7 @@ const PrescriptionDetails: React.FC<{
   const config = useConfig() as PharmacyConfig;
   const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
-  const { requests, dispenses, isError, isLoading } =
+  const { medicationRequestBundles, isError, isLoading } =
     usePrescriptionDetails(encounterUuid);
 
   useEffect(() => {
@@ -111,27 +110,21 @@ const PrescriptionDetails: React.FC<{
 
       {isLoading && <DataTableSkeleton role="progressbar" />}
       {isError && <p>{t("error", "Error")}</p>}
-      {requests &&
-        requests.map((request) => {
-          const associatedMedicationDispenses =
-            getAssociatedMedicationDispenses(request, dispenses);
+      {medicationRequestBundles &&
+        medicationRequestBundles.map((bundle) => {
           return (
             <Tile className={styles.prescriptionTile}>
               <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
                 <ActionButtons
                   patientUuid={patientUuid}
                   encounterUuid={encounterUuid}
-                  medicationRequest={request}
-                  associatedMedicationDispenses={associatedMedicationDispenses}
+                  medicationRequestBundle={bundle}
                 />
               </UserHasAccess>
               <MedicationEvent
-                key={request.id}
-                medicationEvent={request}
-                status={generateStatusTag(
-                  request,
-                  associatedMedicationDispenses
-                )}
+                key={bundle.request.id}
+                medicationEvent={bundle.request}
+                status={generateStatusTag(bundle.request)}
               />
             </Tile>
           );

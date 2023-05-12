@@ -31,7 +31,7 @@ export function saveMedicationDispense(
   }
 
   if (
-    medicationDispenseStatus === MedicationDispenseStatus.in_progress ||
+    //   medicationDispenseStatus === MedicationDispenseStatus.in_progress ||  NOT YET IMPLEMENTED
     medicationDispenseStatus === MedicationDispenseStatus.completed
   ) {
     if (medicationDispense.whenPrepared === null) {
