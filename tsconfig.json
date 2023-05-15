@@ -19,7 +19,8 @@
     "resolveJsonModule": true,
     "noEmit": true,
     "target": "esnext",
-  },
-  "include": ["src/**/*"],
-  "exclude": ["src/**/*.test.tsx", "src/**/*.outdated.tsx"]
+    "paths": {
+      "@openmrs/*": ["./node_modules/@openmrs/*"]
+    }
+  }
 }
