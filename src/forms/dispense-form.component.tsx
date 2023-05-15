@@ -138,6 +138,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     if (
       medicationDispensePayload &&
       medicationDispensePayload.quantity?.value &&
+      (!quantityRemaining ||
+        medicationDispensePayload?.quantity?.value <= quantityRemaining) &&
       medicationDispensePayload.quantity?.code &&
       medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]
         ?.doseQuantity?.value &&
