@@ -17,7 +17,7 @@
     "typescript": "tsc",
     "verify": "concurrently 'yarn:lint' 'yarn:test' 'yarn:typescript'",
     "coverage": "yarn test --coverage",
-    "prepare": "husky install"
+    "postinstall": "husky install"
   },
   "browserslist": [
     "extends browserslist-config-openmrs"
@@ -47,6 +47,7 @@
   },
   "peerDependencies": {
     "@openmrs/esm-framework": "*",
+    "dayjs": "1.x",
     "react": "18.x",
     "react-dom": "18.x",
     "react-i18next": "11.x",
@@ -68,7 +69,7 @@
     "@types/webpack-env": "^1.16.0",
     "@typescript-eslint/parser": "^4.26.0",
     "concurrently": "^6.2.0",
-    "dayjs": "^1.11.7",
+    "dayjs": "1.x",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-ts-react-important-stuff": "^3.0.0",
