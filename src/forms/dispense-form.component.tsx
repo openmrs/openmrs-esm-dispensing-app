@@ -165,7 +165,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   );
 
   // check is valid on any changes
-  useEffect(checkIsValid, [medicationDispensePayload]);
+  useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining]);
 
   const bannerState = useMemo(() => {
     if (patient) {
