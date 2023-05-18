@@ -1,4 +1,4 @@
-import { OpenmrsResource } from "@openmrs/esm-api";
+import { OpenmrsResource } from "@openmrs/esm-framework";
 
 export interface AllergyIntolerance {
   resourceType: string;

@@ -51,7 +51,7 @@ jobs:
         with:
           node-version: "18"
           registry-url: "https://registry.npmjs.org"
-      - run: yarn install --immuatable
+      - run: yarn install --immutable
       - run: yarn version --new-version "$(node -e "console.log(require('semver').inc(require('./package.json').version, 'patch'))")-pre.${{ github.run_number }}" --no-git-tag-version
       - run: yarn build
       - run: yarn publish --access public --tag next
