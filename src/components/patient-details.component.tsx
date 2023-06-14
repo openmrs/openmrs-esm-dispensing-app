@@ -31,10 +31,7 @@ const PatientDetails: React.FC<{
 
   const patientAvatar = (
     <div className={styles.patientAvatar} role="img">
-      <ExtensionSlot
-        extensionSlotName="patient-photo-slot"
-        state={patientPhotoSlotState}
-      />
+      <ExtensionSlot name="patient-photo-slot" state={patientPhotoSlotState} />
     </div>
   );
 
@@ -70,7 +67,7 @@ const PatientDetails: React.FC<{
       {patient && (
         <div className={styles.patientDetailsContainer}>
           <ExtensionSlot
-            extensionSlotName="dispensing-patient-banner-slot"
+            name="dispensing-patient-banner-slot"
             state={{
               patient,
               patientUuid: patientUuid,
@@ -78,7 +75,7 @@ const PatientDetails: React.FC<{
           />
 
           <ExtensionSlot
-            extensionSlotName="dispensing-patient-vitals-slot"
+            name="dispensing-patient-vitals-slot"
             state={{
               patient,
               patientUuid: patientUuid,
@@ -86,7 +83,7 @@ const PatientDetails: React.FC<{
           />
 
           <ExtensionSlot
-            extensionSlotName="dispensing-patient-allergies-slot"
+            name="dispensing-patient-allergies-slot"
             state={{
               patient,
               patientUuid: patientUuid,

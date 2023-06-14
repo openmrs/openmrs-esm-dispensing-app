@@ -189,10 +189,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           />
         )}
         {patient && (
-          <ExtensionSlot
-            extensionSlotName="patient-header-slot"
-            state={bannerState}
-          />
+          <ExtensionSlot name="patient-header-slot" state={bannerState} />
         )}
         <section className={styles.formGroup}>
           {/* <span style={{ marginTop: "1rem" }}>1. {t("drug", "Drug")}</span>*/}
