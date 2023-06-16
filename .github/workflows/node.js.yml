@@ -18,22 +18,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: "18"
-      - run: yarn
-      - run: yarn lint
-      - run: yarn coverage
-      - run: yarn typescript
-      - run: yarn build
+          node-version: "18.x"
+          registry-url: "https://registry.npmjs.org"
+      - run: yarn install --immutable
+      - run: yarn verify
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
-          path: |
-            dist
+          path: dist
 
   pre_release:
     runs-on: ubuntu-latest
@@ -43,20 +40,27 @@ jobs:
     if: ${{ github.event_name == 'push' }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
       - name: Use Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "18.x"
           registry-url: "https://registry.npmjs.org"
       - run: yarn install --immutable
-      - run: yarn version --new-version "$(node -e "console.log(require('semver').inc(require('./package.json').version, 'patch'))")-pre.${{ github.run_number }}" --no-git-tag-version
+      - run: yarn version "$(node -e "console.log(require('semver').inc(require('./package.json').version, 'patch'))")-pre.${{ github.run_number }}"
       - run: yarn build
-      - run: yarn publish --access public --tag next
+      - run: git config user.email "info@openmrs.org" && git config user.name "OpenMRS CI"
+      - run: git add . && git commit -m "Prerelease version" --no-verify
+      - run: yarn config set npmAuthToken "${NODE_AUTH_TOKEN}" && yarn npm publish --access public --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
 
   release:
     runs-on: ubuntu-latest
@@ -66,16 +70,16 @@ jobs:
     if: ${{ github.event_name == 'release' }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
       - name: Use Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: "18.x"
           registry-url: 'https://registry.npmjs.org'
-      - run: yarn
-      - run: yarn publish --access public
+      - run: yarn install --immutable
+      - run: yarn config set npmAuthToken "${NODE_AUTH_TOKEN}" &&  yarn npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   
