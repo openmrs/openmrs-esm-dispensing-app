@@ -184,10 +184,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
           />
         )}
         {patient && (
-          <ExtensionSlot
-            extensionSlotName="patient-header-slot"
-            state={bannerState}
-          />
+          <ExtensionSlot name="patient-header-slot" state={bannerState} />
         )}
         <section className={styles.formGroup}>
           <ComboBox
