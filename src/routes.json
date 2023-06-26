@@ -14,7 +14,7 @@
   "extensions": [
     {
       "name": "dispensing-link",
-      "slot": "app-menu-link",
+      "slot": "app-menu-slot",
       "component": "dispensingLink",
       "online": true,
       "offline": true
