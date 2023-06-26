@@ -22,7 +22,7 @@
     {
       "name": "dispensing-dashboard",
       "slot": "dispensing-dashboard-slot",
-      "component": "dispensing",
+      "component": "dispensingDashboard",
       "online": true,
       "offline": true
     }
