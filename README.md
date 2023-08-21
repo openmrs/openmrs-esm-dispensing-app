@@ -15,6 +15,15 @@ Note that following privileges need to be installed and assigned to roles:
 * "Task: dispensing.delete.dispense" - Allows user to delete an existing Medication Dispense 
 * "Task: dispensing.delete.dispense.ifCreator" - Allows user to delete an existing Medication Dispense, *but only* if they created it originally
 
+## Required configuation
+
+Please see config-schema.ts for the required configuration.  Specifically, the following properties are required:
+
+* "substitutionType" property is a valid concept uuid pointing to a concept set that contains the substitution type concepts.
+* "substitutionReason" property is a valid concept uuid pointing to a concept set that contains the substitution reason concepts.
+* If the "Pause" button is enabled, you need to make sure that "reasonForPause" property is a valid concept uuid pointing to a concept set that contains the reason for pause concepts.
+* If the "Close" button is enabled, you need to make sure that "reasonForClose" property is a valid concept uuid pointing to a concept set that contains the reason for close concepts.
+
 ## Running this code
 
 ```sh
