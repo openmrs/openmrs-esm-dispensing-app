@@ -5,6 +5,30 @@
 This repository is for the OpenMRS Dispensing App. For more information, please see the
 [Design Documentation](https://wiki.openmrs.org/display/projects/Dispensing+Design+Components).
 
+## Required Configuration
+
+The Dispensing ESM requires the "HL7-MedicationDispenseStatus" concept source and FHIR concept source, as well as "Medication Dispense Status" value/concept set, to be installed in your OpenMRS instance to properly map dispensing statuses.
+
+References to the Iniz files that install these concept sources can be found here:
+
+https://github.com/openmrs/openmrs-distro-referenceapplication/blob/main/distro/configuration/conceptsources/conceptsources-core_data.csv#L24
+
+https://openmrs.slack.com/archives/C02P790SM7X/p1692380047339679?thread_ts=1692338258.965499&cid=C02P790SM7X
+
+The Medication Dispense Status value set can be found here:
+
+https://app.openconceptlab.org/#/search/?q=medication+dispense+status
+
+It also is bundled in the "DrugDispense" OCL package provided by the Reference Application:
+
+https://github.com/openmrs/openmrs-distro-referenceapplication/tree/main/distro/configuration/ocl
+
+The "DrugDispense" also provides the default value sets for the "Substitution Type", "Substitution Reason", and "Medication Dispense Status Reason".
+
+The "Substitution Type" and "Substitution Reason" value sets define the valid answers for both the equivalent questions when substituting a drug.  The "Medication Dispense Status Reason" provides the default answers for both the "Reason for Pause" and "Reason for Close" questions.
+
+All of these can be customized via the config-schema, see: https://github.com/openmrs/openmrs-esm-dispensing-app/blob/main/src/config-schema.ts
+
 ## Required privileges
 
 Note that following privileges need to be installed and assigned to roles:
@@ -14,15 +38,6 @@ Note that following privileges need to be installed and assigned to roles:
 * "Task: dispensing.edit.dispense" - Allows user to edit an existing Medication Dispense
 * "Task: dispensing.delete.dispense" - Allows user to delete an existing Medication Dispense 
 * "Task: dispensing.delete.dispense.ifCreator" - Allows user to delete an existing Medication Dispense, *but only* if they created it originally
-
-## Required configuation
-
-Please see config-schema.ts for the required configuration.  Specifically, the following properties are required:
-
-* "substitutionType" property is a valid concept uuid pointing to a concept set that contains the substitution type concepts.
-* "substitutionReason" property is a valid concept uuid pointing to a concept set that contains the substitution reason concepts.
-* If the "Pause" button is enabled, you need to make sure that "reasonForPause" property is a valid concept uuid pointing to a concept set that contains the reason for pause concepts.
-* If the "Close" button is enabled, you need to make sure that "reasonForClose" property is a valid concept uuid pointing to a concept set that contains the reason for close concepts.
 
 ## Running this code
 
