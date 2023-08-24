@@ -35,21 +35,6 @@ const PatientDetails: React.FC<{
     </div>
   );
 
-  const getGender = (gender) => {
-    switch (gender) {
-      case "M":
-        return t("male", "Male");
-      case "F":
-        return t("female", "Female");
-      case "O":
-        return t("other", "Other");
-      case "U":
-        return t("unknown", "Unknown");
-      default:
-        return gender;
-    }
-  };
-
   useEffect(() => {
     attach("dispensing-patient-banner-slot", "patient-banner");
     attach("dispensing-patient-vitals-slot", "vitals-overview-widget");
