@@ -86,8 +86,14 @@ const PrescriptionTabLists: React.FC = () => {
             <Search
               closeButtonLabelText={t("clearSearchInput", "Clear search input")}
               defaultValue={searchTermUserInput}
-              placeholder={t("searchPrescriptions", "Search prescriptions")}
-              labelText={t("searchPrescriptions", "Search prescriptions")}
+              placeholder={t(
+                "searchByPatientIdOrName",
+                "Search by patient ID or name"
+              )}
+              labelText={t(
+                "searchByPatientIdOrName",
+                "Search by patient ID or name"
+              )}
               onChange={(e) => {
                 e.preventDefault();
                 setSearchTermUserInput(e.target.value);
