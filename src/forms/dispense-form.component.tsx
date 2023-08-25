@@ -212,7 +212,11 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           ) : null}
         </section>
         <section className={styles.buttonGroup}>
-          <Button onClick={() => closeOverlay()} kind="secondary">
+          <Button
+            disabled={isSubmitting}
+            onClick={() => closeOverlay()}
+            kind="secondary"
+          >
             {t("cancel", "Cancel")}
           </Button>
           <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
