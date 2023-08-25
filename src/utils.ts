@@ -319,7 +319,8 @@ export function computeQuantityRemaining(medicationRequestBundle): number {
         ...medicationRequestBundle.dispenses,
       ])
     ) {
-      throw new Error("Cannot calculate quantity remaining, units dont match");
+      console.error("Cannot calculate quantity remaining, units dont match");
+      return 0;
     }
 
     return (
