@@ -15,7 +15,6 @@ import {
   TableRow,
   TabPanel,
 } from "@carbon/react";
-
 import { useTranslation } from "react-i18next";
 
 import { formatDatetime, parseDate, useConfig } from "@openmrs/esm-framework";
@@ -40,7 +39,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
-  const { prescriptionsTableRows, isError, isLoading, totalOrders } =
+  const { prescriptionsTableRows, error, isLoading, totalOrders } =
     usePrescriptionsTable(
       pageSize,
       nextOffSet,
@@ -78,7 +77,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
     <TabPanel>
       <div className={styles.patientListTableContainer}>
         {isLoading && <DataTableSkeleton role="progressbar" />}
-        {isError && <p>Error</p>}
+        {error && <p>Error</p>}
         {prescriptionsTableRows && (
           <>
             <DataTable
