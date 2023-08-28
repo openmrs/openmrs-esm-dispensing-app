@@ -102,7 +102,7 @@ export function usePrescriptionsTable(
 
   return {
     prescriptionsTableRows,
-    isError: error,
+    error: error,
     isLoading: !prescriptionsTableRows && !error,
     totalOrders: data?.data.total,
   };
