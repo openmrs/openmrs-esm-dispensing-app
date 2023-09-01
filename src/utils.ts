@@ -23,6 +23,9 @@ import {
 } from "./constants";
 import dayjs from "dayjs";
 
+const unitsDontMatchErrorMessage =
+  "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. Either set restrictTotalQuantityDispensed to false or set allowModifyingPrescription to false and clean up bad data.";
+
 /**
  * Computes the fulfiller status for a bundle
  *
@@ -319,7 +322,7 @@ export function computeQuantityRemaining(medicationRequestBundle): number {
         ...medicationRequestBundle.dispenses,
       ])
     ) {
-      throw new Error("Cannot calculate quantity remaining, units dont match");
+      throw new Error(unitsDontMatchErrorMessage);
     }
 
     return (
@@ -339,9 +342,7 @@ export function computeTotalQuantityDispensed(
 ): number {
   if (medicationDispenses) {
     if (!getQuantityUnitsMatch(medicationDispenses)) {
-      throw new Error(
-        "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. Either set restrictTotalQuantityDispensed to false or set allowModifyingPrescription to false and clean up bad data."
-      );
+      throw new Error(unitsDontMatchErrorMessage);
     }
     const quantity = medicationDispenses
       .map((medicationDispense) =>
