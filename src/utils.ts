@@ -319,8 +319,7 @@ export function computeQuantityRemaining(medicationRequestBundle): number {
         ...medicationRequestBundle.dispenses,
       ])
     ) {
-      console.error("Cannot calculate quantity remaining, units dont match");
-      return 0;
+      throw new Error("Cannot calculate quantity remaining, units dont match");
     }
 
     return (
@@ -341,7 +340,7 @@ export function computeTotalQuantityDispensed(
   if (medicationDispenses) {
     if (!getQuantityUnitsMatch(medicationDispenses)) {
       throw new Error(
-        "Can't calculate quantity dispensed if units don't match"
+        "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. Either set restrictTotalQuantityDispensed to false or set allowModifyingPrescription to false and clean up bad data."
       );
     }
     const quantity = medicationDispenses
