@@ -1,6 +1,7 @@
 import React from "react";
 import useSWR from "swr";
 import {
+  REFRESH_INTERVAL,
   updateMedicationRequestFulfillerStatus,
   useMedicationRequest,
   usePatientAllergies,
@@ -37,7 +38,8 @@ describe("Medication Request Resource Test", () => {
         .startOf("day")
         .subtract(10, "day")
         .toISOString()}&status=active&patientSearchTerm=bob`,
-      openmrsFetch
+      openmrsFetch,
+      { refreshInterval: REFRESH_INTERVAL }
     );
   });
 
@@ -47,7 +49,8 @@ describe("Medication Request Resource Test", () => {
     usePrescriptionsTable(5, 5, "bob", null, null, 10);
     expect(useSWR).toHaveBeenCalledWith(
       `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=5&_count=5&patientSearchTerm=bob`,
-      openmrsFetch
+      openmrsFetch,
+      { refreshInterval: REFRESH_INTERVAL }
     );
   });
 
@@ -670,7 +673,8 @@ describe("Medication Request Resource Test", () => {
     usePrescriptionDetails("123abc");
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationRequest?encounter=123abc&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter",
-      openmrsFetch
+      openmrsFetch,
+      { refreshInterval: REFRESH_INTERVAL }
     );
   });
 
@@ -1093,7 +1097,8 @@ describe("Medication Request Resource Test", () => {
     usePatientAllergies("123abc");
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/AllergyIntolerance?patient=123abc",
-      openmrsFetch
+      openmrsFetch,
+      { refreshInterval: REFRESH_INTERVAL }
     );
   });
 
@@ -1328,7 +1333,8 @@ describe("Medication Request Resource Test", () => {
     useMedicationRequest("123abc");
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationRequest/123abc",
-      openmrsFetch
+      openmrsFetch,
+      { refreshInterval: REFRESH_INTERVAL }
     );
   });
 
@@ -1338,7 +1344,8 @@ describe("Medication Request Resource Test", () => {
     useMedicationRequest("123abc");
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationRequest/123abc",
-      openmrsFetch
+      openmrsFetch,
+      { refreshInterval: REFRESH_INTERVAL }
     );
   });
 
@@ -1348,7 +1355,8 @@ describe("Medication Request Resource Test", () => {
     useMedicationRequest("MedicationRequest/123abc");
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationRequest/123abc",
-      openmrsFetch
+      openmrsFetch,
+      { refreshInterval: REFRESH_INTERVAL }
     );
   });
 

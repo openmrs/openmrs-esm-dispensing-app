@@ -27,7 +27,7 @@ import {
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
 } from "../constants";
 
-const REFRESH_INTERVAL = 10000; // 10 second refresh interval
+export const REFRESH_INTERVAL = 10000; // 10 second refresh interval
 
 export function usePrescriptionsTable(
   pageSize: number = 10,
