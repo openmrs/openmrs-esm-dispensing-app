@@ -27,6 +27,8 @@ import {
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
 } from "../constants";
 
+const REFRESH_INTERVAL = 10000; // 10 second refresh interval
+
 export function usePrescriptionsTable(
   pageSize: number = 10,
   pageOffset: number = 0,
@@ -53,7 +55,8 @@ export function usePrescriptionsTable(
           patientSearchTerm,
           location
         ),
-    openmrsFetch
+    openmrsFetch,
+    { refreshInterval: REFRESH_INTERVAL }
   );
 
   let prescriptionsTableRows: PrescriptionsTableRow[];
@@ -158,7 +161,8 @@ export function usePrescriptionDetails(encounterUuid: string) {
 
   const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
     getPrescriptionDetailsEndpoint(encounterUuid),
-    openmrsFetch
+    openmrsFetch,
+    { refreshInterval: REFRESH_INTERVAL }
   );
 
   if (data) {
@@ -212,7 +216,8 @@ export function usePrescriptionDetails(encounterUuid: string) {
 export function usePatientAllergies(patientUuid: string) {
   const { data, error } = useSWR<{ data: AllergyIntoleranceResponse }, Error>(
     `${fhirBaseUrl}/AllergyIntolerance?patient=${patientUuid}`,
-    openmrsFetch
+    openmrsFetch,
+    { refreshInterval: REFRESH_INTERVAL }
   );
 
   let allergies = [];
@@ -241,7 +246,8 @@ export function useMedicationRequest(reference: string) {
 
   const { data } = useSWR<{ data: MedicationRequest }, Error>(
     reference ? `${fhirBaseUrl}/${reference}` : null,
-    openmrsFetch
+    openmrsFetch,
+    { refreshInterval: REFRESH_INTERVAL }
   );
   return {
     medicationRequest: data ? data.data : null,
