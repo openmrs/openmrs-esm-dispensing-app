@@ -1,7 +1,6 @@
 import React from "react";
 import useSWR from "swr";
 import {
-  REFRESH_INTERVAL,
   updateMedicationRequestFulfillerStatus,
   useMedicationRequest,
   usePatientAllergies,
@@ -32,25 +31,25 @@ describe("Medication Request Resource Test", () => {
   test("usePrescriptionsTable should call active endpoint and proper date based on expiration period if status parameter is active", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: "mockedReturnData" } }));
-    usePrescriptionsTable(5, 5, "bob", null, "ACTIVE", 10);
+    usePrescriptionsTable(5, 5, "bob", null, "ACTIVE", 10, 10000);
     expect(useSWR).toHaveBeenCalledWith(
       `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=5&_count=5&date=ge${dayjs()
         .startOf("day")
         .subtract(10, "day")
         .toISOString()}&status=active&patientSearchTerm=bob`,
       openmrsFetch,
-      { refreshInterval: REFRESH_INTERVAL }
+      { refreshInterval: 10000 }
     );
   });
 
   test("usePrescriptionsTable should call all endpoint if status parameter is not active", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: "mockedReturnData" } }));
-    usePrescriptionsTable(5, 5, "bob", null, null, 10);
+    usePrescriptionsTable(5, 5, "bob", null, null, 10, 10000);
     expect(useSWR).toHaveBeenCalledWith(
       `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=5&_count=5&patientSearchTerm=bob`,
       openmrsFetch,
-      { refreshInterval: REFRESH_INTERVAL }
+      { refreshInterval: 10000 }
     );
   });
 
@@ -619,7 +618,8 @@ describe("Medication Request Resource Test", () => {
       "bob",
       "ACTIVE",
       null,
-      90
+      90,
+      10000
     );
     expect(totalOrders).toBe(26);
     expect(prescriptionsTableRows.length).toBe(2);
@@ -670,11 +670,11 @@ describe("Medication Request Resource Test", () => {
   test("usePrescriptionsDetails should call endpoint with encounter uuid", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: [] } }));
-    usePrescriptionDetails("123abc");
+    usePrescriptionDetails("123abc", 10000);
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationRequest?encounter=123abc&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter",
       openmrsFetch,
-      { refreshInterval: REFRESH_INTERVAL }
+      { refreshInterval: 10000 }
     );
   });
 
@@ -1074,7 +1074,7 @@ describe("Medication Request Resource Test", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: queryRequestBundle } }));
     const { medicationRequestBundles, prescriptionDate } =
-      usePrescriptionDetails("1aafa3c6-83c2-4485-baaa-f700056e43c9");
+      usePrescriptionDetails("1aafa3c6-83c2-4485-baaa-f700056e43c9", 10000);
     expect(medicationRequestBundles.length).toBe(1);
     expect(medicationRequestBundles[0].request.id).toBe(
       "1c1ad91e-8653-453a-9f59-8d5c36249aff"
@@ -1094,11 +1094,11 @@ describe("Medication Request Resource Test", () => {
   test("usePatientAllergies should call endpoint with patient uuid", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: [] } }));
-    usePatientAllergies("123abc");
+    usePatientAllergies("123abc", 10000);
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/AllergyIntolerance?patient=123abc",
       openmrsFetch,
-      { refreshInterval: REFRESH_INTERVAL }
+      { refreshInterval: 10000 }
     );
   });
 
@@ -1321,7 +1321,8 @@ describe("Medication Request Resource Test", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: queryRequestBundle } }));
     const { allergies, totalAllergies } = usePatientAllergies(
-      "558494fe-5850-4b34-a3bf-06550334ba4a"
+      "558494fe-5850-4b34-a3bf-06550334ba4a",
+      10000
     );
     expect(totalAllergies).toBe(2);
     // TODO allergy parsing doesn't seem to be working?
@@ -1330,33 +1331,33 @@ describe("Medication Request Resource Test", () => {
   test("useMedicationRequest should prepend MedicationRequest and call endpoint if uuid passed in", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: [] } }));
-    useMedicationRequest("123abc");
+    useMedicationRequest("123abc", 10000);
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationRequest/123abc",
       openmrsFetch,
-      { refreshInterval: REFRESH_INTERVAL }
+      { refreshInterval: 10000 }
     );
   });
 
   test("useMedicationRequest should prepend MedicationRequest and call endpoint if uuid passed in", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: [] } }));
-    useMedicationRequest("123abc");
+    useMedicationRequest("123abc", 10000);
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationRequest/123abc",
       openmrsFetch,
-      { refreshInterval: REFRESH_INTERVAL }
+      { refreshInterval: 10000 }
     );
   });
 
   test("useMedicationRequest should not prepend MedicationRequest and call endpoint if full reference passed in", () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: [] } }));
-    useMedicationRequest("MedicationRequest/123abc");
+    useMedicationRequest("MedicationRequest/123abc", 10000);
     expect(useSWR).toHaveBeenCalledWith(
       "/ws/fhir2/R4/MedicationRequest/123abc",
       openmrsFetch,
-      { refreshInterval: REFRESH_INTERVAL }
+      { refreshInterval: 10000 }
     );
   });
 

@@ -87,13 +87,19 @@ export const configSchema = {
       },
     },
   },
+  refreshInterval: {
+    _type: Type.Number,
+    _description:
+      "The interval, in milliseconds, to query the backend for new/changed data",
+    _default: 10000,
+  },
   valueSets: {
     reasonForPause: {
       uuid: {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Pause' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: "2462a9d7-61fb-4bf5-9359-aedecb8d03cb",
+        _default: "2dd3e5c0-3d3f-4f3d-9860-19b3f9ab26ff",
       },
     },
     reasonForClose: {
@@ -101,7 +107,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Close' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: "2462a9d7-61fb-4bf5-9359-aedecb8d03cb",
+        _default: "bd6c1fc2-7cfc-4562-94a0-e4765e5e977e",
       },
     },
     substitutionReason: {
@@ -133,6 +139,7 @@ export type PharmacyConfig = {
       enabled: boolean;
     };
   };
+  refreshInterval: number;
   dispenseBehavior: {
     allowModifyingPrescription: boolean;
     restrictTotalQuantityDispensed: boolean;

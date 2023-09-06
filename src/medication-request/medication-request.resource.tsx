@@ -27,15 +27,14 @@ import {
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
 } from "../constants";
 
-export const REFRESH_INTERVAL = 10000; // 10 second refresh interval
-
 export function usePrescriptionsTable(
   pageSize: number = 10,
   pageOffset: number = 0,
   patientSearchTerm: string = "",
   location: string = "",
   status: string = "",
-  medicationRequestExpirationPeriodInDays: number
+  medicationRequestExpirationPeriodInDays: number,
+  refreshInterval: number
 ) {
   const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
     status === "ACTIVE"
@@ -56,7 +55,7 @@ export function usePrescriptionsTable(
           location
         ),
     openmrsFetch,
-    { refreshInterval: REFRESH_INTERVAL }
+    { refreshInterval: refreshInterval }
   );
 
   let prescriptionsTableRows: PrescriptionsTableRow[];
@@ -154,7 +153,7 @@ function buildPrescriptionsTableRow(
   };
 }
 
-export function usePrescriptionDetails(encounterUuid: string) {
+export function usePrescriptionDetails(encounterUuid: string, refreshInterval) {
   let medicationRequestBundles: Array<MedicationRequestBundle> = [];
   let prescriptionDate: Date;
   let isLoading = true;
@@ -162,7 +161,7 @@ export function usePrescriptionDetails(encounterUuid: string) {
   const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
     getPrescriptionDetailsEndpoint(encounterUuid),
     openmrsFetch,
-    { refreshInterval: REFRESH_INTERVAL }
+    { refreshInterval: refreshInterval }
   );
 
   if (data) {
@@ -213,11 +212,11 @@ export function usePrescriptionDetails(encounterUuid: string) {
   };
 }
 
-export function usePatientAllergies(patientUuid: string) {
+export function usePatientAllergies(patientUuid: string, refreshInterval) {
   const { data, error } = useSWR<{ data: AllergyIntoleranceResponse }, Error>(
     `${fhirBaseUrl}/AllergyIntolerance?patient=${patientUuid}`,
     openmrsFetch,
-    { refreshInterval: REFRESH_INTERVAL }
+    { refreshInterval: refreshInterval }
   );
 
   let allergies = [];
@@ -236,8 +235,7 @@ export function usePatientAllergies(patientUuid: string) {
 }
 
 // supports passing just the uuid/code or the entire reference, ie either: "MedicationReference/123-abc" or "123-abc"
-// TODO: do we need a refresh interval?
-export function useMedicationRequest(reference: string) {
+export function useMedicationRequest(reference: string, refreshInterval) {
   reference = reference
     ? reference.startsWith("MedicationRequest")
       ? reference
@@ -247,7 +245,7 @@ export function useMedicationRequest(reference: string) {
   const { data } = useSWR<{ data: MedicationRequest }, Error>(
     reference ? `${fhirBaseUrl}/${reference}` : null,
     openmrsFetch,
-    { refreshInterval: REFRESH_INTERVAL }
+    { refreshInterval: refreshInterval }
   );
   return {
     medicationRequest: data ? data.data : null,

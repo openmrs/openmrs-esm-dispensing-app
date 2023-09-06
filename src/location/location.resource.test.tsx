@@ -33,6 +33,7 @@ const pharmacyConfig: PharmacyConfig = {
     locationColumn: { enabled: false },
     locationFilter: { enabled: false, tag: "Login Location" },
   },
+  refreshInterval: 10000,
   medicationRequestExpirationPeriodInDays: 0,
   valueSets: {
     reasonForPause: { uuid: "" },
