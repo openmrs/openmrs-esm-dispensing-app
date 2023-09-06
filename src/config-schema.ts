@@ -99,7 +99,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Pause' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: "2dd3e5c0-3d3f-4f3d-9860-19b3f9ab26ff",
+        _default: "2462a9d7-61fb-4bf5-9359-aedecb8d03cb",
       },
     },
     reasonForClose: {
@@ -107,7 +107,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Close' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: "bd6c1fc2-7cfc-4562-94a0-e4765e5e977e",
+        _default: "2462a9d7-61fb-4bf5-9359-aedecb8d03cb",
       },
     },
     substitutionReason: {
