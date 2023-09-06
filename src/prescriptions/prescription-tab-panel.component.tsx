@@ -46,7 +46,8 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
       searchTerm,
       location,
       status,
-      config.medicationRequestExpirationPeriodInDays
+      config.medicationRequestExpirationPeriodInDays,
+      config.refreshInterval
     );
 
   let columns = [

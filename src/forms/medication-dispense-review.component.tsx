@@ -182,7 +182,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const { medicationRequest } = useMedicationRequest(
     medicationDispense.authorizingPrescription
       ? medicationDispense.authorizingPrescription[0].reference
-      : null
+      : null,
+    config.refreshInterval
   );
 
   // check to see if the current dispense would be a substitution, and update accordingly

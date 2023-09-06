@@ -87,6 +87,12 @@ export const configSchema = {
       },
     },
   },
+  refreshInterval: {
+    _type: Type.Number,
+    _description:
+      "The interval, in milliseconds, to query the backend for new/changed data",
+    _default: 10000,
+  },
   valueSets: {
     reasonForPause: {
       uuid: {
@@ -133,6 +139,7 @@ export type PharmacyConfig = {
       enabled: boolean;
     };
   };
+  refreshInterval: number;
   dispenseBehavior: {
     allowModifyingPrescription: boolean;
     restrictTotalQuantityDispensed: boolean;

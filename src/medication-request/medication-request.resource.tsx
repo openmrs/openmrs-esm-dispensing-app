@@ -33,7 +33,8 @@ export function usePrescriptionsTable(
   patientSearchTerm: string = "",
   location: string = "",
   status: string = "",
-  medicationRequestExpirationPeriodInDays: number
+  medicationRequestExpirationPeriodInDays: number,
+  refreshInterval: number
 ) {
   const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
     status === "ACTIVE"
@@ -53,7 +54,8 @@ export function usePrescriptionsTable(
           patientSearchTerm,
           location
         ),
-    openmrsFetch
+    openmrsFetch,
+    { refreshInterval: refreshInterval }
   );
 
   let prescriptionsTableRows: PrescriptionsTableRow[];
@@ -151,14 +153,15 @@ function buildPrescriptionsTableRow(
   };
 }
 
-export function usePrescriptionDetails(encounterUuid: string) {
+export function usePrescriptionDetails(encounterUuid: string, refreshInterval) {
   let medicationRequestBundles: Array<MedicationRequestBundle> = [];
   let prescriptionDate: Date;
   let isLoading = true;
 
   const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
     getPrescriptionDetailsEndpoint(encounterUuid),
-    openmrsFetch
+    openmrsFetch,
+    { refreshInterval: refreshInterval }
   );
 
   if (data) {
@@ -209,10 +212,11 @@ export function usePrescriptionDetails(encounterUuid: string) {
   };
 }
 
-export function usePatientAllergies(patientUuid: string) {
+export function usePatientAllergies(patientUuid: string, refreshInterval) {
   const { data, error } = useSWR<{ data: AllergyIntoleranceResponse }, Error>(
     `${fhirBaseUrl}/AllergyIntolerance?patient=${patientUuid}`,
-    openmrsFetch
+    openmrsFetch,
+    { refreshInterval: refreshInterval }
   );
 
   let allergies = [];
@@ -231,8 +235,7 @@ export function usePatientAllergies(patientUuid: string) {
 }
 
 // supports passing just the uuid/code or the entire reference, ie either: "MedicationReference/123-abc" or "123-abc"
-// TODO: do we need a refresh interval?
-export function useMedicationRequest(reference: string) {
+export function useMedicationRequest(reference: string, refreshInterval) {
   reference = reference
     ? reference.startsWith("MedicationRequest")
       ? reference
@@ -241,7 +244,8 @@ export function useMedicationRequest(reference: string) {
 
   const { data } = useSWR<{ data: MedicationRequest }, Error>(
     reference ? `${fhirBaseUrl}/${reference}` : null,
-    openmrsFetch
+    openmrsFetch,
+    { refreshInterval: refreshInterval }
   );
   return {
     medicationRequest: data ? data.data : null,

@@ -56,7 +56,7 @@ const HistoryAndComments: React.FC<{
   const session = useSession();
   const config = useConfig() as PharmacyConfig;
   const { medicationRequestBundles, prescriptionDate, isError, isLoading } =
-    usePrescriptionDetails(encounterUuid);
+    usePrescriptionDetails(encounterUuid, config.refreshInterval);
 
   const userCanEdit: Function = (session: Session) =>
     session?.user && userHasAccess(PRIVILEGE_EDIT_DISPENSE, session.user);

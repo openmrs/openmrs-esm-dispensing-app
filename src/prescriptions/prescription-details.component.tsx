@@ -29,9 +29,12 @@ const PrescriptionDetails: React.FC<{
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
   const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
-  const { allergies, totalAllergies } = usePatientAllergies(patientUuid);
+  const { allergies, totalAllergies } = usePatientAllergies(
+    patientUuid,
+    config.refreshInterval
+  );
   const { medicationRequestBundles, isError, isLoading } =
-    usePrescriptionDetails(encounterUuid);
+    usePrescriptionDetails(encounterUuid, config.refreshInterval);
 
   useEffect(() => {
     if (typeof totalAllergies == "number") {
