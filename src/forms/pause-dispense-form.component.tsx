@@ -70,6 +70,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
             text: concept.display,
           })
         );
+        reasonForPauseOptions.sort((a, b) => a.text.localeCompare(b.text));
       }
     }
     setReasonsForPause(reasonForPauseOptions);

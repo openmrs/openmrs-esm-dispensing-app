@@ -57,7 +57,7 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
   );
 
   useEffect(() => {
-    const reasonForPauseOptions = [];
+    const reasonForCloseOptions = [];
 
     if (reasonForCloseValueSet?.compose?.include) {
       const uuidValueSet = reasonForCloseValueSet.compose.include.find(
@@ -65,14 +65,15 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
       );
       if (uuidValueSet) {
         uuidValueSet.concept?.forEach((concept) =>
-          reasonForPauseOptions.push({
+          reasonForCloseOptions.push({
             id: concept.code,
             text: concept.display,
           })
         );
+        reasonForCloseOptions.sort((a, b) => a.text.localeCompare(b.text));
       }
     }
-    setReasonsForClose(reasonForPauseOptions);
+    setReasonsForClose(reasonForCloseOptions);
   }, [reasonForCloseValueSet]);
 
   const handleSubmit = () => {

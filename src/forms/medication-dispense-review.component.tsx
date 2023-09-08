@@ -130,6 +130,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           })
         );
       }
+      substitutionTypeOptions.sort((a, b) => a.text.localeCompare(b.text));
     }
     setSubstitutionTypes(substitutionTypeOptions);
   }, [substitutionTypeValueSet]);
@@ -149,6 +150,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           })
         );
       }
+      substitutionReasonOptions.sort((a, b) => a.text.localeCompare(b.text));
     }
     setSubstitutionReasons(substitutionReasonOptions);
   }, [substitutionReasonValueSet]);
