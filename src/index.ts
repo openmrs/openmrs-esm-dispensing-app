@@ -1,5 +1,8 @@
-import { getAsyncLifecycle, defineConfigSchema } from "@openmrs/esm-framework";
+import { defineConfigSchema, getSyncLifecycle } from "@openmrs/esm-framework";
 import { configSchema } from "./config-schema";
+import dispensingComponent from "./dispensing.component";
+import dispensingLinkComponent from "./dispensing-link.component";
+import dispeningDashboardComponent from "./dashboard/dispensing-dashboard.component";
 
 export const importTranslation = require.context(
   "../translations",
@@ -15,18 +18,15 @@ const options = {
   moduleName,
 };
 
-export const dispensing = getAsyncLifecycle(
-  () => import("./dispensing.component"),
+export const dispensing = getSyncLifecycle(dispensingComponent, options);
+
+export const dispensingLink = getSyncLifecycle(
+  dispensingLinkComponent,
   options
 );
 
-export const dispensingLink = getAsyncLifecycle(
-  () => import("./dispensing-link"),
-  options
-);
-
-export const dispensingDashboard = getAsyncLifecycle(
-  () => import("./dashboard/dispensing-dashboard.component"),
+export const dispensingDashboard = getSyncLifecycle(
+  dispeningDashboardComponent,
   options
 );
 
