@@ -2,7 +2,7 @@ import { defineConfigSchema, getSyncLifecycle } from "@openmrs/esm-framework";
 import { configSchema } from "./config-schema";
 import dispensingComponent from "./dispensing.component";
 import dispensingLinkComponent from "./dispensing-link.component";
-import dispeningDashboardComponent from "./dashboard/dispensing-dashboard.component";
+import dispensingDashboardComponent from "./dashboard/dispensing-dashboard.component";
 
 export const importTranslation = require.context(
   "../translations",
@@ -26,7 +26,7 @@ export const dispensingLink = getSyncLifecycle(
 );
 
 export const dispensingDashboard = getSyncLifecycle(
-  dispeningDashboardComponent,
+  dispensingDashboardComponent,
   options
 );
 
