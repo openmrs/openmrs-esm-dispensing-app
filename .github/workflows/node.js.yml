@@ -26,6 +26,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
       - run: yarn install --immutable
       - run: yarn verify
+      - run: yarn build
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -79,7 +80,7 @@ jobs:
           node-version: "18.x"
           registry-url: 'https://registry.npmjs.org'
       - run: yarn install --immutable
-      - run: yarn config set npmAuthToken "${NODE_AUTH_TOKEN}" &&  yarn npm publish
+      - run: yarn config set npmAuthToken "${NODE_AUTH_TOKEN}" &&  yarn npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
   
