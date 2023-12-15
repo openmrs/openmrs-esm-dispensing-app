@@ -13,6 +13,8 @@ References to the Iniz files that install these concept sources can be found her
 
 https://github.com/openmrs/openmrs-distro-referenceapplication/blob/main/distro/configuration/conceptsources/conceptsources-core_data.csv#L24
 
+https://github.com/openmrs/openmrs-distro-referenceapplication/blob/main/distro/configuration/fhirconceptsources/fhir_concept_sources-core_data.csv#L5
+
 https://openmrs.slack.com/archives/C02P790SM7X/p1692380047339679?thread_ts=1692338258.965499&cid=C02P790SM7X
 
 The Medication Dispense Status value set can be found here:
