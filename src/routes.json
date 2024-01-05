@@ -25,6 +25,15 @@
       "component": "dispensingDashboard",
       "online": true,
       "offline": true
+    },
+    {
+      "name": "dispensing-dashboard-link",
+      "component": "dispensingDashboardLink",
+      "meta": {
+        "name": "dispensing",
+        "slot": "dispensing-dashboard-slot",
+        "title": "Dispensing"
+      }
     }
   ]
 }
