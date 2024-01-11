@@ -1,0 +1,12 @@
+{
+  "dispensing": "配药",
+  "appName": "药房",
+  "prescriptionDetails": "处方细节",
+  "historyComments": "历史和备注",
+  "patientDetails": "患者详细信息",
+  "billing": "结算",
+  "post": "发布",
+  "addItem": "添加项目",
+  "fillPrescription": "填写处方",
+  "searchPrescription": "搜索处方"
+}
