@@ -184,23 +184,19 @@ export function initiateMedicationDispenseBody(
 
 export function useStockBatches(uuid: string) {
   const session = useSession();
-  if (uuid) {
-    const formattedUuid = uuid.split("/")[1];
-    const { data, error, isValidating, isLoading } = useSWR<
-      { data: any },
-      Error
-    >(
-      `/ws/rest/v1/stockmanagement/stockiteminventory?v=default&totalCount=true&drugUuid=${formattedUuid}
-      &includeStrength=1&includeConceptRefIds=1&groupBy=LocationStockItemBatchNo&includeBatchNo=1&dispenseLocationUuid=${session?.sessionLocation.uuid}`,
-      openmrsFetch
-    );
-    return {
-      stockBatches: data ? data.data : [],
-      isLoadingStock: isLoading,
-      isError: error,
-      isValidatingStock: isValidating,
-    };
-  }
+  const formattedUuid = uuid ? uuid.split("/")[1] : "";
+  const url = `/ws/rest/v1/stockmanagement/stockiteminventory?v=default&totalCount=true&drugUuid=${formattedUuid}
+  &includeStrength=1&includeConceptRefIds=1&groupBy=LocationStockItemBatchNo&includeBatchNo=1&dispenseLocationUuid=${session?.sessionLocation.uuid}`;
+  const { data, error, isValidating, isLoading } = useSWR<{ data: any }, Error>(
+    uuid ? url : null,
+    openmrsFetch
+  );
+  return {
+    stockBatches: data ? data.data : [],
+    isLoadingStock: isLoading,
+    isError: error,
+    isValidatingStock: isValidating,
+  };
 }
 
 export function dispensePostProcessor(
