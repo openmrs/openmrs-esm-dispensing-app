@@ -15,9 +15,13 @@ import {
   MedicationDispense,
   MedicationDispenseStatus,
   MedicationRequestBundle,
+  StockDispenseRequest,
 } from "../types";
 import { PharmacyConfig } from "../config-schema";
-import { saveMedicationDispense } from "../medication-dispense/medication-dispense.resource";
+import {
+  dispensePostProcessor,
+  saveMedicationDispense,
+} from "../medication-dispense/medication-dispense.resource";
 import MedicationDispenseReview from "./medication-dispense-review.component";
 import {
   computeNewFulfillerStatusAfterDispenseEvent,
@@ -53,6 +57,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const [medicationDispensePayload, setMedicationDispensePayload] =
     useState<MedicationDispense>();
 
+  const [stockItem, setStockItem] = useState<any>();
   // whether or not the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
 
@@ -61,6 +66,20 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
 
   // Submit medication dispense form
   const handleSubmit = () => {
+    let dispensedItem: StockDispenseRequest;
+    if (stockItem) {
+      dispensedItem = {
+        locationUuid: stockItem.itemLocation,
+        patientUuid: patientUuid,
+        orderUuid: medicationRequestBundle.request.id,
+        encounterUuid: encounterUuid,
+        stockItemUuid: stockItem.stockItemUuid,
+        stockBatchUuid: stockItem.batchUuid,
+        quantity: medicationDispensePayload.quantity.value,
+        stockItemPackagingUOMUuid: stockItem.quantityUoMUuid,
+      };
+    }
+
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
@@ -94,6 +113,28 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         .then(
           ({ status }) => {
             if (status === 201 || status === 200) {
+              const abortController = new AbortController();
+              dispensePostProcessor(dispensedItem, abortController).then(
+                (res) => {
+                  if (res) {
+                    showToast({
+                      critical: true,
+                      kind: "success",
+                      description: t(
+                        "stockUpdated",
+                        "Stock inventory item has been updated."
+                      ),
+                      title: t(
+                        mode === "enter" ? "stockUpdated" : "stockUpdated",
+                        mode === "enter"
+                          ? "Stock inventory item successfully updated."
+                          : "Stock inventory item successfully updated."
+                      ),
+                    });
+                  }
+                }
+              );
+
               closeOverlay();
               revalidate(encounterUuid);
               showToast({
@@ -208,6 +249,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
               medicationDispense={medicationDispensePayload}
               updateMedicationDispense={setMedicationDispensePayload}
               quantityRemaining={quantityRemaining}
+              setStockItem={setStockItem}
             />
           ) : null}
         </section>

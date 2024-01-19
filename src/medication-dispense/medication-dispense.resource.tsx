@@ -1,4 +1,9 @@
-import { fhirBaseUrl, openmrsFetch, Session } from "@openmrs/esm-framework";
+import {
+  fhirBaseUrl,
+  openmrsFetch,
+  Session,
+  useSession,
+} from "@openmrs/esm-framework";
 import dayjs from "dayjs";
 import useSWR from "swr";
 import {
@@ -6,6 +11,7 @@ import {
   MedicationDispenseStatus,
   MedicationRequest,
   OrderConfig,
+  StockDispenseRequest,
   ValueSet,
 } from "../types";
 
@@ -174,4 +180,41 @@ export function initiateMedicationDispenseBody(
     };
   }
   return medicationDispense;
+}
+
+export function useStockBatches(uuid: string) {
+  const session = useSession();
+  if (uuid) {
+    const formattedUuid = uuid.split("/")[1];
+    const { data, error, isValidating, isLoading } = useSWR<
+      { data: any },
+      Error
+    >(
+      `/ws/rest/v1/stockmanagement/stockiteminventory?v=default&totalCount=true&drugUuid=${formattedUuid}
+      &includeStrength=1&includeConceptRefIds=1&groupBy=LocationStockItemBatchNo&includeBatchNo=1&dispenseLocationUuid=${session?.sessionLocation.uuid}`,
+      openmrsFetch
+    );
+    return {
+      stockBatches: data ? data.data : [],
+      isLoadingStock: isLoading,
+      isError: error,
+      isValidatingStock: isValidating,
+    };
+  }
+}
+
+export function dispensePostProcessor(
+  stockDispenseRequest: StockDispenseRequest,
+  abortController: AbortController
+) {
+  const url = "/ws/rest/v1/stockmanagement/inventory-dispense";
+
+  return openmrsFetch(url, {
+    method: "POST",
+    signal: abortController.signal,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: stockDispenseRequest,
+  });
 }

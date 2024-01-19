@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Medication, MedicationDispense } from "../types";
 import MedicationCard from "../components/medication-card.component";
-import { TextArea, ComboBox, Dropdown, NumberInput } from "@carbon/react";
+import {
+  TextArea,
+  ComboBox,
+  Dropdown,
+  NumberInput,
+  InlineLoading,
+} from "@carbon/react";
 import {
   useLayoutType,
   useConfig,
   useSession,
   userHasAccess,
+  formatDatetime,
+  parseDate,
 } from "@openmrs/esm-framework";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,6 +33,7 @@ import {
   useOrderConfig,
   useSubstitutionReasonValueSet,
   useSubstitutionTypeValueSet,
+  useStockBatches,
 } from "../medication-dispense/medication-dispense.resource";
 import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from "../constants";
 
@@ -32,12 +41,14 @@ interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
   updateMedicationDispense: Function;
   quantityRemaining: number;
+  setStockItem?: (value: any) => void;
 }
 
 const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   medicationDispense,
   updateMedicationDispense,
   quantityRemaining,
+  setStockItem,
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
@@ -54,6 +65,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const [orderFrequencies, setOrderFrequencies] = useState([]);
   // type of substitution question
   const [substitutionTypes, setSubstitutionTypes] = useState([]);
+  //stock batches
+  const [itemStockBatches, setItemStockBatches] = useState([]);
   // reason for substitution question
   const [substitutionReasons, setSubstitutionReasons] = useState([]);
   const [userCanModify, setUserCanModify] = useState(false);
@@ -224,12 +237,50 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     medicationRequest?.medicationReference,
   ]);
 
+  const dispenseItemUuid =
+    getMedicationReferenceOrCodeableConcept(medicationDispense)
+      .medicationReference?.reference;
+  const { stockBatches, isLoadingStock, isValidatingStock } =
+    useStockBatches(dispenseItemUuid);
+
   useEffect(() => {
     setUserCanModify(
       session?.user &&
         userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user)
     );
   }, [session]);
+
+  useEffect(() => {
+    const stockBatchesOptions = [];
+
+    if (stockBatches.results) {
+      stockBatches.results.forEach((element) => {
+        stockBatchesOptions.push({
+          stockItemUuid: element.stockItemUuid,
+          itemLocation: element.locationUuid,
+          quantityUoMUuid: element.quantityUoMUuid,
+          batchUuid: element.stockBatchUuid,
+          text: `${element.batchNumber} | Expires ${formatDatetime(
+            parseDate(element.expiration),
+            { mode: "standard" }
+          )} | Qty ${element.quantity} ${element.quantityUoM}  `,
+        });
+      });
+    }
+    setItemStockBatches(stockBatchesOptions);
+  }, [stockBatches]);
+
+  if (isLoadingStock) {
+    return (
+      <section className={styles.container}>
+        <InlineLoading
+          status="active"
+          iconDescription="Loading"
+          description="Loading stock inventory item..."
+        />
+      </section>
+    );
+  }
 
   return (
     <div className={styles.medicationDispenseReviewContainer}>
@@ -535,6 +586,20 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               },
             ],
           });
+        }}
+        required
+      />
+
+      <ComboBox
+        id="batchNumber"
+        disabled={!userCanModify || !allowEditing}
+        light={isTablet}
+        items={itemStockBatches}
+        initialSelectedItem={itemStockBatches[0]}
+        titleText={t("batchNumber", "Batch Numbers")}
+        itemToString={(item) => item?.text}
+        onChange={({ selectedItem }) => {
+          setStockItem(selectedItem);
         }}
         required
       />
