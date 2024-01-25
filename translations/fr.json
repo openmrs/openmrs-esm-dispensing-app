@@ -86,6 +86,7 @@
   "refills": "Renouvellements",
   "route": "Route",
   "saveChanges": "Enregistrer les modifications",
+  "searchAllPrescriptions": "Search all prescriptions",
   "searchByPatientIdOrName": "Rechercher par ID ou Nom",
   "sendBackToPrescriber": "Renvoyer au prescripteur",
   "status": "État",

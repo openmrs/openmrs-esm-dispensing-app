@@ -48,6 +48,8 @@ export function usePrescriptionsTable(
           patientSearchTerm,
           location
         )
+      : !patientSearchTerm
+      ? null
       : getPrescriptionTableAllMedicationRequestsEndpoint(
           pageOffset,
           pageSize,
@@ -105,7 +107,10 @@ export function usePrescriptionsTable(
   return {
     prescriptionsTableRows,
     error: error,
-    isLoading: !prescriptionsTableRows && !error,
+    isLoading:
+      !prescriptionsTableRows &&
+      !error &&
+      (status === "ACTIVE" || patientSearchTerm),
     totalOrders: data?.data.total,
   };
 }

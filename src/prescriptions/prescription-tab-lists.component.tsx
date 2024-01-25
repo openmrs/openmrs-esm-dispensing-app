@@ -33,7 +33,7 @@ const PrescriptionTabLists: React.FC = () => {
     },
     {
       key: "allPrescriptions",
-      header: t("allPrescriptions", "All Prescriptions"),
+      header: t("searchAllPrescriptions", "Search All Prescriptions"),
       status: "",
     },
   ];
@@ -60,6 +60,7 @@ const PrescriptionTabLists: React.FC = () => {
             aria-label={t("tabList", "Tab List")}
             contained
             className={styles.tabsContainer}
+            activation="manual"
           >
             {tabs.map((tab, index) => {
               return (
