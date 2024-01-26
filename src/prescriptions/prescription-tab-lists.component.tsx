@@ -7,23 +7,16 @@ import { useLocationForFiltering } from "../location/location.resource";
 import { useConfig } from "@openmrs/esm-framework";
 import { PharmacyConfig } from "../config-schema";
 import { SimpleLocation } from "../types";
-
-enum TabTypes {
-  STARRED,
-  SYSTEM,
-  USER,
-  ALL,
-}
-
+o;
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
   const { filterLocations, isLoading: isFilterLocationsLoading } =
     useLocationForFiltering(config);
-  const [selectedTab, setSelectedTab] = useState(TabTypes.STARRED);
   const [searchTermUserInput, setSearchTermUserInput] = useState(""); // we have a separate "searchTermUserInput" and "searchTerm" in order to debounce
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("");
+  const [selectedTab, setSelectedTab] = useState(0);
 
   const tabs = [
     {
@@ -47,14 +40,19 @@ const PrescriptionTabLists: React.FC = () => {
     return () => clearTimeout(debounceFn);
   }, [searchTermUserInput]);
 
+  // we use this to only render the tab panel that is currently selected, see O3-2777
+  const handleTabChange = (event) => {
+    setSelectedTab(event.selectedIndex);
+  };
+
   return (
     <main className={`omrs-main-content ${styles.prescriptionListContainer}`}>
       <section className={styles.prescriptionTabsContainer}>
         <Tabs
           className={styles.prescriptionTabs}
+          onChange={handleTabChange}
           type="container"
           tabContentClassName={styles.hiddenTabsContent}
-          onSelectionChange={setSelectedTab}
         >
           <TabList
             aria-label={t("tabList", "Tab List")}
@@ -118,12 +116,14 @@ const PrescriptionTabLists: React.FC = () => {
           </div>
           <TabPanels>
             {tabs.map((tab, index) => {
-              return (
+              return index === selectedTab ? (
                 <PrescriptionTabPanel
                   location={location}
                   searchTerm={searchTerm}
                   status={tab.status}
                 />
+              ) : (
+                <></>
               );
             })}
           </TabPanels>
