@@ -7,7 +7,7 @@ import { useLocationForFiltering } from "../location/location.resource";
 import { useConfig } from "@openmrs/esm-framework";
 import { PharmacyConfig } from "../config-schema";
 import { SimpleLocation } from "../types";
-o;
+
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
