@@ -1,6 +1,6 @@
 {
   "backendDependencies": {
-    "fhir2": "^1.2.0",
+    "fhir2": ">=1.2",
     "webservices.rest": "^2.2.0"
   },
   "pages": [
