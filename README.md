@@ -17,6 +17,16 @@ https://github.com/openmrs/openmrs-distro-referenceapplication/blob/main/distro/
 
 https://openmrs.slack.com/archives/C02P790SM7X/p1692380047339679?thread_ts=1692338258.965499&cid=C02P790SM7X
 
+You can also manually configure these concept sources in your OpenMRS instance by adding the fhirConceptSource Mapping in the fhir_concept_source table with url ***"http://terminology.hl7.org/CodeSystem/medicationdispense-status"*** and name as ***"HL7-MedicationDispenseStatus"***.  Also make sure it relates  a similar mapping in the concept_reference_source table.
+
+Example as seen below:
+
+<img width="1586" alt="Screenshot 2024-04-03 at 16 35 10" src="https://github.com/slubwama/openmrs-esm-dispensing/assets/3336745/17027c7a-60a9-4d56-ba54-bec8db764d6a">
+
+<img width="1616" alt="Screenshot 2024-04-03 at 16 36 01" src="https://github.com/slubwama/openmrs-esm-dispensing/assets/3336745/973ed865-7468-4239-aab2-1056087c11e0">
+
+
+
 The Medication Dispense Status value set can be found here:
 
 https://app.openconceptlab.org/#/search/?q=medication+dispense+status
