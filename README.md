@@ -25,6 +25,14 @@ It also is bundled in the "DrugDispense" OCL package provided by the Reference A
 
 https://github.com/openmrs/openmrs-distro-referenceapplication/tree/main/distro/configuration/ocl
 
+### Note
+You should also have the the fhirConceptSource Mapping in the fhir_concept_source table with url ***"http://terminology.hl7.org/CodeSystem/medicationdispense-status"*** and name as ***"HL7-MedicationDispenseStatus"***.  Also make sure it relates  a similar mapping in the concept_reference_source Table Example as seen below
+
+<img width="1586" alt="Screenshot 2024-04-03 at 16 35 10" src="https://github.com/slubwama/openmrs-esm-dispensing/assets/3336745/17027c7a-60a9-4d56-ba54-bec8db764d6a">
+
+<img width="1616" alt="Screenshot 2024-04-03 at 16 36 01" src="https://github.com/slubwama/openmrs-esm-dispensing/assets/3336745/973ed865-7468-4239-aab2-1056087c11e0">
+
+
 The "DrugDispense" also provides the default value sets for the "Substitution Type", "Substitution Reason", and "Medication Dispense Status Reason".
 
 The "Substitution Type" and "Substitution Reason" value sets define the valid answers for both the equivalent questions when substituting a drug.  The "Medication Dispense Status Reason" provides the default answers for both the "Reason for Pause" and "Reason for Close" questions.
