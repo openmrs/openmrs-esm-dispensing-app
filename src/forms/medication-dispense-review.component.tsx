@@ -1,32 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { Medication, MedicationDispense } from "../types";
-import MedicationCard from "../components/medication-card.component";
-import { TextArea, ComboBox, Dropdown, NumberInput } from "@carbon/react";
-import {
-  useLayoutType,
-  useConfig,
-  useSession,
-  userHasAccess,
-} from "@openmrs/esm-framework";
-import { useTranslation } from "react-i18next";
-import {
-  getConceptCodingUuid,
-  getMedicationReferenceOrCodeableConcept,
-  getOpenMRSMedicineDrugName,
-} from "../utils";
-import styles from "../components/medication-dispense-review.scss";
-import {
-  useMedicationCodeableConcept,
-  useMedicationFormulations,
-} from "../medication/medication.resource";
-import { useMedicationRequest } from "../medication-request/medication-request.resource";
-import { PharmacyConfig } from "../config-schema";
+import React, { useEffect, useState } from 'react';
+import { Medication, MedicationDispense } from '../types';
+import MedicationCard from '../components/medication-card.component';
+import { TextArea, ComboBox, Dropdown, NumberInput } from '@carbon/react';
+import { useLayoutType, useConfig, useSession, userHasAccess } from '@openmrs/esm-framework';
+import { useTranslation } from 'react-i18next';
+import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
+import styles from '../components/medication-dispense-review.scss';
+import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
+import { useMedicationRequest } from '../medication-request/medication-request.resource';
+import { PharmacyConfig } from '../config-schema';
 import {
   useOrderConfig,
   useSubstitutionReasonValueSet,
   useSubstitutionTypeValueSet,
-} from "../medication-dispense/medication-dispense.resource";
-import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from "../constants";
+} from '../medication-dispense/medication-dispense.resource';
+import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from '../constants';
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
@@ -58,15 +46,11 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const [substitutionReasons, setSubstitutionReasons] = useState([]);
   const [userCanModify, setUserCanModify] = useState(false);
 
-  const isTablet = useLayoutType() === "tablet";
+  const isTablet = useLayoutType() === 'tablet';
 
   const { orderConfigObject } = useOrderConfig();
-  const { substitutionTypeValueSet } = useSubstitutionTypeValueSet(
-    config.valueSets.substitutionType.uuid
-  );
-  const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(
-    config.valueSets.substitutionReason.uuid
-  );
+  const { substitutionTypeValueSet } = useSubstitutionTypeValueSet(config.valueSets.substitutionType.uuid);
+  const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(config.valueSets.substitutionReason.uuid);
 
   const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
 
@@ -76,9 +60,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       const availableRoutes = drugRoutes.map((x) => x.id);
       const otherRouteOptions = [];
       orderConfigObject.drugRoutes.forEach(
-        (x) =>
-          availableRoutes.includes(x.uuid) ||
-          otherRouteOptions.push({ id: x.uuid, text: x.display })
+        (x) => availableRoutes.includes(x.uuid) || otherRouteOptions.push({ id: x.uuid, text: x.display }),
       );
       setDrugRoutes([...drugRoutes, ...otherRouteOptions]);
 
@@ -86,9 +68,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       const availableDosingUnits = drugDosingUnits.map((x) => x.id);
       const otherDosingUnits = [];
       orderConfigObject.drugDosingUnits.forEach(
-        (x) =>
-          availableDosingUnits.includes(x.uuid) ||
-          otherDosingUnits.push({ id: x.uuid, text: x.display })
+        (x) => availableDosingUnits.includes(x.uuid) || otherDosingUnits.push({ id: x.uuid, text: x.display }),
       );
       setDrugDosingUnits([...drugDosingUnits, ...otherDosingUnits]);
 
@@ -96,9 +76,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       const availableDispensingUnits = drugDispensingUnits.map((x) => x.id);
       const otherDispensingUnits = [];
       orderConfigObject.drugDispensingUnits.forEach(
-        (x) =>
-          availableDispensingUnits.includes(x.uuid) ||
-          otherDispensingUnits.push({ id: x.uuid, text: x.display })
+        (x) => availableDispensingUnits.includes(x.uuid) || otherDispensingUnits.push({ id: x.uuid, text: x.display }),
       );
       setDrugDispensingUnits([...drugDispensingUnits, ...otherDispensingUnits]);
 
@@ -106,28 +84,23 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       const availableFrequencies = orderFrequencies.map((x) => x.id);
       const otherFrequencyOptions = [];
       orderConfigObject.orderFrequencies.forEach(
-        (x) =>
-          availableFrequencies.includes(x.uuid) ||
-          otherFrequencyOptions.push({ id: x.uuid, text: x.display })
+        (x) => availableFrequencies.includes(x.uuid) || otherFrequencyOptions.push({ id: x.uuid, text: x.display }),
       );
       setOrderFrequencies([...orderFrequencies, ...otherFrequencyOptions]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderConfigObject]);
 
   useEffect(() => {
     const substitutionTypeOptions = [];
 
     if (substitutionTypeValueSet?.compose?.include) {
-      const uuidValueSet = substitutionTypeValueSet.compose.include.find(
-        (include) => !include.system
-      );
+      const uuidValueSet = substitutionTypeValueSet.compose.include.find((include) => !include.system);
       if (uuidValueSet) {
         uuidValueSet.concept?.forEach((concept) =>
           substitutionTypeOptions.push({
             id: concept.code,
             text: concept.display,
-          })
+          }),
         );
       }
       substitutionTypeOptions.sort((a, b) => a.text.localeCompare(b.text));
@@ -139,15 +112,13 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     const substitutionReasonOptions = [];
 
     if (substitutionReasonValueSet?.compose?.include) {
-      const uuidValueSet = substitutionReasonValueSet.compose.include.find(
-        (include) => !include.system
-      );
+      const uuidValueSet = substitutionReasonValueSet.compose.include.find((include) => !include.system);
       if (uuidValueSet) {
         uuidValueSet.concept?.forEach((concept) =>
           substitutionReasonOptions.push({
             id: concept.code,
             text: concept.display,
-          })
+          }),
         );
       }
       substitutionReasonOptions.sort((a, b) => a.text.localeCompare(b.text));
@@ -157,15 +128,13 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
   // if this an order for a drug by concept, but not a particular formulation, we already have access to concept uuid
   const existingMedicationCodeableConceptUuid = getConceptCodingUuid(
-    getMedicationReferenceOrCodeableConcept(medicationDispense)
-      ?.medicationCodeableConcept?.coding
+    getMedicationReferenceOrCodeableConcept(medicationDispense)?.medicationCodeableConcept?.coding,
   );
   // otherwise we need to fetch the medication details to get the codeable concept
   // (note that React Hooks should not be called conditionally, so we *always* call this hook, but it will return null if existingMedicationCodeableConcept is defined
   const { medicationCodeableConceptUuid } = useMedicationCodeableConcept(
     existingMedicationCodeableConceptUuid,
-    getMedicationReferenceOrCodeableConcept(medicationDispense)
-      .medicationReference?.reference
+    getMedicationReferenceOrCodeableConcept(medicationDispense).medicationReference?.reference,
   );
   // get the formulations
   const { medicationFormulations } = useMedicationFormulations(
@@ -173,7 +142,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       ? existingMedicationCodeableConceptUuid
       : medicationCodeableConceptUuid
       ? medicationCodeableConceptUuid
-      : null
+      : null,
   );
 
   // get the medication request associated with this dispense event
@@ -182,10 +151,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   // it just seems cleaner to fetch it here rather than to make sure we pass it down through various components; with
   // SWR handling caching, we may want to consider pulling more down into this)
   const { medicationRequest } = useMedicationRequest(
-    medicationDispense.authorizingPrescription
-      ? medicationDispense.authorizingPrescription[0].reference
-      : null,
-    config.refreshInterval
+    medicationDispense.authorizingPrescription ? medicationDispense.authorizingPrescription[0].reference : null,
+    config.refreshInterval,
   );
 
   // check to see if the current dispense would be a substitution, and update accordingly
@@ -193,8 +160,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     if (
       medicationRequest?.medicationReference?.reference &&
       medicationDispense?.medicationReference?.reference &&
-      medicationRequest.medicationReference.reference !=
-        medicationDispense.medicationReference.reference
+      medicationRequest.medicationReference.reference != medicationDispense.medicationReference.reference
     ) {
       setIsSubstitution(true);
       updateMedicationDispense({
@@ -219,30 +185,18 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         },
       });
     }
-  }, [
-    medicationDispense.medicationReference,
-    medicationRequest?.medicationReference,
-  ]);
+  }, [medicationDispense.medicationReference, medicationRequest?.medicationReference]);
 
   useEffect(() => {
-    setUserCanModify(
-      session?.user &&
-        userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user)
-    );
+    setUserCanModify(session?.user && userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user));
   }, [session]);
 
   return (
     <div className={styles.medicationDispenseReviewContainer}>
       {!isEditingFormulation ? (
         <MedicationCard
-          medication={getMedicationReferenceOrCodeableConcept(
-            medicationDispense
-          )}
-          editAction={
-            userCanModify && allowEditing
-              ? () => setIsEditingFormulation(true)
-              : null
-          }
+          medication={getMedicationReferenceOrCodeableConcept(medicationDispense)}
+          editAction={userCanModify && allowEditing ? () => setIsEditingFormulation(true) : null}
         />
       ) : (
         <Dropdown
@@ -252,9 +206,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           itemToString={(item: Medication) => getOpenMRSMedicineDrugName(item)}
           initialSelectedItem={{
             ...medicationFormulations?.find(
-              (formulation) =>
-                formulation.id ===
-                medicationDispense.medicationReference?.reference.split("/")[1]
+              (formulation) => formulation.id === medicationDispense.medicationReference?.reference.split('/')[1],
             ),
           }}
           onChange={({ selectedItem }) => {
@@ -262,7 +214,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               ...medicationDispense,
               medicationCodeableConcept: undefined,
               medicationReference: {
-                reference: "Medication/" + selectedItem?.id,
+                reference: 'Medication/' + selectedItem?.id,
                 display: getOpenMRSMedicineDrugName(selectedItem),
               },
             });
@@ -279,7 +231,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             id="substitutionType"
             light={isTablet}
             items={substitutionTypes}
-            titleText={t("substitutionType", "Type of substitution")}
+            titleText={t('substitutionType', 'Type of substitution')}
             itemToString={(item) => item?.text}
             initialSelectedItem={{
               id: medicationDispense.substitution.type?.coding[0]?.code,
@@ -311,7 +263,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             id="substitutionReason"
             light={isTablet}
             items={substitutionReasons}
-            titleText={t("substitutionReason", "Reason for substitution")}
+            titleText={t('substitutionReason', 'Reason for substitution')}
             itemToString={(item) => item?.text}
             initialSelectedItem={{
               id: medicationDispense.substitution.reason[0]?.coding[0]?.code,
@@ -344,30 +296,22 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           disabled={!userCanModify}
           hideSteppers={true}
           id="quantity"
-          invalidText={t("numberIsNotValid", "Number is not valid")}
+          invalidText={t('numberIsNotValid', 'Number is not valid')}
           label={
-            t("quantity", "Quantity") +
+            t('quantity', 'Quantity') +
             (config.dispenseBehavior.restrictTotalQuantityDispensed
-              ? " (" +
-                t("maxQuantityRemaining", "Maximum quantity remaining:") +
-                " " +
-                quantityRemaining +
-                ")"
-              : "")
+              ? ' (' + t('maxQuantityRemaining', 'Maximum quantity remaining:') + ' ' + quantityRemaining + ')'
+              : '')
           }
           min={0}
-          max={
-            config.dispenseBehavior.restrictTotalQuantityDispensed
-              ? quantityRemaining
-              : undefined
-          }
+          max={config.dispenseBehavior.restrictTotalQuantityDispensed ? quantityRemaining : undefined}
           value={medicationDispense.quantity.value}
           onChange={(e) => {
             updateMedicationDispense({
               ...medicationDispense,
               quantity: {
                 ...medicationDispense.quantity,
-                value: e.target?.value ? parseFloat(e.target.value) : "",
+                value: e.target?.value ? parseFloat(e.target.value) : '',
               },
             });
           }}
@@ -378,7 +322,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           disabled={!userCanModify || !allowEditing}
           light={isTablet}
           items={drugDispensingUnits}
-          titleText={t("drugDispensingUnit", "Dispensing unit")}
+          titleText={t('drugDispensingUnit', 'Dispensing unit')}
           itemToString={(item) => item?.text}
           initialSelectedItem={{
             id: medicationDispense.quantity.code,
@@ -404,13 +348,10 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           disabled={!userCanModify || !allowEditing}
           hideSteppers={true}
           id="dosingQuanity"
-          invalidText={t("numberIsNotValid", "Number is not valid")}
+          invalidText={t('numberIsNotValid', 'Number is not valid')}
           min={0}
-          label={t("dose", "Dose")}
-          value={
-            medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity
-              .value
-          }
+          label={t('dose', 'Dose')}
+          value={medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.value}
           onChange={(e) => {
             updateMedicationDispense({
               ...medicationDispense,
@@ -421,11 +362,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                     {
                       ...medicationDispense.dosageInstruction[0].doseAndRate[0],
                       doseQuantity: {
-                        ...medicationDispense.dosageInstruction[0]
-                          .doseAndRate[0].doseQuantity,
-                        value: e.target?.value
-                          ? parseFloat(e.target.value)
-                          : "",
+                        ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
+                        value: e.target?.value ? parseFloat(e.target.value) : '',
                       },
                     },
                   ],
@@ -440,13 +378,11 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           disabled={!userCanModify || !allowEditing}
           light={isTablet}
           items={drugDosingUnits}
-          titleText={t("doseUnit", "Dose unit")}
+          titleText={t('doseUnit', 'Dose unit')}
           itemToString={(item) => item?.text}
           initialSelectedItem={{
-            id: medicationDispense.dosageInstruction[0].doseAndRate[0]
-              .doseQuantity?.code,
-            text: medicationDispense.dosageInstruction[0].doseAndRate[0]
-              .doseQuantity?.unit,
+            id: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.code,
+            text: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.unit,
           }}
           onChange={({ selectedItem }) => {
             updateMedicationDispense({
@@ -458,9 +394,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                     {
                       doseQuantity: {
                         // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
-                        value:
-                          medicationDispense.dosageInstruction[0].doseAndRate[0]
-                            .doseQuantity?.value,
+                        value: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.value,
                         code: selectedItem?.id,
                       },
                     },
@@ -481,7 +415,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             id: medicationDispense.dosageInstruction[0].route?.coding[0]?.code,
             text: medicationDispense.dosageInstruction[0].route?.text,
           }}
-          titleText={t("route", "Route")}
+          titleText={t('route', 'Route')}
           itemToString={(item) => item?.text}
           onChange={({ selectedItem }) => {
             updateMedicationDispense({
@@ -510,11 +444,10 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         light={isTablet}
         items={orderFrequencies}
         initialSelectedItem={{
-          id: medicationDispense.dosageInstruction[0].timing?.code?.coding[0]
-            ?.code,
+          id: medicationDispense.dosageInstruction[0].timing?.code?.coding[0]?.code,
           text: medicationDispense.dosageInstruction[0].timing?.code?.text,
         }}
-        titleText={t("frequency", "Frequency")}
+        titleText={t('frequency', 'Frequency')}
         itemToString={(item) => item?.text}
         onChange={({ selectedItem }) => {
           updateMedicationDispense({
@@ -540,7 +473,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       />
 
       <TextArea
-        labelText={t("patientInstructions", "Patient instructions")}
+        labelText={t('patientInstructions', 'Patient instructions')}
         value={medicationDispense.dosageInstruction[0].text}
         maxLength={65535}
         onChange={(e) => {

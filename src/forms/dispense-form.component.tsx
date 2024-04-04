@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ExtensionSlot,
   showNotification,
@@ -7,30 +7,26 @@ import {
   useConfig,
   useLayoutType,
   usePatient,
-} from "@openmrs/esm-framework";
-import { Button, FormLabel, InlineLoading } from "@carbon/react";
-import styles from "./forms.scss";
-import { closeOverlay } from "../hooks/useOverlay";
-import {
-  MedicationDispense,
-  MedicationDispenseStatus,
-  MedicationRequestBundle,
-} from "../types";
-import { PharmacyConfig } from "../config-schema";
-import { saveMedicationDispense } from "../medication-dispense/medication-dispense.resource";
-import MedicationDispenseReview from "./medication-dispense-review.component";
+} from '@openmrs/esm-framework';
+import { Button, FormLabel, InlineLoading } from '@carbon/react';
+import styles from './forms.scss';
+import { closeOverlay } from '../hooks/useOverlay';
+import { MedicationDispense, MedicationDispenseStatus, MedicationRequestBundle } from '../types';
+import { PharmacyConfig } from '../config-schema';
+import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
+import MedicationDispenseReview from './medication-dispense-review.component';
 import {
   computeNewFulfillerStatusAfterDispenseEvent,
   getFulfillerStatus,
   getUuidFromReference,
   revalidate,
-} from "../utils";
-import { updateMedicationRequestFulfillerStatus } from "../medication-request/medication-request.resource";
+} from '../utils';
+import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
   medicationRequestBundle: MedicationRequestBundle;
-  mode: "enter" | "edit";
+  mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
   quantityRemaining: number;
@@ -45,13 +41,12 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   quantityRemaining,
 }) => {
   const { t } = useTranslation();
-  const isTablet = useLayoutType() === "tablet";
+  const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
   const config = useConfig() as PharmacyConfig;
 
   // Keep track of medication dispense payload
-  const [medicationDispensePayload, setMedicationDispensePayload] =
-    useState<MedicationDispense>();
+  const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
 
   // whether or not the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
@@ -64,28 +59,20 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
-      saveMedicationDispense(
-        medicationDispensePayload,
-        MedicationDispenseStatus.completed,
-        abortController
-      )
+      saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
         .then((response) => {
           if (response.ok) {
-            const newFulfillerStatus =
-              computeNewFulfillerStatusAfterDispenseEvent(
-                medicationDispensePayload,
-                medicationRequestBundle,
-                config.dispenseBehavior.restrictTotalQuantityDispensed
-              );
-            if (
-              getFulfillerStatus(medicationRequestBundle.request) !==
-              newFulfillerStatus
-            ) {
+            const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
+              medicationDispensePayload,
+              medicationRequestBundle,
+              config.dispenseBehavior.restrictTotalQuantityDispensed,
+            );
+            if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
               return updateMedicationRequestFulfillerStatus(
                 getUuidFromReference(
-                  medicationDispensePayload.authorizingPrescription[0].reference // assumes authorizing prescription exist
+                  medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
                 ),
-                newFulfillerStatus
+                newFulfillerStatus,
               );
             }
           }
@@ -98,18 +85,11 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
               revalidate(encounterUuid);
               showToast({
                 critical: true,
-                kind: "success",
-                description: t(
-                  "medicationListUpdated",
-                  "Medication dispense list has been updated."
-                ),
+                kind: 'success',
+                description: t('medicationListUpdated', 'Medication dispense list has been updated.'),
                 title: t(
-                  mode === "enter"
-                    ? "medicationDispensed"
-                    : "medicationDispenseUpdated",
-                  mode === "enter"
-                    ? "Medication successfully dispensed."
-                    : "Dispense record successfully updated."
+                  mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
+                  mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
                 ),
               });
             }
@@ -117,19 +97,15 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           (error) => {
             showNotification({
               title: t(
-                mode === "enter"
-                  ? "medicationDispenseError"
-                  : "medicationDispenseUpdatedError",
-                mode === "enter"
-                  ? "Error dispensing medication."
-                  : "Error updating dispense record"
+                mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
+                mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
               ),
-              kind: "error",
+              kind: 'error',
               critical: true,
               description: error?.message,
             });
             setIsSubmitting(false);
-          }
+          },
         );
     }
   };
@@ -138,16 +114,12 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     if (
       medicationDispensePayload &&
       medicationDispensePayload.quantity?.value &&
-      (!quantityRemaining ||
-        medicationDispensePayload?.quantity?.value <= quantityRemaining) &&
+      (!quantityRemaining || medicationDispensePayload?.quantity?.value <= quantityRemaining) &&
       medicationDispensePayload.quantity?.code &&
-      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]
-        ?.doseQuantity?.value &&
-      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]
-        ?.doseQuantity?.code &&
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value &&
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
       medicationDispensePayload.dosageInstruction[0]?.route?.coding[0].code &&
-      medicationDispensePayload.dosageInstruction[0]?.timing?.code.coding[0]
-        .code &&
+      medicationDispensePayload.dosageInstruction[0]?.timing?.code.coding[0].code &&
       (!medicationDispensePayload.substitution.wasSubstituted ||
         (medicationDispensePayload.substitution.reason[0]?.coding[0].code &&
           medicationDispensePayload.substitution.type?.coding[0].code))
@@ -159,10 +131,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   };
 
   // initialize the internal dispense payload with the dispenses passed in as props
-  useEffect(
-    () => setMedicationDispensePayload(medicationDispense),
-    [medicationDispense]
-  );
+  useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
 
   // check is valid on any changes
   useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining]);
@@ -188,19 +157,15 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             status="active"
           />
         )}
-        {patient && (
-          <ExtensionSlot name="patient-header-slot" state={bannerState} />
-        )}
+        {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
         <section className={styles.formGroup}>
           {/* <span style={{ marginTop: "1rem" }}>1. {t("drug", "Drug")}</span>*/}
           <FormLabel>
             {t(
+              config.dispenseBehavior.allowModifyingPrescription ? 'drugHelpText' : 'drugHelpTextNoEdit',
               config.dispenseBehavior.allowModifyingPrescription
-                ? "drugHelpText"
-                : "drugHelpTextNoEdit",
-              config.dispenseBehavior.allowModifyingPrescription
-                ? "You may edit the formulation and quantity dispensed here"
-                : "You may edit quantity dispensed here"
+                ? 'You may edit the formulation and quantity dispensed here'
+                : 'You may edit quantity dispensed here',
             )}
           </FormLabel>
           {medicationDispensePayload ? (
@@ -212,17 +177,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           ) : null}
         </section>
         <section className={styles.buttonGroup}>
-          <Button
-            disabled={isSubmitting}
-            onClick={() => closeOverlay()}
-            kind="secondary"
-          >
-            {t("cancel", "Cancel")}
+          <Button disabled={isSubmitting} onClick={() => closeOverlay()} kind="secondary">
+            {t('cancel', 'Cancel')}
           </Button>
           <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
             {t(
-              mode === "enter" ? "dispensePrescription" : "saveChanges",
-              mode === "enter" ? "Dispense prescription" : "Save changes"
+              mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
+              mode === 'enter' ? 'Dispense prescription' : 'Save changes',
             )}
           </Button>
         </section>

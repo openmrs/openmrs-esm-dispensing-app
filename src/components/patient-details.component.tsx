@@ -1,14 +1,7 @@
-import React, { useEffect } from "react";
-import {
-  attach,
-  detach,
-  ExtensionSlot,
-  PatientUuid,
-  useConfig,
-  usePatient,
-} from "@openmrs/esm-framework";
-import styles from "./patient-details.scss";
-import { useTranslation } from "react-i18next";
+import React, { useEffect } from 'react';
+import { attach, detach, ExtensionSlot, PatientUuid, useConfig, usePatient } from '@openmrs/esm-framework';
+import styles from './patient-details.scss';
+import { useTranslation } from 'react-i18next';
 
 const PatientDetails: React.FC<{
   patientUuid: PatientUuid;
@@ -18,10 +11,7 @@ const PatientDetails: React.FC<{
   const { patient } = usePatient(patientUuid);
 
   const patientName = patient;
-  const patientPhotoSlotState = React.useMemo(
-    () => ({ patientUuid, patientName }),
-    [patientUuid, patientName]
-  );
+  const patientPhotoSlotState = React.useMemo(() => ({ patientUuid, patientName }), [patientUuid, patientName]);
 
   const [showContactDetails, setShowContactDetails] = React.useState(false);
   const toggleContactDetails = React.useCallback((event: MouseEvent) => {
@@ -36,14 +26,14 @@ const PatientDetails: React.FC<{
   );
 
   useEffect(() => {
-    attach("dispensing-patient-banner-slot", "patient-banner");
-    attach("dispensing-patient-vitals-slot", "vitals-overview-widget");
-    attach("dispensing-patient-allergies-slot", "allergies-overview-widget");
+    attach('dispensing-patient-banner-slot', 'patient-banner');
+    attach('dispensing-patient-vitals-slot', 'vitals-overview-widget');
+    attach('dispensing-patient-allergies-slot', 'allergies-overview-widget');
 
     return () => {
-      detach("dispensing-patient-banner-slot", "patient-banner");
-      detach("dispensing-patient-vitals-slot", "vitals-overview-widget");
-      detach("dispensing-patient-allergies-slot", "allergies-overview-widget");
+      detach('dispensing-patient-banner-slot', 'patient-banner');
+      detach('dispensing-patient-vitals-slot', 'vitals-overview-widget');
+      detach('dispensing-patient-allergies-slot', 'allergies-overview-widget');
     };
   }, []);
 

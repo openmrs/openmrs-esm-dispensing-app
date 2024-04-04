@@ -1,4 +1,4 @@
-import { Type } from "@openmrs/esm-framework";
+import { Type } from '@openmrs/esm-framework';
 
 /**
  * This is the config schema. It expects a configuration object which
@@ -23,22 +23,20 @@ import { Type } from "@openmrs/esm-framework";
 export const configSchema = {
   appName: {
     _type: Type.String,
-    _default: "Pharmacy",
+    _default: 'Pharmacy',
   },
   actionButtons: {
     pauseButton: {
       enabled: {
         _type: Type.Boolean,
-        _description:
-          "Enabled/Disable including a Pause button in the button action bar",
+        _description: 'Enabled/Disable including a Pause button in the button action bar',
         _default: true,
       },
     },
     closeButton: {
       enabled: {
         _type: Type.Boolean,
-        _description:
-          "Enabled/Disable including a Close button in the button action bar",
+        _description: 'Enabled/Disable including a Close button in the button action bar',
         _default: true,
       },
     },
@@ -47,20 +45,19 @@ export const configSchema = {
     allowModifyingPrescription: {
       _type: Type.Boolean,
       _description:
-        "Enable/Disable editing the prescription. If Disabled, Quantity will be he only editable field on prescription form. Note that thins means that quantity units will need to be mandatory and set correctly on the prescription.",
+        'Enable/Disable editing the prescription. If Disabled, Quantity will be he only editable field on prescription form. Note that thins means that quantity units will need to be mandatory and set correctly on the prescription.',
       _default: true,
     },
     restrictTotalQuantityDispensed: {
       _type: Type.Boolean,
       _description:
-        "Enable/Disable restricting dispensing quantity greater than total quantity ordered. Marks prescription as complete when total quantity dispensed. If true, allowModifyingPrescription *must* be false, as this functionality relies solely on numeric quantity and assumes no change in formulation, dosage, unit, etc",
+        'Enable/Disable restricting dispensing quantity greater than total quantity ordered. Marks prescription as complete when total quantity dispensed. If true, allowModifyingPrescription *must* be false, as this functionality relies solely on numeric quantity and assumes no change in formulation, dosage, unit, etc',
       _default: false,
     },
   },
   medicationRequestExpirationPeriodInDays: {
     _type: Type.Number,
-    _description:
-      "Medication Requests older that this will be considered expired",
+    _description: 'Medication Requests older that this will be considered expired',
     _default: 90,
   },
   locationBehavior: {
@@ -68,29 +65,26 @@ export const configSchema = {
       enabled: {
         _type: Type.Boolean,
         _description:
-          "Enabled/Disable including a Location column in the main prescriptions table showing ordering location",
+          'Enabled/Disable including a Location column in the main prescriptions table showing ordering location',
         _default: false,
       },
     },
     locationFilter: {
       enabled: {
         _type: Type.Boolean,
-        _description:
-          "Enable/Disable Location filter on main prescriptions page",
+        _description: 'Enable/Disable Location filter on main prescriptions page',
         _default: false,
       },
       tag: {
         _type: Type.String,
-        _description:
-          "Name of the location tag to use when fetching locations to populate filter",
-        _default: "Login Location",
+        _description: 'Name of the location tag to use when fetching locations to populate filter',
+        _default: 'Login Location',
       },
     },
   },
   refreshInterval: {
     _type: Type.Number,
-    _description:
-      "The interval, in milliseconds, to query the backend for new/changed data",
+    _description: 'The interval, in milliseconds, to query the backend for new/changed data',
     _default: 60000,
   },
   valueSets: {
@@ -99,7 +93,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Pause' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: "2dd3e5c0-3d3f-4f3d-9860-19b3f9ab26ff",
+        _default: '2dd3e5c0-3d3f-4f3d-9860-19b3f9ab26ff',
       },
     },
     reasonForClose: {
@@ -107,7 +101,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Close' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: "bd6c1fc2-7cfc-4562-94a0-e4765e5e977e",
+        _default: 'bd6c1fc2-7cfc-4562-94a0-e4765e5e977e',
       },
     },
     substitutionReason: {
@@ -115,7 +109,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Substitution' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167862/",
-        _default: "de8671b8-ed2e-4f7e-a9f8-dcd00878f2eb",
+        _default: 'de8671b8-ed2e-4f7e-a9f8-dcd00878f2eb',
       },
     },
     substitutionType: {
@@ -123,7 +117,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Type of Substitution' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167859/",
-        _default: "b9c5bca0-d026-4245-a4d2-e4c0a8999082",
+        _default: 'b9c5bca0-d026-4245-a4d2-e4c0a8999082',
       },
     },
   },
