@@ -10,6 +10,7 @@ import {
   computeQuantityRemaining,
   getMostRecentMedicationDispenseStatus,
 } from '../utils';
+import { type PharmacyConfig } from '../config-schema';
 import DispenseForm from '../forms/dispense-form.component';
 import { initiateMedicationDispenseBody } from '../medication-dispense/medication-dispense.resource';
 import PauseDispenseForm from '../forms/pause-dispense-form.component';
@@ -23,7 +24,7 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, patientUuid, encounterUuid }) => {
   const { t } = useTranslation();
-  const config = useConfig();
+  const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
     medicationRequestBundle.dispenses,

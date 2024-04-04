@@ -14,6 +14,7 @@ import {
   useSubstitutionTypeValueSet,
 } from '../medication-dispense/medication-dispense.resource';
 import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from '../constants';
+import { type PharmacyConfig } from '../config-schema';
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
@@ -27,7 +28,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   quantityRemaining,
 }) => {
   const { t } = useTranslation();
-  const config = useConfig();
+  const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const [isEditingFormulation, setIsEditingFormulation] = useState(false);
   const [isSubstitution, setIsSubstitution] = useState(false);

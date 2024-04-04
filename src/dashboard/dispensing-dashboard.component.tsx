@@ -5,9 +5,10 @@ import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
 import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';
 import { useConfig } from '@openmrs/esm-framework';
 import { useTranslation } from 'react-i18next';
+import { type PharmacyConfig } from '../config-schema';
 
 export default function DispensingDashboard() {
-  const config = useConfig();
+  const config = useConfig<PharmacyConfig>();
   const { t } = useTranslation();
   if (config.dispenseBehavior.restrictTotalQuantityDispensed && config.dispenseBehavior.allowModifyingPrescription) {
     return (

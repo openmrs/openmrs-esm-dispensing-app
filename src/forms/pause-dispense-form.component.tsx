@@ -15,6 +15,7 @@ import styles from './forms.scss';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { getUuidFromReference, revalidate } from '../utils';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
+import { type PharmacyConfig } from '../config-schema';
 
 interface PauseDispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -30,7 +31,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   encounterUuid,
 }) => {
   const { t } = useTranslation();
-  const config = useConfig();
+  const config = useConfig<PharmacyConfig>();
   const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
 

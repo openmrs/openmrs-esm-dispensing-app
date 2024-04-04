@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
 import PrescriptionExpanded from './prescription-expanded.component';
 import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import { type PharmacyConfig } from '../config-schema';
 import styles from './prescriptions.scss';
 
 interface PrescriptionTabPanelProps {
@@ -30,7 +31,7 @@ interface PrescriptionTabPanelProps {
 
 const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm, location, status }) => {
   const { t } = useTranslation();
-  const config = useConfig();
+  const config = useConfig<PharmacyConfig>();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);

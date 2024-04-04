@@ -14,6 +14,7 @@ import { closeOverlay } from '../hooks/useOverlay';
 import styles from './forms.scss';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
+import { type PharmacyConfig } from '../config-schema';
 import { getUuidFromReference, revalidate } from '../utils';
 
 interface CloseDispenseFormProps {
@@ -30,7 +31,7 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
   encounterUuid,
 }) => {
   const { t } = useTranslation();
-  const config = useConfig();
+  const config = useConfig<PharmacyConfig>();
   const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
 

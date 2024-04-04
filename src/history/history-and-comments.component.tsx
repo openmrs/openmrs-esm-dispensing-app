@@ -29,6 +29,7 @@ import {
 } from '../utils';
 import PauseDispenseForm from '../forms/pause-dispense-form.component';
 import CloseDispenseForm from '../forms/close-dispense-form.component';
+import { type PharmacyConfig } from '../config-schema';
 
 const HistoryAndComments: React.FC<{
   encounterUuid: string;
@@ -36,7 +37,7 @@ const HistoryAndComments: React.FC<{
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const session = useSession();
-  const config = useConfig();
+  const config = useConfig<PharmacyConfig>();
   const { medicationRequestBundles, prescriptionDate, isError, isLoading } = usePrescriptionDetails(
     encounterUuid,
     config.refreshInterval,

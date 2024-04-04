@@ -21,6 +21,7 @@ import {
   revalidate,
 } from '../utils';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
+import { type PharmacyConfig } from '../config-schema';
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -42,7 +43,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const { t } = useTranslation();
   const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
-  const config = useConfig();
+  const config = useConfig<PharmacyConfig>();
 
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();

@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { Calendar, Location } from '@carbon/react/icons';
 import { useConfig, useSession, formatDate } from '@openmrs/esm-framework';
 import PharmacyIllustration from './pharmacy-illustration.component';
+import { type PharmacyConfig } from '../config-schema';
 import styles from './pharmacy-header.scss';
 
 export const PharmacyHeader: React.FC = () => {
   const { t } = useTranslation();
   const userSession = useSession();
-  const config = useConfig();
+  const config = useConfig<PharmacyConfig>();
   const userLocation = userSession?.sessionLocation?.display;
 
   return (
