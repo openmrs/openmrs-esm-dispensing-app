@@ -1,5 +1,5 @@
-import useSWR from "swr";
-import { fhirBaseUrl, openmrsFetch, parseDate } from "@openmrs/esm-framework";
+import useSWR from 'swr';
+import { fhirBaseUrl, openmrsFetch, parseDate } from '@openmrs/esm-framework';
 import {
   AllergyIntoleranceResponse,
   EncounterResponse,
@@ -10,7 +10,7 @@ import {
   Encounter,
   MedicationRequestFulfillerStatus,
   MedicationRequestBundle,
-} from "../types";
+} from '../types';
 import {
   getPrescriptionDetailsEndpoint,
   getMedicationDisplay,
@@ -20,42 +20,31 @@ import {
   sortMedicationDispensesByDateRecorded,
   computePrescriptionStatusMessageCode,
   getAssociatedMedicationDispenses,
-} from "../utils";
-import dayjs from "dayjs";
-import {
-  JSON_MERGE_PATH_MIME_TYPE,
-  OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
-} from "../constants";
+} from '../utils';
+import dayjs from 'dayjs';
+import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 
 export function usePrescriptionsTable(
   pageSize: number = 10,
   pageOffset: number = 0,
-  patientSearchTerm: string = "",
-  location: string = "",
-  status: string = "",
+  patientSearchTerm: string = '',
+  location: string = '',
+  status: string = '',
   medicationRequestExpirationPeriodInDays: number,
-  refreshInterval: number
+  refreshInterval: number,
 ) {
   const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
-    status === "ACTIVE"
+    status === 'ACTIVE'
       ? getPrescriptionTableActiveMedicationRequestsEndpoint(
           pageOffset,
           pageSize,
-          dayjs(new Date())
-            .startOf("day")
-            .subtract(medicationRequestExpirationPeriodInDays, "day")
-            .toISOString(),
+          dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString(),
           patientSearchTerm,
-          location
+          location,
         )
-      : getPrescriptionTableAllMedicationRequestsEndpoint(
-          pageOffset,
-          pageSize,
-          patientSearchTerm,
-          location
-        ),
+      : getPrescriptionTableAllMedicationRequestsEndpoint(pageOffset, pageSize, patientSearchTerm, location),
     openmrsFetch,
-    { refreshInterval: refreshInterval }
+    { refreshInterval: refreshInterval },
   );
 
   let prescriptionsTableRows: PrescriptionsTableRow[];
@@ -63,37 +52,31 @@ export function usePrescriptionsTable(
     const entries = data?.data.entry;
     if (entries) {
       const encounters = entries
-        .filter((entry) => entry?.resource?.resourceType == "Encounter")
+        .filter((entry) => entry?.resource?.resourceType == 'Encounter')
         .map((entry) => entry.resource as Encounter);
       const medicationRequests = entries
-        .filter((entry) => entry?.resource?.resourceType == "MedicationRequest")
+        .filter((entry) => entry?.resource?.resourceType == 'MedicationRequest')
         .map((entry) => entry.resource as MedicationRequest);
       const medicationDispenses = entries
-        .filter(
-          (entry) => entry?.resource?.resourceType == "MedicationDispense"
-        )
+        .filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
         .map((entry) => entry.resource as MedicationDispense)
         .sort(sortMedicationDispensesByDateRecorded);
       prescriptionsTableRows = encounters.map((encounter) => {
         const medicationRequestsForEncounter = medicationRequests.filter(
-          (medicationRequest) =>
-            medicationRequest.encounter.reference == "Encounter/" + encounter.id
+          (medicationRequest) => medicationRequest.encounter.reference == 'Encounter/' + encounter.id,
         );
 
         const medicationRequestReferences = medicationRequestsForEncounter.map(
-          (medicationRequest) => "MedicationRequest/" + medicationRequest.id
+          (medicationRequest) => 'MedicationRequest/' + medicationRequest.id,
         );
-        const medicationDispensesForMedicationRequests =
-          medicationDispenses.filter((medicationDispense) =>
-            medicationRequestReferences.includes(
-              medicationDispense.authorizingPrescription[0]?.reference
-            )
-          );
+        const medicationDispensesForMedicationRequests = medicationDispenses.filter((medicationDispense) =>
+          medicationRequestReferences.includes(medicationDispense.authorizingPrescription[0]?.reference),
+        );
         return buildPrescriptionsTableRow(
           encounter,
           medicationRequestsForEncounter,
           medicationDispensesForMedicationRequests,
-          medicationRequestExpirationPeriodInDays
+          medicationRequestExpirationPeriodInDays,
         );
       });
       prescriptionsTableRows.sort((a, b) => (a.created < b.created ? 1 : -1));
@@ -114,42 +97,29 @@ function buildPrescriptionsTableRow(
   encounter: Encounter,
   medicationRequests: Array<MedicationRequest>,
   medicationDispense: Array<MedicationDispense>,
-  medicationRequestExpirationPeriodInDays: number
+  medicationRequestExpirationPeriodInDays: number,
 ): PrescriptionsTableRow {
   return {
     id: encounter?.id,
     created: encounter?.period?.start,
     patient: {
       name: encounter?.subject?.display,
-      uuid: encounter?.subject?.reference?.split("/")[1],
+      uuid: encounter?.subject?.reference?.split('/')[1],
     },
     drugs: [
       ...new Set(
         medicationRequests
-          .map((medicationRequest) =>
-            getMedicationDisplay(
-              getMedicationReferenceOrCodeableConcept(medicationRequest)
-            )
-          )
+          .map((medicationRequest) => getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationRequest)))
           .sort((a, b) => {
             return a.localeCompare(b);
-          })
+          }),
       ),
-    ].join("; "),
+    ].join('; '),
     lastDispenser:
-      medicationDispense &&
-      medicationDispense[0]?.performer &&
-      medicationDispense[0]?.performer[0]?.actor.display,
-    prescriber: [
-      ...new Set(medicationRequests.map((o) => o.requester.display)),
-    ].join(", "),
-    status: computePrescriptionStatusMessageCode(
-      medicationRequests,
-      medicationRequestExpirationPeriodInDays
-    ),
-    location: encounter?.location
-      ? encounter?.location[0]?.location.display
-      : null,
+      medicationDispense && medicationDispense[0]?.performer && medicationDispense[0]?.performer[0]?.actor.display,
+    prescriber: [...new Set(medicationRequests.map((o) => o.requester.display))].join(', '),
+    status: computePrescriptionStatusMessageCode(medicationRequests, medicationRequestExpirationPeriodInDays),
+    location: encounter?.location ? encounter?.location[0]?.location.display : null,
   };
 }
 
@@ -161,14 +131,14 @@ export function usePrescriptionDetails(encounterUuid: string, refreshInterval) {
   const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
     getPrescriptionDetailsEndpoint(encounterUuid),
     openmrsFetch,
-    { refreshInterval: refreshInterval }
+    { refreshInterval: refreshInterval },
   );
 
   if (data) {
     const results = data?.data.entry;
 
     const encounter = results
-      ?.filter((entry) => entry?.resource?.resourceType == "Encounter")
+      ?.filter((entry) => entry?.resource?.resourceType == 'Encounter')
       .map((entry) => entry.resource as Encounter);
 
     if (encounter) {
@@ -176,33 +146,26 @@ export function usePrescriptionDetails(encounterUuid: string, refreshInterval) {
       prescriptionDate = parseDate(encounter[0]?.period.start);
 
       const medicationRequests = results
-        ?.filter(
-          (entry) => entry?.resource?.resourceType == "MedicationRequest"
-        )
+        ?.filter((entry) => entry?.resource?.resourceType == 'MedicationRequest')
         .map((entry) => entry.resource as MedicationRequest);
 
       const medicationDispenses = results
-        ?.filter(
-          (entry) => entry?.resource?.resourceType == "MedicationDispense"
-        )
+        ?.filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
         .map((entry) => entry.resource as MedicationDispense)
         .sort(sortMedicationDispensesByDateRecorded);
 
       medicationRequests.every((medicationRequest) =>
         medicationRequestBundles.push({
           request: medicationRequest,
-          dispenses: getAssociatedMedicationDispenses(
-            medicationRequest,
-            medicationDispenses
-          ).sort(sortMedicationDispensesByDateRecorded),
-        })
+          dispenses: getAssociatedMedicationDispenses(medicationRequest, medicationDispenses).sort(
+            sortMedicationDispensesByDateRecorded,
+          ),
+        }),
       );
     }
   }
 
-  isLoading =
-    (!medicationRequestBundles || medicationRequestBundles.length == 0) &&
-    !error;
+  isLoading = (!medicationRequestBundles || medicationRequestBundles.length == 0) && !error;
 
   return {
     medicationRequestBundles,
@@ -216,7 +179,7 @@ export function usePatientAllergies(patientUuid: string, refreshInterval) {
   const { data, error } = useSWR<{ data: AllergyIntoleranceResponse }, Error>(
     `${fhirBaseUrl}/AllergyIntolerance?patient=${patientUuid}`,
     openmrsFetch,
-    { refreshInterval: refreshInterval }
+    { refreshInterval: refreshInterval },
   );
 
   let allergies = [];
@@ -237,7 +200,7 @@ export function usePatientAllergies(patientUuid: string, refreshInterval) {
 // supports passing just the uuid/code or the entire reference, ie either: "MedicationReference/123-abc" or "123-abc"
 export function useMedicationRequest(reference: string, refreshInterval) {
   reference = reference
-    ? reference.startsWith("MedicationRequest")
+    ? reference.startsWith('MedicationRequest')
       ? reference
       : `MedicationRequest/${reference}`
     : null;
@@ -245,7 +208,7 @@ export function useMedicationRequest(reference: string, refreshInterval) {
   const { data } = useSWR<{ data: MedicationRequest }, Error>(
     reference ? `${fhirBaseUrl}/${reference}` : null,
     openmrsFetch,
-    { refreshInterval: refreshInterval }
+    { refreshInterval: refreshInterval },
   );
   return {
     medicationRequest: data ? data.data : null,
@@ -254,14 +217,14 @@ export function useMedicationRequest(reference: string, refreshInterval) {
 
 export function updateMedicationRequestFulfillerStatus(
   medicationRequestUuid: string,
-  fulfillerStatus: MedicationRequestFulfillerStatus
+  fulfillerStatus: MedicationRequestFulfillerStatus,
 ) {
   const url = `${fhirBaseUrl}/MedicationRequest/${medicationRequestUuid}`;
 
   return openmrsFetch(url, {
-    method: "PATCH",
+    method: 'PATCH',
     headers: {
-      "Content-Type": JSON_MERGE_PATH_MIME_TYPE,
+      'Content-Type': JSON_MERGE_PATH_MIME_TYPE,
     },
     body: {
       extension: [

@@ -1,9 +1,9 @@
-import React from "react";
-import { Tile } from "@carbon/react";
-import { Edit } from "@carbon/react/icons";
-import { MedicationReferenceOrCodeableConcept } from "../types";
-import styles from "./medication-card.scss";
-import { getMedicationDisplay } from "../utils";
+import React from 'react';
+import { Tile } from '@carbon/react';
+import { Edit } from '@carbon/react/icons';
+import { MedicationReferenceOrCodeableConcept } from '../types';
+import styles from './medication-card.scss';
+import { getMedicationDisplay } from '../utils';
 
 const MedicationCard: React.FC<{
   medication: MedicationReferenceOrCodeableConcept;

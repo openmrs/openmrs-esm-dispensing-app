@@ -1,13 +1,8 @@
-import React from "react";
+import React from 'react';
 
 const PharmacyIllustration: React.FC = () => {
   return (
-    <svg
-      width="72"
-      height="72"
-      viewBox="0 0 62 58"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="72" height="72" viewBox="0 0 62 58" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <path id="whv9q6f4ta" d="M0 0h62v30.508H0z" />
         <path id="hp71ojgcnc" d="M0 0h24.603v26.571H0z" />

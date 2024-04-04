@@ -1,4 +1,4 @@
-import { OpenmrsResource } from "@openmrs/esm-framework";
+import { OpenmrsResource } from '@openmrs/esm-framework';
 
 export interface AllergyIntolerance {
   resourceType: string;
@@ -12,7 +12,7 @@ export interface AllergyIntolerance {
         system: string;
         code: string;
         display: string;
-      }
+      },
     ];
     text: string;
   };
@@ -22,7 +22,7 @@ export interface AllergyIntolerance {
         system: string;
         code: string;
         display: string;
-      }
+      },
     ];
     text: string;
   };
@@ -34,7 +34,7 @@ export interface AllergyIntolerance {
       {
         code: string;
         display: string;
-      }
+      },
     ];
     text: string;
   };
@@ -56,7 +56,7 @@ export interface AllergyIntolerance {
           {
             code: string;
             display: string;
-          }
+          },
         ];
         text: string;
       };
@@ -66,13 +66,13 @@ export interface AllergyIntolerance {
             {
               code: string;
               display: string;
-            }
+            },
           ];
           text: string;
-        }
+        },
       ];
       severity: string;
-    }
+    },
   ];
 }
 
@@ -201,9 +201,9 @@ export interface Medication {
         {
           url: string;
           valueString: string;
-        }
+        },
       ];
-    }
+    },
   ];
   code: {
     coding: Coding[];
@@ -225,7 +225,7 @@ export interface MedicationDispense {
     {
       reference: string;
       type: string;
-    }
+    },
   ];
   medicationReference: {
     reference: string;
@@ -266,9 +266,9 @@ export interface MedicationDispense {
 
 export enum MedicationDispenseStatus {
   //in_progress = "in-progress",  NOT YET IMPLEMENTED
-  on_hold = "on-hold",
-  completed = "completed",
-  declined = "declined",
+  on_hold = 'on-hold',
+  completed = 'completed',
+  declined = 'declined',
 }
 
 export interface MedicationFormulationsResponse {
@@ -344,10 +344,10 @@ export interface MedicationRequestResponse {
 }
 
 export enum MedicationRequestStatus {
-  active = "active",
-  cancelled = "cancelled",
-  completed = "completed",
-  expired = "expired",
+  active = 'active',
+  cancelled = 'cancelled',
+  completed = 'completed',
+  expired = 'expired',
 }
 
 /**
@@ -355,9 +355,9 @@ export enum MedicationRequestStatus {
  * hence the case difference from the other statuses
  */
 export enum MedicationRequestFulfillerStatus {
-  on_hold = "ON_HOLD",
-  declined = "DECLINED",
-  completed = "COMPLETED",
+  on_hold = 'ON_HOLD',
+  declined = 'DECLINED',
+  completed = 'COMPLETED',
 }
 
 /**
@@ -366,13 +366,13 @@ export enum MedicationRequestFulfillerStatus {
  * computeMedicationRequestCombinedStatus)
  */
 export enum MedicationRequestCombinedStatus {
-  active = "active",
-  cancelled = "cancelled",
-  completed = "completed",
-  expired = "expired",
-  on_hold = "on-hold",
-  declined = "declined",
-  unknown = "unknown",
+  active = 'active',
+  cancelled = 'cancelled',
+  completed = 'completed',
+  expired = 'expired',
+  on_hold = 'on-hold',
+  declined = 'declined',
+  unknown = 'unknown',
 }
 
 /**
@@ -469,9 +469,9 @@ export interface ValueSet {
           {
             code: string;
             display: string;
-          }
+          },
         ];
-      }
+      },
     ];
   };
 }

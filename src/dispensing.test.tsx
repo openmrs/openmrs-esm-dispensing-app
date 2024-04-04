@@ -20,12 +20,12 @@
  * Kent C. Dodds is the inventor of `@testing-library`:
  *   https://testing-library.com/docs/guiding-principles
  */
-import React from "react";
-import { render } from "@testing-library/react";
-import Dispensing from "./dispensing.component";
+import React from 'react';
+import { render } from '@testing-library/react';
+import Dispensing from './dispensing.component';
 
-describe("<div/>", () => {
-  test("renders dispening without error", () => {
+describe('<div/>', () => {
+  test('renders dispening without error', () => {
     render(<Dispensing />);
   });
 });

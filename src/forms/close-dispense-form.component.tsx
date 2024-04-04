@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ExtensionSlot,
   showNotification,
@@ -7,26 +7,19 @@ import {
   useConfig,
   useLayoutType,
   usePatient,
-} from "@openmrs/esm-framework";
-import { Button, ComboBox, InlineLoading } from "@carbon/react";
-import {
-  saveMedicationDispense,
-  useReasonForCloseValueSet,
-} from "../medication-dispense/medication-dispense.resource";
-import { closeOverlay } from "../hooks/useOverlay";
-import styles from "./forms.scss";
-import { PharmacyConfig } from "../config-schema";
-import { updateMedicationRequestFulfillerStatus } from "../medication-request/medication-request.resource";
-import {
-  MedicationDispense,
-  MedicationDispenseStatus,
-  MedicationRequestFulfillerStatus,
-} from "../types";
-import { getUuidFromReference, revalidate } from "../utils";
+} from '@openmrs/esm-framework';
+import { Button, ComboBox, InlineLoading } from '@carbon/react';
+import { saveMedicationDispense, useReasonForCloseValueSet } from '../medication-dispense/medication-dispense.resource';
+import { closeOverlay } from '../hooks/useOverlay';
+import styles from './forms.scss';
+import { PharmacyConfig } from '../config-schema';
+import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
+import { MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
+import { getUuidFromReference, revalidate } from '../utils';
 
 interface CloseDispenseFormProps {
   medicationDispense: MedicationDispense;
-  mode: "enter" | "edit";
+  mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
 }
@@ -39,12 +32,11 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
 }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
-  const isTablet = useLayoutType() === "tablet";
+  const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
 
   // Keep track of medication dispense payload
-  const [medicationDispensePayload, setMedicationDispensePayload] =
-    useState<MedicationDispense>();
+  const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
 
   // whether or not the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
@@ -52,23 +44,19 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reasonsForClose, setReasonsForClose] = useState([]);
-  const { reasonForCloseValueSet } = useReasonForCloseValueSet(
-    config.valueSets.reasonForClose.uuid
-  );
+  const { reasonForCloseValueSet } = useReasonForCloseValueSet(config.valueSets.reasonForClose.uuid);
 
   useEffect(() => {
     const reasonForCloseOptions = [];
 
     if (reasonForCloseValueSet?.compose?.include) {
-      const uuidValueSet = reasonForCloseValueSet.compose.include.find(
-        (include) => !include.system
-      );
+      const uuidValueSet = reasonForCloseValueSet.compose.include.find((include) => !include.system);
       if (uuidValueSet) {
         uuidValueSet.concept?.forEach((concept) =>
           reasonForCloseOptions.push({
             id: concept.code,
             text: concept.display,
-          })
+          }),
         );
         reasonForCloseOptions.sort((a, b) => a.text.localeCompare(b.text));
       }
@@ -80,19 +68,15 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
-      saveMedicationDispense(
-        medicationDispensePayload,
-        MedicationDispenseStatus.declined,
-        abortController
-      )
+      saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.declined, abortController)
         .then((response) => {
           // only update request status when added a new dispense event, not updating
           if (response.ok && !medicationDispense.id) {
             return updateMedicationRequestFulfillerStatus(
               getUuidFromReference(
-                medicationDispensePayload.authorizingPrescription[0].reference // assumes authorizing prescription exist
+                medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
               ),
-              MedicationRequestFulfillerStatus.declined
+              MedicationRequestFulfillerStatus.declined,
             );
           } else {
             return response;
@@ -104,22 +88,14 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
             revalidate(encounterUuid);
             showToast({
               critical: true,
-              kind: "success",
+              kind: 'success',
               description: t(
-                mode === "enter"
-                  ? "medicationDispenseClosed"
-                  : "medicationDispenseUpdated",
-                mode === "enter"
-                  ? "Medication dispense closed."
-                  : "Dispense record successfully updated."
+                mode === 'enter' ? 'medicationDispenseClosed' : 'medicationDispenseUpdated',
+                mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
               ),
               title: t(
-                mode === "enter"
-                  ? "medicationDispenseClosed"
-                  : "medicationDispenseUpdated",
-                mode === "enter"
-                  ? "Medication dispense closed."
-                  : "Dispense record successfully updated."
+                mode === 'enter' ? 'medicationDispenseClosed' : 'medicationDispenseUpdated',
+                mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
               ),
             });
           }
@@ -127,14 +103,10 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
         .catch((error) => {
           showNotification({
             title: t(
-              mode === "enter"
-                ? "medicationDispenseCloseError"
-                : "medicationDispenseUpdatedError",
-              mode === "enter"
-                ? "Error closing medication dispense."
-                : "Error updating dispense record"
+              mode === 'enter' ? 'medicationDispenseCloseError' : 'medicationDispenseUpdatedError',
+              mode === 'enter' ? 'Error closing medication dispense.' : 'Error updating dispense record',
             ),
-            kind: "error",
+            kind: 'error',
             critical: true,
             description: error?.message,
           });
@@ -144,10 +116,7 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
   };
 
   const checkIsValid = () => {
-    if (
-      medicationDispensePayload &&
-      medicationDispensePayload.statusReasonCodeableConcept?.coding[0].code
-    ) {
+    if (medicationDispensePayload && medicationDispensePayload.statusReasonCodeableConcept?.coding[0].code) {
       setIsValid(true);
     } else {
       setIsValid(false);
@@ -155,10 +124,7 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
   };
 
   // initialize the internal dispense payload with the dispenses passed in as props
-  useEffect(
-    () => setMedicationDispensePayload(medicationDispense),
-    [medicationDispense]
-  );
+  useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
 
   // check is valid on any changes
   useEffect(checkIsValid, [medicationDispensePayload]);
@@ -184,19 +150,16 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
             status="active"
           />
         )}
-        {patient && (
-          <ExtensionSlot name="patient-header-slot" state={bannerState} />
-        )}
+        {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
         <section className={styles.formGroup}>
           <ComboBox
             id="reasonForPause"
             light={isTablet}
             items={reasonsForClose}
-            titleText={t("reasonForClose", "Reason for close")}
+            titleText={t('reasonForClose', 'Reason for close')}
             itemToString={(item) => item?.text}
             initialSelectedItem={{
-              id: medicationDispense.statusReasonCodeableConcept?.coding[0]
-                ?.code,
+              id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
               text: medicationDispense.statusReasonCodeableConcept?.text,
             }}
             onChange={({ selectedItem }) => {
@@ -214,18 +177,11 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
           />
         </section>
         <section className={styles.buttonGroup}>
-          <Button
-            disabled={isSubmitting}
-            onClick={() => closeOverlay()}
-            kind="secondary"
-          >
-            {t("cancel", "Cancel")}
+          <Button disabled={isSubmitting} onClick={() => closeOverlay()} kind="secondary">
+            {t('cancel', 'Cancel')}
           </Button>
           <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
-            {t(
-              mode === "enter" ? "close" : "saveChanges",
-              mode === "enter" ? "Close" : "Save changes"
-            )}
+            {t(mode === 'enter' ? 'close' : 'saveChanges', mode === 'enter' ? 'Close' : 'Save changes')}
           </Button>
         </section>
       </div>

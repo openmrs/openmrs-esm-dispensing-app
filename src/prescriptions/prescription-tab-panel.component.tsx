@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   DataTable,
   DataTableSkeleton,
@@ -14,14 +14,14 @@ import {
   TableHeader,
   TableRow,
   TabPanel,
-} from "@carbon/react";
-import { useTranslation } from "react-i18next";
+} from '@carbon/react';
+import { useTranslation } from 'react-i18next';
 
-import { formatDatetime, parseDate, useConfig } from "@openmrs/esm-framework";
-import PrescriptionExpanded from "./prescription-expanded.component";
-import { usePrescriptionsTable } from "../medication-request/medication-request.resource";
-import { PharmacyConfig } from "../config-schema";
-import styles from "./prescriptions.scss";
+import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
+import PrescriptionExpanded from './prescription-expanded.component';
+import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import { PharmacyConfig } from '../config-schema';
+import styles from './prescriptions.scss';
 
 interface PrescriptionTabPanelProps {
   searchTerm: string;
@@ -29,43 +29,34 @@ interface PrescriptionTabPanelProps {
   status: string;
 }
 
-const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
-  searchTerm,
-  location,
-  status,
-}) => {
+const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm, location, status }) => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
-  const { prescriptionsTableRows, error, isLoading, totalOrders } =
-    usePrescriptionsTable(
-      pageSize,
-      nextOffSet,
-      searchTerm,
-      location,
-      status,
-      config.medicationRequestExpirationPeriodInDays,
-      config.refreshInterval
-    );
+  const { prescriptionsTableRows, error, isLoading, totalOrders } = usePrescriptionsTable(
+    pageSize,
+    nextOffSet,
+    searchTerm,
+    location,
+    status,
+    config.medicationRequestExpirationPeriodInDays,
+    config.refreshInterval,
+  );
 
   let columns = [
-    { header: t("created", "Created"), key: "created" },
-    { header: t("patientName", "Patient name"), key: "patient" },
-    { header: t("prescriber", "Prescriber"), key: "prescriber" },
-    { header: t("drugs", "Drugs"), key: "drugs" },
-    { header: t("lastDispenser", "Last dispenser"), key: "lastDispenser" },
-    { header: t("status", "Status"), key: "status" },
+    { header: t('created', 'Created'), key: 'created' },
+    { header: t('patientName', 'Patient name'), key: 'patient' },
+    { header: t('prescriber', 'Prescriber'), key: 'prescriber' },
+    { header: t('drugs', 'Drugs'), key: 'drugs' },
+    { header: t('lastDispenser', 'Last dispenser'), key: 'lastDispenser' },
+    { header: t('status', 'Status'), key: 'status' },
   ];
 
   // add the locations column, if enabled
   if (config.locationBehavior?.locationColumn?.enabled) {
-    columns = [
-      ...columns.slice(0, 3),
-      { header: t("location", "Location"), key: "location" },
-      ...columns.slice(3),
-    ];
+    columns = [...columns.slice(0, 3), { header: t('location', 'Location'), key: 'location' }, ...columns.slice(3)];
   }
 
   // reset back to page 1 whenever search term changes
@@ -81,27 +72,15 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
         {error && <p>Error</p>}
         {prescriptionsTableRows && (
           <>
-            <DataTable
-              rows={prescriptionsTableRows}
-              headers={columns}
-              isSortable
-            >
-              {({
-                rows,
-                headers,
-                getHeaderProps,
-                getRowProps,
-                getTableProps,
-              }) => (
+            <DataTable rows={prescriptionsTableRows} headers={columns} isSortable>
+              {({ rows, headers, getHeaderProps, getRowProps, getTableProps }) => (
                 <TableContainer>
                   <Table {...getTableProps()} useZebraStyles>
                     <TableHead>
                       <TableRow>
                         <TableExpandHeader />
                         {headers.map((header) => (
-                          <TableHeader {...getHeaderProps({ header })}>
-                            {header.header}
-                          </TableHeader>
+                          <TableHeader {...getHeaderProps({ header })}>{header.header}</TableHeader>
                         ))}
                       </TableRow>
                     </TableHead>
@@ -111,11 +90,11 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
                           <TableExpandRow {...getRowProps({ row })}>
                             {row.cells.map((cell) => (
                               <TableCell key={cell.id}>
-                                {cell.id.endsWith("created")
+                                {cell.id.endsWith('created')
                                   ? formatDatetime(parseDate(cell.value))
-                                  : cell.id.endsWith("patient")
+                                  : cell.id.endsWith('patient')
                                   ? cell.value.name
-                                  : cell.id.endsWith("status")
+                                  : cell.id.endsWith('status')
                                   ? t(cell.value)
                                   : cell.value}
                               </TableCell>
@@ -124,16 +103,8 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
                           <TableExpandedRow colSpan={headers.length + 1}>
                             <PrescriptionExpanded
                               encounterUuid={row.id}
-                              patientUuid={
-                                row.cells.find((cell) =>
-                                  cell.id.endsWith("patient")
-                                ).value.uuid
-                              }
-                              status={
-                                row.cells.find((cell) =>
-                                  cell.id.endsWith("status")
-                                ).value
-                              }
+                              patientUuid={row.cells.find((cell) => cell.id.endsWith('patient')).value.uuid}
+                              status={row.cells.find((cell) => cell.id.endsWith('status')).value}
                             />
                           </TableExpandedRow>
                         </React.Fragment>
@@ -143,7 +114,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
                 </TableContainer>
               )}
             </DataTable>
-            <div style={{ width: "100%" }}>
+            <div style={{ width: '100%' }}>
               <Pagination
                 page={page}
                 pageSize={pageSize}

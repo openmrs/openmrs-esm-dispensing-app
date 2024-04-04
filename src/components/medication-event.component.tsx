@@ -1,19 +1,14 @@
-import React from "react";
-import {
-  DosageInstruction,
-  MedicationDispense,
-  MedicationRequest,
-  Quantity,
-} from "../types";
-import styles from "./medication-event.scss";
+import React from 'react';
+import { DosageInstruction, MedicationDispense, MedicationRequest, Quantity } from '../types';
+import styles from './medication-event.scss';
 import {
   getDosageInstruction,
   getQuantity,
   getRefillsAllowed,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
-} from "../utils";
-import { useTranslation } from "react-i18next";
+} from '../utils';
+import { useTranslation } from 'react-i18next';
 
 // can render MedicationRequest or MedicationDispense
 const MedicationEvent: React.FC<{
@@ -21,9 +16,7 @@ const MedicationEvent: React.FC<{
   status?;
 }> = ({ medicationEvent, status = null }) => {
   const { t } = useTranslation();
-  const dosageInstruction: DosageInstruction = getDosageInstruction(
-    medicationEvent.dosageInstruction
-  );
+  const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
   const quantity: Quantity = getQuantity(medicationEvent);
   const refillsAllowed: number = getRefillsAllowed(medicationEvent);
 
@@ -31,45 +24,35 @@ const MedicationEvent: React.FC<{
     <div>
       <p className={styles.medicationName}>
         {status}
-        <strong>
-          {getMedicationDisplay(
-            getMedicationReferenceOrCodeableConcept(medicationEvent)
-          )}
-        </strong>
+        <strong>{getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}</strong>
       </p>
 
       {dosageInstruction && (
         <p className={styles.bodyLong01}>
-          <span className={styles.label01}>
-            {t("dose", "Dose").toUpperCase()}
-          </span>{" "}
+          <span className={styles.label01}>{t('dose', 'Dose').toUpperCase()}</span>{' '}
           <span className={styles.dosage}>
             {dosageInstruction.doseAndRate &&
               dosageInstruction?.doseAndRate.map((doseAndRate, index) => {
                 return (
                   <span key={index}>
-                    {doseAndRate?.doseQuantity?.value}{" "}
-                    {doseAndRate?.doseQuantity?.unit}
+                    {doseAndRate?.doseQuantity?.value} {doseAndRate?.doseQuantity?.unit}
                   </span>
                 );
               })}
-          </span>{" "}
-          &mdash; {dosageInstruction?.route?.text} &mdash;{" "}
-          {dosageInstruction?.timing?.code?.text}{" "}
+          </span>{' '}
+          &mdash; {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}{' '}
           {dosageInstruction?.timing?.repeat?.duration
-            ? "for " +
+            ? 'for ' +
               dosageInstruction?.timing?.repeat?.duration +
-              " " +
+              ' ' +
               dosageInstruction?.timing?.repeat?.durationUnit
-            : " "}
+            : ' '}
         </p>
       )}
 
       {quantity && (
         <p className={styles.bodyLong01}>
-          <span className={styles.label01}>
-            {t("quantity", "Quantity").toUpperCase()}
-          </span>{" "}
+          <span className={styles.label01}>{t('quantity', 'Quantity').toUpperCase()}</span>{' '}
           <span className={styles.quantity}>
             {quantity.value} {quantity.unit}
           </span>
@@ -78,15 +61,11 @@ const MedicationEvent: React.FC<{
 
       {(refillsAllowed || refillsAllowed === 0) && (
         <p className={styles.bodyLong01}>
-          <span className={styles.label01}>
-            {t("refills", "Refills").toUpperCase()}
-          </span>{" "}
+          <span className={styles.label01}>{t('refills', 'Refills').toUpperCase()}</span>{' '}
           <span className={styles.refills}>{refillsAllowed}</span>
         </p>
       )}
-      {dosageInstruction?.text && (
-        <p className={styles.bodyLong01}>{dosageInstruction.text}</p>
-      )}
+      {dosageInstruction?.text && <p className={styles.bodyLong01}>{dosageInstruction.text}</p>}
     </div>
   );
 };

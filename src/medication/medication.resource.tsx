@@ -1,10 +1,7 @@
-import useSWR from "swr";
-import { Medication, MedicationFormulationsResponse } from "../types";
-import { fhirBaseUrl, openmrsFetch } from "@openmrs/esm-framework";
-import {
-  getConceptCodingUuid,
-  getMedicationsByConceptEndpoint,
-} from "../utils";
+import useSWR from 'swr';
+import { Medication, MedicationFormulationsResponse } from '../types';
+import { fhirBaseUrl, openmrsFetch } from '@openmrs/esm-framework';
+import { getConceptCodingUuid, getMedicationsByConceptEndpoint } from '../utils';
 
 /**
  * Given a Medication Reference, fetches that Medication and returns the codeable concept associated with it
@@ -15,19 +12,15 @@ import {
  */
 export function useMedicationCodeableConcept(
   existingMedicationCodeableConceptUuid: string,
-  medicationReference: string
+  medicationReference: string,
 ) {
   const { data } = useSWR<{ data: Medication }, Error>(
-    existingMedicationCodeableConceptUuid || !medicationReference
-      ? null
-      : `${fhirBaseUrl}/${medicationReference}`,
-    openmrsFetch
+    existingMedicationCodeableConceptUuid || !medicationReference ? null : `${fhirBaseUrl}/${medicationReference}`,
+    openmrsFetch,
   );
 
   return {
-    medicationCodeableConceptUuid: data
-      ? getConceptCodingUuid(data.data.code.coding)
-      : null,
+    medicationCodeableConceptUuid: data ? getConceptCodingUuid(data.data.code.coding) : null,
   };
 }
 
@@ -38,10 +31,8 @@ export function useMedicationCodeableConcept(
  */
 export function useMedicationFormulations(medicationCodeableConcept: string) {
   const { data } = useSWR<{ data: MedicationFormulationsResponse }, Error>(
-    medicationCodeableConcept
-      ? getMedicationsByConceptEndpoint(medicationCodeableConcept)
-      : null, // note that we don't start the search until we've confirmed we have a uuid to search for
-    openmrsFetch
+    medicationCodeableConcept ? getMedicationsByConceptEndpoint(medicationCodeableConcept) : null, // note that we don't start the search until we've confirmed we have a uuid to search for
+    openmrsFetch,
   );
 
   if (data) {

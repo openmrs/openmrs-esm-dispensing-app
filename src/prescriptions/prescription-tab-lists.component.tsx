@@ -1,33 +1,32 @@
-import React, { useEffect, useState } from "react";
-import { Tab, Tabs, TabList, TabPanels, Search, ComboBox } from "@carbon/react";
-import { useTranslation } from "react-i18next";
-import PrescriptionTabPanel from "./prescription-tab-panel.component";
-import styles from "./prescriptions.scss";
-import { useLocationForFiltering } from "../location/location.resource";
-import { useConfig } from "@openmrs/esm-framework";
-import { PharmacyConfig } from "../config-schema";
-import { SimpleLocation } from "../types";
+import React, { useEffect, useState } from 'react';
+import { Tab, Tabs, TabList, TabPanels, Search, ComboBox } from '@carbon/react';
+import { useTranslation } from 'react-i18next';
+import PrescriptionTabPanel from './prescription-tab-panel.component';
+import styles from './prescriptions.scss';
+import { useLocationForFiltering } from '../location/location.resource';
+import { useConfig } from '@openmrs/esm-framework';
+import { PharmacyConfig } from '../config-schema';
+import { SimpleLocation } from '../types';
 
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const config = useConfig() as PharmacyConfig;
-  const { filterLocations, isLoading: isFilterLocationsLoading } =
-    useLocationForFiltering(config);
-  const [searchTermUserInput, setSearchTermUserInput] = useState(""); // we have a separate "searchTermUserInput" and "searchTerm" in order to debounce
-  const [searchTerm, setSearchTerm] = useState("");
-  const [location, setLocation] = useState("");
+  const { filterLocations, isLoading: isFilterLocationsLoading } = useLocationForFiltering(config);
+  const [searchTermUserInput, setSearchTermUserInput] = useState(''); // we have a separate "searchTermUserInput" and "searchTerm" in order to debounce
+  const [searchTerm, setSearchTerm] = useState('');
+  const [location, setLocation] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
 
   const tabs = [
     {
-      key: "activePrescriptions",
-      header: t("activePrescriptions", "Active Prescriptions"),
-      status: "ACTIVE",
+      key: 'activePrescriptions',
+      header: t('activePrescriptions', 'Active Prescriptions'),
+      status: 'ACTIVE',
     },
     {
-      key: "allPrescriptions",
-      header: t("allPrescriptions", "All Prescriptions"),
-      status: "",
+      key: 'allPrescriptions',
+      header: t('allPrescriptions', 'All Prescriptions'),
+      status: '',
     },
   ];
 
@@ -52,21 +51,11 @@ const PrescriptionTabLists: React.FC = () => {
           className={styles.prescriptionTabs}
           onChange={handleTabChange}
           type="container"
-          tabContentClassName={styles.hiddenTabsContent}
-        >
-          <TabList
-            aria-label={t("tabList", "Tab List")}
-            contained
-            className={styles.tabsContainer}
-          >
+          tabContentClassName={styles.hiddenTabsContent}>
+          <TabList aria-label={t('tabList', 'Tab List')} contained className={styles.tabsContainer}>
             {tabs.map((tab, index) => {
               return (
-                <Tab
-                  title={t(tab.key)}
-                  key={index}
-                  id={"tab-" + index}
-                  className={styles.tab}
-                >
+                <Tab title={t(tab.key)} key={index} id={'tab-' + index} className={styles.tab}>
                   {t(tab.header)}
                 </Tab>
               );
@@ -82,16 +71,10 @@ const PrescriptionTabLists: React.FC = () => {
               {t("fillPrescription", "Fill prescription")}
             </Button>*/}
             <Search
-              closeButtonLabelText={t("clearSearchInput", "Clear search input")}
+              closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
               defaultValue={searchTermUserInput}
-              placeholder={t(
-                "searchByPatientIdOrName",
-                "Search by patient ID or name"
-              )}
-              labelText={t(
-                "searchByPatientIdOrName",
-                "Search by patient ID or name"
-              )}
+              placeholder={t('searchByPatientIdOrName', 'Search by patient ID or name')}
+              labelText={t('searchByPatientIdOrName', 'Search by patient ID or name')}
               onChange={(e) => {
                 e.preventDefault();
                 setSearchTermUserInput(e.target.value);
@@ -104,7 +87,7 @@ const PrescriptionTabLists: React.FC = () => {
               filterLocations?.length > 1 && (
                 <ComboBox
                   id="locationFilter"
-                  placeholder={t("filterByLocation", "Filter by location")}
+                  placeholder={t('filterByLocation', 'Filter by location')}
                   items={isFilterLocationsLoading ? [] : filterLocations}
                   itemToString={(item: SimpleLocation) => item?.name}
                   onChange={({ selectedItem }) => {
@@ -117,11 +100,7 @@ const PrescriptionTabLists: React.FC = () => {
           <TabPanels>
             {tabs.map((tab, index) => {
               return index === selectedTab ? (
-                <PrescriptionTabPanel
-                  location={location}
-                  searchTerm={searchTerm}
-                  status={tab.status}
-                />
+                <PrescriptionTabPanel location={location} searchTerm={searchTerm} status={tab.status} />
               ) : (
                 <></>
               );

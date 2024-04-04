@@ -1,4 +1,4 @@
-import { mutate } from "swr";
+import { mutate } from 'swr';
 import {
   Coding,
   DosageInstruction,
@@ -12,16 +12,16 @@ import {
   MedicationRequestFulfillerStatus,
   MedicationRequestStatus,
   Quantity,
-} from "./types";
-import { fhirBaseUrl, parseDate } from "@openmrs/esm-framework";
+} from './types';
+import { fhirBaseUrl, parseDate } from '@openmrs/esm-framework';
 import {
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
   PRESCRIPTION_DETAILS_ENDPOINT,
   PRESCRIPTIONS_TABLE_ENDPOINT,
-} from "./constants";
-import dayjs from "dayjs";
+} from './constants';
+import dayjs from 'dayjs';
 
 const unitsDontMatchErrorMessage =
   "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. Either set restrictTotalQuantityDispensed to false or set allowModifyingPrescription to false and clean up bad data.";
@@ -34,23 +34,17 @@ const unitsDontMatchErrorMessage =
  */
 export function computeFulfillerStatus(
   medicationRequestBundle: MedicationRequestBundle,
-  restrictTotalQuantityDispensed: boolean
+  restrictTotalQuantityDispensed: boolean,
 ): MedicationRequestFulfillerStatus {
-  if (
-    restrictTotalQuantityDispensed &&
-    computeQuantityRemaining(medicationRequestBundle) <= 0
-  ) {
+  if (restrictTotalQuantityDispensed && computeQuantityRemaining(medicationRequestBundle) <= 0) {
     // if we set to restrict total quantity dispenses and quantity remaining less than 0, set status to completed
     return MedicationRequestFulfillerStatus.completed;
   }
 
   // otherwise, set based on most recent dispense status as follows
-  const mostRecentMedicationDispenseStatus =
-    getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
+  const mostRecentMedicationDispenseStatus = getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
 
-  if (
-    mostRecentMedicationDispenseStatus === MedicationDispenseStatus.declined
-  ) {
+  if (mostRecentMedicationDispenseStatus === MedicationDispenseStatus.declined) {
     return MedicationRequestFulfillerStatus.declined;
   }
 
@@ -70,15 +64,13 @@ export function computeFulfillerStatus(
  */
 export function computeMedicationRequestCombinedStatus(
   medicationRequest: MedicationRequest,
-  medicationRequestExpirationPeriondInDays: number
+  medicationRequestExpirationPeriondInDays: number,
 ): MedicationRequestCombinedStatus {
-  const medicationRequestStatus: MedicationRequestStatus =
-    computeMedicationRequestStatus(
-      medicationRequest,
-      medicationRequestExpirationPeriondInDays
-    );
-  const medicationRequestFulfillerStatus: MedicationRequestFulfillerStatus =
-    getFulfillerStatus(medicationRequest);
+  const medicationRequestStatus: MedicationRequestStatus = computeMedicationRequestStatus(
+    medicationRequest,
+    medicationRequestExpirationPeriondInDays,
+  );
+  const medicationRequestFulfillerStatus: MedicationRequestFulfillerStatus = getFulfillerStatus(medicationRequest);
 
   // if the request is no longer active, that status takes precedent
   if (medicationRequestStatus !== MedicationRequestStatus.active) {
@@ -91,15 +83,9 @@ export function computeMedicationRequestCombinedStatus(
     }
   }
   // otherwise, if the medication dispense status is paused or closed, return that
-  if (
-    medicationRequestFulfillerStatus ===
-    MedicationRequestFulfillerStatus.declined
-  ) {
+  if (medicationRequestFulfillerStatus === MedicationRequestFulfillerStatus.declined) {
     return MedicationRequestCombinedStatus.declined;
-  } else if (
-    medicationRequestFulfillerStatus ===
-    MedicationRequestFulfillerStatus.on_hold
-  ) {
+  } else if (medicationRequestFulfillerStatus === MedicationRequestFulfillerStatus.on_hold) {
     return MedicationRequestCombinedStatus.on_hold;
   }
 
@@ -117,7 +103,7 @@ export function computeMedicationRequestCombinedStatus(
  */
 export function computeMedicationRequestStatus(
   medicationRequest: MedicationRequest,
-  medicationRequestExpirationPeriodInDays: number
+  medicationRequestExpirationPeriodInDays: number,
 ): MedicationRequestStatus {
   if (
     medicationRequest.status === MedicationRequestStatus.cancelled ||
@@ -131,9 +117,7 @@ export function computeMedicationRequestStatus(
   if (
     medicationRequest.dispenseRequest?.validityPeriod?.start &&
     dayjs(medicationRequest.dispenseRequest.validityPeriod.start).isBefore(
-      dayjs()
-        .startOf("day")
-        .subtract(medicationRequestExpirationPeriodInDays, "day")
+      dayjs().startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day'),
     )
   ) {
     return MedicationRequestStatus.expired;
@@ -152,7 +136,7 @@ export function computeMedicationRequestStatus(
 export function computeNewFulfillerStatusAfterDispenseEvent(
   medicationDispense: MedicationDispense,
   medicationRequestBundle: MedicationRequestBundle,
-  restrictTotalQuantityDispensed: boolean
+  restrictTotalQuantityDispensed: boolean,
 ) {
   // add or edit the existing bundle as necessary
   let dispenses = [...medicationRequestBundle.dispenses];
@@ -162,9 +146,7 @@ export function computeNewFulfillerStatusAfterDispenseEvent(
     dispenses = [medicationDispense, ...dispenses];
   } else {
     // edited dispense, swap out
-    dispenses = dispenses.map((dispense) =>
-      dispense.id === medicationDispense.id ? medicationDispense : dispense
-    );
+    dispenses = dispenses.map((dispense) => (dispense.id === medicationDispense.id ? medicationDispense : dispense));
   }
 
   // then call computeFulfillerStatus to compute status
@@ -173,7 +155,7 @@ export function computeNewFulfillerStatusAfterDispenseEvent(
       request: medicationRequestBundle.request,
       dispenses: dispenses,
     },
-    restrictTotalQuantityDispensed
+    restrictTotalQuantityDispensed,
   );
 }
 
@@ -187,17 +169,15 @@ export function computeNewFulfillerStatusAfterDispenseEvent(
 export function computeNewFulfillerStatusAfterDelete(
   deletedMedicationDispense: MedicationDispense,
   medicationRequestBundle: MedicationRequestBundle,
-  restrictTotalQuantityDispensed: boolean
+  restrictTotalQuantityDispensed: boolean,
 ): MedicationRequestFulfillerStatus {
   // filter out the dispense being deleted and call computeFulfillerStatus
   return computeFulfillerStatus(
     {
       request: medicationRequestBundle.request,
-      dispenses: medicationRequestBundle.dispenses.filter(
-        (dispense) => dispense.id !== deletedMedicationDispense.id
-      ),
+      dispenses: medicationRequestBundle.dispenses.filter((dispense) => dispense.id !== deletedMedicationDispense.id),
     },
-    restrictTotalQuantityDispensed
+    restrictTotalQuantityDispensed,
   );
 }
 
@@ -210,55 +190,28 @@ export function computeNewFulfillerStatusAfterDelete(
  */
 export function computePrescriptionStatus(
   medicationRequests: Array<MedicationRequest>,
-  medicationRequestExpirationPeriodInDays: number
+  medicationRequestExpirationPeriodInDays: number,
 ): MedicationRequestCombinedStatus {
   if (!medicationRequests || medicationRequests.length === 0) {
     return null;
   }
 
-  const medicationRequestCombinedStatuses: Array<MedicationRequestCombinedStatus> =
-    medicationRequests.map((medicationRequest) =>
-      computeMedicationRequestCombinedStatus(
-        medicationRequest,
-        medicationRequestExpirationPeriodInDays
-      )
-    );
+  const medicationRequestCombinedStatuses: Array<MedicationRequestCombinedStatus> = medicationRequests.map(
+    (medicationRequest) =>
+      computeMedicationRequestCombinedStatus(medicationRequest, medicationRequestExpirationPeriodInDays),
+  );
 
-  if (
-    medicationRequestCombinedStatuses.includes(
-      MedicationRequestCombinedStatus.active
-    )
-  ) {
+  if (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.active)) {
     return MedicationRequestCombinedStatus.active;
-  } else if (
-    medicationRequestCombinedStatuses.includes(
-      MedicationRequestCombinedStatus.on_hold
-    )
-  ) {
+  } else if (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.on_hold)) {
     return MedicationRequestCombinedStatus.on_hold;
-  } else if (
-    medicationRequestCombinedStatuses.includes(
-      MedicationRequestCombinedStatus.completed
-    )
-  ) {
+  } else if (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.completed)) {
     return MedicationRequestCombinedStatus.completed;
-  } else if (
-    medicationRequestCombinedStatuses.includes(
-      MedicationRequestCombinedStatus.declined
-    )
-  ) {
+  } else if (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.declined)) {
     return MedicationRequestCombinedStatus.declined;
-  } else if (
-    medicationRequestCombinedStatuses.includes(
-      MedicationRequestCombinedStatus.cancelled
-    )
-  ) {
+  } else if (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.cancelled)) {
     return MedicationRequestCombinedStatus.cancelled;
-  } else if (
-    medicationRequestCombinedStatuses.includes(
-      MedicationRequestCombinedStatus.expired
-    )
-  ) {
+  } else if (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.expired)) {
     return MedicationRequestCombinedStatus.expired;
   }
 
@@ -273,42 +226,27 @@ export function computePrescriptionStatus(
  */
 export function computePrescriptionStatusMessageCode(
   medicationRequests: Array<MedicationRequest>,
-  medicationRequestExpirationPeriodInDays: number
+  medicationRequestExpirationPeriodInDays: number,
 ): string {
-  const medicationRequestCombinedStatus: MedicationRequestCombinedStatus =
-    computePrescriptionStatus(
-      medicationRequests,
-      medicationRequestExpirationPeriodInDays
-    );
+  const medicationRequestCombinedStatus: MedicationRequestCombinedStatus = computePrescriptionStatus(
+    medicationRequests,
+    medicationRequestExpirationPeriodInDays,
+  );
 
   if (medicationRequestCombinedStatus === null) {
     return null;
-  } else if (
-    medicationRequestCombinedStatus === MedicationRequestCombinedStatus.active
-  ) {
-    return "active";
-  } else if (
-    medicationRequestCombinedStatus === MedicationRequestCombinedStatus.on_hold
-  ) {
-    return "paused";
-  } else if (
-    medicationRequestCombinedStatus ===
-    MedicationRequestCombinedStatus.completed
-  ) {
-    return "completed";
-  } else if (
-    medicationRequestCombinedStatus === MedicationRequestCombinedStatus.declined
-  ) {
-    return "closed";
-  } else if (
-    medicationRequestCombinedStatus === MedicationRequestCombinedStatus.expired
-  ) {
-    return "expired";
-  } else if (
-    medicationRequestCombinedStatus ===
-    MedicationRequestCombinedStatus.cancelled
-  ) {
-    return "cancelled";
+  } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.active) {
+    return 'active';
+  } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.on_hold) {
+    return 'paused';
+  } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.completed) {
+    return 'completed';
+  } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.declined) {
+    return 'closed';
+  } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.expired) {
+    return 'expired';
+  } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.cancelled) {
+    return 'cancelled';
   }
   return null;
 }
@@ -316,12 +254,7 @@ export function computePrescriptionStatusMessageCode(
 export function computeQuantityRemaining(medicationRequestBundle): number {
   if (medicationRequestBundle) {
     // hard protect against quantity type mistmatch
-    if (
-      !getQuantityUnitsMatch([
-        medicationRequestBundle.request,
-        ...medicationRequestBundle.dispenses,
-      ])
-    ) {
+    if (!getQuantityUnitsMatch([medicationRequestBundle.request, ...medicationRequestBundle.dispenses])) {
       throw new Error(unitsDontMatchErrorMessage);
     }
 
@@ -337,19 +270,13 @@ export function computeQuantityRemaining(medicationRequestBundle): number {
  * Given a set of medication dispenses, calculate the total quantity dispensed
  * @param medicationDispenses
  */
-export function computeTotalQuantityDispensed(
-  medicationDispenses: Array<MedicationDispense>
-): number {
+export function computeTotalQuantityDispensed(medicationDispenses: Array<MedicationDispense>): number {
   if (medicationDispenses) {
     if (!getQuantityUnitsMatch(medicationDispenses)) {
       throw new Error(unitsDontMatchErrorMessage);
     }
     const quantity = medicationDispenses
-      .map((medicationDispense) =>
-        medicationDispense.quantity?.value
-          ? medicationDispense.quantity?.value
-          : 0
-      )
+      .map((medicationDispense) => (medicationDispense.quantity?.value ? medicationDispense.quantity?.value : 0))
       .reduce((acc, currentValue) => acc + currentValue, 0);
     return quantity;
   } else {
@@ -361,15 +288,10 @@ export function computeTotalQuantityDispensed(
  * Given a medication request, calculate the total quantity ordered (including all refills)
  * @param medicationRequest
  */
-export function computeTotalQuantityOrdered(
-  medicationRequest: MedicationRequest
-): number {
+export function computeTotalQuantityOrdered(medicationRequest: MedicationRequest): number {
   const refillsAllowed = getRefillsAllowed(medicationRequest);
   if (medicationRequest.dispenseRequest?.quantity?.value) {
-    return (
-      medicationRequest.dispenseRequest.quantity.value *
-      (1 + (refillsAllowed ? refillsAllowed : 0))
-    );
+    return medicationRequest.dispenseRequest.quantity.value * (1 + (refillsAllowed ? refillsAllowed : 0));
   } else {
     return null;
   }
@@ -383,12 +305,12 @@ export function computeTotalQuantityOrdered(
  */
 export function getAssociatedMedicationDispenses(
   medicationRequest: MedicationRequest,
-  medicationDispenses: Array<MedicationDispense>
+  medicationDispenses: Array<MedicationDispense>,
 ): Array<MedicationDispense> {
   return medicationDispenses?.filter((medicationDispense) =>
     medicationDispense?.authorizingPrescription?.some((prescription) =>
-      prescription.reference.endsWith(medicationRequest.id)
-    )
+      prescription.reference.endsWith(medicationRequest.id),
+    ),
   );
 }
 
@@ -400,12 +322,12 @@ export function getAssociatedMedicationDispenses(
  */
 export function getAssociatedMedicationRequest(
   medicationDispense: MedicationDispense,
-  medicationRequests: Array<MedicationRequest>
+  medicationRequests: Array<MedicationRequest>,
 ): MedicationRequest {
   return medicationRequests.find((medicationRequest) =>
     medicationDispense?.authorizingPrescription?.some((prescription) =>
-      prescription.reference.endsWith(medicationRequest.id)
-    )
+      prescription.reference.endsWith(medicationRequest.id),
+    ),
   );
 }
 
@@ -414,9 +336,7 @@ export function getAssociatedMedicationRequest(
  * @param codings
  */
 export function getConceptCoding(codings: Coding[]): Coding {
-  return codings
-    ? codings.find((c) => !("system" in c) || c.system === undefined)
-    : null;
+  return codings ? codings.find((c) => !('system' in c) || c.system === undefined) : null;
 }
 
 /**
@@ -439,17 +359,11 @@ export function getConceptCodingUuid(codings: Coding[]): string {
  * Fetch the "recorded" extension off a medication request
  * @param medicationDispense
  */
-export function getDateRecorded(
-  medicationDispense: MedicationDispense
-): string {
-  return medicationDispense?.extension?.find(
-    (ext) => ext.url === OPENMRS_FHIR_EXT_DISPENSE_RECORDED
-  )?.valueDateTime;
+export function getDateRecorded(medicationDispense: MedicationDispense): string {
+  return medicationDispense?.extension?.find((ext) => ext.url === OPENMRS_FHIR_EXT_DISPENSE_RECORDED)?.valueDateTime;
 }
 
-export function getDosageInstruction(
-  dosageInstructions: Array<DosageInstruction>
-): DosageInstruction {
+export function getDosageInstruction(dosageInstructions: Array<DosageInstruction>): DosageInstruction {
   if (dosageInstructions?.length > 0) {
     return dosageInstructions[0];
   }
@@ -460,12 +374,8 @@ export function getDosageInstruction(
  * Fetch the "fulfiller status" extension off a medication request
  * @param medicationDispense
  */
-export function getFulfillerStatus(
-  medicationRequest: MedicationRequest
-): MedicationRequestFulfillerStatus {
-  return medicationRequest?.extension?.find(
-    (ext) => ext.url === OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS
-  )?.valueCode;
+export function getFulfillerStatus(medicationRequest: MedicationRequest): MedicationRequestFulfillerStatus {
+  return medicationRequest?.extension?.find((ext) => ext.url === OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS)?.valueCode;
 }
 
 export function getMedicationsByConceptEndpoint(conceptUuid: string): string {
@@ -479,19 +389,17 @@ export function getMedicationsByConceptEndpoint(conceptUuid: string): string {
  *  (this may be slightly duplicative, but protects against the case when the provider only enters the formulation, not the drug, in the drugNonCoded field)
  * @param medication
  */
-export function getMedicationDisplay(
-  medication: MedicationReferenceOrCodeableConcept
-): string {
+export function getMedicationDisplay(medication: MedicationReferenceOrCodeableConcept): string {
   return medication.medicationReference
     ? medication.medicationReference.display
     : getConceptCodingDisplay(medication?.medicationCodeableConcept.coding) +
-        ": " +
+        ': ' +
         medication?.medicationCodeableConcept.text;
 }
 
 // TODO does this need to null-check
 export function getMedicationReferenceOrCodeableConcept(
-  resource: MedicationRequest | MedicationDispense
+  resource: MedicationRequest | MedicationDispense,
 ): MedicationReferenceOrCodeableConcept {
   return {
     medicationReference: resource.medicationReference,
@@ -503,11 +411,9 @@ export function getMedicationReferenceOrCodeableConcept(
  * Given a set of medication requests, return the status of the one with the most recent recorded date
  */
 export function getMostRecentMedicationDispenseStatus(
-  medicationDispenses: Array<MedicationDispense>
+  medicationDispenses: Array<MedicationDispense>,
 ): MedicationDispenseStatus {
-  const sorted = medicationDispenses?.sort(
-    sortMedicationDispensesByDateRecorded
-  );
+  const sorted = medicationDispenses?.sort(sortMedicationDispensesByDateRecorded);
   return sorted && sorted.length > 0 ? sorted[0].status : null;
 }
 
@@ -516,20 +422,18 @@ export function getMostRecentMedicationDispenseStatus(
  * (used when deleting the most recent, as we may need to update fulfiller status based on the next recent)
  */
 export function getNextMostRecentMedicationDispenseStatus(
-  medicationDispenses: Array<MedicationDispense>
+  medicationDispenses: Array<MedicationDispense>,
 ): MedicationDispenseStatus {
-  const sorted = medicationDispenses?.sort(
-    sortMedicationDispensesByDateRecorded
-  );
+  const sorted = medicationDispenses?.sort(sortMedicationDispensesByDateRecorded);
   return sorted && sorted.length > 1 ? sorted[1].status : null;
 }
 
 export function getMedicationRequestBundleContainingMedicationDispense(
   medicationRequestBundles: Array<MedicationRequestBundle>,
-  medicationDispense: MedicationDispense
+  medicationDispense: MedicationDispense,
 ) {
   return medicationRequestBundles.find((bundle) =>
-    bundle.dispenses.find((dispense) => dispense.id === medicationDispense.id)
+    bundle.dispenses.find((dispense) => dispense.id === medicationDispense.id),
   );
 }
 
@@ -542,21 +446,17 @@ export function getOpenMRSMedicineDrugName(medication: Medication): string {
     return null;
   }
 
-  const medicineExtension = medication.extension.find(
-    (ext) => ext.url === OPENMRS_FHIR_EXT_MEDICINE
-  );
+  const medicineExtension = medication.extension.find((ext) => ext.url === OPENMRS_FHIR_EXT_MEDICINE);
 
   if (!medicineExtension || !medicineExtension.extension) {
     return null;
   }
 
   const medicationExtensionDrugName = medicineExtension.extension.find(
-    (ext) => ext.url === OPENMRS_FHIR_EXT_MEDICINE + "#drugName"
+    (ext) => ext.url === OPENMRS_FHIR_EXT_MEDICINE + '#drugName',
   );
 
-  return medicationExtensionDrugName
-    ? medicationExtensionDrugName.valueString
-    : null;
+  return medicationExtensionDrugName ? medicationExtensionDrugName.valueString : null;
 }
 
 export function getPrescriptionDetailsEndpoint(encounterUuid: string): string {
@@ -568,12 +468,12 @@ export function getPrescriptionTableActiveMedicationRequestsEndpoint(
   pageSize: number,
   date: string,
   patientSearchTerm: string,
-  location: string
+  location: string,
 ): string {
   return appendSearchTermAndLocation(
     `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=active`,
     patientSearchTerm,
-    location
+    location,
   );
 }
 
@@ -581,20 +481,16 @@ export function getPrescriptionTableAllMedicationRequestsEndpoint(
   pageOffset: number,
   pageSize: number,
   patientSearchTerm: string,
-  location: string
+  location: string,
 ): string {
   return appendSearchTermAndLocation(
     `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}`,
     patientSearchTerm,
-    location
+    location,
   );
 }
 
-function appendSearchTermAndLocation(
-  url: string,
-  patientSearchTerm: string,
-  location: string
-): string {
+function appendSearchTermAndLocation(url: string, patientSearchTerm: string, location: string): string {
   if (patientSearchTerm) {
     url = `${url}&patientSearchTerm=${patientSearchTerm}`;
   }
@@ -604,13 +500,11 @@ function appendSearchTermAndLocation(
   return url;
 }
 
-export function getQuantity(
-  resource: MedicationRequest | MedicationDispense
-): Quantity {
-  if (resource.resourceType == "MedicationRequest") {
+export function getQuantity(resource: MedicationRequest | MedicationDispense): Quantity {
+  if (resource.resourceType == 'MedicationRequest') {
     return (resource as MedicationRequest).dispenseRequest?.quantity;
   }
-  if (resource.resourceType == "MedicationDispense") {
+  if (resource.resourceType == 'MedicationDispense') {
     return (resource as MedicationDispense).quantity;
   }
 }
@@ -619,17 +513,11 @@ export function getQuantity(
  * Returns true/false whether the quantity units on all the resources are identical (or match)
  * @param resources
  */
-export function getQuantityUnitsMatch(
-  resources: Array<MedicationRequest | MedicationDispense>
-): boolean {
+export function getQuantityUnitsMatch(resources: Array<MedicationRequest | MedicationDispense>): boolean {
   if (resources) {
-    const quantityUnitsArray = resources
-      .map((resource) => getQuantity(resource)?.code)
-      .filter((quantity) => quantity);
+    const quantityUnitsArray = resources.map((resource) => getQuantity(resource)?.code).filter((quantity) => quantity);
     if (quantityUnitsArray.length > 0) {
-      return quantityUnitsArray.every(
-        (element) => element === quantityUnitsArray[0]
-      );
+      return quantityUnitsArray.every((element) => element === quantityUnitsArray[0]);
     } else {
       return true; // consider true if empty
     }
@@ -638,12 +526,9 @@ export function getQuantityUnitsMatch(
   }
 }
 
-export function getRefillsAllowed(
-  resource: MedicationRequest | MedicationDispense
-): number {
-  if (resource.resourceType == "MedicationRequest") {
-    return (resource as MedicationRequest).dispenseRequest
-      ?.numberOfRepeatsAllowed;
+export function getRefillsAllowed(resource: MedicationRequest | MedicationDispense): number {
+  if (resource.resourceType == 'MedicationRequest') {
+    return (resource as MedicationRequest).dispenseRequest?.numberOfRepeatsAllowed;
   } else {
     return null; // dispense doesn't have a "refills allowed" component
   }
@@ -653,8 +538,8 @@ export function getRefillsAllowed(
  * Given a refernece in format "MedicationReference/uuid" or just "uuid", returns just the uuid compoennt
  */
 export function getUuidFromReference(reference: string): string {
-  if (reference?.includes("/")) {
-    return reference.split("/")[1];
+  if (reference?.includes('/')) {
+    return reference.split('/')[1];
   } else {
     return reference;
   }
@@ -666,11 +551,9 @@ export function getUuidFromReference(reference: string): string {
  */
 export function isMostRecentMedicationDispense(
   medicationDispense: MedicationDispense,
-  medicationDispenses: Array<MedicationDispense>
+  medicationDispenses: Array<MedicationDispense>,
 ): boolean {
-  const sorted = medicationDispenses?.sort(
-    sortMedicationDispensesByDateRecorded
-  );
+  const sorted = medicationDispenses?.sort(sortMedicationDispensesByDateRecorded);
 
   // prettier-ignore
   return medicationDispense &&
@@ -687,26 +570,19 @@ export function isMostRecentMedicationDispense(
 export function revalidate(encounterUuid: string) {
   mutate(
     (key) =>
-      typeof key === "string" &&
+      typeof key === 'string' &&
       (key.startsWith(`${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}`) ||
-        key.startsWith(
-          `${fhirBaseUrl}/${PRESCRIPTION_DETAILS_ENDPOINT}?encounter=${encounterUuid}`
-        ))
+        key.startsWith(`${fhirBaseUrl}/${PRESCRIPTION_DETAILS_ENDPOINT}?encounter=${encounterUuid}`)),
   );
 }
 
-export function sortMedicationDispensesByDateRecorded(
-  a: MedicationDispense,
-  b: MedicationDispense
-): number {
+export function sortMedicationDispensesByDateRecorded(a: MedicationDispense, b: MedicationDispense): number {
   if (getDateRecorded(b) === null) {
     return 1;
   } else if (getDateRecorded(a) === null) {
     return -1;
   }
-  const dateDiff =
-    parseDate(getDateRecorded(b)).getTime() -
-    parseDate(getDateRecorded(a)).getTime();
+  const dateDiff = parseDate(getDateRecorded(b)).getTime() - parseDate(getDateRecorded(a)).getTime();
   if (dateDiff !== 0) {
     return dateDiff;
   } else {

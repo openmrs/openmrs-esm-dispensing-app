@@ -1,25 +1,19 @@
-import { fhirBaseUrl, openmrsFetch, Session } from "@openmrs/esm-framework";
-import dayjs from "dayjs";
-import useSWR from "swr";
-import {
-  MedicationDispense,
-  MedicationDispenseStatus,
-  MedicationRequest,
-  OrderConfig,
-  ValueSet,
-} from "../types";
+import { fhirBaseUrl, openmrsFetch, Session } from '@openmrs/esm-framework';
+import dayjs from 'dayjs';
+import useSWR from 'swr';
+import { MedicationDispense, MedicationDispenseStatus, MedicationRequest, OrderConfig, ValueSet } from '../types';
 
 export function saveMedicationDispense(
   medicationDispense: MedicationDispense,
   medicationDispenseStatus: MedicationDispenseStatus,
-  abortController: AbortController
+  abortController: AbortController,
 ) {
   // if we have an id, this is an update, otherwise it's a create
   const url = medicationDispense.id
     ? `${fhirBaseUrl}/MedicationDispense/${medicationDispense.id}`
     : `${fhirBaseUrl}/MedicationDispense`;
 
-  const method = medicationDispense.id ? "PUT" : "POST";
+  const method = medicationDispense.id ? 'PUT' : 'POST';
 
   medicationDispense.status = medicationDispenseStatus;
 
@@ -42,25 +36,22 @@ export function saveMedicationDispense(
     method: method,
     signal: abortController.signal,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: medicationDispense,
   });
 }
 
 export function deleteMedicationDispense(medicationDispenseUuid: string) {
-  return openmrsFetch(
-    `${fhirBaseUrl}/MedicationDispense/${medicationDispenseUuid}`,
-    {
-      method: "DELETE",
-    }
-  );
+  return openmrsFetch(`${fhirBaseUrl}/MedicationDispense/${medicationDispenseUuid}`, {
+    method: 'DELETE',
+  });
 }
 
 export function useOrderConfig() {
   const { data, error, isValidating } = useSWR<{ data: OrderConfig }, Error>(
     `/ws/rest/v1/orderentryconfig`,
-    openmrsFetch
+    openmrsFetch,
   );
   return {
     orderConfigObject: data ? data.data : null,
@@ -91,10 +82,7 @@ export function useSubstitutionReasonValueSet(uuid: string) {
 }
 
 export function useValueSet(uuid: string) {
-  const { data } = useSWR<{ data: ValueSet }, Error>(
-    `${fhirBaseUrl}/ValueSet/${uuid}`,
-    openmrsFetch
-  );
+  const { data } = useSWR<{ data: ValueSet }, Error>(`${fhirBaseUrl}/ValueSet/${uuid}`, openmrsFetch);
   return data ? data.data : null;
 }
 
@@ -102,15 +90,15 @@ export function useValueSet(uuid: string) {
 export function initiateMedicationDispenseBody(
   medicationRequest: MedicationRequest,
   session: Session,
-  populateDispenseInformation: boolean
+  populateDispenseInformation: boolean,
 ): MedicationDispense {
   let medicationDispense: MedicationDispense = {
-    resourceType: "MedicationDispense",
+    resourceType: 'MedicationDispense',
     status: null,
     authorizingPrescription: [
       {
-        reference: "MedicationRequest/" + medicationRequest.id,
-        type: "MedicationRequest",
+        reference: 'MedicationRequest/' + medicationRequest.id,
+        type: 'MedicationRequest',
       },
     ],
     medicationReference: medicationRequest.medicationReference,
@@ -119,16 +107,12 @@ export function initiateMedicationDispenseBody(
     performer: [
       {
         actor: {
-          reference: session?.currentProvider
-            ? `Practitioner/${session.currentProvider.uuid}`
-            : "",
+          reference: session?.currentProvider ? `Practitioner/${session.currentProvider.uuid}` : '',
         },
       },
     ],
     location: {
-      reference: session?.sessionLocation
-        ? `Location/${session.sessionLocation.uuid}`
-        : "",
+      reference: session?.sessionLocation ? `Location/${session.sessionLocation.uuid}` : '',
     },
   };
 
