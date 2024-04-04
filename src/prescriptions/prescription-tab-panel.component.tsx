@@ -20,7 +20,6 @@ import { useTranslation } from 'react-i18next';
 import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
 import PrescriptionExpanded from './prescription-expanded.component';
 import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
-import { PharmacyConfig } from '../config-schema';
 import styles from './prescriptions.scss';
 
 interface PrescriptionTabPanelProps {
@@ -31,7 +30,7 @@ interface PrescriptionTabPanelProps {
 
 const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm, location, status }) => {
   const { t } = useTranslation();
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nextOffSet, setNextOffSet] = useState(0);
@@ -93,10 +92,10 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
                                 {cell.id.endsWith('created')
                                   ? formatDatetime(parseDate(cell.value))
                                   : cell.id.endsWith('patient')
-                                  ? cell.value.name
-                                  : cell.id.endsWith('status')
-                                  ? t(cell.value)
-                                  : cell.value}
+                                    ? cell.value.name
+                                    : cell.id.endsWith('status')
+                                      ? t(cell.value)
+                                      : cell.value}
                               </TableCell>
                             ))}
                           </TableExpandRow>

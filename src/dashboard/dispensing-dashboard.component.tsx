@@ -3,12 +3,11 @@ import { InlineNotification } from '@carbon/react';
 import Overlay from '../forms/overlay/overlay.component';
 import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
 import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';
-import { PharmacyConfig } from '../config-schema';
 import { useConfig } from '@openmrs/esm-framework';
 import { useTranslation } from 'react-i18next';
 
 export default function DispensingDashboard() {
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig();
   const { t } = useTranslation();
   if (config.dispenseBehavior.restrictTotalQuantityDispensed && config.dispenseBehavior.allowModifyingPrescription) {
     return (

@@ -3,8 +3,7 @@ import { Button } from '@carbon/react';
 import { useConfig, useSession } from '@openmrs/esm-framework';
 import styles from './action-buttons.scss';
 import { useTranslation } from 'react-i18next';
-import { MedicationDispenseStatus, MedicationRequestBundle, MedicationRequestStatus } from '../types';
-import { PharmacyConfig } from '../config-schema';
+import { MedicationDispenseStatus, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
 import { launchOverlay } from '../hooks/useOverlay';
 import {
   computeMedicationRequestStatus,
@@ -24,7 +23,7 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, patientUuid, encounterUuid }) => {
   const { t } = useTranslation();
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig();
   const session = useSession();
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
     medicationRequestBundle.dispenses,

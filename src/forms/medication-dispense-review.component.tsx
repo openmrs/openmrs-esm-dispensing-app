@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Medication, MedicationDispense } from '../types';
+import { type Medication, type MedicationDispense } from '../types';
 import MedicationCard from '../components/medication-card.component';
 import { TextArea, ComboBox, Dropdown, NumberInput } from '@carbon/react';
 import { useLayoutType, useConfig, useSession, userHasAccess } from '@openmrs/esm-framework';
@@ -8,7 +8,6 @@ import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenM
 import styles from '../components/medication-dispense-review.scss';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
 import { useMedicationRequest } from '../medication-request/medication-request.resource';
-import { PharmacyConfig } from '../config-schema';
 import {
   useOrderConfig,
   useSubstitutionReasonValueSet,
@@ -28,7 +27,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   quantityRemaining,
 }) => {
   const { t } = useTranslation();
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig();
   const session = useSession();
   const [isEditingFormulation, setIsEditingFormulation] = useState(false);
   const [isSubstitution, setIsSubstitution] = useState(false);
@@ -141,8 +140,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     existingMedicationCodeableConceptUuid
       ? existingMedicationCodeableConceptUuid
       : medicationCodeableConceptUuid
-      ? medicationCodeableConceptUuid
-      : null,
+        ? medicationCodeableConceptUuid
+        : null,
   );
 
   // get the medication request associated with this dispense event

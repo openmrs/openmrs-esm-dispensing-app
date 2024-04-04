@@ -1,7 +1,7 @@
 import React from 'react';
 import { DataTableSkeleton, OverflowMenu, OverflowMenuItem, Tag, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { formatDatetime, parseDate, Session, useConfig, userHasAccess, useSession } from '@openmrs/esm-framework';
+import { formatDatetime, parseDate, type Session, useConfig, userHasAccess, useSession } from '@openmrs/esm-framework';
 import styles from './history-and-comments.scss';
 import {
   updateMedicationRequestFulfillerStatus,
@@ -10,9 +10,8 @@ import {
 import { deleteMedicationDispense } from '../medication-dispense/medication-dispense.resource';
 import MedicationEvent from '../components/medication-event.component';
 import { launchOverlay } from '../hooks/useOverlay';
-import { PharmacyConfig } from '../config-schema';
 import DispenseForm from '../forms/dispense-form.component';
-import { MedicationDispense, MedicationDispenseStatus, MedicationRequestBundle } from '../types';
+import { type MedicationDispense, MedicationDispenseStatus, type MedicationRequestBundle } from '../types';
 import {
   PRIVILEGE_DELETE_DISPENSE,
   PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
@@ -37,7 +36,7 @@ const HistoryAndComments: React.FC<{
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const session = useSession();
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig();
   const { medicationRequestBundles, prescriptionDate, isError, isLoading } = usePrescriptionDetails(
     encounterUuid,
     config.refreshInterval,

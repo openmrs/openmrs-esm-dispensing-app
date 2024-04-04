@@ -12,9 +12,8 @@ import { Button, ComboBox, InlineLoading } from '@carbon/react';
 import { saveMedicationDispense, useReasonForCloseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { closeOverlay } from '../hooks/useOverlay';
 import styles from './forms.scss';
-import { PharmacyConfig } from '../config-schema';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
-import { MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
+import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { getUuidFromReference, revalidate } from '../utils';
 
 interface CloseDispenseFormProps {
@@ -31,7 +30,7 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
   encounterUuid,
 }) => {
   const { t } = useTranslation();
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig();
   const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
 

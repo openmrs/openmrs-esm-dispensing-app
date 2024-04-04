@@ -5,12 +5,12 @@ import PrescriptionTabPanel from './prescription-tab-panel.component';
 import styles from './prescriptions.scss';
 import { useLocationForFiltering } from '../location/location.resource';
 import { useConfig } from '@openmrs/esm-framework';
-import { PharmacyConfig } from '../config-schema';
-import { SimpleLocation } from '../types';
+import { type SimpleLocation } from '../types';
+import { type PharmacyConfig } from '../config-schema';
 
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig<PharmacyConfig>();
   const { filterLocations, isLoading: isFilterLocationsLoading } = useLocationForFiltering(config);
   const [searchTermUserInput, setSearchTermUserInput] = useState(''); // we have a separate "searchTermUserInput" and "searchTerm" in order to debounce
   const [searchTerm, setSearchTerm] = useState('');

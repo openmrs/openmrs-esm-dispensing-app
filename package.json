@@ -11,7 +11,6 @@
     "serve": "webpack serve --mode=development",
     "build": "webpack --mode production",
     "analyze": "webpack --mode=production --env.analyze=true",
-    "prettier": "prettier --write \"src/**/*.{ts,tsx}\" --list-different --ignore-unknown",
     "lint": "eslint src --ext js,jsx,ts,tsx",
     "test": "jest --config jest.config.js",
     "typescript": "tsc",
@@ -67,20 +66,20 @@
     "@types/react-router": "^5.1.14",
     "@types/react-router-dom": "^5.1.7",
     "@types/webpack-env": "^1.16.0",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
     "@typescript-eslint/parser": "^7.5.0",
     "concurrently": "^6.2.0",
     "dayjs": "1.x",
-    "eslint": "^7.27.0",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint": "^8.57.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "husky": "^6.0.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^28.1.2",
     "jest-cli": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
+    "lint-staged": "^15.2.2",
     "openmrs": "next",
-    "prettier": "^2.3.0",
-    "pretty-quick": "^3.1.0",
+    "prettier": "^3.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^11.7.0",
@@ -89,6 +88,12 @@
     "swr": "^2.2.4",
     "typescript": "^4.3.2",
     "webpack": "^5.88.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --cache --fix",
+      "prettier --cache --write --ignore-unknown --list-different"
+    ]
   },
   "packageManager": "yarn@3.6.4"
 }

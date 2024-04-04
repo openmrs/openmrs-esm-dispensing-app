@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { attach, detach, ExtensionSlot, PatientUuid, useConfig, usePatient } from '@openmrs/esm-framework';
+import { attach, detach, ExtensionSlot, type PatientUuid, useConfig, usePatient } from '@openmrs/esm-framework';
 import styles from './patient-details.scss';
 import { useTranslation } from 'react-i18next';
 

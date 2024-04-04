@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tile } from '@carbon/react';
 import { Edit } from '@carbon/react/icons';
-import { MedicationReferenceOrCodeableConcept } from '../types';
+import { type MedicationReferenceOrCodeableConcept } from '../types';
 import styles from './medication-card.scss';
 import { getMedicationDisplay } from '../utils';
 
