@@ -5,19 +5,19 @@ import { WarningFilled } from '@carbon/react/icons';
 import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import { useTranslation } from 'react-i18next';
 import MedicationEvent from '../components/medication-event.component';
-import { PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
-import { AllergyIntolerance, MedicationRequest, MedicationRequestCombinedStatus } from '../types';
-import { PharmacyConfig } from '../config-schema';
+import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
 import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay } from '../utils';
 import ActionButtons from '../components/action-buttons.component';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
+import { type PharmacyConfig } from '../config-schema';
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig<PharmacyConfig>();
   const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid, config.refreshInterval);
   const { medicationRequestBundles, isError, isLoading } = usePrescriptionDetails(

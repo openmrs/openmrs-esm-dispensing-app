@@ -123,7 +123,7 @@ export const configSchema = {
   },
 };
 
-export type PharmacyConfig = {
+export interface PharmacyConfig {
   appName: string;
   actionButtons: {
     pauseButton: {
@@ -162,4 +162,4 @@ export type PharmacyConfig = {
       uuid: string;
     };
   };
-};
+}

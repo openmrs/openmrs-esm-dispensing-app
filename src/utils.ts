@@ -1,17 +1,17 @@
 import { mutate } from 'swr';
 import {
-  Coding,
-  DosageInstruction,
-  Medication,
-  MedicationDispense,
+  type Coding,
+  type DosageInstruction,
+  type Medication,
+  type MedicationDispense,
   MedicationDispenseStatus,
-  MedicationReferenceOrCodeableConcept,
-  MedicationRequest,
-  MedicationRequestBundle,
+  type MedicationReferenceOrCodeableConcept,
+  type MedicationRequest,
+  type MedicationRequestBundle,
   MedicationRequestCombinedStatus,
   MedicationRequestFulfillerStatus,
   MedicationRequestStatus,
-  Quantity,
+  type Quantity,
 } from './types';
 import { fhirBaseUrl, parseDate } from '@openmrs/esm-framework';
 import {

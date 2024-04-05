@@ -1,7 +1,13 @@
-import { fhirBaseUrl, openmrsFetch, Session } from '@openmrs/esm-framework';
+import { fhirBaseUrl, openmrsFetch, type Session } from '@openmrs/esm-framework';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
-import { MedicationDispense, MedicationDispenseStatus, MedicationRequest, OrderConfig, ValueSet } from '../types';
+import {
+  type MedicationDispense,
+  MedicationDispenseStatus,
+  type MedicationRequest,
+  type OrderConfig,
+  type ValueSet,
+} from '../types';
 
 export function saveMedicationDispense(
   medicationDispense: MedicationDispense,

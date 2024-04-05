@@ -3,14 +3,14 @@ import { Button } from '@carbon/react';
 import { useConfig, useSession } from '@openmrs/esm-framework';
 import styles from './action-buttons.scss';
 import { useTranslation } from 'react-i18next';
-import { MedicationDispenseStatus, MedicationRequestBundle, MedicationRequestStatus } from '../types';
-import { PharmacyConfig } from '../config-schema';
+import { MedicationDispenseStatus, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
 import { launchOverlay } from '../hooks/useOverlay';
 import {
   computeMedicationRequestStatus,
   computeQuantityRemaining,
   getMostRecentMedicationDispenseStatus,
 } from '../utils';
+import { type PharmacyConfig } from '../config-schema';
 import DispenseForm from '../forms/dispense-form.component';
 import { initiateMedicationDispenseBody } from '../medication-dispense/medication-dispense.resource';
 import PauseDispenseForm from '../forms/pause-dispense-form.component';
@@ -24,7 +24,7 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, patientUuid, encounterUuid }) => {
   const { t } = useTranslation();
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
     medicationRequestBundle.dispenses,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { PatientUuid } from '@openmrs/esm-framework';
+import { type PatientUuid } from '@openmrs/esm-framework';
 import { Tab, Tabs, TabList, TabPanels, TabPanel } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import HistoryAndComments from '../history/history-and-comments.component';

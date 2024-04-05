@@ -1,7 +1,7 @@
 import useSWR from 'swr';
 import { fhirBaseUrl, openmrsFetch } from '@openmrs/esm-framework';
-import { LocationResponse, SimpleLocation } from '../types';
-import { PharmacyConfig } from '../config-schema';
+import { type LocationResponse, type SimpleLocation } from '../types';
+import { type PharmacyConfig } from '../config-schema';
 
 export function useLocationForFiltering(config: PharmacyConfig) {
   const { data, error } = useSWR<{ data: LocationResponse }, Error>(

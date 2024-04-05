@@ -11,8 +11,7 @@ import {
 import { Button, FormLabel, InlineLoading } from '@carbon/react';
 import styles from './forms.scss';
 import { closeOverlay } from '../hooks/useOverlay';
-import { MedicationDispense, MedicationDispenseStatus, MedicationRequestBundle } from '../types';
-import { PharmacyConfig } from '../config-schema';
+import { type MedicationDispense, MedicationDispenseStatus, type MedicationRequestBundle } from '../types';
 import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
 import MedicationDispenseReview from './medication-dispense-review.component';
 import {
@@ -22,6 +21,7 @@ import {
   revalidate,
 } from '../utils';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
+import { type PharmacyConfig } from '../config-schema';
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -43,7 +43,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const { t } = useTranslation();
   const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
-  const config = useConfig() as PharmacyConfig;
+  const config = useConfig<PharmacyConfig>();
 
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();

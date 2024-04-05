@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { Medication, MedicationFormulationsResponse } from '../types';
+import { type Medication, type MedicationFormulationsResponse } from '../types';
 import { fhirBaseUrl, openmrsFetch } from '@openmrs/esm-framework';
 import { getConceptCodingUuid, getMedicationsByConceptEndpoint } from '../utils';
 

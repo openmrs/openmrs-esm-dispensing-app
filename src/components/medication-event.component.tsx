@@ -1,5 +1,5 @@
 import React from 'react';
-import { DosageInstruction, MedicationDispense, MedicationRequest, Quantity } from '../types';
+import { type DosageInstruction, type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
 import styles from './medication-event.scss';
 import {
   getDosageInstruction,

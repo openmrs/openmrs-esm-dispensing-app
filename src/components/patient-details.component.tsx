@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
-import { attach, detach, ExtensionSlot, PatientUuid, useConfig, usePatient } from '@openmrs/esm-framework';
-import styles from './patient-details.scss';
 import { useTranslation } from 'react-i18next';
+import { attach, detach, ExtensionSlot, type PatientUuid, usePatient } from '@openmrs/esm-framework';
+import styles from './patient-details.scss';
 
 const PatientDetails: React.FC<{
   patientUuid: PatientUuid;
 }> = ({ patientUuid }) => {
   const { t } = useTranslation();
-  const config = useConfig();
   const { patient } = usePatient(patientUuid);
 
   const patientName = patient;

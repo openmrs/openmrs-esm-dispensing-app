@@ -1,15 +1,15 @@
 import useSWR from 'swr';
 import { fhirBaseUrl, openmrsFetch, parseDate } from '@openmrs/esm-framework';
 import {
-  AllergyIntoleranceResponse,
-  EncounterResponse,
-  MedicationRequest,
-  MedicationRequestResponse,
-  PrescriptionsTableRow,
-  MedicationDispense,
-  Encounter,
-  MedicationRequestFulfillerStatus,
-  MedicationRequestBundle,
+  type AllergyIntoleranceResponse,
+  type EncounterResponse,
+  type MedicationRequest,
+  type MedicationRequestResponse,
+  type PrescriptionsTableRow,
+  type MedicationDispense,
+  type Encounter,
+  type MedicationRequestFulfillerStatus,
+  type MedicationRequestBundle,
 } from '../types';
 import {
   getPrescriptionDetailsEndpoint,
@@ -124,7 +124,7 @@ function buildPrescriptionsTableRow(
 }
 
 export function usePrescriptionDetails(encounterUuid: string, refreshInterval) {
-  let medicationRequestBundles: Array<MedicationRequestBundle> = [];
+  const medicationRequestBundles: Array<MedicationRequestBundle> = [];
   let prescriptionDate: Date;
   let isLoading = true;
 
@@ -182,7 +182,7 @@ export function usePatientAllergies(patientUuid: string, refreshInterval) {
     { refreshInterval: refreshInterval },
   );
 
-  let allergies = [];
+  const allergies = [];
   if (data) {
     const entries = data?.data.entry;
     entries?.map((allergy) => {
