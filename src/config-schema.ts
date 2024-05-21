@@ -121,6 +121,11 @@ export const configSchema = {
       },
     },
   },
+  enableStockDispense: {
+    _type: Type.Boolean,
+    _description: 'To enable or disable the deduction of stock during the dispensing process',
+    _default: true,
+  },
 };
 
 export interface PharmacyConfig {
@@ -162,4 +167,5 @@ export interface PharmacyConfig {
       uuid: string;
     };
   };
+  enableStockDispense: boolean;
 }
