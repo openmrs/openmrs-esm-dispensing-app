@@ -20,13 +20,14 @@ export const useDispenseStock = (drugUuid: string) => {
  * Interface for the stock dispense request object.
  */
 export type StockDispenseRequest = {
-  locationUuid: string;
-  patientUuid: string;
-  orderUuid: string;
-  encounterUuid: string;
-  stockItemUuid: string;
-  stockBatchUuid: string;
-  quantity?: number;
+  dispenseLocation: string;
+  patient: string;
+  order: string;
+  encounter: string;
+  stockItem: string;
+  stockBatch: string;
+  stockItemPackagingUOM: string;
+  quantity: number;
 };
 
 /**
@@ -64,7 +65,7 @@ export const createStockDispenseRequestPayload = (
   patientUuid: string,
   encounterUuid: string,
   medicationDispensePayload: MedicationDispense,
-) => {
+): StockDispenseRequest => {
   return {
     dispenseLocation: inventoryItem.locationUuid,
     patient: patientUuid,
