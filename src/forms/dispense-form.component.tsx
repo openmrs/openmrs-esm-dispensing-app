@@ -28,7 +28,7 @@ import {
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { type PharmacyConfig } from '../config-schema';
 import StockDispense from './stock-dispense/stock-dispense.component';
-import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/useDispenseStock';
+import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -77,30 +77,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
               medicationRequestBundle,
               config.dispenseBehavior.restrictTotalQuantityDispensed,
             );
-
-            if (config.enableStockDispense) {
-              const stockDispenseRequestPayload = createStockDispenseRequestPayload(
-                inventoryItem,
-                patientUuid,
-                encounterUuid,
-                medicationDispensePayload,
-              );
-              sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
-                () => {
-                  showToast({
-                    title: t('stockDispensed', 'Stock dispensed'),
-                    kind: 'success',
-                    description: t(
-                      'stockDispensedSuccessfully',
-                      'Stock dispensed successfully and batch level updated.',
-                    ),
-                  });
-                },
-                (error) => {
-                  showToast({ title: 'Stock dispense error', kind: 'error', description: error?.message });
-                },
-              );
-            }
             if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
               return updateMedicationRequestFulfillerStatus(
                 getUuidFromReference(
@@ -109,6 +85,31 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 newFulfillerStatus,
               );
             }
+          }
+          return response;
+        })
+        .then((response) => {
+          const { status } = response;
+          if ((config.enableStockDispense && status === 201) || status === 200) {
+            const stockDispenseRequestPayload = createStockDispenseRequestPayload(
+              inventoryItem,
+              patientUuid,
+              encounterUuid,
+              medicationDispensePayload,
+            );
+            sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
+              () => {
+                showToast({
+                  critical: true,
+                  title: t('stockDispensed', 'Stock dispensed'),
+                  kind: 'success',
+                  description: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
+                });
+              },
+              (error) => {
+                showToast({ title: 'Stock dispense error', kind: 'error', description: error?.message });
+              },
+            );
           }
           return response;
         })

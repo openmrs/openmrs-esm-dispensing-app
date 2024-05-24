@@ -499,3 +499,14 @@ export type InventoryItem = {
   conceptName: string | null;
   resourceVersion: string;
 };
+
+export type StockDispenseRequest = {
+  dispenseLocation: string;
+  patient: string;
+  order: string;
+  encounter: string;
+  stockItem: string;
+  stockBatch: string;
+  stockItemPackagingUOM: string;
+  quantity: number;
+};

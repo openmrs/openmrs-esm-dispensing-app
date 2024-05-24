@@ -1,9 +1,10 @@
 import useSWR from 'swr';
-import { openmrsFetch } from '@openmrs/esm-framework';
-import { type InventoryItem, type MedicationDispense } from '../../types';
+import { openmrsFetch, useSession } from '@openmrs/esm-framework';
+import { type StockDispenseRequest, type InventoryItem, type MedicationDispense } from '../../types';
 import { getUuidFromReference } from '../../utils';
 
 //TODO: Add configuration to retrieve the stock dispense endpoint
+// For stock dispense to work, stock management module should be installed and configured
 /**
  * Fetches the inventory items for a given drug UUID.
  *
@@ -11,23 +12,10 @@ import { getUuidFromReference } from '../../utils';
  * @returns {Array} - The inventory items.
  */
 export const useDispenseStock = (drugUuid: string) => {
-  const url = `/ws/rest/v1/stockmanagement/stockiteminventory?v=default&limit=10&totalCount=true&drugUuid=${drugUuid}&includeBatchNo=true`;
+  const session = useSession();
+  const url = `/ws/rest/v1/stockmanagement/stockiteminventory?v=default&totalCount=true&drugUuid=${drugUuid}&includeBatchNo=true&groupBy=LocationStockItemBatchNo&dispenseLocationUuid=${session?.sessionLocation?.uuid}&includeStrength=1&includeConceptRefIds=1&emptyBatch=1&emptyBatchLocationUuid=${session?.sessionLocation?.uuid}&dispenseAtLocation=1`;
   const { data, error, isLoading } = useSWR<{ data: { results: Array<InventoryItem> } }>(url, openmrsFetch);
   return { inventoryItems: data?.data?.results ?? [], error, isLoading };
-};
-
-/**
- * Interface for the stock dispense request object.
- */
-export type StockDispenseRequest = {
-  dispenseLocation: string;
-  patient: string;
-  order: string;
-  encounter: string;
-  stockItem: string;
-  stockBatch: string;
-  stockItemPackagingUOM: string;
-  quantity: number;
 };
 
 /**

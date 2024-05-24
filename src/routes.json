@@ -1,8 +1,7 @@
 {
   "backendDependencies": {
     "fhir2": ">=1.2",
-    "webservices.rest": "^2.2.0",
-    "stockmanagement": "^1.4.1 "
+    "webservices.rest": "^2.2.0"
   },
   "pages": [
     {
