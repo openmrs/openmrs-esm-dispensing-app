@@ -90,7 +90,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         })
         .then((response) => {
           const { status } = response;
-          if ((config.enableStockDispense && status === 201) || status === 200) {
+          if (config.enableStockDispense && (status === 201 || status === 200)) {
             const stockDispenseRequestPayload = createStockDispenseRequestPayload(
               inventoryItem,
               patientUuid,
