@@ -11,7 +11,12 @@ import {
 import { Button, FormLabel, InlineLoading } from '@carbon/react';
 import styles from './forms.scss';
 import { closeOverlay } from '../hooks/useOverlay';
-import { type MedicationDispense, MedicationDispenseStatus, type MedicationRequestBundle } from '../types';
+import {
+  type MedicationDispense,
+  MedicationDispenseStatus,
+  type MedicationRequestBundle,
+  type InventoryItem,
+} from '../types';
 import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
 import MedicationDispenseReview from './medication-dispense-review.component';
 import {
@@ -22,6 +27,8 @@ import {
 } from '../utils';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { type PharmacyConfig } from '../config-schema';
+import StockDispense from './stock-dispense/stock-dispense.component';
+import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -44,6 +51,9 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
   const config = useConfig<PharmacyConfig>();
+
+  // Keep track of inventory item
+  const [inventoryItem, setInventoryItem] = useState<InventoryItem>();
 
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
@@ -75,6 +85,31 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 newFulfillerStatus,
               );
             }
+          }
+          return response;
+        })
+        .then((response) => {
+          const { status } = response;
+          if ((config.enableStockDispense && status === 201) || status === 200) {
+            const stockDispenseRequestPayload = createStockDispenseRequestPayload(
+              inventoryItem,
+              patientUuid,
+              encounterUuid,
+              medicationDispensePayload,
+            );
+            sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
+              () => {
+                showToast({
+                  critical: true,
+                  title: t('stockDispensed', 'Stock dispensed'),
+                  kind: 'success',
+                  description: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
+                });
+              },
+              (error) => {
+                showToast({ title: 'Stock dispense error', kind: 'error', description: error?.message });
+              },
+            );
           }
           return response;
         })
@@ -134,7 +169,9 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
 
   // check is valid on any changes
-  useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining]);
+  useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining, inventoryItem]);
+
+  const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
 
   const bannerState = useMemo(() => {
     if (patient) {
@@ -159,7 +196,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         )}
         {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
         <section className={styles.formGroup}>
-          {/* <span style={{ marginTop: "1rem" }}>1. {t("drug", "Drug")}</span>*/}
           <FormLabel>
             {t(
               config.dispenseBehavior.allowModifyingPrescription ? 'drugHelpText' : 'drugHelpTextNoEdit',
@@ -169,18 +205,27 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             )}
           </FormLabel>
           {medicationDispensePayload ? (
-            <MedicationDispenseReview
-              medicationDispense={medicationDispensePayload}
-              updateMedicationDispense={setMedicationDispensePayload}
-              quantityRemaining={quantityRemaining}
-            />
+            <div>
+              <MedicationDispenseReview
+                medicationDispense={medicationDispensePayload}
+                updateMedicationDispense={setMedicationDispensePayload}
+                quantityRemaining={quantityRemaining}
+              />
+              {config.enableStockDispense && (
+                <StockDispense
+                  inventoryItem={inventoryItem}
+                  medicationDispense={medicationDispense}
+                  updateInventoryItem={setInventoryItem}
+                />
+              )}
+            </div>
           ) : null}
         </section>
         <section className={styles.buttonGroup}>
           <Button disabled={isSubmitting} onClick={() => closeOverlay()} kind="secondary">
             {t('cancel', 'Cancel')}
           </Button>
-          <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
+          <Button disabled={isButtonDisabled} onClick={handleSubmit}>
             {t(
               mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
               mode === 'enter' ? 'Dispense prescription' : 'Save changes',

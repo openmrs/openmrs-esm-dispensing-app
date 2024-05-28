@@ -41,6 +41,7 @@ const pharmacyConfig: PharmacyConfig = {
     substitutionReason: { uuid: '' },
     substitutionType: { uuid: '' },
   },
+  enableStockDispense: false,
 };
 
 describe('Location Resource tests', () => {

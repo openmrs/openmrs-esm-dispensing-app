@@ -475,3 +475,38 @@ export interface ValueSet {
     ];
   };
 }
+
+export type InventoryItem = {
+  partyUuid: string;
+  locationUuid: string;
+  partyName: string;
+  stockItemUuid: string | null;
+  drugId: string | null;
+  drugUuid: string | null;
+  drugStrength: string | null;
+  conceptId: string | null;
+  conceptUuid: string | null;
+  stockBatchUuid: string;
+  batchNumber: string;
+  quantity: number;
+  quantityUoM: string;
+  quantityFactor: number;
+  quantityUoMUuid: string;
+  expiration: string;
+  commonName: string | null;
+  acronym: string | null;
+  drugName: string | null;
+  conceptName: string | null;
+  resourceVersion: string;
+};
+
+export type StockDispenseRequest = {
+  dispenseLocation: string;
+  patient: string;
+  order: string;
+  encounter: string;
+  stockItem: string;
+  stockBatch: string;
+  stockItemPackagingUOM: string;
+  quantity: number;
+};
