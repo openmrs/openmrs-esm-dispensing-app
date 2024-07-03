@@ -15,6 +15,9 @@ const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updat
   const { t } = useTranslation();
   const drugUuid = medicationDispense?.medicationReference?.reference?.split('/')[1];
   const { inventoryItems, error, isLoading } = useDispenseStock(drugUuid);
+  const filteredinventoryItems = inventoryItems.filter(
+    (item) => item.quantity > 0 && item.quantity >= medicationDispense.quantity.value,
+  );
 
   const toStockDispense = (inventoryItems) => {
     return t(
@@ -50,7 +53,7 @@ const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updat
     <Layer>
       <ComboBox
         id="stockDispense"
-        items={inventoryItems}
+        items={filteredinventoryItems}
         onChange={({ selectedItem }) => updateInventoryItem(selectedItem)}
         itemToString={(item) => (item ? toStockDispense(item) : '')}
         titleText={t('stockDispense', 'Stock Dispense')}
