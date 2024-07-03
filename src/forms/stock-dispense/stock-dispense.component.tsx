@@ -15,9 +15,7 @@ const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updat
   const { t } = useTranslation();
   const drugUuid = medicationDispense?.medicationReference?.reference?.split('/')[1];
   const { inventoryItems, error, isLoading } = useDispenseStock(drugUuid);
-  const filteredInventoryItems = inventoryItems.filter(
-    (item) => item.quantity > 0 && item.quantity >= medicationDispense.quantity.value,
-  );
+  const filteredInventoryItems = inventoryItems.filter((item) => item.quantity > 0);
 
   const toStockDispense = (inventoryItems) => {
     return t(
