@@ -165,6 +165,19 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     }
   };
 
+  // useEffect(() => {
+  //   setCurrentQuantity(quantityRemaining);
+  // }, [quantityRemaining]);
+
+  const [currentQuantity, setCurrentQuantity] = useState(quantityRemaining);
+  useEffect(() => {
+    setCurrentQuantity(quantityRemaining);
+  }, [quantityRemaining]);
+  useEffect(() => {}, [currentQuantity]);
+  const setAvailableQuantity = (batch) => {
+    setCurrentQuantity(Number(batch.quantity));
+  };
+
   // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
 
@@ -209,13 +222,14 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
               <MedicationDispenseReview
                 medicationDispense={medicationDispensePayload}
                 updateMedicationDispense={setMedicationDispensePayload}
-                quantityRemaining={quantityRemaining}
+                quantityRemaining={currentQuantity}
               />
               {config.enableStockDispense && (
                 <StockDispense
                   inventoryItem={inventoryItem}
                   medicationDispense={medicationDispense}
                   updateInventoryItem={setInventoryItem}
+                  updateAvailableQuantity={setAvailableQuantity}
                 />
               )}
             </div>

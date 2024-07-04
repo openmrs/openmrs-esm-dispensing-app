@@ -305,7 +305,11 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           }
           min={0}
           max={config.dispenseBehavior.restrictTotalQuantityDispensed ? quantityRemaining : undefined}
-          value={medicationDispense.quantity.value}
+          value={
+            quantityRemaining <= medicationDispense.quantity.value
+              ? quantityRemaining
+              : medicationDispense.quantity.value
+          }
           onChange={(e) => {
             updateMedicationDispense({
               ...medicationDispense,
