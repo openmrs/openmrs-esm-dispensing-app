@@ -9,23 +9,18 @@ type StockDispenseProps = {
   medicationDispense: MedicationDispense;
   updateInventoryItem: (inventoryItem: InventoryItem) => void;
   inventoryItem: InventoryItem;
-  updateAvailableQuantity: (inventoryItem: InventoryItem) => void;
+  updateAvailableQuantityToMedicationDispenseQuantity: (inventoryItem: InventoryItem) => void;
 };
 
 const StockDispense: React.FC<StockDispenseProps> = ({
   medicationDispense,
   updateInventoryItem,
-  updateAvailableQuantity,
+  updateAvailableQuantityToMedicationDispenseQuantity,
 }) => {
   const { t } = useTranslation();
   const drugUuid = medicationDispense?.medicationReference?.reference?.split('/')[1];
   const { inventoryItems, error, isLoading } = useDispenseStock(drugUuid);
-  // const filteredInventoryItems = inventoryItems.filter((item) => item.quantity > 0);
-  const nonExpiringInventoryItems = inventoryItems.filter((item) => isValidBatch(medicationDispense, item));
-
-  function daysInMonth(month, year) {
-    return new Date(year, month, 0).getDate();
-  }
+  const validInventoryItems = inventoryItems.filter((item) => isValidBatch(medicationDispense, item));
 
   function parseDate(dateString) {
     return new Date(dateString);
@@ -41,13 +36,17 @@ const StockDispense: React.FC<StockDispenseProps> = ({
         ) {
           const durationUnit = instruction.timing.repeat.durationUnit;
           const durationValue = instruction.timing.repeat.duration;
-          let lastMedicationDate = new Date();
+          const lastMedicationDate = new Date();
 
           switch (durationUnit) {
             case 's':
+              lastMedicationDate.setSeconds(lastMedicationDate.getSeconds() + durationValue);
+              break;
             case 'min':
+              lastMedicationDate.setMinutes(lastMedicationDate.getMinutes() + durationValue);
+              break;
             case 'h':
-              lastMedicationDate = new Date();
+              lastMedicationDate.setHours(lastMedicationDate.getHours() + durationValue);
               break;
             case 'd':
               lastMedicationDate.setDate(lastMedicationDate.getDate() + durationValue);
@@ -55,33 +54,12 @@ const StockDispense: React.FC<StockDispenseProps> = ({
             case 'wk':
               lastMedicationDate.setDate(lastMedicationDate.getDate() + durationValue * 7);
               break;
-            case 'mo': {
-              let currentMonth = lastMedicationDate.getMonth() + 1;
-              let currentYear = lastMedicationDate.getFullYear();
-              let totalDays = 0;
-
-              for (let i = 0; i < durationValue; i++) {
-                if (currentMonth > 12) {
-                  currentMonth = currentMonth % 12;
-                  currentYear++;
-                }
-                totalDays += daysInMonth(currentMonth, currentYear);
-                currentMonth++;
-              }
-              lastMedicationDate.setDate(lastMedicationDate.getDate() + totalDays);
+            case 'mo':
+              lastMedicationDate.setMonth(lastMedicationDate.getMonth() + durationValue);
               break;
-            }
-            case 'y': {
-              for (let i = 0; i < durationValue; i++) {
-                for (let j = 1; j <= 12; j++) {
-                  lastMedicationDate.setDate(
-                    lastMedicationDate.getDate() + daysInMonth(j, lastMedicationDate.getFullYear()),
-                  );
-                }
-                lastMedicationDate.setFullYear(lastMedicationDate.getFullYear() + 1);
-              }
+            case 'y':
+              lastMedicationDate.setFullYear(lastMedicationDate.getFullYear() + durationValue);
               break;
-            }
             default:
               return false;
           }
@@ -129,10 +107,10 @@ const StockDispense: React.FC<StockDispenseProps> = ({
     <Layer>
       <ComboBox
         id="stockDispense"
-        items={nonExpiringInventoryItems}
+        items={validInventoryItems}
         onChange={({ selectedItem }) => {
           updateInventoryItem(selectedItem);
-          updateAvailableQuantity(selectedItem);
+          updateAvailableQuantityToMedicationDispenseQuantity(selectedItem);
         }}
         itemToString={(item) => (item ? toStockDispense(item) : '')}
         titleText={t('stockDispense', 'Stock Dispense')}

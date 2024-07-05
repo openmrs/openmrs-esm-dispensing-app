@@ -64,6 +64,9 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  //track quantity to dispense
+  const [currentQuantity, setCurrentQuantity] = useState(quantityRemaining);
+
   // Submit medication dispense form
   const handleSubmit = () => {
     if (!isSubmitting) {
@@ -165,11 +168,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     }
   };
 
-  // useEffect(() => {
-  //   setCurrentQuantity(quantityRemaining);
-  // }, [quantityRemaining]);
-
-  const [currentQuantity, setCurrentQuantity] = useState(quantityRemaining);
   useEffect(() => {
     setCurrentQuantity(quantityRemaining);
   }, [quantityRemaining]);
@@ -229,7 +227,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                   inventoryItem={inventoryItem}
                   medicationDispense={medicationDispense}
                   updateInventoryItem={setInventoryItem}
-                  updateAvailableQuantity={setAvailableQuantity}
+                  //callback function to update the quantity to dispense in MedicalDispenseReview component
+                  updateAvailableQuantityToMedicationDispenseQuantity={setAvailableQuantity}
                 />
               )}
             </div>
