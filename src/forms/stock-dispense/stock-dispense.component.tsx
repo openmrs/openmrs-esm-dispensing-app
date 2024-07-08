@@ -9,12 +9,69 @@ type StockDispenseProps = {
   medicationDispense: MedicationDispense;
   updateInventoryItem: (inventoryItem: InventoryItem) => void;
   inventoryItem: InventoryItem;
+  updateAvailableQuantityToMedicationDispenseQuantity: (inventoryItem: InventoryItem) => void;
 };
 
-const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updateInventoryItem }) => {
+const StockDispense: React.FC<StockDispenseProps> = ({
+  medicationDispense,
+  updateInventoryItem,
+  updateAvailableQuantityToMedicationDispenseQuantity,
+}) => {
   const { t } = useTranslation();
   const drugUuid = medicationDispense?.medicationReference?.reference?.split('/')[1];
   const { inventoryItems, error, isLoading } = useDispenseStock(drugUuid);
+  const validInventoryItems = inventoryItems.filter((item) => isValidBatch(medicationDispense, item));
+
+  function parseDate(dateString) {
+    return new Date(dateString);
+  }
+
+  function isValidBatch(medicationToDispense, inventoryItem) {
+    if (medicationToDispense?.dosageInstruction && medicationToDispense?.dosageInstruction.length > 0) {
+      return medicationToDispense.dosageInstruction.some((instruction) => {
+        if (
+          instruction.timing?.repeat?.duration &&
+          instruction.timing?.repeat?.durationUnit &&
+          inventoryItem.quantity > 0
+        ) {
+          const durationUnit = instruction.timing.repeat.durationUnit;
+          const durationValue = instruction.timing.repeat.duration;
+          const lastMedicationDate = new Date();
+
+          switch (durationUnit) {
+            case 's':
+              lastMedicationDate.setSeconds(lastMedicationDate.getSeconds() + durationValue);
+              break;
+            case 'min':
+              lastMedicationDate.setMinutes(lastMedicationDate.getMinutes() + durationValue);
+              break;
+            case 'h':
+              lastMedicationDate.setHours(lastMedicationDate.getHours() + durationValue);
+              break;
+            case 'd':
+              lastMedicationDate.setDate(lastMedicationDate.getDate() + durationValue);
+              break;
+            case 'wk':
+              lastMedicationDate.setDate(lastMedicationDate.getDate() + durationValue * 7);
+              break;
+            case 'mo':
+              lastMedicationDate.setMonth(lastMedicationDate.getMonth() + durationValue);
+              break;
+            case 'y':
+              lastMedicationDate.setFullYear(lastMedicationDate.getFullYear() + durationValue);
+              break;
+            default:
+              return false;
+          }
+
+          const expiryDate = parseDate(inventoryItem.expiration);
+          return expiryDate > lastMedicationDate;
+        }
+        return false;
+      });
+    }
+    return false;
+  }
 
   const toStockDispense = (inventoryItems) => {
     return t(
@@ -50,8 +107,11 @@ const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updat
     <Layer>
       <ComboBox
         id="stockDispense"
-        items={inventoryItems}
-        onChange={({ selectedItem }) => updateInventoryItem(selectedItem)}
+        items={validInventoryItems}
+        onChange={({ selectedItem }) => {
+          updateInventoryItem(selectedItem);
+          updateAvailableQuantityToMedicationDispenseQuantity(selectedItem);
+        }}
         itemToString={(item) => (item ? toStockDispense(item) : '')}
         titleText={t('stockDispense', 'Stock Dispense')}
         placeholder={t('selectStockDispense', 'Select stock to dispense from')}
