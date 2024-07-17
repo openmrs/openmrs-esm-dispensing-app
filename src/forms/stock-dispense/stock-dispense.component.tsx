@@ -26,6 +26,7 @@ const StockDispense: React.FC<StockDispenseProps> = ({
     return new Date(dateString);
   }
 
+  //check whether the drug will expire before the medication period ends
   function isValidBatch(medicationToDispense, inventoryItem) {
     if (medicationToDispense?.dosageInstruction && medicationToDispense?.dosageInstruction.length > 0) {
       return medicationToDispense.dosageInstruction.some((instruction) => {
