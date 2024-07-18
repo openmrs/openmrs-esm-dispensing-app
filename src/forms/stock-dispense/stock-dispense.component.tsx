@@ -9,14 +9,9 @@ type StockDispenseProps = {
   medicationDispense: MedicationDispense;
   updateInventoryItem: (inventoryItem: InventoryItem) => void;
   inventoryItem: InventoryItem;
-  updateAvailableQuantityToMedicationDispenseQuantity: (inventoryItem: InventoryItem) => void;
 };
 
-const StockDispense: React.FC<StockDispenseProps> = ({
-  medicationDispense,
-  updateInventoryItem,
-  updateAvailableQuantityToMedicationDispenseQuantity,
-}) => {
+const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updateInventoryItem }) => {
   const { t } = useTranslation();
   const drugUuid = medicationDispense?.medicationReference?.reference?.split('/')[1];
   const { inventoryItems, error, isLoading } = useDispenseStock(drugUuid);
@@ -111,7 +106,6 @@ const StockDispense: React.FC<StockDispenseProps> = ({
         items={validInventoryItems}
         onChange={({ selectedItem }) => {
           updateInventoryItem(selectedItem);
-          updateAvailableQuantityToMedicationDispenseQuantity(selectedItem);
         }}
         itemToString={(item) => (item ? toStockDispense(item) : '')}
         titleText={t('stockDispense', 'Stock Dispense')}
