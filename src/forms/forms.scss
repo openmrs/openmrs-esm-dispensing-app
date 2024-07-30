@@ -33,7 +33,7 @@ $color-blue-30: #a6c8ff;
   flex: 3;
 }
 
-.formGroup span {
+.formGroup>span {
   @extend .productiveHeading02;
 }
 
@@ -151,4 +151,10 @@ $color-blue-30: #a6c8ff;
 
 .reviewContainer {
   margin: 0.8rem 0 0 0 !important;
+}
+
+.closeVisitCheckBox {
+  & label {
+    @include type.type-style('label-01');
+  }
 }

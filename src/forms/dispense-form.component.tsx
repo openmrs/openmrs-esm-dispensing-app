@@ -2,33 +2,27 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ExtensionSlot,
-  showNotification,
-  showToast,
+  formatDatetime,
+  showSnackbar,
   useConfig,
   useLayoutType,
   usePatient,
+  useVisit,
 } from '@openmrs/esm-framework';
-import { Button, FormLabel, InlineLoading } from '@carbon/react';
+import { Button, FormLabel, InlineLoading, Layer, Checkbox } from '@carbon/react';
 import styles from './forms.scss';
 import { closeOverlay } from '../hooks/useOverlay';
 import {
   type MedicationDispense,
-  MedicationDispenseStatus,
   type MedicationRequestBundle,
   type InventoryItem,
+  type DispenseFormHandlerParams,
 } from '../types';
-import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
 import MedicationDispenseReview from './medication-dispense-review.component';
-import {
-  computeNewFulfillerStatusAfterDispenseEvent,
-  getFulfillerStatus,
-  getUuidFromReference,
-  revalidate,
-} from '../utils';
-import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
+import { revalidate } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 import StockDispense from './stock-dispense/stock-dispense.component';
-import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
+import { executeMedicationDispenseChain } from './dispense-form-handler';
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -50,11 +44,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const { t } = useTranslation();
   const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
+  const { currentVisit } = useVisit(patientUuid);
   const config = useConfig<PharmacyConfig>();
 
   // Keep track of inventory item
   const [inventoryItem, setInventoryItem] = useState<InventoryItem>();
-
+  // Keep track of whether to close visit on dispense
+  const [closeVisitOnDispense, setCloseVisitOnDispense] = useState(false);
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
 
@@ -69,79 +65,36 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
-      saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
-        .then((response) => {
-          if (response.ok) {
-            const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
-              medicationDispensePayload,
-              medicationRequestBundle,
-              config.dispenseBehavior.restrictTotalQuantityDispensed,
-            );
-            if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
-              return updateMedicationRequestFulfillerStatus(
-                getUuidFromReference(
-                  medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
-                ),
-                newFulfillerStatus,
-              );
-            }
-          }
-          return response;
-        })
-        .then((response) => {
-          const { status } = response;
-          if (config.enableStockDispense && (status === 201 || status === 200)) {
-            const stockDispenseRequestPayload = createStockDispenseRequestPayload(
-              inventoryItem,
-              patientUuid,
-              encounterUuid,
-              medicationDispensePayload,
-            );
-            sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
-              () => {
-                showToast({
-                  critical: true,
-                  title: t('stockDispensed', 'Stock dispensed'),
-                  kind: 'success',
-                  description: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
-                });
-              },
-              (error) => {
-                showToast({ title: 'Stock dispense error', kind: 'error', description: error?.message });
-              },
-            );
-          }
-          return response;
-        })
-        .then(
-          ({ status }) => {
-            if (status === 201 || status === 200) {
-              closeOverlay();
-              revalidate(encounterUuid);
-              showToast({
-                critical: true,
-                kind: 'success',
-                description: t('medicationListUpdated', 'Medication dispense list has been updated.'),
-                title: t(
-                  mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
-                  mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
-                ),
-              });
-            }
-          },
-          (error) => {
-            showNotification({
-              title: t(
-                mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
-                mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
-              ),
-              kind: 'error',
-              critical: true,
-              description: error?.message,
-            });
-            setIsSubmitting(false);
-          },
-        );
+
+      const dispenseFormHandlerParams: DispenseFormHandlerParams = {
+        medicationDispensePayload,
+        medicationRequestBundle,
+        config,
+        inventoryItem,
+        patientUuid,
+        encounterUuid,
+        abortController,
+        closeOverlay,
+        revalidate,
+        closeVisitOnDispense,
+        setIsSubmitting,
+        mode,
+        t,
+        currentVisit,
+      };
+
+      executeMedicationDispenseChain(dispenseFormHandlerParams).catch((error) => {
+        showSnackbar({
+          title: t(
+            mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
+            mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
+          ),
+          kind: 'error',
+          isLowContrast: true,
+          subtitle: error?.message,
+        });
+        setIsSubmitting(false);
+      });
     }
   };
 
@@ -172,6 +125,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining, inventoryItem]);
 
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
+  const shouldShowCloseVisitCheckbox = useMemo(() => {
+    return (
+      config.closeVisitOnDispense &&
+      currentVisit &&
+      config.closeVisitOnDispense.visitTypesUuids.includes(currentVisit.visitType.uuid)
+    );
+  }, [config.closeVisitOnDispense, currentVisit]);
 
   const bannerState = useMemo(() => {
     if (patient) {
@@ -198,8 +158,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         <section className={styles.formGroup}>
           <FormLabel>
             {t(
-              config.dispenseBehavior.allowModifyingPrescription ? 'drugHelpText' : 'drugHelpTextNoEdit',
-              config.dispenseBehavior.allowModifyingPrescription
+              config.dispenseBehavior?.allowModifyingPrescription ? 'drugHelpText' : 'drugHelpTextNoEdit',
+              config.dispenseBehavior?.allowModifyingPrescription
                 ? 'You may edit the formulation and quantity dispensed here'
                 : 'You may edit quantity dispensed here',
             )}
@@ -217,6 +177,21 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                   medicationDispense={medicationDispense}
                   updateInventoryItem={setInventoryItem}
                 />
+              )}
+              {shouldShowCloseVisitCheckbox && (
+                <Layer>
+                  <Checkbox
+                    className={styles.closeVisitCheckBox}
+                    labelText={t('closeVisitOnDispense', 'Close {{visitType}} visit started at {{startDatetime}}', {
+                      visitType: currentVisit?.visitType.display?.toLocaleLowerCase(),
+                      startDatetime: formatDatetime(new Date(currentVisit?.startDatetime), {
+                        noToday: true,
+                      }),
+                    })}
+                    id="closeVisitOnDispense"
+                    onChange={(event, { checked, id }) => setCloseVisitOnDispense(checked)}
+                  />
+                </Layer>
               )}
             </div>
           ) : null}
