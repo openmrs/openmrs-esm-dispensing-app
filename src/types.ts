@@ -1,4 +1,6 @@
-import { type OpenmrsResource } from '@openmrs/esm-framework';
+import { type OpenmrsFetchError, type Visit, type OpenmrsResource } from '@openmrs/esm-framework';
+import { type PharmacyConfig } from './config-schema';
+import { type TFunction } from 'react-i18next';
 
 export interface AllergyIntolerance {
   resourceType: string;
@@ -521,4 +523,24 @@ export type StockDispenseRequest = {
   stockBatch: string;
   stockItemPackagingUOM: string;
   quantity: number;
+};
+
+export type DispenseFormHandlerParams = {
+  medicationDispensePayload: MedicationDispense;
+  medicationRequestBundle: MedicationRequestBundle;
+  config: PharmacyConfig;
+  inventoryItem: InventoryItem | undefined;
+  patientUuid: string | undefined;
+  encounterUuid: string;
+  abortController: AbortController;
+  closeOverlay: () => void;
+  revalidate: (encounterUuid: string) => void;
+  closeVisitOnDispense: boolean;
+  setIsSubmitting: (isSubmitting: boolean) => void;
+  mode: 'enter' | 'edit';
+  t: TFunction<'translation', undefined>;
+  currentVisit: Visit;
+  response?: Record<string, any>;
+  errors?: Array<OpenmrsFetchError | undefined | Error>;
+  [key: string]: any;
 };
