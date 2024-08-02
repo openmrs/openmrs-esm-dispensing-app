@@ -5,55 +5,70 @@ import { type DispenseFormHandlerParams, MedicationDispenseStatus } from '../typ
 import { computeNewFulfillerStatusAfterDispenseEvent, getFulfillerStatus, getUuidFromReference } from '../utils';
 import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
 
-class Handler {
-  nextHandler: Handler | null;
+abstract class Handler {
+  protected nextHandler: Handler | null = null;
 
-  constructor() {
-    this.nextHandler = null;
-  }
-
-  setNext(handler) {
+  setNext(handler: Handler): Handler {
     this.nextHandler = handler;
     return handler;
   }
 
-  handle(request: DispenseFormHandlerParams) {
+  abstract handle(request: DispenseFormHandlerParams): Promise<DispenseFormHandlerParams>;
+
+  protected async callNext(request: DispenseFormHandlerParams): Promise<DispenseFormHandlerParams> {
     if (this.nextHandler) {
       return this.nextHandler.handle(request);
     }
-    return Promise.resolve(request);
+    return request;
+  }
+
+  protected showErrorSnackbar(t: Function, title: string, error: any): void {
+    showSnackbar({
+      title: t(title),
+      kind: 'error',
+      isLowContrast: true,
+      timeoutInMs: 5000,
+      subtitle: error?.message || t('unknownError', 'An unknown error occurred'),
+    });
   }
 }
 
 class MedicationDispenseHandler extends Handler {
-  handle(request) {
-    const { medicationDispensePayload, medicationRequestBundle, config, abortController } = request;
-    return saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
-      .then((response) => {
-        if (response.ok) {
-          const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
-            medicationDispensePayload,
-            medicationRequestBundle,
-            config.dispenseBehavior.restrictTotalQuantityDispensed,
+  async handle(request: DispenseFormHandlerParams): Promise<DispenseFormHandlerParams> {
+    const { medicationDispensePayload, medicationRequestBundle, config, abortController, t } = request;
+    try {
+      const response = await saveMedicationDispense(
+        medicationDispensePayload,
+        MedicationDispenseStatus.completed,
+        abortController,
+      );
+
+      if (response.ok) {
+        const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
+          medicationDispensePayload,
+          medicationRequestBundle,
+          config.dispenseBehavior.restrictTotalQuantityDispensed,
+        );
+
+        if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
+          await updateMedicationRequestFulfillerStatus(
+            getUuidFromReference(medicationDispensePayload.authorizingPrescription[0].reference),
+            newFulfillerStatus,
           );
-          if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
-            return updateMedicationRequestFulfillerStatus(
-              getUuidFromReference(medicationDispensePayload.authorizingPrescription[0].reference),
-              newFulfillerStatus,
-            );
-          }
         }
-        return response;
-      })
-      .then((response) => {
-        request.response = response;
-        return super.handle(request);
-      });
+      }
+
+      request.response = response;
+    } catch (error) {
+      this.showErrorSnackbar(t, 'medicationDispenseError', error);
+      request.response = { ok: false, error };
+    }
+    return this.callNext(request);
   }
 }
 
 class StockDispenseHandler extends Handler {
-  async handle(request) {
+  async handle(request: DispenseFormHandlerParams): Promise<DispenseFormHandlerParams> {
     const {
       response,
       config,
@@ -64,9 +79,8 @@ class StockDispenseHandler extends Handler {
       abortController,
       t,
     } = request;
-    const { status } = response;
 
-    if (config.enableStockDispense && (status === 201 || status === 200)) {
+    if (config.enableStockDispense && (response.status === 201 || response.status === 200)) {
       try {
         const stockDispenseRequestPayload = createStockDispenseRequestPayload(
           inventoryItem,
@@ -82,36 +96,30 @@ class StockDispenseHandler extends Handler {
           subtitle: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
         });
       } catch (error) {
-        showSnackbar({
-          title: t('stockDispensedError', 'Stock dispensed error'),
-          kind: 'error',
-          isLowContrast: true,
-          timeoutInMs: 5000,
-          subtitle: error?.message,
-        });
+        this.showErrorSnackbar(t, 'stockDispensedError', error);
       }
     }
 
-    return super.handle(request);
+    return this.callNext(request);
   }
 }
 
-class CloseCurrentVisitHandler extends Handler {
-  async handle(request) {
+class EndCurrentVisitHandler extends Handler {
+  async handle(request: DispenseFormHandlerParams): Promise<DispenseFormHandlerParams> {
     const { currentVisit, abortController, closeVisitOnDispense, response, t, config } = request;
 
     try {
       const visitTypes = await getVisitTypes().toPromise();
       const shouldCloseVisit =
-        shouldCloseVisitOnDispense(currentVisit, visitTypes, response.status, config) && closeVisitOnDispense;
+        this.shouldEndVisitOnDispense(currentVisit, visitTypes, response.status, config) && closeVisitOnDispense;
 
       if (shouldCloseVisit) {
         const updateResponse = await updateVisit(
           currentVisit.uuid,
           {
             stopDatetime: new Date(),
+            startDatetime: new Date(currentVisit.startDatetime),
             location: currentVisit.location.uuid,
-            startDatetime: undefined,
             visitType: currentVisit?.visitType.uuid,
           },
           abortController,
@@ -125,15 +133,22 @@ class CloseCurrentVisitHandler extends Handler {
         request.response = updateResponse;
       }
     } catch (error) {
-      showSnackbar({ title: 'Close visit error', kind: 'error', subtitle: error?.message });
+      this.showErrorSnackbar(t, 'closeVisitError', error);
     }
 
-    return super.handle(request);
+    return this.callNext(request);
+  }
+
+  private shouldEndVisitOnDispense(currentVisit, visitTypes, status, config): boolean {
+    if (!currentVisit || !visitTypes) return false;
+
+    const hasAllowedVisitType = visitTypes.some((vt) => vt.uuid === currentVisit.visitType.uuid);
+    return hasAllowedVisitType && config?.closeVisitOnDispense?.enabled && (status === 200 || status === 201);
   }
 }
 
 class FinalResponseHandler extends Handler {
-  handle(request) {
+  handle(request: DispenseFormHandlerParams): Promise<DispenseFormHandlerParams> {
     const { response, closeOverlay, revalidate, encounterUuid, setIsSubmitting, mode, t } = request;
     const { status } = response;
 
@@ -151,53 +166,27 @@ class FinalResponseHandler extends Handler {
         timeoutInMs: 5000,
       });
     } else {
-      showSnackbar({
-        title: t(
-          mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
-          mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
-        ),
-        kind: 'error',
-        isLowContrast: true,
-        subtitle: response.error?.message,
-      });
+      this.showErrorSnackbar(
+        t,
+        mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
+        response.error,
+      );
       setIsSubmitting(false);
     }
 
-    return super.handle(request);
+    return Promise.resolve(request);
   }
 }
 
-const setupChain = () => {
+export const executeMedicationDispenseChain = (
+  params: DispenseFormHandlerParams,
+): Promise<DispenseFormHandlerParams> => {
   const medicationDispenseHandler = new MedicationDispenseHandler();
   const stockDispenseHandler = new StockDispenseHandler();
-  const closeActiveVisitHandler = new CloseCurrentVisitHandler();
+  const endCurrentVisitHandler = new EndCurrentVisitHandler();
   const finalResponseHandler = new FinalResponseHandler();
 
-  medicationDispenseHandler
-    .setNext(stockDispenseHandler)
-    .setNext(closeActiveVisitHandler)
-    .setNext(finalResponseHandler);
+  medicationDispenseHandler.setNext(stockDispenseHandler).setNext(endCurrentVisitHandler).setNext(finalResponseHandler);
 
-  return medicationDispenseHandler;
+  return medicationDispenseHandler.handle(params);
 };
-
-export const executeMedicationDispenseChain = (params) => {
-  const chain = setupChain();
-  return chain.handle(params);
-};
-
-/**
- * Determines whether the current visit should be closed based on the provided parameters.
- *
- * @param {object} currentVisit - The current visit object.
- * @param {Array} visitTypes - An array of allowed visit types.
- * @param {number} status - The status code of the request.
- * @param {object} config - The configuration object.
- * @returns {boolean} - Returns true if the current visit should be closed, false otherwise.
- */
-function shouldCloseVisitOnDispense(currentVisit, visitTypes, status, config): boolean {
-  if (!currentVisit || !visitTypes) return false;
-
-  const hasAllowedVisitType = visitTypes.some((vt) => vt.uuid === currentVisit.visitType.uuid);
-  return hasAllowedVisitType && config.closeVisitOnDispense.enabled && (status === 200 || status === 201);
-}
