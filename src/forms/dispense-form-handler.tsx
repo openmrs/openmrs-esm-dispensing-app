@@ -96,14 +96,14 @@ class StockDispenseHandler extends Handler {
   }
 }
 
-class CloseCurrentVisitHandler extends Handler {
+class EndCurrentVisitHandler extends Handler {
   async handle(request) {
     const { currentVisit, abortController, closeVisitOnDispense, response, t, config } = request;
 
     try {
       const visitTypes = await getVisitTypes().toPromise();
       const shouldCloseVisit =
-        shouldCloseVisitOnDispense(currentVisit, visitTypes, response.status, config) && closeVisitOnDispense;
+        shouldEndVisitOnDispense(currentVisit, visitTypes, response.status, config) && closeVisitOnDispense;
 
       if (shouldCloseVisit) {
         const updateResponse = await updateVisit(
@@ -170,7 +170,7 @@ class FinalResponseHandler extends Handler {
 const setupChain = () => {
   const medicationDispenseHandler = new MedicationDispenseHandler();
   const stockDispenseHandler = new StockDispenseHandler();
-  const closeActiveVisitHandler = new CloseCurrentVisitHandler();
+  const closeActiveVisitHandler = new EndCurrentVisitHandler();
   const finalResponseHandler = new FinalResponseHandler();
 
   medicationDispenseHandler
@@ -195,7 +195,7 @@ export const executeMedicationDispenseChain = (params) => {
  * @param {object} config - The configuration object.
  * @returns {boolean} - Returns true if the current visit should be closed, false otherwise.
  */
-function shouldCloseVisitOnDispense(currentVisit, visitTypes, status, config): boolean {
+function shouldEndVisitOnDispense(currentVisit, visitTypes, status, config): boolean {
   if (!currentVisit || !visitTypes) return false;
 
   const hasAllowedVisitType = visitTypes.some((vt) => vt.uuid === currentVisit.visitType.uuid);

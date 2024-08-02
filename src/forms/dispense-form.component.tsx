@@ -125,13 +125,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining, inventoryItem]);
 
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
-  const shouldShowCloseVisitCheckbox = useMemo(() => {
+  const shouldEndCurrentVisitCheckbox = useMemo(() => {
     return (
-      config.closeVisitOnDispense &&
+      config.endVisitOnDispense &&
       currentVisit &&
-      config.closeVisitOnDispense.visitTypesUuids.includes(currentVisit.visitType.uuid)
+      config.endVisitOnDispense.visitTypesUuids.includes(currentVisit.visitType.uuid)
     );
-  }, [config.closeVisitOnDispense, currentVisit]);
+  }, [config.endVisitOnDispense, currentVisit]);
 
   const bannerState = useMemo(() => {
     if (patient) {
@@ -178,7 +178,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                   updateInventoryItem={setInventoryItem}
                 />
               )}
-              {shouldShowCloseVisitCheckbox && (
+              {shouldEndCurrentVisitCheckbox && (
                 <Layer>
                   <Checkbox
                     className={styles.closeVisitCheckBox}
