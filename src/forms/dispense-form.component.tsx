@@ -64,11 +64,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  //track quantity to dispense
-  const [currentQuantity, setCurrentQuantity] = useState(
-    quantityRemaining ? quantityRemaining : medicationDispense?.quantity?.value,
-  );
-
   // Submit medication dispense form
   const handleSubmit = () => {
     if (!isSubmitting) {
@@ -170,10 +165,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     }
   };
 
-  const setAvailableQuantity = (batch) => {
-    setCurrentQuantity(Number(batch.quantity));
-  };
-
   // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
 
@@ -218,14 +209,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
               <MedicationDispenseReview
                 medicationDispense={medicationDispensePayload}
                 updateMedicationDispense={setMedicationDispensePayload}
-                quantityRemaining={currentQuantity}
+                quantityRemaining={quantityRemaining}
               />
               {config.enableStockDispense && (
                 <StockDispense
                   inventoryItem={inventoryItem}
                   medicationDispense={medicationDispense}
                   updateInventoryItem={setInventoryItem}
-                  updateAvailableQuantityToMedicationDispenseQuantity={setAvailableQuantity}
                 />
               )}
             </div>

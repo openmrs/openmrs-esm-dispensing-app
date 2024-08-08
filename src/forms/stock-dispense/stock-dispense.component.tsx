@@ -9,14 +9,9 @@ type StockDispenseProps = {
   medicationDispense: MedicationDispense;
   updateInventoryItem: (inventoryItem: InventoryItem) => void;
   inventoryItem: InventoryItem;
-  updateAvailableQuantityToMedicationDispenseQuantity: (inventoryItem: InventoryItem) => void;
 };
 
-const StockDispense: React.FC<StockDispenseProps> = ({
-  medicationDispense,
-  updateInventoryItem,
-  updateAvailableQuantityToMedicationDispenseQuantity,
-}) => {
+const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updateInventoryItem }) => {
   const { t } = useTranslation();
   const drugUuid = medicationDispense?.medicationReference?.reference?.split('/')[1];
   const { inventoryItems, error, isLoading } = useDispenseStock(drugUuid);
@@ -26,6 +21,7 @@ const StockDispense: React.FC<StockDispenseProps> = ({
     return new Date(dateString);
   }
 
+  //check whether the drug will expire before the medication period ends
   function isValidBatch(medicationToDispense, inventoryItem) {
     if (medicationToDispense?.dosageInstruction && medicationToDispense?.dosageInstruction.length > 0) {
       return medicationToDispense.dosageInstruction.some((instruction) => {
@@ -110,7 +106,6 @@ const StockDispense: React.FC<StockDispenseProps> = ({
         items={validInventoryItems}
         onChange={({ selectedItem }) => {
           updateInventoryItem(selectedItem);
-          updateAvailableQuantityToMedicationDispenseQuantity(selectedItem);
         }}
         itemToString={(item) => (item ? toStockDispense(item) : '')}
         titleText={t('stockDispense', 'Stock Dispense')}
