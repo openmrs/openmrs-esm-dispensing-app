@@ -24,7 +24,8 @@ import {
 import dayjs from 'dayjs';
 
 const unitsDontMatchErrorMessage =
-  "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. Either set restrictTotalQuantityDispensed to false or set allowModifyingPrescription to false and clean up bad data.";
+  "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. " +
+  'Either set restrictTotalQuantityDispensed to false or set allowModifyingPrescription to false. If you have previously entered dispense events that modified prescriptions, you will likely need to clean up or remove that data before setting restrictTotalQuantityDispensed to true.';
 
 /**
  * Computes the fulfiller status for a bundle
