@@ -123,9 +123,24 @@ export const configSchema = {
   },
   enableStockDispense: {
     _type: Type.Boolean,
-    _description: 'Enable or disable stock deduction during the dispensing process. Requires the stock management module to be installed and configured.',
+    _description:
+      'Enable or disable stock deduction during the dispensing process. Requires the stock management module to be installed and configured.',
     _default: false,
-},
+  },
+  endVisitOnDispense: {
+    enabled: {
+      _type: Type.Boolean,
+      _description:
+        'Enables or disables the ending of the current visit upon medication dispensing. When set to true, the system will attempt to end the visit after a successful medication dispense, subject to the conditions specified in the "visitTypes" config.',
+      _default: false,
+    },
+    visitTypesUuids: {
+      _type: Type.Array,
+      _description:
+        'Specifies a list of visit type UUIDs that are eligible for ending upon medication dispensing. If enabled, only visits of these types will be closed. An empty array means no visit types are eligible for closure. This setting is only relevant when "enabled" is set to true.',
+      _default: [],
+    },
+  },
 };
 
 export interface PharmacyConfig {
@@ -168,4 +183,8 @@ export interface PharmacyConfig {
     };
   };
   enableStockDispense: boolean;
+  endVisitOnDispense?: {
+    enabled: boolean;
+    visitTypesUuids: Array<string>;
+  };
 }
