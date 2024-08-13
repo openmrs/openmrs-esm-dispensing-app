@@ -135,7 +135,16 @@ export function initiateMedicationDispenseBody(
       whenHandedOver: null,
       dosageInstruction: [
         {
-          text: medicationRequest.dosageInstruction[0].text,
+          // see https://openmrs.atlassian.net/browse/O3-3791 for an explanation for the reason for the below
+          text:
+            (medicationRequest.dosageInstruction[0].text ? medicationRequest.dosageInstruction[0].text : '') +
+            (medicationRequest.dosageInstruction[0].text &&
+            medicationRequest.dosageInstruction[0].additionalInstruction?.length > 0
+              ? ' '
+              : '') +
+            (medicationRequest.dosageInstruction[0].additionalInstruction?.length > 0
+              ? medicationRequest.dosageInstruction[0].additionalInstruction[0].text
+              : ''),
           timing: medicationRequest.dosageInstruction[0].timing,
           asNeededBoolean: false,
           route: medicationRequest.dosageInstruction[0].route,
