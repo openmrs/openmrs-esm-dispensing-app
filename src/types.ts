@@ -97,7 +97,7 @@ export interface Attribute {
 }
 
 export interface CodeableConcept {
-  coding: Coding[];
+  coding?: Coding[];
   text?: string;
 }
 
@@ -131,6 +131,7 @@ export interface DosageInstruction {
   doseAndRate: Array<{
     doseQuantity: Quantity;
   }>;
+  additionalInstruction?: Array<CodeableConcept>;
 }
 
 export interface Drug {
