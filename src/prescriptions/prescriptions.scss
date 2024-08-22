@@ -1,6 +1,6 @@
 @use '@carbon/styles/scss/spacing';
 @use '@carbon/styles/scss/type';
-@import "~@openmrs/esm-styleguide/src/vars";
+@import '~@openmrs/esm-styleguide/src/vars';
 @import '../root.scss';
 
 title {
@@ -57,7 +57,8 @@ title {
   }
 }
 
-.hiddenTabsContent, .tabs .hiddenTabsContent {
+.hiddenTabsContent,
+.tabs .hiddenTabsContent {
   display: none;
 }
 
@@ -65,7 +66,7 @@ title {
   grid-row: 3 / 4;
   grid-column: 1 / 2;
   height: 100%;
-  margin: 0.5rem spacing.$spacing-05;
+  margin: 0 spacing.$spacing-05;
   background-color: $ui-01;
   border: 0.5px solid #e0e0e0;
 
@@ -73,7 +74,7 @@ title {
     padding-top: 0 !important;
   }
 
-  tbody>tr>:nth-child(2) {
+  tbody > tr > :nth-child(2) {
     white-space: nowrap;
   }
 
@@ -91,13 +92,17 @@ title {
     background-color: $ui-01;
     border-bottom: 1px solid $ui-03;
   }
+
+  :global(.cds--pagination) {
+    border-top: none !important;
+  }
 }
 
 .searchContainer {
   display: flex;
   align-items: center;
   flex-direction: row-reverse;
-  padding-top: 0.5rem;
+  padding: 0.5rem 1rem 0;
 
   :global(.cds--search-magnifier-icon) {
     z-index: 0 !important;
@@ -129,4 +134,33 @@ title {
   max-width: 16rem;
   background-color: $ui-02;
   border-bottom-color: $ui-03;
+}
+
+.hiddenRow {
+  display: none;
+}
+
+.filterEmptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: spacing.$spacing-09;
+  text-align: center;
+  background-color: $ui-02;
+}
+
+.filterEmptyStateTile {
+  margin: auto;
+  background-color: $ui-01;
+}
+
+.filterEmptyStateContent {
+  @include type.type-style('heading-compact-02');
+  color: $text-02;
+  margin-bottom: spacing.$spacing-03;
+}
+
+.filterEmptyStateHelper {
+  @include type.type-style('body-compact-01');
+  color: $text-02;
 }

@@ -1,12 +1,12 @@
 @use '@carbon/styles/scss/spacing';
 @use '@carbon/styles/scss/type';
-@import "~@openmrs/esm-styleguide/src/vars";
+@import '~@openmrs/esm-styleguide/src/vars';
 
 .cardContainer {
-  background-color: $ui-02 ;
+  background-color: $ui-02;
   display: flex;
   justify-content: space-between;
   padding: 0 spacing.$spacing-05 spacing.$spacing-10 spacing.$spacing-03;
   flex-flow: row wrap;
-  margin-top: - spacing.$spacing-03;
+  margin-top: -spacing.$spacing-03;
 }

@@ -1,10 +1,11 @@
 import React from 'react';
+import classNames from 'classnames';
+import { useTranslation } from 'react-i18next';
 import { Button, Header } from '@carbon/react';
 import { ArrowLeft, Close } from '@carbon/react/icons';
 import { useLayoutType } from '@openmrs/esm-framework';
 import { closeOverlay, useOverlay } from '../../hooks/useOverlay';
 import styles from './overlay.scss';
-import { useTranslation } from 'react-i18next';
 
 const Overlay: React.FC = () => {
   const { header, component, isOverlayOpen } = useOverlay();
@@ -13,7 +14,11 @@ const Overlay: React.FC = () => {
   return (
     <>
       {isOverlayOpen && (
-        <div className={layout !== 'tablet' ? styles.desktopOverlay : styles.tabletOverlay}>
+        <div
+          className={classNames({
+            [styles.desktopOverlay]: layout !== 'tablet',
+            [styles.tabletOverlay]: layout === 'tablet',
+          })}>
           {layout !== 'tablet' ? (
             <div className={styles.desktopHeader}>
               <div className={styles.headerContent}>{header}</div>

@@ -4,6 +4,8 @@
   "addItem": "Add item",
   "addNoteText": "Add a note to the prescription history",
   "allergies": "Allergies",
+  "allergiesCount_one": "{{count}} allergy",
+  "allergiesCount_other": "{{count}} allergies",
   "allPrescriptions": "All prescriptions",
   "appName": "Pharmacy",
   "billing": "Billing",

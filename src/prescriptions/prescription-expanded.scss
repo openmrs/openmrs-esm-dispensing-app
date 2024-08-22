@@ -1,6 +1,6 @@
 @use '@carbon/styles/scss/spacing';
 @use '@carbon/styles/scss/type';
-@import "~@openmrs/esm-styleguide/src/vars";
+@import '~@openmrs/esm-styleguide/src/vars';
 
 .expandedTabsParentContainer {
   display: flex;
@@ -33,19 +33,19 @@
   }
 
   :global(.cds--tabs__nav-item--selected) {
-      border-bottom: 0px !important;
-      border-left: 3px solid var(--brand-03) !important;
+    border-bottom: 0px !important;
+    border-left: 3px solid var(--brand-03) !important;
   }
 
-  &:global(.cds--tabs--scrollable .cds--tabs--scrollable__nav-item+.cds--tabs--scrollable__nav-item) {
+  &:global(.cds--tabs--scrollable .cds--tabs--scrollable__nav-item + .cds--tabs--scrollable__nav-item) {
     margin-left: 0rem !important;
   }
 
-  >ul {
+  > ul {
     flex-direction: column !important;
   }
 
-  >ul>li button {
+  > ul > li button {
     width: 12rem !important;
   }
 
@@ -53,4 +53,3 @@
     max-width: 12rem !important;
   }
 }
-

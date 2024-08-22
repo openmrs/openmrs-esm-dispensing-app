@@ -123,9 +123,10 @@ export const configSchema = {
   },
   enableStockDispense: {
     _type: Type.Boolean,
-    _description: 'Enable or disable stock deduction during the dispensing process. Requires the stock management module to be installed and configured.',
+    _description:
+      'Enable or disable stock deduction during the dispensing process. Requires the stock management module to be installed and configured.',
     _default: false,
-},
+  },
 };
 
 export interface PharmacyConfig {

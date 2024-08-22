@@ -1,15 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ExtensionSlot,
-  showNotification,
-  showToast,
-  useConfig,
-  useLayoutType,
-  usePatient,
-} from '@openmrs/esm-framework';
 import { Button, FormLabel, InlineLoading } from '@carbon/react';
-import styles from './forms.scss';
+import { ExtensionSlot, showNotification, showToast, useConfig, usePatient } from '@openmrs/esm-framework';
 import { closeOverlay } from '../hooks/useOverlay';
 import {
   type MedicationDispense,
@@ -17,18 +9,19 @@ import {
   type MedicationRequestBundle,
   type InventoryItem,
 } from '../types';
-import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
-import MedicationDispenseReview from './medication-dispense-review.component';
 import {
   computeNewFulfillerStatusAfterDispenseEvent,
   getFulfillerStatus,
   getUuidFromReference,
   revalidate,
 } from '../utils';
-import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { type PharmacyConfig } from '../config-schema';
-import StockDispense from './stock-dispense/stock-dispense.component';
 import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
+import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
+import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
+import MedicationDispenseReview from './medication-dispense-review.component';
+import StockDispense from './stock-dispense/stock-dispense.component';
+import styles from './forms.scss';
 
 interface DispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -48,7 +41,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   quantityRemaining,
 }) => {
   const { t } = useTranslation();
-  const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
   const config = useConfig<PharmacyConfig>();
 
@@ -184,7 +176,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   }, [patient, patientUuid]);
 
   return (
-    <div className="">
+    <div>
       <div className={styles.formWrapper}>
         {isLoading && (
           <InlineLoading

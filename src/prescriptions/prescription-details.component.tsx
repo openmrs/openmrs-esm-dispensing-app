@@ -1,16 +1,16 @@
-import { DataTableSkeleton, Tag, Tile } from '@carbon/react';
 import React, { useEffect, useState } from 'react';
-import styles from './prescription-details.scss';
-import { WarningFilled } from '@carbon/react/icons';
-import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import { useTranslation } from 'react-i18next';
-import MedicationEvent from '../components/medication-event.component';
+import { DataTableSkeleton, Tag, Tile } from '@carbon/react';
+import { WarningFilled } from '@carbon/react/icons';
 import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import { type PharmacyConfig } from '../config-schema';
 import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
 import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay } from '../utils';
-import ActionButtons from '../components/action-buttons.component';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
-import { type PharmacyConfig } from '../config-schema';
+import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
+import ActionButtons from '../components/action-buttons.component';
+import MedicationEvent from '../components/medication-event.component';
+import styles from './prescription-details.scss';
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -68,19 +68,21 @@ const PrescriptionDetails: React.FC<{
       {isAllergiesLoading && <DataTableSkeleton role="progressbar" />}
       {!isAllergiesLoading && (
         <Tile className={styles.allergiesTile}>
-          <div className={styles.allergesContent}>
+          <div className={styles.allergiesContent}>
             <div>
               <WarningFilled size={24} className={styles.allergiesIcon} />
               <p>
                 {totalAllergies > 0 && (
                   <span>
                     <span style={{ fontWeight: 'bold' }}>
-                      {totalAllergies} {t('allergies', 'allergies').toLowerCase()}
+                      {t('allergiesCount', '{{ count }} allergies', {
+                        count: totalAllergies,
+                      })}
                     </span>{' '}
                     {displayAllergies(allergies)}
                   </span>
                 )}
-                {totalAllergies == 0 && t('noAllergyDetailsFound', 'No allergy details found')}
+                {totalAllergies === 0 && t('noAllergyDetailsFound', 'No allergy details found')}
               </p>
             </div>
           </div>

@@ -1,8 +1,7 @@
 import React from 'react';
 import { Button } from '@carbon/react';
-import { useConfig, useSession } from '@openmrs/esm-framework';
-import styles from './action-buttons.scss';
 import { useTranslation } from 'react-i18next';
+import { useConfig, useSession } from '@openmrs/esm-framework';
 import { MedicationDispenseStatus, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
 import { launchOverlay } from '../hooks/useOverlay';
 import {
@@ -11,10 +10,11 @@ import {
   getMostRecentMedicationDispenseStatus,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
-import DispenseForm from '../forms/dispense-form.component';
 import { initiateMedicationDispenseBody } from '../medication-dispense/medication-dispense.resource';
+import DispenseForm from '../forms/dispense-form.component';
 import PauseDispenseForm from '../forms/pause-dispense-form.component';
 import CloseDispenseForm from '../forms/close-dispense-form.component';
+import styles from './action-buttons.scss';
 
 interface ActionButtonsProps {
   medicationRequestBundle: MedicationRequestBundle;
