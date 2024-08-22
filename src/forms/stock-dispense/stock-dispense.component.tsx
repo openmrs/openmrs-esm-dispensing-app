@@ -72,7 +72,7 @@ const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updat
   const toStockDispense = (inventoryItems) => {
     return t(
       'stockDispenseDetails',
-      'Batch: {{batchNumber}} - Quantity: {{quantity}} - Expiry: {{expiration}} - Packaging Size: ({{quantityUoM}})-{{quantityFactor}}',
+      'Batch: {{batchNumber}} - Quantity: {{quantity}} - Expiry: {{expiration}} - Pack: ({{quantityUoM}})-{{quantityFactor}}',
       {
         batchNumber: inventoryItems.batchNumber,
         quantity: Math.floor(inventoryItems.quantity),
