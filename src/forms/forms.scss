@@ -1,6 +1,7 @@
 @use '@carbon/styles/scss/spacing';
 @use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/colors';
+@use '~@openmrs/esm-styleguide/src/vars' as *;
 
 // TO DO Move this styles to style - guide
 // https://github.com/openmrs/openmrs-esm-core/blob/master/packages/framework/esm-styleguide/src/_vars.scss
@@ -33,7 +34,7 @@ $color-blue-30: #a6c8ff;
   flex: 3;
 }
 
-.formGroup span {
+.formGroup>span {
   @extend .productiveHeading02;
 }
 
@@ -151,4 +152,12 @@ $color-blue-30: #a6c8ff;
 
 .reviewContainer {
   margin: 0.8rem 0 0 0 !important;
+}
+
+.closeVisitCheckBox {
+  & label {
+    @include type.type-style('label-01');
+    margin-top: spacing.$spacing-05;
+    color: colors.$gray-70;
+  }
 }
