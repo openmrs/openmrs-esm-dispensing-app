@@ -17,6 +17,7 @@
   "rules": {
     // The following rules need `noImplicitAny` to be set to `true` in our tsconfig. They are too restrictive for now, but should be reconsidered in future
     "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/no-unsafe-argument": "off",

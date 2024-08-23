@@ -1,6 +1,6 @@
-import { render } from '@testing-library/react';
 import React from 'react';
-import { MedicationDispense, MedicationDispenseStatus } from '../types';
+import { render } from '@testing-library/react';
+import { type MedicationDispense, MedicationDispenseStatus } from '../types';
 import MedicationDispenseReview from './medication-dispense-review.component';
 
 jest.mock('@openmrs/esm-framework', () => {

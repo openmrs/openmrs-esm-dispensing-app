@@ -1,7 +1,6 @@
 @use '@carbon/styles/scss/spacing';
 @use '@carbon/styles/scss/type';
-@import "~@openmrs/esm-styleguide/src/vars";
-
+@import '~@openmrs/esm-styleguide/src/vars';
 
 .medicationName {
   font-size: 15px !important;
@@ -11,7 +10,9 @@
   font-size: 13px !important;
 }
 
-.dosage, .quantity, .refills {
+.dosage,
+.quantity,
+.refills {
   color: #525252;
   font-weight: bold;
 }

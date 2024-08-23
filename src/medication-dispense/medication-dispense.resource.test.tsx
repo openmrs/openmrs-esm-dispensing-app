@@ -1,6 +1,5 @@
-import React from 'react';
 import useSWR from 'swr';
-import { openmrsFetch, Session } from '@openmrs/esm-framework';
+import { openmrsFetch, type Session } from '@openmrs/esm-framework';
 import {
   deleteMedicationDispense,
   initiateMedicationDispenseBody,
@@ -9,8 +8,12 @@ import {
   useSubstitutionReasonValueSet,
   useSubstitutionTypeValueSet,
 } from './medication-dispense.resource';
-import { MedicationDispense, MedicationDispenseStatus, MedicationRequest, MedicationRequestStatus } from '../types';
-import dayjs from 'dayjs';
+import {
+  type MedicationDispense,
+  type MedicationRequest,
+  MedicationDispenseStatus,
+  MedicationRequestStatus,
+} from '../types';
 
 jest.mock('@openmrs/esm-framework', () => {
   const originalModule = jest.requireActual('@openmrs/esm-framework');

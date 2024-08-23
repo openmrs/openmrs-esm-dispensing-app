@@ -1,6 +1,6 @@
-import { render } from '@testing-library/react';
 import React from 'react';
-import { MedicationReferenceOrCodeableConcept } from '../types';
+import { render } from '@testing-library/react';
+import { type MedicationReferenceOrCodeableConcept } from '../types';
 import MedicationCard from './medication-card.component';
 
 describe('Medication Card Component tests', () => {

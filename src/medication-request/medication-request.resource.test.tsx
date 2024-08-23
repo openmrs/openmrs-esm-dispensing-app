@@ -1,4 +1,4 @@
-import React from 'react';
+import dayjs from 'dayjs';
 import useSWR from 'swr';
 import {
   updateMedicationRequestFulfillerStatus,
@@ -8,10 +8,8 @@ import {
   usePrescriptionsTable,
 } from './medication-request.resource';
 import { openmrsFetch, parseDate } from '@openmrs/esm-framework';
-import dayjs from 'dayjs';
-import { MedicationDispense, MedicationRequestFulfillerStatus } from '../types';
+import { MedicationRequestFulfillerStatus } from '../types';
 import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
-import medicationCardComponent from '../components/medication-card.component';
 
 jest.mock('@openmrs/esm-framework', () => {
   const originalModule = jest.requireActual('@openmrs/esm-framework');

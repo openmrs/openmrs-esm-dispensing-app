@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 import ActionButtons from './action-buttons.component';
-import { MedicationRequest, MedicationRequestStatus } from '../types';
+import { type MedicationRequest, MedicationRequestStatus } from '../types';
 import { useConfig } from '@openmrs/esm-framework';
 
 const mockedUseConfig = useConfig as jest.Mock;

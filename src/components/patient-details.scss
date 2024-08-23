@@ -1,6 +1,6 @@
 @use '@carbon/styles/scss/spacing';
 @use '@carbon/styles/scss/type';
-@import "~@openmrs/esm-styleguide/src/vars";
+@import '~@openmrs/esm-styleguide/src/vars';
 
 .patientDetailsContainer > div {
   margin-bottom: 1rem;
@@ -84,7 +84,6 @@
   @include type.type-style('body-compact-01');
   color: $interactive-01;
 }
-
 
 .buttonCol {
   display: flex;
