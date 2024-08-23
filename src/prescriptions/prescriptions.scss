@@ -96,6 +96,10 @@ title {
   :global(.cds--pagination) {
     border-top: none !important;
   }
+
+  :global(.cds--table-expand__button) {
+    height: 2rem !important;
+  }
 }
 
 .searchContainer {

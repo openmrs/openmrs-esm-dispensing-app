@@ -60,6 +60,7 @@ const PrescriptionDetails: React.FC<{
   };
 
   const displayAllergies: Function = (allergies: Array<AllergyIntolerance>) => {
+    // TODO: Use the `text` property for non-coded allergies
     return allergies.map((allergy) => getConceptCodingDisplay(allergy.code.coding)).join(', ');
   };
 
