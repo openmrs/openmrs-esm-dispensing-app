@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
+import { ComboBox, DatePicker, DatePickerInput, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
 import { useLayoutType, useConfig, useSession, userHasAccess } from '@openmrs/esm-framework';
 import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
 import MedicationCard from '../components/medication-card.component';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
-import { useMedicationRequest } from '../medication-request/medication-request.resource';
+import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import {
   useOrderConfig,
+  useProviders,
   useSubstitutionReasonValueSet,
   useSubstitutionTypeValueSet,
 } from '../medication-dispense/medication-dispense.resource';
-import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from '../constants';
+import { datePickerFormat, PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from '../constants';
 import { type Medication, type MedicationDispense } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import styles from '../components/medication-dispense-review.scss';
+import dayjs from 'dayjs';
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
@@ -51,6 +53,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const { orderConfigObject } = useOrderConfig();
   const { substitutionTypeValueSet } = useSubstitutionTypeValueSet(config.valueSets.substitutionType.uuid);
   const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(config.valueSets.substitutionReason.uuid);
+  const providers = useProviders();
 
   const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
 
@@ -154,6 +157,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     medicationDispense.authorizingPrescription ? medicationDispense.authorizingPrescription[0].reference : null,
     config.refreshInterval,
   );
+
+  // we fetch this just to get the prescription date
+  const { prescriptionDate } = usePrescriptionDetails(medicationRequest ? medicationRequest.encounter.reference : null);
 
   // check to see if the current dispense would be a substitution, and update accordingly
   useEffect(() => {
@@ -488,6 +494,48 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               ],
             });
           }}
+        />
+
+        <DatePicker
+          datePickerType="single"
+          dateFormat={datePickerFormat}
+          minDate={dayjs(prescriptionDate).startOf('day').toDate()}
+          maxDate={dayjs().toDate()}
+          onChange={([date]) => {
+            updateMedicationDispense({
+              ...medicationDispense,
+              whenHandedOver: dayjs(date).format(),
+            });
+          }}
+          value={dayjs(medicationDispense.whenHandedOver).toDate()}>
+          <DatePickerInput id="dispenseDate" labelText={t('dispenseDate', 'Date of Dispense')}></DatePickerInput>
+        </DatePicker>
+
+        <ComboBox
+          id="dispenser"
+          light={isTablet}
+          initialSelectedItem={
+            providers
+              ? providers.find(
+                  (provider) => provider.uuid === medicationDispense?.performer[0].actor.reference.split('/')[1],
+                )
+              : null
+          }
+          onChange={({ selectedItem }) => {
+            updateMedicationDispense({
+              ...medicationDispense,
+              performer: [
+                {
+                  actor: {
+                    reference: `Practitioner/${selectedItem?.uuid}`,
+                  },
+                },
+              ],
+            });
+          }}
+          items={providers}
+          itemToString={(item) => item?.person?.display}
+          titleText={t('dispensedBy', 'Dispensed by')}
         />
       </Stack>
     </div>

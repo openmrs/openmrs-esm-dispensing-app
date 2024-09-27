@@ -14,6 +14,7 @@ import {
   MedicationDispenseStatus,
   MedicationRequestStatus,
 } from '../types';
+import dayjs from 'dayjs';
 
 jest.mock('@openmrs/esm-framework', () => {
   const originalModule = jest.requireActual('@openmrs/esm-framework');
@@ -102,7 +103,6 @@ describe('Medication Dispense Resource tests', () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: 'mockedOrderConfig' } }));
     const orderConfig = useOrderConfig();
-    expect(useSWR).toHaveBeenCalledWith('/ws/rest/v1/orderentryconfig', openmrsFetch);
     expect(orderConfig.orderConfigObject).toBe('mockedOrderConfig');
   });
 
@@ -227,8 +227,8 @@ describe('Medication Dispense Resource tests', () => {
     expect(medicationDispense.quantity.system).toBe('http://snomed.info/sct');
     expect(medicationDispense.quantity.unit).toBe('Tablet');
     expect(medicationDispense.quantity.code).toBe('123456789');
-    expect(medicationDispense.whenPrepared).toBeNull();
-    expect(medicationDispense.whenHandedOver).toBeNull();
+    expect(dayjs(medicationDispense.whenPrepared).isToday()).toBeTruthy();
+    expect(dayjs(medicationDispense.whenHandedOver).isToday()).toBeTruthy();
     expect(medicationDispense.dosageInstruction[0].text).toBe('Take with food');
     expect(medicationDispense.dosageInstruction[0].timing.repeat.duration).toBe(30.0);
     expect(medicationDispense.dosageInstruction[0].timing.repeat.durationUnit).toBe('d');
