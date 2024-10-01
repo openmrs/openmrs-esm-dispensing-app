@@ -56,9 +56,12 @@ export function useOrderConfig() {
   };
 }
 
-export function useProviders() {
+export function useProviders(providerRoles: string) {
+  const rep = 'custom:(uuid,person:(display)';
   const { data } = useSWR<{ data: ProviderRequestResponse }, Error>(
-    `${restBaseUrl}/provider?v=custom:(uuid,person:(display))`,
+    providerRoles
+      ? `${restBaseUrl}/provider?providerRoles=${providerRoles}&v=${rep})`
+      : `${restBaseUrl}/provider?v=${rep})`,
     openmrsFetch,
   );
   return data?.data?.results.sort((a, b) => a.person?.display.localeCompare(b.person?.display));
