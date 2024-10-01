@@ -8,6 +8,7 @@ jest.mock('@openmrs/esm-framework', () => {
   return {
     __esModule: true,
     ...originalModule,
+    OpenmrsDatePicker: jest.fn(() => <div />),
     useConfig: jest.fn(() => ({
       dispenseBehavior: {
         allowModifyingPrescription: false,
@@ -129,7 +130,7 @@ describe('Medication Dispense Review Component tests', () => {
     };
 
     const mockUpdate: Function = jest.fn();
-    const { getByText, container } = render(
+    render(
       <MedicationDispenseReview
         medicationDispense={medicationDispense}
         updateMedicationDispense={mockUpdate}

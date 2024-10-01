@@ -6,6 +6,7 @@ import {
   type MedicationDispenseStatus,
   type MedicationRequest,
   type OrderConfig,
+  type Provider,
   type ProviderRequestResponse,
   type ValueSet,
 } from '../types';
@@ -96,6 +97,7 @@ export function useValueSet(uuid: string) {
 export function initiateMedicationDispenseBody(
   medicationRequest: MedicationRequest,
   session: Session,
+  providers: Provider[],
   populateDispenseInformation: boolean,
 ): MedicationDispense {
   let medicationDispense: MedicationDispense = {
@@ -113,7 +115,12 @@ export function initiateMedicationDispenseBody(
     performer: [
       {
         actor: {
-          reference: session?.currentProvider ? `Practitioner/${session.currentProvider.uuid}` : '',
+          reference:
+            session?.currentProvider &&
+            providers &&
+            providers.some((provider) => provider.uuid == session.currentProvider.uuid)
+              ? `Practitioner/${session.currentProvider.uuid}`
+              : '',
         },
       },
     ],

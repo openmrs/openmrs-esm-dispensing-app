@@ -13,6 +13,7 @@ import {
   type MedicationRequest,
   MedicationDispenseStatus,
   MedicationRequestStatus,
+  type Provider,
 } from '../types';
 import dayjs from 'dayjs';
 
@@ -47,7 +48,7 @@ describe('Medication Dispense Resource tests', () => {
     };
     const abortController: AbortController = {
       signal: undefined,
-      abort(reason?: any): void {},
+      abort(): void {},
     };
 
     saveMedicationDispense(medicationDispense, MedicationDispenseStatus.completed, abortController);
@@ -80,7 +81,7 @@ describe('Medication Dispense Resource tests', () => {
     };
     const abortController: AbortController = {
       signal: undefined,
-      abort(reason?: any): void {},
+      abort(): void {},
     };
 
     saveMedicationDispense(medicationDispense, MedicationDispenseStatus.completed, abortController);
@@ -205,11 +206,18 @@ describe('Medication Dispense Resource tests', () => {
         links: undefined,
       },
     };
-    const medicationRequestExpirationPeriodInDay = 30;
+
+    const providers: Provider[] = [
+      {
+        uuid: 'ghi789',
+        person: null,
+      },
+    ];
 
     const medicationDispense: MedicationDispense = initiateMedicationDispenseBody(
       activeMedicationRequest,
       session,
+      providers,
       true,
     );
 

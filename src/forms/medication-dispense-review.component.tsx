@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ComboBox, DatePickerInput, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
+import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
 import { OpenmrsDatePicker, useLayoutType, useConfig, useSession, userHasAccess } from '@openmrs/esm-framework';
 import {
   getConceptCodingUuid,
@@ -56,12 +56,11 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const isTablet = useLayoutType() === 'tablet';
 
   const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
-  const providerRoles = config.dispenserProviderRoles;
 
   const { orderConfigObject } = useOrderConfig();
   const { substitutionTypeValueSet } = useSubstitutionTypeValueSet(config.valueSets.substitutionType.uuid);
   const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(config.valueSets.substitutionReason.uuid);
-  const providers = useProviders(providerRoles);
+  const providers = useProviders(config.dispenserProviderRoles);
 
   // get the medication request associated with this dispense event
   // (we fetch this so that we can use it below to determine if the formulation dispensed varies from what was
@@ -504,6 +503,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
         <OpenmrsDatePicker
           id="dispenseDate"
+          labelText={t('dispenseDate', 'Date of Dispense')}
           minDate={prescriptionDate ? dayjs(prescriptionDate).startOf('day').toDate() : null}
           maxDate={dayjs().toDate()}
           onChange={(selectedDate) => {
@@ -515,36 +515,37 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                 : selectedDate.toString(), // to preserve any time component, only update if the day actually changes
             });
           }}
-          value={dayjs(medicationDispense.whenHandedOver).toDate()}>
-          <DatePickerInput id="dispenseDate" labelText={t('dispenseDate', 'Date of Dispense')}></DatePickerInput>
-        </OpenmrsDatePicker>
+          value={dayjs(medicationDispense.whenHandedOver).startOf('day').toDate()}></OpenmrsDatePicker>
 
-        <ComboBox
-          id="dispenser"
-          light={isTablet}
-          initialSelectedItem={
-            providers
-              ? providers.find(
-                  (provider) => provider.uuid === medicationDispense?.performer[0].actor.reference.split('/')[1],
-                )
-              : null
-          }
-          onChange={({ selectedItem }) => {
-            updateMedicationDispense({
-              ...medicationDispense,
-              performer: [
-                {
-                  actor: {
-                    reference: `Practitioner/${selectedItem?.uuid}`,
+        {providers && (
+          <ComboBox
+            id="dispenser"
+            light={isTablet}
+            initialSelectedItem={
+              medicationDispense?.performer[0].actor.reference
+                ? providers.find(
+                    (provider) => provider.uuid === medicationDispense?.performer[0].actor.reference.split('/')[1],
+                  )
+                : null
+            }
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense({
+                ...medicationDispense,
+                performer: [
+                  {
+                    actor: {
+                      reference: `Practitioner/${selectedItem?.uuid}`,
+                    },
                   },
-                },
-              ],
-            });
-          }}
-          items={providers}
-          itemToString={(item) => item?.person?.display}
-          titleText={t('dispensedBy', 'Dispensed by')}
-        />
+                ],
+              });
+            }}
+            items={providers}
+            itemToString={(item) => item?.person?.display}
+            required
+            titleText={t('dispensedBy', 'Dispensed by')}
+          />
+        )}
       </Stack>
     </div>
   );
