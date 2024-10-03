@@ -515,7 +515,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                 : selectedDate.toString(), // to preserve any time component, only update if the day actually changes
             });
           }}
-          value={dayjs(medicationDispense.whenHandedOver).startOf('day').toDate()}></OpenmrsDatePicker>
+          value={dayjs(medicationDispense.whenHandedOver).toDate()}></OpenmrsDatePicker>
 
         {providers && (
           <ComboBox
