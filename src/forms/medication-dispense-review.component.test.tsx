@@ -2,24 +2,24 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { type MedicationDispense, MedicationDispenseStatus } from '../types';
 import MedicationDispenseReview from './medication-dispense-review.component';
+import { OpenmrsDatePicker, useConfig } from '@openmrs/esm-framework';
 
-jest.mock('@openmrs/esm-framework', () => {
-  const originalModule = jest.requireActual('@openmrs/esm-framework');
-  return {
-    __esModule: true,
-    ...originalModule,
-    OpenmrsDatePicker: jest.fn(() => <div />),
-    useConfig: jest.fn(() => ({
-      dispenseBehavior: {
-        allowModifyingPrescription: false,
-        restrictTotalQuantityDispensed: false,
-      },
-      valueSets: {
-        substitutionType: { uuid: '123' },
-        substitutionReason: { uuid: 'abc' },
-      },
-    })),
-  };
+const mockUseConfig = jest.mocked(useConfig);
+const mockOpenmrsDatePicker = jest.mocked(OpenmrsDatePicker);
+
+beforeEach(() => {
+  mockUseConfig.mockReturnValue({
+    dispenseBehavior: {
+      allowModifyingPrescription: false,
+      restrictTotalQuantityDispensed: false,
+    },
+    valueSets: {
+      substitutionType: { uuid: '123' },
+      substitutionReason: { uuid: 'abc' },
+    },
+  });
+
+  mockOpenmrsDatePicker.mockReturnValue(<div />);
 });
 
 describe('Medication Dispense Review Component tests', () => {
