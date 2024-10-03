@@ -57,11 +57,11 @@ export function useOrderConfig() {
   };
 }
 
-export function useProviders(providerRoles: string) {
+export function useProviders(providerRoles: Array<string>) {
   const rep = 'custom:(uuid,person:(display)';
   const { data } = useSWR<{ data: ProviderRequestResponse }, Error>(
-    providerRoles
-      ? `${restBaseUrl}/provider?providerRoles=${providerRoles}&v=${rep})`
+    providerRoles && providerRoles.length > 0
+      ? `${restBaseUrl}/provider?providerRoles=${providerRoles.join(',')}&v=${rep})`
       : `${restBaseUrl}/provider?v=${rep})`,
     openmrsFetch,
   );
