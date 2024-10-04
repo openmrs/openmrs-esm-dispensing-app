@@ -20,12 +20,11 @@ import {
 import {
   computeNewFulfillerStatusAfterDelete,
   computeQuantityRemaining,
-  getDateRecorded,
   getFulfillerStatus,
   getMedicationRequestBundleContainingMedicationDispense,
   getUuidFromReference,
   revalidate,
-  sortMedicationDispensesByDateRecorded,
+  sortMedicationDispensesByWhenHandedOver,
 } from '../utils';
 import PauseDispenseForm from '../forms/pause-dispense-form.component';
 import CloseDispenseForm from '../forms/close-dispense-form.component';
@@ -214,7 +213,7 @@ const HistoryAndComments: React.FC<{
       {medicationRequestBundles &&
         medicationRequestBundles
           .flatMap((medicationDispenseBundle) => medicationDispenseBundle.dispenses)
-          .sort(sortMedicationDispensesByDateRecorded)
+          .sort(sortMedicationDispensesByWhenHandedOver)
           .map((dispense) => {
             return (
               <div key={dispense.id}>
@@ -225,7 +224,7 @@ const HistoryAndComments: React.FC<{
                     fontSize: '0.9rem',
                   }}>
                   {dispense.performer && dispense.performer[0]?.actor?.display} {generateDispenseVerbiage(dispense)} -{' '}
-                  {formatDatetime(parseDate(getDateRecorded(dispense)))}
+                  {formatDatetime(parseDate(dispense.whenHandedOver))}
                 </h5>
                 <Tile className={styles.dispenseTile}>
                   {generateMedicationDispenseActionMenu(

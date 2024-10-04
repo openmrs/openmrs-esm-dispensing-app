@@ -422,6 +422,17 @@ export interface Person {
   uuid: string;
 }
 
+export interface Provider {
+  uuid: string;
+  person: {
+    display: string;
+  };
+}
+
+export interface ProviderRequestResponse {
+  results: Array<Provider>;
+}
+
 // represents a row in the main table
 export interface PrescriptionsTableRow {
   id: string;

@@ -10,7 +10,7 @@ import {
   getMostRecentMedicationDispenseStatus,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
-import { initiateMedicationDispenseBody } from '../medication-dispense/medication-dispense.resource';
+import { initiateMedicationDispenseBody, useProviders } from '../medication-dispense/medication-dispense.resource';
 import DispenseForm from '../forms/dispense-form.component';
 import PauseDispenseForm from '../forms/pause-dispense-form.component';
 import CloseDispenseForm from '../forms/close-dispense-form.component';
@@ -26,6 +26,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
+  const providers = useProviders(config.dispenserProviderRoles);
   const mostRecentMedicationDispenseStatus: MedicationDispenseStatus = getMostRecentMedicationDispenseStatus(
     medicationRequestBundle.dispenses,
   );
@@ -64,7 +65,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
               <DispenseForm
                 patientUuid={patientUuid}
                 encounterUuid={encounterUuid}
-                medicationDispense={initiateMedicationDispenseBody(medicationRequestBundle.request, session, true)}
+                medicationDispense={initiateMedicationDispenseBody(
+                  medicationRequestBundle.request,
+                  session,
+                  providers,
+                  true,
+                )}
                 medicationRequestBundle={medicationRequestBundle}
                 quantityRemaining={quantityRemaining}
                 mode="enter"
@@ -83,7 +89,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
               <PauseDispenseForm
                 patientUuid={patientUuid}
                 encounterUuid={encounterUuid}
-                medicationDispense={initiateMedicationDispenseBody(medicationRequestBundle.request, session, false)}
+                medicationDispense={initiateMedicationDispenseBody(
+                  medicationRequestBundle.request,
+                  session,
+                  providers,
+                  false,
+                )}
                 mode="enter"
               />,
             )
@@ -100,7 +111,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
               <CloseDispenseForm
                 patientUuid={patientUuid}
                 encounterUuid={encounterUuid}
-                medicationDispense={initiateMedicationDispenseBody(medicationRequestBundle.request, session, false)}
+                medicationDispense={initiateMedicationDispenseBody(
+                  medicationRequestBundle.request,
+                  session,
+                  providers,
+                  false,
+                )}
                 mode="enter"
               />,
             )

@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
-import { useLayoutType, useConfig, useSession, userHasAccess } from '@openmrs/esm-framework';
-import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
+import { OpenmrsDatePicker, useLayoutType, useConfig, useSession, userHasAccess } from '@openmrs/esm-framework';
+import {
+  getConceptCodingUuid,
+  getMedicationReferenceOrCodeableConcept,
+  getOpenMRSMedicineDrugName,
+  isSameDay,
+} from '../utils';
 import MedicationCard from '../components/medication-card.component';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
-import { useMedicationRequest } from '../medication-request/medication-request.resource';
+import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import {
   useOrderConfig,
+  useProviders,
   useSubstitutionReasonValueSet,
   useSubstitutionTypeValueSet,
 } from '../medication-dispense/medication-dispense.resource';
@@ -15,6 +21,7 @@ import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from '../constants';
 import { type Medication, type MedicationDispense } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import styles from '../components/medication-dispense-review.scss';
+import dayjs from 'dayjs';
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
@@ -48,11 +55,25 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
   const isTablet = useLayoutType() === 'tablet';
 
+  const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
+
   const { orderConfigObject } = useOrderConfig();
   const { substitutionTypeValueSet } = useSubstitutionTypeValueSet(config.valueSets.substitutionType.uuid);
   const { substitutionReasonValueSet } = useSubstitutionReasonValueSet(config.valueSets.substitutionReason.uuid);
+  const providers = useProviders(config.dispenserProviderRoles);
 
-  const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
+  // get the medication request associated with this dispense event
+  // (we fetch this so that we can use it below to determine if the formulation dispensed varies from what was
+  // ordered; it's slightly inefficient/awkward to fetch it from the server here because we *have* fetched it earlier,
+  // it just seems cleaner to fetch it here rather than to make sure we pass it down through various components; with
+  // SWR handling caching, we may want to consider pulling more down into this)
+  const { medicationRequest } = useMedicationRequest(
+    medicationDispense.authorizingPrescription ? medicationDispense.authorizingPrescription[0].reference : null,
+    config.refreshInterval,
+  );
+
+  // we fetch this just to get the prescription date
+  const { prescriptionDate } = usePrescriptionDetails(medicationRequest ? medicationRequest.encounter.reference : null);
 
   useEffect(() => {
     if (orderConfigObject) {
@@ -143,16 +164,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       : medicationCodeableConceptUuid
         ? medicationCodeableConceptUuid
         : null,
-  );
-
-  // get the medication request associated with this dispense event
-  // (we fetch this so that we can use it below to determine if the formulation dispensed varies from what was
-  // ordered; it's slightly inefficient/awkward to fetch it from the server here because we *have* fetched it earlier,
-  // it just seems cleaner to fetch it here rather than to make sure we pass it down through various components; with
-  // SWR handling caching, we may want to consider pulling more down into this)
-  const { medicationRequest } = useMedicationRequest(
-    medicationDispense.authorizingPrescription ? medicationDispense.authorizingPrescription[0].reference : null,
-    config.refreshInterval,
   );
 
   // check to see if the current dispense would be a substitution, and update accordingly
@@ -489,6 +500,52 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             });
           }}
         />
+
+        <OpenmrsDatePicker
+          id="dispenseDate"
+          labelText={t('dispenseDate', 'Date of Dispense')}
+          minDate={prescriptionDate ? dayjs(prescriptionDate).startOf('day').toDate() : null}
+          maxDate={dayjs().toDate()}
+          onChange={(selectedDate) => {
+            const currentDate = dayjs(medicationDispense.whenHandedOver);
+            updateMedicationDispense({
+              ...medicationDispense,
+              whenHandedOver: isSameDay(currentDate, selectedDate)
+                ? currentDate.toISOString()
+                : selectedDate.toString(), // to preserve any time component, only update if the day actually changes
+            });
+          }}
+          value={dayjs(medicationDispense.whenHandedOver).toDate()}></OpenmrsDatePicker>
+
+        {providers && (
+          <ComboBox
+            id="dispenser"
+            light={isTablet}
+            initialSelectedItem={
+              medicationDispense?.performer[0].actor.reference
+                ? providers.find(
+                    (provider) => provider.uuid === medicationDispense?.performer[0].actor.reference.split('/')[1],
+                  )
+                : null
+            }
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense({
+                ...medicationDispense,
+                performer: [
+                  {
+                    actor: {
+                      reference: `Practitioner/${selectedItem?.uuid}`,
+                    },
+                  },
+                ],
+              });
+            }}
+            items={providers}
+            itemToString={(item) => item?.person?.display}
+            required
+            titleText={t('dispensedBy', 'Dispensed by')}
+          />
+        )}
       </Stack>
     </div>
   );

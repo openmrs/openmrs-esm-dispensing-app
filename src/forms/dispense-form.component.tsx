@@ -140,6 +140,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const checkIsValid = () => {
     if (
       medicationDispensePayload &&
+      medicationDispensePayload.performer &&
+      medicationDispensePayload.performer[0]?.actor.reference &&
       medicationDispensePayload.quantity?.value &&
       (!quantityRemaining || medicationDispensePayload?.quantity?.value <= quantityRemaining) &&
       medicationDispensePayload.quantity?.code &&
