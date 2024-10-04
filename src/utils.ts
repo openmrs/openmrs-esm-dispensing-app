@@ -1,4 +1,5 @@
 import { mutate } from 'swr';
+import { type CalendarDate } from '@internationalized/date';
 import {
   type Coding,
   type DosageInstruction,
@@ -21,7 +22,7 @@ import {
   PRESCRIPTION_DETAILS_ENDPOINT,
   PRESCRIPTIONS_TABLE_ENDPOINT,
 } from './constants';
-import dayjs from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 
 const unitsDontMatchErrorMessage =
   "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. " +
@@ -414,7 +415,7 @@ export function getMedicationReferenceOrCodeableConcept(
 export function getMostRecentMedicationDispenseStatus(
   medicationDispenses: Array<MedicationDispense>,
 ): MedicationDispenseStatus {
-  const sorted = medicationDispenses?.sort(sortMedicationDispensesByDateRecorded);
+  const sorted = medicationDispenses?.sort(sortMedicationDispensesByWhenHandedOver);
   return sorted && sorted.length > 0 ? sorted[0].status : null;
 }
 
@@ -425,7 +426,7 @@ export function getMostRecentMedicationDispenseStatus(
 export function getNextMostRecentMedicationDispenseStatus(
   medicationDispenses: Array<MedicationDispense>,
 ): MedicationDispenseStatus {
-  const sorted = medicationDispenses?.sort(sortMedicationDispensesByDateRecorded);
+  const sorted = medicationDispenses?.sort(sortMedicationDispensesByWhenHandedOver);
   return sorted && sorted.length > 1 ? sorted[1].status : null;
 }
 
@@ -554,7 +555,7 @@ export function isMostRecentMedicationDispense(
   medicationDispense: MedicationDispense,
   medicationDispenses: Array<MedicationDispense>,
 ): boolean {
-  const sorted = medicationDispenses?.sort(sortMedicationDispensesByDateRecorded);
+  const sorted = medicationDispenses?.sort(sortMedicationDispensesByWhenHandedOver);
 
   // prettier-ignore
   return medicationDispense &&
@@ -577,16 +578,30 @@ export function revalidate(encounterUuid: string) {
   );
 }
 
-export function sortMedicationDispensesByDateRecorded(a: MedicationDispense, b: MedicationDispense): number {
-  if (getDateRecorded(b) === null) {
+export function sortMedicationDispensesByWhenHandedOver(a: MedicationDispense, b: MedicationDispense): number {
+  if (b.whenHandedOver === null) {
     return 1;
-  } else if (getDateRecorded(a) === null) {
+  } else if (a.whenHandedOver === null) {
     return -1;
   }
-  const dateDiff = parseDate(getDateRecorded(b)).getTime() - parseDate(getDateRecorded(a)).getTime();
+  const dateDiff = parseDate(b.whenHandedOver).getTime() - parseDate(a.whenHandedOver).getTime();
   if (dateDiff !== 0) {
     return dateDiff;
   } else {
     return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
   }
+}
+
+/**
+ * Given a dayJs date object and a CalendarDate date object, returns true if they represent the same day
+ *
+ * @param dayJsDate
+ * @param calendarDate
+ */
+export function isSameDay(dayJsDate: Dayjs, calendarDate: CalendarDate): boolean {
+  return (
+    dayJsDate.date() === calendarDate.day &&
+    dayJsDate.month() + 1 === calendarDate.month &&
+    dayJsDate.year() === calendarDate.year
+  );
 }

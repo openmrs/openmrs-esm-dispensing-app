@@ -593,8 +593,8 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
-      whenHandedOver: '',
-      whenPrepared: '',
+      whenHandedOver: '2023-01-05T14:00:00-05:00',
+      whenPrepared: '2023-01-05T14:00:00-05:00',
     };
 
     const medicationDispenseDeclined: MedicationDispense = {
@@ -626,8 +626,8 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
-      whenHandedOver: '',
-      whenPrepared: '',
+      whenHandedOver: '2023-01-04T14:00:00-05:00',
+      whenPrepared: '2023-01-04T14:00:00-05:00',
     };
 
     const medicationDispenseOnHold: MedicationDispense = {
@@ -659,8 +659,8 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
-      whenHandedOver: '',
-      whenPrepared: '',
+      whenHandedOver: '2023-01-03T14:00:00-05:00',
+      whenPrepared: '2023-01-03T14:00:00-05:00',
     };
 
     const medicationDispenseCompleteOldest: MedicationDispense = {
@@ -692,8 +692,8 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
-      whenHandedOver: '',
-      whenPrepared: '',
+      whenHandedOver: '2023-01-01T14:00:00-05:00',
+      whenPrepared: '2023-01-01T14:00:00-05:00',
     };
 
     test('should return declined if deleting most recent medication dispense and next most recent status declined', () => {
@@ -846,8 +846,10 @@ describe('Util Tests', () => {
       whenPrepared: '',
     };
 
-    test('when adding new dispense should return null even if dispense meets or exceeds quantitiy if restrict total quantity dispensed config is false', () => {
+    test('when adding new dispense should return null even if dispense meets or exceeds quantity if restrict total quantity dispensed config is false', () => {
       newMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
+      newMedicationDispense.whenHandedOver = '2023-01-03T14:00:00-05:00';
+      newMedicationDispense.whenPrepared = '2023-01-03T14:00:00-05:00';
       newMedicationDispense.status = MedicationDispenseStatus.completed;
       newMedicationDispense.quantity.value = 30;
       expect(
@@ -2193,8 +2195,8 @@ describe('Util Tests', () => {
           subject: { display: '', reference: '', type: '' },
           substitution: { reason: [], type: undefined, wasSubstituted: false },
           type: undefined,
-          whenHandedOver: '',
-          whenPrepared: '',
+          whenHandedOver: '2023-01-05T14:00:00-05:00',
+          whenPrepared: '2023-01-05T14:00:00-05:00',
         },
         {
           dosageInstruction: undefined,
@@ -2225,8 +2227,8 @@ describe('Util Tests', () => {
           subject: { display: '', reference: '', type: '' },
           substitution: { reason: [], type: undefined, wasSubstituted: false },
           type: undefined,
-          whenHandedOver: '',
-          whenPrepared: '',
+          whenHandedOver: '2023-01-05T20:00:00-05:00',
+          whenPrepared: '2023-01-05T20:00:00-05:00',
         },
         {
           dosageInstruction: undefined,
@@ -2257,8 +2259,8 @@ describe('Util Tests', () => {
           subject: { display: '', reference: '', type: '' },
           substitution: { reason: [], type: undefined, wasSubstituted: false },
           type: undefined,
-          whenHandedOver: '',
-          whenPrepared: '',
+          whenHandedOver: '2023-01-05T17:00:00-05:00',
+          whenPrepared: '2023-01-05T17:00:00-05:00',
         },
       ];
 
@@ -2304,8 +2306,8 @@ describe('Util Tests', () => {
           subject: { display: '', reference: '', type: '' },
           substitution: { reason: [], type: undefined, wasSubstituted: false },
           type: undefined,
-          whenHandedOver: '',
-          whenPrepared: '',
+          whenHandedOver: '2023-01-05T14:00:00-05:00',
+          whenPrepared: '2023-01-05T14:00:00-05:00',
         },
         {
           dosageInstruction: undefined,
@@ -2336,8 +2338,8 @@ describe('Util Tests', () => {
           subject: { display: '', reference: '', type: '' },
           substitution: { reason: [], type: undefined, wasSubstituted: false },
           type: undefined,
-          whenHandedOver: '',
-          whenPrepared: '',
+          whenHandedOver: '2023-01-05T20:00:00-05:00',
+          whenPrepared: '2023-01-05T20:00:00-05:00',
         },
         {
           dosageInstruction: undefined,
@@ -2368,8 +2370,8 @@ describe('Util Tests', () => {
           subject: { display: '', reference: '', type: '' },
           substitution: { reason: [], type: undefined, wasSubstituted: false },
           type: undefined,
-          whenHandedOver: '',
-          whenPrepared: '',
+          whenHandedOver: '2023-01-05T17:00:00-05:00',
+          whenPrepared: '2023-01-05T17:00:00-05:00',
         },
       ];
 
@@ -2406,8 +2408,8 @@ describe('Util Tests', () => {
           subject: { display: '', reference: '', type: '' },
           substitution: { reason: [], type: undefined, wasSubstituted: false },
           type: undefined,
-          whenHandedOver: '',
-          whenPrepared: '',
+          whenHandedOver: '2023-01-05T14:00:00-05:00',
+          whenPrepared: '2023-01-05T14:00:00-05:00',
         },
       ];
       expect(getNextMostRecentMedicationDispenseStatus(medicationDispenses)).toBeNull();
@@ -2755,8 +2757,8 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
-      whenHandedOver: '',
-      whenPrepared: '',
+      whenHandedOver: '2023-01-05T14:00:00-05:00',
+      whenPrepared: '2023-01-05T14:00:00-05:00',
     };
 
     const medicationDispense2: MedicationDispense = {
@@ -2788,8 +2790,8 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
-      whenHandedOver: '',
-      whenPrepared: '',
+      whenHandedOver: '2023-01-05T20:00:00-05:00',
+      whenPrepared: '2023-01-05T20:00:00-05:00',
     };
 
     const medicationDispense3: MedicationDispense = {
@@ -2821,8 +2823,8 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
-      whenHandedOver: '',
-      whenPrepared: '',
+      whenHandedOver: '2023-01-05T17:00:00-05:0',
+      whenPrepared: '2023-01-05T17:00:00-05:0',
     };
 
     const medicationDispenses: Array<MedicationDispense> = [

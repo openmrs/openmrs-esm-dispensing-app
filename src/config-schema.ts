@@ -55,6 +55,12 @@ export const configSchema = {
       _default: false,
     },
   },
+  dispenserProviderRoles: {
+    _type: Type.Array,
+    _description:
+      'Array of provider roles uuids.  If specified, only providers with these roles will be listed in the "Dispensed By" dropdown.  Note that this simply restricts the providers that can be recorded as Dispensers, it does not limit who can create dispense events.',
+    _default: [],
+  },
   medicationRequestExpirationPeriodInDays: {
     _type: Type.Number,
     _description: 'Medication Requests older that this will be considered expired',
@@ -144,6 +150,7 @@ export interface PharmacyConfig {
     allowModifyingPrescription: boolean;
     restrictTotalQuantityDispensed: boolean;
   };
+  dispenserProviderRoles: [];
   medicationRequestExpirationPeriodInDays: number;
   locationBehavior: {
     locationColumn: {
