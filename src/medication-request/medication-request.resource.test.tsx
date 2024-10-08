@@ -11,15 +11,7 @@ import { openmrsFetch, parseDate } from '@openmrs/esm-framework';
 import { MedicationRequestFulfillerStatus } from '../types';
 import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 
-jest.mock('@openmrs/esm-framework', () => {
-  const originalModule = jest.requireActual('@openmrs/esm-framework');
-  return {
-    __esModule: true,
-    ...originalModule,
-    openmrsFetch: jest.fn(() => 'mocked fetch'),
-  };
-});
-
+jest.mocked(openmrsFetch);
 jest.mock('swr');
 
 describe('Medication Request Resource Test', () => {
@@ -1248,7 +1240,7 @@ describe('Medication Request Resource Test', () => {
 
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: queryRequestBundle } }));
-    const { allergies, totalAllergies } = usePatientAllergies('558494fe-5850-4b34-a3bf-06550334ba4a', 10000);
+    const { totalAllergies } = usePatientAllergies('558494fe-5850-4b34-a3bf-06550334ba4a', 10000);
     expect(totalAllergies).toBe(2);
     // TODO allergy parsing doesn't seem to be working?
   });
