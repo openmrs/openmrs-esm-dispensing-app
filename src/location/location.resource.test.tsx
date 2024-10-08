@@ -3,15 +3,7 @@ import { openmrsFetch } from '@openmrs/esm-framework';
 import { useLocationForFiltering } from './location.resource';
 import { type PharmacyConfig } from '../config-schema';
 
-jest.mock('@openmrs/esm-framework', () => {
-  const originalModule = jest.requireActual('@openmrs/esm-framework');
-  return {
-    __esModule: true,
-    ...originalModule,
-    openmrsFetch: jest.fn(() => 'mocked fetch'),
-  };
-});
-
+jest.mocked(openmrsFetch);
 jest.mock('swr');
 
 const pharmacyConfig: PharmacyConfig = {

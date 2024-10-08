@@ -2,12 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
 import { OpenmrsDatePicker, useLayoutType, useConfig, useSession, userHasAccess } from '@openmrs/esm-framework';
-import {
-  getConceptCodingUuid,
-  getMedicationReferenceOrCodeableConcept,
-  getOpenMRSMedicineDrugName,
-  isSameDay,
-} from '../utils';
+import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
 import MedicationCard from '../components/medication-card.component';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
 import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
@@ -506,13 +501,14 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           labelText={t('dispenseDate', 'Date of Dispense')}
           minDate={prescriptionDate ? dayjs(prescriptionDate).startOf('day').toDate() : null}
           maxDate={dayjs().toDate()}
-          onChange={(selectedDate) => {
-            const currentDate = dayjs(medicationDispense.whenHandedOver);
+          onChange={(input) => {
+            const currentDate = medicationDispense.whenHandedOver ? dayjs(medicationDispense.whenHandedOver) : null;
+            const selectedDate = dayjs(input);
             updateMedicationDispense({
               ...medicationDispense,
-              whenHandedOver: isSameDay(currentDate, selectedDate)
+              whenHandedOver: currentDate?.isSame(selectedDate, 'day')
                 ? currentDate.toISOString()
-                : selectedDate.toString(), // to preserve any time component, only update if the day actually changes
+                : selectedDate.toISOString(), // to preserve any time component, only update if the day actually changes
             });
           }}
           value={dayjs(medicationDispense.whenHandedOver).toDate()}></OpenmrsDatePicker>

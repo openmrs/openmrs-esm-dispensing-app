@@ -1,5 +1,4 @@
 import { mutate } from 'swr';
-import { type CalendarDate } from '@internationalized/date';
 import {
   type Coding,
   type DosageInstruction,
@@ -22,7 +21,7 @@ import {
   PRESCRIPTION_DETAILS_ENDPOINT,
   PRESCRIPTIONS_TABLE_ENDPOINT,
 } from './constants';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 const unitsDontMatchErrorMessage =
   "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. " +
@@ -590,18 +589,4 @@ export function sortMedicationDispensesByWhenHandedOver(a: MedicationDispense, b
   } else {
     return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
   }
-}
-
-/**
- * Given a dayJs date object and a CalendarDate date object, returns true if they represent the same day
- *
- * @param dayJsDate
- * @param calendarDate
- */
-export function isSameDay(dayJsDate: Dayjs, calendarDate: CalendarDate): boolean {
-  return (
-    dayJsDate.date() === calendarDate.day &&
-    dayJsDate.month() + 1 === calendarDate.month &&
-    dayJsDate.year() === calendarDate.year
-  );
 }

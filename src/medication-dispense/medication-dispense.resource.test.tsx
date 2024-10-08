@@ -17,15 +17,7 @@ import {
 } from '../types';
 import dayjs from 'dayjs';
 
-jest.mock('@openmrs/esm-framework', () => {
-  const originalModule = jest.requireActual('@openmrs/esm-framework');
-  return {
-    __esModule: true,
-    ...originalModule,
-    openmrsFetch: jest.fn(() => 'mocked fetch'),
-  };
-});
-
+jest.mocked(openmrsFetch);
 jest.mock('swr');
 
 describe('Medication Dispense Resource tests', () => {
