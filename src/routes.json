@@ -13,6 +13,21 @@
   ],
   "extensions": [
     {
+      "name": "dispense-action-button",
+      "slot": "dispense-action-button",
+      "component": "dispenseActionButton"
+    },
+    {
+      "name": "pause-action-button",
+      "slot": "dispense-action-button",
+      "component": "pauseActionButton"
+    },
+    {
+      "name": "close-action-button",
+      "slot": "dispense-action-button",
+      "component": "closeActionButton"
+    },
+    {
       "name": "dispensing-link",
       "slot": "app-menu-slot",
       "component": "dispensingLink",

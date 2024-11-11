@@ -112,7 +112,7 @@ class EndCurrentVisitHandler extends Handler {
       const visitTypes = await getVisitTypes().toPromise();
       const shouldCloseVisit =
         this.shouldEndVisitOnDispense(currentVisit, visitTypes, response.status, config) && closeVisitOnDispense;
-
+      
       if (shouldCloseVisit) {
         const updateResponse = await updateVisit(
           currentVisit.uuid,
@@ -123,7 +123,7 @@ class EndCurrentVisitHandler extends Handler {
             visitType: currentVisit?.visitType.uuid,
           },
           abortController,
-        ).toPromise();
+        );
 
         showSnackbar({
           title: t('visitClose', 'Visit closed'),

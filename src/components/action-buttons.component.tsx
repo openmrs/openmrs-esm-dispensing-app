@@ -1,20 +1,17 @@
-import React from 'react';
-import { Button } from '@carbon/react';
-import { useTranslation } from 'react-i18next';
-import { useConfig, useSession } from '@openmrs/esm-framework';
+import React, { useMemo } from 'react';
+import { ExtensionSlot, useConfig, useSession } from '@openmrs/esm-framework';
 import { MedicationDispenseStatus, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
-import { launchOverlay } from '../hooks/useOverlay';
 import {
   computeMedicationRequestStatus,
   computeQuantityRemaining,
   getMostRecentMedicationDispenseStatus,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
-import { initiateMedicationDispenseBody, useProviders } from '../medication-dispense/medication-dispense.resource';
-import DispenseForm from '../forms/dispense-form.component';
-import PauseDispenseForm from '../forms/pause-dispense-form.component';
-import CloseDispenseForm from '../forms/close-dispense-form.component';
 import styles from './action-buttons.scss';
+import { launchOverlay } from '../hooks/useOverlay';
+import DispenseForm from '../forms/dispense-form.component';
+import { initiateMedicationDispenseBody, useProviders } from '../medication-dispense/medication-dispense.resource';
+import { useTranslation } from 'react-i18next';
 
 interface ActionButtonsProps {
   medicationRequestBundle: MedicationRequestBundle;
@@ -54,78 +51,40 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
     quantityRemaining = computeQuantityRemaining(medicationRequestBundle);
   }
 
-  return (
-    <div className={styles.actionBtns}>
-      {dispensable ? (
-        <Button
-          kind="primary"
-          onClick={() =>
-            launchOverlay(
-              t('dispensePrescription', 'Dispense prescription'),
-              <DispenseForm
-                patientUuid={patientUuid}
-                encounterUuid={encounterUuid}
-                medicationDispense={initiateMedicationDispenseBody(
-                  medicationRequestBundle.request,
-                  session,
-                  providers,
-                  true,
-                )}
-                medicationRequestBundle={medicationRequestBundle}
-                quantityRemaining={quantityRemaining}
-                mode="enter"
-              />,
-            )
-          }>
-          {t('dispense', 'Dispense')}
-        </Button>
-      ) : null}
-      {pauseable ? (
-        <Button
-          kind="secondary"
-          onClick={() =>
-            launchOverlay(
-              t('pausePrescription', 'Pause prescription'),
-              <PauseDispenseForm
-                patientUuid={patientUuid}
-                encounterUuid={encounterUuid}
-                medicationDispense={initiateMedicationDispenseBody(
-                  medicationRequestBundle.request,
-                  session,
-                  providers,
-                  false,
-                )}
-                mode="enter"
-              />,
-            )
-          }>
-          {t('pause', 'Pause')}
-        </Button>
-      ) : null}
-      {closeable ? (
-        <Button
-          kind="danger"
-          onClick={() =>
-            launchOverlay(
-              t('closePrescription', 'Close prescription'),
-              <CloseDispenseForm
-                patientUuid={patientUuid}
-                encounterUuid={encounterUuid}
-                medicationDispense={initiateMedicationDispenseBody(
-                  medicationRequestBundle.request,
-                  session,
-                  providers,
-                  false,
-                )}
-                mode="enter"
-              />,
-            )
-          }>
-          {t('close', 'Close')}
-        </Button>
-      ) : null}
-    </div>
+  const handleOpenDispenseForm = () => {
+    launchOverlay(
+      t('dispensePrescription', 'Dispense prescription'),
+      <DispenseForm
+        patientUuid={patientUuid}
+        encounterUuid={encounterUuid}
+        medicationDispense={initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, true)}
+        medicationRequestBundle={medicationRequestBundle}
+        quantityRemaining={quantityRemaining}
+        mode="enter"
+      />,
+    );
+  };
+
+  const state = useMemo(
+    () => ({
+      dispensable,
+      pauseable,
+      closeable,
+      quantityRemaining,
+      medicationRequestBundle,
+      patientUuid,
+      encounterUuid,
+      config,
+      handleOpenDispenseForm,
+    }),
+    [dispensable, pauseable, closeable, quantityRemaining, medicationRequestBundle, patientUuid, encounterUuid, config],
   );
+
+  if (!dispensable && !pauseable && !closeable) {
+    return null;
+  }
+
+  return <ExtensionSlot className={styles.actionBtns} name="dispense-action-button" state={state} />;
 };
 
 export default ActionButtons;
