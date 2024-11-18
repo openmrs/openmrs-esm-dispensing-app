@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
 import { OpenmrsDatePicker, useLayoutType, useConfig, useSession, userHasAccess } from '@openmrs/esm-framework';
 import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
-import MedicationCard from '../components/medication-card.component';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
 import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import {
@@ -15,8 +15,8 @@ import {
 import { PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS } from '../constants';
 import { type Medication, type MedicationDispense } from '../types';
 import { type PharmacyConfig } from '../config-schema';
+import MedicationCard from '../components/medication-card.component';
 import styles from '../components/medication-dispense-review.scss';
-import dayjs from 'dayjs';
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
@@ -104,7 +104,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       );
       setOrderFrequencies([...orderFrequencies, ...otherFrequencyOptions]);
     }
-  }, [orderConfigObject]);
+  }, [drugDispensingUnits, drugDosingUnits, drugRoutes, orderConfigObject, orderFrequencies]);
 
   useEffect(() => {
     const substitutionTypeOptions = [];
@@ -191,7 +191,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         },
       });
     }
-  }, [medicationDispense.medicationReference, medicationRequest?.medicationReference]);
+  }, [medicationDispense, medicationRequest, updateMedicationDispense]);
 
   useEffect(() => {
     setUserCanModify(session?.user && userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user));
