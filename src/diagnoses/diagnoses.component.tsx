@@ -25,7 +25,9 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
     return <InlineNotification kind="error" subtitle={t('diagnosesError', 'Error loading diagnoses')} lowContrast />;
   return (
     <Tile>
-      <strong>Diagnoses {diagnoses.length ? `(${diagnoses.length})` : ''}</strong>
+      <strong>
+        {t('diagnoses', 'Diagnoses')} {diagnoses.length ? `(${diagnoses.length})` : ''}
+      </strong>
       <br />
       {diagnoses.length ? (
         <>
@@ -34,7 +36,7 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
           ))}
         </>
       ) : (
-        'No diagnoses found'
+        <>{t('noDiagnoses', 'No diagnoses found')}</>
       )}
     </Tile>
   );
