@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DataTableSkeleton, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
-import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import { ExtensionSlot, type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
 import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay } from '../utils';
@@ -67,6 +67,11 @@ const PrescriptionDetails: React.FC<{
   return (
     <div className={styles.prescriptionContainer}>
       {isAllergiesLoading && <DataTableSkeleton role="progressbar" />}
+      <ExtensionSlot
+        style={{ width: '100%' }}
+        name="prescription-diagnoses-slot"
+        state={{ patientUuid, encounterUuid }}
+      />
       {!isAllergiesLoading && (
         <Tile className={styles.allergiesTile}>
           <div className={styles.allergiesContent}>

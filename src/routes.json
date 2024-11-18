@@ -20,6 +20,13 @@
       "offline": true
     },
     {
+      "name": "patient-diagnoses",
+      "slot": "prescription-diagnoses-slot",
+      "component": "patientDiagnoses",
+      "online": true,
+      "offline": true
+    },
+    {
       "name": "dispensing-dashboard",
       "slot": "dispensing-dashboard-slot",
       "component": "dispensingDashboard",
