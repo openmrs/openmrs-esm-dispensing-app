@@ -23,21 +23,18 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
 
   if (error)
     return <InlineNotification kind="error" subtitle={t('diagnosesError', 'Error loading diagnoses')} lowContrast />;
+
+  if (!diagnoses?.length) return null;
+
   return (
     <Tile>
       <strong>
         {t('diagnoses', 'Diagnoses')} {diagnoses.length ? `(${diagnoses.length})` : ''}
       </strong>
       <br />
-      {diagnoses.length ? (
-        <>
-          {diagnoses.map(({ text }, index) => (
-            <Tag key={index}>{text}</Tag>
-          ))}
-        </>
-      ) : (
-        <>{t('noDiagnoses', 'No diagnoses found')}</>
-      )}
+      {diagnoses.map(({ text }, index) => (
+        <Tag key={index}>{text}</Tag>
+      ))}
     </Tile>
   );
 };
