@@ -72,6 +72,7 @@
     "concurrently": "^6.2.0",
     "dayjs": "^1.11.13",
     "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "husky": "^6.0.0",
     "identity-obj-proxy": "^3.0.0",
