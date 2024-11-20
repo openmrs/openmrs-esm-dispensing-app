@@ -1,0 +1,12 @@
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@carbon/colors';
+
+.title {
+  @include type.type-style('heading-02');
+}
+
+.btnSet {
+  width: 100%;
+  background-color: red;
+}
