@@ -1,19 +1,19 @@
-import React, { useRef, useState } from 'react';
 import {
   Button,
+  ButtonSet,
   InlineLoading,
+  InlineNotification,
   ModalBody,
   ModalFooter,
   ModalHeader,
-  ButtonSet,
-  InlineNotification,
 } from '@carbon/react';
-import styles from './print-prescription.scss';
-import { useTranslation } from 'react-i18next';
-import PrescriptionsPrintout from './prescription-printout.component';
-import { usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import { ErrorState } from '@openmrs/esm-framework';
+import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useReactToPrint } from 'react-to-print';
+import { usePrescriptionDetails } from '../medication-request/medication-request.resource';
+import PrescriptionsPrintout from './prescription-printout.component';
+import styles from './print-prescription.scss';
 
 type PrescriptionPrintPreviewModalProps = {
   onClose: () => void;
@@ -32,7 +32,6 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
   const { medicationRequestBundles, isError, isLoading } = usePrescriptionDetails(encounterUuid);
   const componentRef = useRef<HTMLDivElement>(null);
   const [printError, setPrintError] = useState<string | null>(null);
-
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
     onBeforeGetContent: () => {
@@ -41,6 +40,7 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
     onPrintError: (error) => {
       setPrintError(t('printError', 'An error occurred while printing. Please try again.'));
     },
+    copyStyles: true,
   });
 
   return (
