@@ -133,6 +133,11 @@ export const configSchema = {
       'Enable or disable stock deduction during the dispensing process. Requires the stock management module to be installed and configured.',
     _default: false,
   },
+  showDiagnosesFromVisit: {
+    _type: Type.Boolean,
+    _description: 'Enable or disable viewing of patient visit diagnoses',
+    _default: false,
+  },
 };
 
 export interface PharmacyConfig {
@@ -176,4 +181,5 @@ export interface PharmacyConfig {
     };
   };
   enableStockDispense: boolean;
+  showDiagnosesFromVisit: boolean;
 }

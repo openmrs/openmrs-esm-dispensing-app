@@ -1,7 +1,7 @@
+import { InlineLoading, InlineNotification, Tag, Tile } from '@carbon/react';
 import React from 'react';
-import { usePatientDiagnosis } from './diagnoses.resource';
-import { InlineLoading, InlineNotification, Tile, Tag } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
+import { usePatientDiagnosis } from './diagnoses.resource';
 
 type PatientDiagnosesProps = {
   patientUuid: string;
