@@ -1,4 +1,4 @@
-import { InlineLoading, InlineNotification, Tag } from '@carbon/react';
+import { InlineLoading, InlineNotification } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePatientDiagnosis } from './diagnoses.resource';
@@ -11,6 +11,7 @@ import {
   Layer,
 } from '@carbon/react';
 import styles from './diagnoses.scss';
+import EmptyState from '../components/empty-state.component';
 
 type PatientDiagnosesProps = {
   patientUuid: string;
@@ -36,7 +37,13 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
   if (error)
     return <InlineNotification kind="error" subtitle={t('diagnosesError', 'Error loading diagnoses')} lowContrast />;
 
-  if (!diagnoses?.length) return null;
+  if (!diagnoses.length)
+    return (
+      <EmptyState
+        title={t('diagnoses', 'Diagnoses')}
+        message={t('noDiagnoses', "No diagnoses for this patient's visit")}
+      />
+    );
 
   return (
     <Layer className={styles.diagnosesContainer}>
@@ -44,19 +51,18 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
         <StructuredListHead>
           <StructuredListRow head>
             <StructuredListCell head>
-              {t('diagnoses', 'Diagnoses')} {diagnoses.length ? `(${diagnoses.length})` : ''}
+              {t('diagnoses', 'Diagnoses')} {`(${diagnoses.length})`}
             </StructuredListCell>
+            <StructuredListCell head>{t('status', 'Status')}</StructuredListCell>
           </StructuredListRow>
         </StructuredListHead>
         <StructuredListBody>
-          <StructuredListRow>
-            <StructuredListCell noWrap>{t('confirmedDiagnoses', 'Confirm diagnoses')}</StructuredListCell>
-            <StructuredListCell>
-              {diagnoses.map(({ text }, index) => (
-                <Tag key={index}>{text}</Tag>
-              ))}
-            </StructuredListCell>
-          </StructuredListRow>
+          {diagnoses.map(({ certainty, text }) => (
+            <StructuredListRow>
+              <StructuredListCell noWrap>{text}</StructuredListCell>
+              <StructuredListCell>{certainty}</StructuredListCell>
+            </StructuredListRow>
+          ))}
         </StructuredListBody>
       </StructuredListWrapper>
     </Layer>

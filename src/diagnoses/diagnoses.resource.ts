@@ -30,7 +30,7 @@ export const usePatientDiagnosis = (encounterUuid: string) => {
   return {
     error,
     isLoading,
-    diagnoses: diagnoses ?? ([] as Array<{ id: string; text: string; certainty: string }>),
+    diagnoses: (diagnoses ?? []) as Array<{ id: string; text: string; certainty: string }>,
     showDiagnosesFromVisit,
   };
 };

@@ -143,6 +143,11 @@ export const configSchema = {
     _description: 'Enable or disable viewing of patient extra information slot diagnoses',
     _default: false,
   },
+  showPatientConditions: {
+    _type: Type.Boolean,
+    _description: 'Enable or disable viewing of patient conditions',
+    _default: false,
+  },
 };
 
 export interface PharmacyConfig {
@@ -187,5 +192,6 @@ export interface PharmacyConfig {
   };
   enableStockDispense: boolean;
   showDiagnosesFromVisit: boolean;
+  showPatientConditions: boolean;
   showExtraPatientInformationSlot: boolean;
 }

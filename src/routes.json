@@ -27,6 +27,13 @@
       "offline": true
     },
     {
+      "name": "patient-conditions",
+      "slot": "extra-patient-information-slot",
+      "component": "patientConditions",
+      "online": true,
+      "offline": true
+    },
+    {
       "name": "dispensing-dashboard",
       "slot": "dispensing-dashboard-slot",
       "component": "dispensingDashboard",

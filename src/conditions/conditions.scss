@@ -1,8 +1,9 @@
 @use '@carbon/layout';
 @use '@carbon/colors';
 
-.diagnosesContainer {
+.conditionsContainer {
   background-color: colors.$white;
+  margin: layout.$spacing-03 0 0 0;
 }
 
 .emptyText {
