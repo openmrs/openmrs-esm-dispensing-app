@@ -35,6 +35,7 @@ const pharmacyConfig: PharmacyConfig = {
   },
   enableStockDispense: false,
   showDiagnosesFromVisit: false,
+  showExtraPatientInformationSlot: true,
 };
 
 describe('Location Resource tests', () => {

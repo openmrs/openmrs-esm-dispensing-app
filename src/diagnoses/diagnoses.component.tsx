@@ -1,7 +1,16 @@
-import { InlineLoading, InlineNotification, Tag, Tile } from '@carbon/react';
+import { InlineLoading, InlineNotification, Tag } from '@carbon/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePatientDiagnosis } from './diagnoses.resource';
+import {
+  StructuredListWrapper,
+  StructuredListHead,
+  StructuredListRow,
+  StructuredListCell,
+  StructuredListBody,
+  Layer,
+} from '@carbon/react';
+import styles from './diagnoses.scss';
 
 type PatientDiagnosesProps = {
   patientUuid: string;
@@ -9,8 +18,11 @@ type PatientDiagnosesProps = {
 };
 
 const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, patientUuid }) => {
-  const { diagnoses, isLoading, error } = usePatientDiagnosis(encounterUuid);
+  const { diagnoses, isLoading, error, showDiagnosesFromVisit } = usePatientDiagnosis(encounterUuid);
+
   const { t } = useTranslation();
+
+  if (!showDiagnosesFromVisit) return null;
 
   if (isLoading)
     return (
@@ -27,15 +39,27 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
   if (!diagnoses?.length) return null;
 
   return (
-    <Tile>
-      <strong>
-        {t('diagnoses', 'Diagnoses')} {diagnoses.length ? `(${diagnoses.length})` : ''}
-      </strong>
-      <br />
-      {diagnoses.map(({ text }, index) => (
-        <Tag key={index}>{text}</Tag>
-      ))}
-    </Tile>
+    <Layer className={styles.diagnosesContainer}>
+      <StructuredListWrapper>
+        <StructuredListHead>
+          <StructuredListRow head>
+            <StructuredListCell head>
+              {t('diagnoses', 'Diagnoses')} {diagnoses.length ? `(${diagnoses.length})` : ''}
+            </StructuredListCell>
+          </StructuredListRow>
+        </StructuredListHead>
+        <StructuredListBody>
+          <StructuredListRow>
+            <StructuredListCell noWrap>{t('confirmedDiagnoses', 'Confirm diagnoses')}</StructuredListCell>
+            <StructuredListCell>
+              {diagnoses.map(({ text }, index) => (
+                <Tag key={index}>{text}</Tag>
+              ))}
+            </StructuredListCell>
+          </StructuredListRow>
+        </StructuredListBody>
+      </StructuredListWrapper>
+    </Layer>
   );
 };
 

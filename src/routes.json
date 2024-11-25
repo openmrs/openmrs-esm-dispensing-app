@@ -21,7 +21,7 @@
     },
     {
       "name": "patient-diagnoses",
-      "slot": "prescription-diagnoses-slot",
+      "slot": "extra-patient-information-slot",
       "component": "patientDiagnoses",
       "online": true,
       "offline": true
