@@ -1,0 +1,50 @@
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@carbon/colors';
+
+.container {
+  padding: layout.$spacing-03;
+  background-color: colors.$white;
+  margin: layout.$spacing-03 0 0 0;
+}
+
+.title {
+  @include type.type-style('heading-01');
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  row-gap: 1.5rem;
+  position: relative;
+  color: colors.$gray-50;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 2rem;
+    border-bottom: 0.375rem solid var(--brand-03);
+    position: absolute;
+    bottom: -0.75rem;
+    left: 0;
+  }
+
+  & > span {
+    @include type.type-style('body-01');
+  }
+}
+
+.message {
+  color: colors.$gray-50;
+}
+
+.messageContainer {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: layout.$spacing-03;
+}
+
+.emptyIcon {
+  color: colors.$gray-50;
+}

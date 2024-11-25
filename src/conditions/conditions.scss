@@ -1,0 +1,11 @@
+@use '@carbon/layout';
+@use '@carbon/colors';
+
+.conditionsContainer {
+  background-color: colors.$white;
+  margin: layout.$spacing-03 0 0 0;
+}
+
+.emptyText {
+  color: colors.$gray-50;
+}

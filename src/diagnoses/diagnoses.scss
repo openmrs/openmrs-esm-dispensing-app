@@ -1,0 +1,10 @@
+@use '@carbon/layout';
+@use '@carbon/colors';
+
+.diagnosesContainer {
+  background-color: colors.$white;
+}
+
+.emptyText {
+  color: colors.$gray-50;
+}
