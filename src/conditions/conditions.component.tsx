@@ -6,6 +6,8 @@ import {
   StructuredListCell,
   StructuredListBody,
   Layer,
+  InlineLoading,
+  InlineNotification,
 } from '@carbon/react';
 import styles from './conditions.scss';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +25,18 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
   const { conditions, error, isLoading, mutate, showPatientConditions } = usePatientConditions(patientUuid);
 
   if (!showPatientConditions) return null;
+
+  if (isLoading)
+    return (
+      <InlineLoading
+        iconDescription="Loading"
+        description={t('loadingConditions', 'Loading Conditions ...')}
+        status="active"
+      />
+    );
+
+  if (error)
+    return <InlineNotification kind="error" subtitle={t('conditionsError', 'Error loading conditions')} lowContrast />;
 
   if (!conditions.length)
     return (
