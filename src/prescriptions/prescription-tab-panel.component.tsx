@@ -23,6 +23,7 @@ import PrescriptionExpanded from './prescription-expanded.component';
 import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
 import { type PharmacyConfig } from '../config-schema';
 import styles from './prescriptions.scss';
+import PatientAge from '../patient-age/patient-age.component';
 
 interface PrescriptionTabPanelProps {
   searchTerm: string;
@@ -49,6 +50,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
   let columns = [
     { header: t('created', 'Created'), key: 'created' },
     { header: t('patientName', 'Patient name'), key: 'patient' },
+    { header: t('patientAge', 'Patient age'), key: 'patientAge' },
     { header: t('prescriber', 'Prescriber'), key: 'prescriber' },
     { header: t('drugs', 'Drugs'), key: 'drugs' },
     { header: t('lastDispenser', 'Last dispenser'), key: 'lastDispenser' },
@@ -73,7 +75,13 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
         {error && <p>Error</p>}
         {prescriptionsTableRows && (
           <>
-            <DataTable rows={prescriptionsTableRows} headers={columns} isSortable>
+            <DataTable
+              rows={prescriptionsTableRows.map((row) => ({
+                ...row,
+                patientAge: <PatientAge patientUuid={row.patient.uuid} />,
+              }))}
+              headers={columns}
+              isSortable>
               {({ rows, headers, getExpandHeaderProps, getHeaderProps, getRowProps, getTableProps }) => (
                 <TableContainer>
                   <Table {...getTableProps()} useZebraStyles>
