@@ -33,3 +33,11 @@
   padding: layout.$spacing-05 0 layout.$spacing-05 0;
   @include type.type-style('label-01');
 }
+
+.printoutSelectorRow {
+  display: flex;
+  flex-direction: row;
+  gap: layout.$spacing-05;
+  padding: 0 layout.$spacing-05 0 layout.$spacing-05;
+  justify-content: space-between;
+}

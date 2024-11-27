@@ -11,6 +11,7 @@ import { usePatientAllergies, usePrescriptionDetails } from '../medication-reque
 import ActionButtons from '../components/action-buttons.component';
 import MedicationEvent from '../components/medication-event.component';
 import styles from './prescription-details.scss';
+import PrescriptionsActionsFooter from './prescription-actions.component';
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -89,9 +90,7 @@ const PrescriptionDetails: React.FC<{
           </div>
         </Tile>
       )}
-
       <h5 style={{ paddingTop: '8px', paddingBottom: '8px', fontSize: '0.9rem' }}>{t('prescribed', 'Prescribed')}</h5>
-
       {isLoading && <DataTableSkeleton role="progressbar" />}
       {isError && <p>{t('error', 'Error')}</p>}
       {medicationRequestBundles &&
@@ -113,6 +112,7 @@ const PrescriptionDetails: React.FC<{
             </Tile>
           );
         })}
+      <PrescriptionsActionsFooter encounterUuid={encounterUuid} patientUuid={patientUuid} />
     </div>
   );
 };

@@ -14,9 +14,10 @@ import styles from './print-prescription.scss';
 
 type PrescriptionsPrintoutProps = {
   medicationrequests: Array<MedicationRequestBundle>;
+  excludedPrescription: Array<string>;
 };
 
-const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicationrequests }) => {
+const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicationrequests, excludedPrescription }) => {
   const { t } = useTranslation();
   const {
     sessionLocation: { display: facilityName },
@@ -25,12 +26,6 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
   return (
     <Layer className={styles.printOutContainer}>
       <StructuredListWrapper>
-        {/* <StructuredListHead>
-        <StructuredListRow head>
-          <StructuredListCell head>Patient Name Here</StructuredListCell>
-          <StructuredListCell head>Facility name here</StructuredListCell>
-        </StructuredListRow>
-      </StructuredListHead> */}
         <StructuredListBody>
           <StructuredListRow head>
             <StructuredListCell head>
@@ -49,71 +44,73 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
               <br />
             </StructuredListCell>
           </StructuredListRow>
-          {medicationrequests?.map((request, index) => {
-            const medicationEvent = request.request;
-            const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
-            const quantity: Quantity = getQuantity(medicationEvent);
-            const refillsAllowed: number = getRefillsAllowed(medicationEvent);
-            return (
-              <div key={index}>
-                {dosageInstruction && (
-                  <StructuredListRow>
-                    <StructuredListCell>
-                      <p>
-                        <strong>
-                          {getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}
-                        </strong>
-                      </p>
-                      <br />
-                      <p>
-                        <span className={styles.faintText}>{t('dose', 'Dose')}</span>
-                        {': '}
-                        <span>
-                          {dosageInstruction?.doseAndRate?.map((doseAndRate, index) => {
-                            return (
-                              <span key={index}>
-                                {doseAndRate?.doseQuantity?.value} {doseAndRate?.doseQuantity?.unit}
+          {medicationrequests
+            ?.filter((req) => !excludedPrescription.includes(req.request.id))
+            ?.map((request, index) => {
+              const medicationEvent = request.request;
+              const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
+              const quantity: Quantity = getQuantity(medicationEvent);
+              const refillsAllowed: number = getRefillsAllowed(medicationEvent);
+              return (
+                <div key={index}>
+                  {dosageInstruction && (
+                    <StructuredListRow>
+                      <StructuredListCell>
+                        <p>
+                          <strong>
+                            {getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}
+                          </strong>
+                        </p>
+                        <br />
+                        <p>
+                          <span className={styles.faintText}>{t('dose', 'Dose')}</span>
+                          {': '}
+                          <span>
+                            {dosageInstruction?.doseAndRate?.map((doseAndRate, index) => {
+                              return (
+                                <span key={index}>
+                                  {doseAndRate?.doseQuantity?.value} {doseAndRate?.doseQuantity?.unit}
+                                </span>
+                              );
+                            })}
+                          </span>{' '}
+                          &mdash; {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}{' '}
+                          {dosageInstruction?.timing?.repeat?.duration
+                            ? 'for ' +
+                              dosageInstruction?.timing?.repeat?.duration +
+                              ' ' +
+                              dosageInstruction?.timing?.repeat?.durationUnit
+                            : ' '}
+                          {quantity && (
+                            <p>
+                              <span className={styles.faintText}>{t('quantity', 'Quantity')}</span>
+                              {': '}
+                              <span>
+                                {quantity.value} {quantity.unit}
                               </span>
-                            );
-                          })}
-                        </span>{' '}
-                        &mdash; {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}{' '}
-                        {dosageInstruction?.timing?.repeat?.duration
-                          ? 'for ' +
-                            dosageInstruction?.timing?.repeat?.duration +
-                            ' ' +
-                            dosageInstruction?.timing?.repeat?.durationUnit
-                          : ' '}
-                        {quantity && (
+                            </p>
+                          )}
+                        </p>
+                        <p>
+                          <span className={styles.faintText}>{t('datePrescribed', 'Date prescribed')}</span>
+                          {': '} <span>{formatDate(parseDate((request.request as any).authoredOn))}</span>
+                        </p>
+                        {(refillsAllowed || refillsAllowed === 0) && (
                           <p>
-                            <span className={styles.faintText}>{t('quantity', 'Quantity')}</span>
-                            {': '}
-                            <span>
-                              {quantity.value} {quantity.unit}
-                            </span>
+                            <span className={styles.faintText}>{t('refills', 'Refills')}</span>
+                            {': '} <span>{refillsAllowed}</span>
                           </p>
                         )}
-                      </p>
-                      <p>
-                        <span className={styles.faintText}>{t('datePrescribed', 'Date prescribed')}</span>
-                        {': '} <span>{formatDate(parseDate((request.request as any).authoredOn))}</span>
-                      </p>
-                      {(refillsAllowed || refillsAllowed === 0) && (
-                        <p>
-                          <span className={styles.faintText}>{t('refills', 'Refills')}</span>
-                          {': '} <span>{refillsAllowed}</span>
-                        </p>
-                      )}
-                      {dosageInstruction?.text && <p>{dosageInstruction.text}</p>}
-                      {dosageInstruction?.additionalInstruction?.length > 0 && (
-                        <p>{dosageInstruction?.additionalInstruction[0].text}</p>
-                      )}
-                    </StructuredListCell>
-                  </StructuredListRow>
-                )}
-              </div>
-            );
-          })}
+                        {dosageInstruction?.text && <p>{dosageInstruction.text}</p>}
+                        {dosageInstruction?.additionalInstruction?.length > 0 && (
+                          <p>{dosageInstruction?.additionalInstruction[0].text}</p>
+                        )}
+                      </StructuredListCell>
+                    </StructuredListRow>
+                  )}
+                </div>
+              );
+            })}
           <p className={styles.facilityName}>{facilityName}</p>
         </StructuredListBody>
       </StructuredListWrapper>
