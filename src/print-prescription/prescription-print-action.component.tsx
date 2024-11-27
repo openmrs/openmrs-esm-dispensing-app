@@ -7,7 +7,6 @@ import { showModal } from '@openmrs/esm-framework';
 type PrescriptionPrintActionProps = {
   encounterUuid: string;
   patientUuid: string;
-  status: string;
 };
 
 const PrescriptionPrintAction: React.FC<PrescriptionPrintActionProps> = ({ encounterUuid, patientUuid }) => {
@@ -17,17 +16,16 @@ const PrescriptionPrintAction: React.FC<PrescriptionPrintActionProps> = ({ encou
     <Button
       renderIcon={Printer}
       iconDescription={t('print', 'Print')}
-      hasIconOnly
       onClick={() => {
         const dispose = showModal('prescription-print-preview-modal', {
           onClose: () => dispose(),
           encounterUuid,
           patientUuid,
-          status,
         });
       }}
-      kind="ghost"
-    />
+      kind="ghost">
+      {t('printPrescriptions', 'Print prescriptions')}
+    </Button>
   );
 };
 

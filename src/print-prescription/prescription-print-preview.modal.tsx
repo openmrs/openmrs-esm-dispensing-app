@@ -14,6 +14,7 @@ import { useReactToPrint } from 'react-to-print';
 import { usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import PrescriptionsPrintout from './prescription-printout.component';
 import styles from './print-prescription.scss';
+import PrintablePrescriptionsSelector from './printable-prescriptions.component';
 
 type PrescriptionPrintPreviewModalProps = {
   onClose: () => void;
@@ -30,6 +31,7 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
 }) => {
   const { t } = useTranslation();
   const { medicationRequestBundles, isError, isLoading } = usePrescriptionDetails(encounterUuid);
+  const [excludedPrescription, setExcludedPrescriptions] = useState<string[]>([]);
   const componentRef = useRef<HTMLDivElement>(null);
   const [printError, setPrintError] = useState<string | null>(null);
   const handlePrint = useReactToPrint({
@@ -58,8 +60,18 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
         )}
         {isError && <ErrorState error={isError} headerTitle={t('error', 'Error')} />}
         {!isLoading && medicationRequestBundles?.length > 0 && (
-          <div ref={componentRef}>
-            <PrescriptionsPrintout medicationrequests={medicationRequestBundles} />
+          <div className={styles.printoutSelectorRow}>
+            <PrintablePrescriptionsSelector
+              medicationrequests={medicationRequestBundles}
+              excludedPrescription={excludedPrescription}
+              onExcludedPrescriptionChange={setExcludedPrescriptions}
+            />
+            <div ref={componentRef}>
+              <PrescriptionsPrintout
+                medicationrequests={medicationRequestBundles}
+                excludedPrescription={excludedPrescription}
+              />
+            </div>
           </div>
         )}
         {printError && (
