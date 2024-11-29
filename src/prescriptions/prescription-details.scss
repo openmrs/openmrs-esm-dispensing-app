@@ -1,6 +1,6 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type/index';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/layout';
+@use '@carbon/type/index';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .prescriptionTile {
   width: 100%;

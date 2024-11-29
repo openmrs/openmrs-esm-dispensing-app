@@ -1,6 +1,6 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .patientDetailsContainer > div {
   margin-bottom: 1rem;
@@ -57,7 +57,7 @@
 }
 
 .patientNameRow {
-  margin-top: spacing.$spacing-05;
+  margin-top: layout.$spacing-05;
 }
 
 .flexRow {

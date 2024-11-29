@@ -1,7 +1,53 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
-@import '../root.scss';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
+
+.productiveHeading01 {
+  @include type.type-style('heading-01');
+}
+
+.productiveHeading02 {
+  @include type.type-style('heading-02');
+}
+
+.productiveHeading03 {
+  @include type.type-style('heading-03');
+}
+
+.productiveHeading04 {
+  @include type.type-style('heading-04');
+}
+
+.bodyLong01 {
+  @include type.type-style('body-01');
+}
+
+.bodyShort01 {
+  @include type.type-style('body-compact-01');
+}
+
+.bodyShort02 {
+  @include type.type-style('body-compact-02');
+}
+
+.text02 {
+  color: $text-02;
+}
+
+.label01 {
+  @include type.type-style('label-01');
+}
+
+.modal {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9000;
+  justify-items: center;
+  align-items: center;
+}
 
 title {
   width: 6.938rem;
@@ -36,7 +82,7 @@ title {
 
 .prescriptionTabs {
   grid-column: 'span 2';
-  padding: 0 spacing.$spacing-05;
+  padding: 0 layout.$spacing-05;
 }
 
 .newListButton {
@@ -66,7 +112,7 @@ title {
   grid-row: 3 / 4;
   grid-column: 1 / 2;
   height: 100%;
-  margin: 0 spacing.$spacing-05;
+  margin: 0 layout.$spacing-05;
   background-color: $ui-01;
   border: 0.5px solid #e0e0e0;
 
@@ -148,7 +194,7 @@ title {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: spacing.$spacing-09;
+  padding: layout.$spacing-09;
   text-align: center;
   background-color: $ui-02;
 }
@@ -161,7 +207,7 @@ title {
 .filterEmptyStateContent {
   @include type.type-style('heading-compact-02');
   color: $text-02;
-  margin-bottom: spacing.$spacing-03;
+  margin-bottom: layout.$spacing-03;
 }
 
 .filterEmptyStateHelper {
