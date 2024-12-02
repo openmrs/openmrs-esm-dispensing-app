@@ -3,18 +3,23 @@
 @use '@openmrs/esm-styleguide/src/vars' as *;
 
 .medicationTile {
+  background-color: white;
+  border-left: layout.$spacing-02 solid var(--brand-03);
+  color: $text-02;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  margin: layout.$spacing-01 0 layout.$spacing-05 layout.$spacing-05;
+  padding: 0 layout.$spacing-05;
   width: 100%;
-  margin: 2px 0 8px;
-  padding: 0 8px 0 8px;
-  background-color: #fff;
-  border-left: 4px solid var(--brand-03);
-  color: $text-02;
-  margin-bottom: 1rem !important;
 }
 
 .medicationName {
-  font-size: 15px !important;
+  font-size: layout.$spacing-05 !important;
+}
+
+.editButton {
+  :global(.cds--tooltip-content) {
+    color: white !important;
+  }
 }

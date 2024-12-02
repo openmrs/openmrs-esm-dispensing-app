@@ -1,4 +1,6 @@
+import dayjs from 'dayjs';
 import { mutate } from 'swr';
+import { fhirBaseUrl, parseDate } from '@openmrs/esm-framework';
 import {
   type Coding,
   type DosageInstruction,
@@ -13,7 +15,6 @@ import {
   MedicationRequestStatus,
   type Quantity,
 } from './types';
-import { fhirBaseUrl, parseDate } from '@openmrs/esm-framework';
 import {
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
@@ -21,7 +22,6 @@ import {
   PRESCRIPTION_DETAILS_ENDPOINT,
   PRESCRIPTIONS_TABLE_ENDPOINT,
 } from './constants';
-import dayjs from 'dayjs';
 
 const unitsDontMatchErrorMessage =
   "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. " +

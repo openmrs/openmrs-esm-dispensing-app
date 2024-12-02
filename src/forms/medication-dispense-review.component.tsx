@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
-import { OpenmrsDatePicker, useLayoutType, useConfig, useSession, userHasAccess } from '@openmrs/esm-framework';
+import { OpenmrsDatePicker, useConfig, useSession, userHasAccess, ResponsiveWrapper } from '@openmrs/esm-framework';
 import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
 import MedicationCard from '../components/medication-card.component';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
@@ -47,8 +47,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   // reason for substitution question
   const [substitutionReasons, setSubstitutionReasons] = useState([]);
   const [userCanModify, setUserCanModify] = useState(false);
-
-  const isTablet = useLayoutType() === 'tablet';
 
   const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
 
@@ -206,94 +204,99 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             editAction={userCanModify && allowEditing ? () => setIsEditingFormulation(true) : null}
           />
         ) : (
-          <Dropdown
-            id="medicationFormulation"
-            light={isTablet}
-            items={medicationFormulations}
-            itemToString={(item: Medication) => getOpenMRSMedicineDrugName(item)}
-            initialSelectedItem={{
-              ...medicationFormulations?.find(
-                (formulation) => formulation.id === medicationDispense.medicationReference?.reference.split('/')[1],
-              ),
-            }}
-            onChange={({ selectedItem }) => {
-              updateMedicationDispense({
-                ...medicationDispense,
-                medicationCodeableConcept: undefined,
-                medicationReference: {
-                  reference: 'Medication/' + selectedItem?.id,
-                  display: getOpenMRSMedicineDrugName(selectedItem),
-                },
-              });
-              setIsEditingFormulation(false);
-            }}
-            required
-          />
-        )}
-
-        {isSubstitution && (
-          <div className={styles.dispenseDetailsContainer}>
-            <ComboBox
-              className={styles.substitutionType}
-              id="substitutionType"
-              light={isTablet}
-              items={substitutionTypes}
-              titleText={t('substitutionType', 'Type of substitution')}
-              itemToString={(item) => item?.text}
+          <ResponsiveWrapper>
+            <Dropdown
+              id="medicationFormulation"
+              items={medicationFormulations}
+              itemToString={(item: Medication) => getOpenMRSMedicineDrugName(item)}
               initialSelectedItem={{
-                id: medicationDispense.substitution.type?.coding[0]?.code,
-                text: medicationDispense.substitution.type?.text,
+                ...medicationFormulations?.find(
+                  (formulation) => formulation.id === medicationDispense.medicationReference?.reference.split('/')[1],
+                ),
               }}
+              label={t('medicationFormulation', 'Medication formulation')}
               onChange={({ selectedItem }) => {
                 updateMedicationDispense({
                   ...medicationDispense,
-                  substitution: {
-                    ...medicationDispense.substitution,
-                    type: {
-                      coding: [
-                        {
-                          code: selectedItem?.id,
-                        },
-                      ],
-                    },
+                  medicationCodeableConcept: undefined,
+                  medicationReference: {
+                    reference: 'Medication/' + selectedItem?.id,
+                    display: getOpenMRSMedicineDrugName(selectedItem),
                   },
                 });
+                setIsEditingFormulation(false);
               }}
+              required
+              titleText={t('medicationFormulation', 'Medication formulation')}
             />
-          </div>
+          </ResponsiveWrapper>
         )}
 
         {isSubstitution && (
           <div className={styles.dispenseDetailsContainer}>
-            <ComboBox
-              className={styles.substitutionReason}
-              id="substitutionReason"
-              light={isTablet}
-              items={substitutionReasons}
-              titleText={t('substitutionReason', 'Reason for substitution')}
-              itemToString={(item) => item?.text}
-              initialSelectedItem={{
-                id: medicationDispense.substitution.reason[0]?.coding[0]?.code,
-                text: medicationDispense.substitution.reason[0]?.text,
-              }}
-              onChange={({ selectedItem }) => {
-                updateMedicationDispense({
-                  ...medicationDispense,
-                  substitution: {
-                    ...medicationDispense.substitution,
-                    reason: [
-                      {
+            <ResponsiveWrapper>
+              <ComboBox
+                className={styles.substitutionType}
+                id="substitutionType"
+                items={substitutionTypes}
+                titleText={t('substitutionType', 'Type of substitution')}
+                itemToString={(item) => item?.text}
+                initialSelectedItem={{
+                  id: medicationDispense.substitution.type?.coding[0]?.code,
+                  text: medicationDispense.substitution.type?.text,
+                }}
+                onChange={({ selectedItem }) => {
+                  updateMedicationDispense({
+                    ...medicationDispense,
+                    substitution: {
+                      ...medicationDispense.substitution,
+                      type: {
                         coding: [
                           {
                             code: selectedItem?.id,
                           },
                         ],
                       },
-                    ],
-                  },
-                });
-              }}
-            />
+                    },
+                  });
+                }}
+              />
+            </ResponsiveWrapper>
+          </div>
+        )}
+
+        {isSubstitution && (
+          <div className={styles.dispenseDetailsContainer}>
+            <ResponsiveWrapper>
+              <ComboBox
+                className={styles.substitutionReason}
+                id="substitutionReason"
+                items={substitutionReasons}
+                titleText={t('substitutionReason', 'Reason for substitution')}
+                itemToString={(item) => item?.text}
+                initialSelectedItem={{
+                  id: medicationDispense.substitution.reason[0]?.coding[0]?.code,
+                  text: medicationDispense.substitution.reason[0]?.text,
+                }}
+                onChange={({ selectedItem }) => {
+                  updateMedicationDispense({
+                    ...medicationDispense,
+                    substitution: {
+                      ...medicationDispense.substitution,
+                      reason: [
+                        {
+                          coding: [
+                            {
+                              code: selectedItem?.id,
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  });
+                }}
+              />
+            </ResponsiveWrapper>
           </div>
         )}
 
@@ -301,7 +304,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           <NumberInput
             allowEmpty={false}
             disabled={!userCanModify}
-            hideSteppers={true}
+            hideSteppers
             id="quantity"
             invalidText={t('numberIsNotValid', 'Number is not valid')}
             label={
@@ -324,37 +327,38 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             }}
           />
 
-          <ComboBox
-            id="quantityUnits"
-            disabled={!userCanModify || !allowEditing}
-            light={isTablet}
-            items={drugDispensingUnits}
-            titleText={t('drugDispensingUnit', 'Dispensing unit')}
-            itemToString={(item) => item?.text}
-            initialSelectedItem={{
-              id: medicationDispense.quantity.code,
-              text: medicationDispense.quantity.unit,
-            }}
-            onChange={({ selectedItem }) => {
-              updateMedicationDispense({
-                ...medicationDispense,
-                // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
-                quantity: {
-                  value: medicationDispense.quantity.value,
-                  code: selectedItem?.id,
-                },
-              });
-            }}
-            required
-          />
+          <ResponsiveWrapper>
+            <ComboBox
+              id="quantityUnits"
+              disabled={!userCanModify || !allowEditing}
+              items={drugDispensingUnits}
+              titleText={t('drugDispensingUnit', 'Dispensing unit')}
+              itemToString={(item) => item?.text}
+              initialSelectedItem={{
+                id: medicationDispense.quantity.code,
+                text: medicationDispense.quantity.unit,
+              }}
+              onChange={({ selectedItem }) => {
+                updateMedicationDispense({
+                  ...medicationDispense,
+                  // note that we specifically recreate doseQuantity to overwrite any unit or system properties that may have been set
+                  quantity: {
+                    value: medicationDispense.quantity.value,
+                    code: selectedItem?.id,
+                  },
+                });
+              }}
+              required
+            />
+          </ResponsiveWrapper>
         </div>
 
         <div className={styles.dispenseDetailsContainer}>
           <NumberInput
             allowEmpty={false}
             disabled={!userCanModify || !allowEditing}
-            hideSteppers={true}
-            id="dosingQuanity"
+            hideSteppers
+            id="dosingQuantity"
             invalidText={t('numberIsNotValid', 'Number is not valid')}
             min={0}
             label={t('dose', 'Dose')}
@@ -380,104 +384,107 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             }}
           />
 
-          <ComboBox
-            id="dosingUnits"
-            disabled={!userCanModify || !allowEditing}
-            light={isTablet}
-            items={drugDosingUnits}
-            titleText={t('doseUnit', 'Dose unit')}
-            itemToString={(item) => item?.text}
-            initialSelectedItem={{
-              id: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.code,
-              text: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.unit,
-            }}
-            onChange={({ selectedItem }) => {
-              updateMedicationDispense({
-                ...medicationDispense,
-                dosageInstruction: [
-                  {
-                    ...medicationDispense.dosageInstruction[0],
-                    doseAndRate: [
-                      {
-                        doseQuantity: {
-                          // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
-                          value: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.value,
-                          code: selectedItem?.id,
-                        },
-                      },
-                    ],
-                  },
-                ],
-              });
-            }}
-            required
-          />
-
-          <ComboBox
-            id="editRoute"
-            disabled={!userCanModify || !allowEditing}
-            light={isTablet}
-            items={drugRoutes}
-            initialSelectedItem={{
-              id: medicationDispense.dosageInstruction[0].route?.coding[0]?.code,
-              text: medicationDispense.dosageInstruction[0].route?.text,
-            }}
-            titleText={t('route', 'Route')}
-            itemToString={(item) => item?.text}
-            onChange={({ selectedItem }) => {
-              updateMedicationDispense({
-                ...medicationDispense,
-                dosageInstruction: [
-                  {
-                    ...medicationDispense.dosageInstruction[0],
-                    route: {
-                      coding: [
+          <ResponsiveWrapper>
+            <ComboBox
+              id="dosingUnits"
+              disabled={!userCanModify || !allowEditing}
+              items={drugDosingUnits}
+              titleText={t('doseUnit', 'Dose unit')}
+              itemToString={(item) => item?.text}
+              initialSelectedItem={{
+                id: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.code,
+                text: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.unit,
+              }}
+              onChange={({ selectedItem }) => {
+                updateMedicationDispense({
+                  ...medicationDispense,
+                  dosageInstruction: [
+                    {
+                      ...medicationDispense.dosageInstruction[0],
+                      doseAndRate: [
                         {
-                          code: selectedItem?.id,
+                          doseQuantity: {
+                            // note that we specifically recreate doseQuantity to overwrite any unit or system properties that may have been set
+                            value: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.value,
+                            code: selectedItem?.id,
+                          },
                         },
                       ],
                     },
-                  },
-                ],
-              });
-            }}
-            required
-          />
+                  ],
+                });
+              }}
+              required
+            />
+          </ResponsiveWrapper>
+
+          <ResponsiveWrapper>
+            <ComboBox
+              id="editRoute"
+              disabled={!userCanModify || !allowEditing}
+              items={drugRoutes}
+              initialSelectedItem={{
+                id: medicationDispense.dosageInstruction[0].route?.coding[0]?.code,
+                text: medicationDispense.dosageInstruction[0].route?.text,
+              }}
+              titleText={t('route', 'Route')}
+              itemToString={(item) => item?.text}
+              onChange={({ selectedItem }) => {
+                updateMedicationDispense({
+                  ...medicationDispense,
+                  dosageInstruction: [
+                    {
+                      ...medicationDispense.dosageInstruction[0],
+                      route: {
+                        coding: [
+                          {
+                            code: selectedItem?.id,
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                });
+              }}
+              required
+            />
+          </ResponsiveWrapper>
         </div>
 
-        <ComboBox
-          id="frequency"
-          disabled={!userCanModify || !allowEditing}
-          light={isTablet}
-          items={orderFrequencies}
-          initialSelectedItem={{
-            id: medicationDispense.dosageInstruction[0].timing?.code?.coding[0]?.code,
-            text: medicationDispense.dosageInstruction[0].timing?.code?.text,
-          }}
-          titleText={t('frequency', 'Frequency')}
-          itemToString={(item) => item?.text}
-          onChange={({ selectedItem }) => {
-            updateMedicationDispense({
-              ...medicationDispense,
-              dosageInstruction: [
-                {
-                  ...medicationDispense.dosageInstruction[0],
-                  timing: {
-                    ...medicationDispense.dosageInstruction[0].timing,
-                    code: {
-                      coding: [
-                        {
-                          code: selectedItem?.id,
-                        },
-                      ],
+        <ResponsiveWrapper>
+          <ComboBox
+            id="frequency"
+            disabled={!userCanModify || !allowEditing}
+            items={orderFrequencies}
+            initialSelectedItem={{
+              id: medicationDispense.dosageInstruction[0].timing?.code?.coding[0]?.code,
+              text: medicationDispense.dosageInstruction[0].timing?.code?.text,
+            }}
+            titleText={t('frequency', 'Frequency')}
+            itemToString={(item) => item?.text}
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense({
+                ...medicationDispense,
+                dosageInstruction: [
+                  {
+                    ...medicationDispense.dosageInstruction[0],
+                    timing: {
+                      ...medicationDispense.dosageInstruction[0].timing,
+                      code: {
+                        coding: [
+                          {
+                            code: selectedItem?.id,
+                          },
+                        ],
+                      },
                     },
                   },
-                },
-              ],
-            });
-          }}
-          required
-        />
+                ],
+              });
+            }}
+            required
+          />
+        </ResponsiveWrapper>
 
         <TextArea
           labelText={t('patientInstructions', 'Patient instructions')}
@@ -514,33 +521,34 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           value={dayjs(medicationDispense.whenHandedOver).toDate()}></OpenmrsDatePicker>
 
         {providers && (
-          <ComboBox
-            id="dispenser"
-            light={isTablet}
-            initialSelectedItem={
-              medicationDispense?.performer[0].actor.reference
-                ? providers.find(
-                    (provider) => provider.uuid === medicationDispense?.performer[0].actor.reference.split('/')[1],
-                  )
-                : null
-            }
-            onChange={({ selectedItem }) => {
-              updateMedicationDispense({
-                ...medicationDispense,
-                performer: [
-                  {
-                    actor: {
-                      reference: `Practitioner/${selectedItem?.uuid}`,
+          <ResponsiveWrapper>
+            <ComboBox
+              id="dispenser"
+              initialSelectedItem={
+                medicationDispense?.performer[0].actor.reference
+                  ? providers.find(
+                      (provider) => provider.uuid === medicationDispense?.performer[0].actor.reference.split('/')[1],
+                    )
+                  : null
+              }
+              onChange={({ selectedItem }) => {
+                updateMedicationDispense({
+                  ...medicationDispense,
+                  performer: [
+                    {
+                      actor: {
+                        reference: `Practitioner/${selectedItem?.uuid}`,
+                      },
                     },
-                  },
-                ],
-              });
-            }}
-            items={providers}
-            itemToString={(item) => item?.person?.display}
-            required
-            titleText={t('dispensedBy', 'Dispensed by')}
-          />
+                  ],
+                });
+              }}
+              items={providers}
+              itemToString={(item) => item?.person?.display}
+              required
+              titleText={t('dispensedBy', 'Dispensed by')}
+            />
+          </ResponsiveWrapper>
         )}
       </Stack>
     </div>

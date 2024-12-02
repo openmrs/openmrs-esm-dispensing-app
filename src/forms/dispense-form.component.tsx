@@ -199,7 +199,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             )}
           </FormLabel>
           {medicationDispensePayload ? (
-            <div>
+            <div className={styles.dispenseContainer}>
               <MedicationDispenseReview
                 medicationDispense={medicationDispensePayload}
                 updateMedicationDispense={setMedicationDispensePayload}

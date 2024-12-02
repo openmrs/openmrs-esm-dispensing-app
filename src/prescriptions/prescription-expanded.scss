@@ -13,7 +13,7 @@
   flex-direction: row;
 
   :global(.cds--tabs) {
-    margin: 1rem 0;
+    margin: layout.$spacing-05 0;
     width: 20%;
     max-height: 8rem !important;
   }
@@ -23,7 +23,7 @@
   }
 
   :global(.cds--tab-content) {
-    margin: 1rem 0;
+    margin: layout.$spacing-05 0;
     width: 100% !important;
   }
 
@@ -38,7 +38,7 @@
   }
 
   &:global(.cds--tabs--scrollable .cds--tabs--scrollable__nav-item + .cds--tabs--scrollable__nav-item) {
-    margin-left: 0rem !important;
+    margin-left: 0 !important;
   }
 
   > ul {

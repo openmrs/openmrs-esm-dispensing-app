@@ -1,6 +1,6 @@
-import { fhirBaseUrl, restBaseUrl, openmrsFetch, type Session } from '@openmrs/esm-framework';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
+import { fhirBaseUrl, restBaseUrl, openmrsFetch, type Session } from '@openmrs/esm-framework';
 import {
   type MedicationDispense,
   type MedicationDispenseStatus,
@@ -45,15 +45,15 @@ export function deleteMedicationDispense(medicationDispenseUuid: string) {
 }
 
 export function useOrderConfig() {
-  const { data, error, isValidating } = useSWR<{ data: OrderConfig }, Error>(
+  const { data, error, isLoading, isValidating } = useSWR<{ data: OrderConfig }, Error>(
     `${restBaseUrl}/orderentryconfig`,
     openmrsFetch,
   );
   return {
-    orderConfigObject: data ? data.data : null,
-    isLoading: !data && !error,
-    isError: error,
+    error,
+    isLoading,
     isValidating,
+    orderConfigObject: data ? data.data : null,
   };
 }
 
