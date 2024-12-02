@@ -1,20 +1,18 @@
 import React from 'react';
-import { Button } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { useConfig, useSession } from '@openmrs/esm-framework';
 import { MedicationDispenseStatus, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
-import { launchOverlay } from '../hooks/useOverlay';
 import {
   computeMedicationRequestStatus,
   computeQuantityRemaining,
   getMostRecentMedicationDispenseStatus,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
-import { initiateMedicationDispenseBody, useProviders } from '../medication-dispense/medication-dispense.resource';
-import DispenseForm from '../forms/dispense-form.component';
-import PauseDispenseForm from '../forms/pause-dispense-form.component';
-import CloseDispenseForm from '../forms/close-dispense-form.component';
+import { useProviders } from '../medication-dispense/medication-dispense.resource';
 import styles from './action-buttons.scss';
+import CloseActionButton from './prescription-actions/close-action-button.component';
+import PauseActionButton from './prescription-actions/pause-action-button.component';
+import DispenseActionButton from './prescription-actions/dispense-action-button.component';
 
 interface ActionButtonsProps {
   medicationRequestBundle: MedicationRequestBundle;
@@ -56,74 +54,32 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
 
   return (
     <div className={styles.actionBtns}>
-      {dispensable ? (
-        <Button
-          kind="primary"
-          onClick={() =>
-            launchOverlay(
-              t('dispensePrescription', 'Dispense prescription'),
-              <DispenseForm
-                patientUuid={patientUuid}
-                encounterUuid={encounterUuid}
-                medicationDispense={initiateMedicationDispenseBody(
-                  medicationRequestBundle.request,
-                  session,
-                  providers,
-                  true,
-                )}
-                medicationRequestBundle={medicationRequestBundle}
-                quantityRemaining={quantityRemaining}
-                mode="enter"
-              />,
-            )
-          }>
-          {t('dispense', 'Dispense')}
-        </Button>
-      ) : null}
-      {pauseable ? (
-        <Button
-          kind="secondary"
-          onClick={() =>
-            launchOverlay(
-              t('pausePrescription', 'Pause prescription'),
-              <PauseDispenseForm
-                patientUuid={patientUuid}
-                encounterUuid={encounterUuid}
-                medicationDispense={initiateMedicationDispenseBody(
-                  medicationRequestBundle.request,
-                  session,
-                  providers,
-                  false,
-                )}
-                mode="enter"
-              />,
-            )
-          }>
-          {t('pause', 'Pause')}
-        </Button>
-      ) : null}
-      {closeable ? (
-        <Button
-          kind="danger"
-          onClick={() =>
-            launchOverlay(
-              t('closePrescription', 'Close prescription'),
-              <CloseDispenseForm
-                patientUuid={patientUuid}
-                encounterUuid={encounterUuid}
-                medicationDispense={initiateMedicationDispenseBody(
-                  medicationRequestBundle.request,
-                  session,
-                  providers,
-                  false,
-                )}
-                mode="enter"
-              />,
-            )
-          }>
-          {t('close', 'Close')}
-        </Button>
-      ) : null}
+      <DispenseActionButton
+        patientUuid={patientUuid}
+        encounterUuid={encounterUuid}
+        medicationRequestBundle={medicationRequestBundle}
+        session={session}
+        providers={providers}
+        dispensable={dispensable}
+        quantityRemaining={quantityRemaining}
+      />
+      <PauseActionButton
+        patientUuid={patientUuid}
+        encounterUuid={encounterUuid}
+        medicationRequestBundle={medicationRequestBundle}
+        session={session}
+        providers={providers}
+        pauseable={pauseable}
+      />
+
+      <CloseActionButton
+        patientUuid={patientUuid}
+        encounterUuid={encounterUuid}
+        medicationRequestBundle={medicationRequestBundle}
+        session={session}
+        providers={providers}
+        closeable={closeable}
+      />
     </div>
   );
 };
