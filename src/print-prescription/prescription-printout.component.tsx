@@ -23,6 +23,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
     sessionLocation: { display: facilityName },
   } = useSession();
   const patient = medicationrequests[0]?.request?.subject;
+  const extractpatientName = (display: string) => display.match(/^([A-Za-z\s]+)\s\(/)?.at(1);
   return (
     <Layer className={styles.printOutContainer}>
       <StructuredListWrapper>
@@ -31,13 +32,10 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
             <StructuredListCell head>
               <br />
               <br />
-              <p className={styles.printoutTitle}>Prescription Instructions</p>
+              <p className={styles.printoutTitle}>{t('prescriptionInstructions', 'Prescription Instructions')}</p>
               {patient && (
                 <p className={styles.faintText} style={{ textAlign: 'center' }}>
-                  {patient.display
-                    .match(/^([A-Za-z\s]+)\s\(/)
-                    ?.at(1)
-                    ?.toUpperCase()}
+                  {extractpatientName(patient.display)?.toUpperCase()}
                 </p>
               )}
               <br />
