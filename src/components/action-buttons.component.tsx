@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useConfig, useSession } from '@openmrs/esm-framework';
+import { ExtensionSlot, useConfig, useSession } from '@openmrs/esm-framework';
 import { MedicationDispenseStatus, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
 import {
   computeMedicationRequestStatus,
@@ -10,9 +10,6 @@ import {
 import { type PharmacyConfig } from '../config-schema';
 import { useProviders } from '../medication-dispense/medication-dispense.resource';
 import styles from './action-buttons.scss';
-import CloseActionButton from './prescription-actions/close-action-button.component';
-import PauseActionButton from './prescription-actions/pause-action-button.component';
-import DispenseActionButton from './prescription-actions/dispense-action-button.component';
 
 interface ActionButtonsProps {
   medicationRequestBundle: MedicationRequestBundle;
@@ -52,33 +49,24 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
     quantityRemaining = computeQuantityRemaining(medicationRequestBundle);
   }
 
+  const prescriptionActionsState = {
+    dispensable,
+    pauseable,
+    closeable,
+    quantityRemaining,
+    patientUuid,
+    encounterUuid,
+    medicationRequestBundle,
+    session,
+    providers,
+  };
+
   return (
     <div className={styles.actionBtns}>
-      <DispenseActionButton
-        patientUuid={patientUuid}
-        encounterUuid={encounterUuid}
-        medicationRequestBundle={medicationRequestBundle}
-        session={session}
-        providers={providers}
-        dispensable={dispensable}
-        quantityRemaining={quantityRemaining}
-      />
-      <PauseActionButton
-        patientUuid={patientUuid}
-        encounterUuid={encounterUuid}
-        medicationRequestBundle={medicationRequestBundle}
-        session={session}
-        providers={providers}
-        pauseable={pauseable}
-      />
-
-      <CloseActionButton
-        patientUuid={patientUuid}
-        encounterUuid={encounterUuid}
-        medicationRequestBundle={medicationRequestBundle}
-        session={session}
-        providers={providers}
-        closeable={closeable}
+      <ExtensionSlot
+        className={styles.extensionSlot}
+        name="prescription-action-button-slot"
+        state={prescriptionActionsState}
       />
     </div>
   );
