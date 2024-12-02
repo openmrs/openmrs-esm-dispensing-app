@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import {
   DataTable,
   DataTableSkeleton,
@@ -17,13 +16,14 @@ import {
   TabPanel,
   Tile,
 } from '@carbon/react';
-import { useTranslation } from 'react-i18next';
 import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
-import PrescriptionExpanded from './prescription-expanded.component';
-import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type PharmacyConfig } from '../config-schema';
+import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import PatientInfoCell from '../patient/patient-info-cell.component';
+import PrescriptionExpanded from './prescription-expanded.component';
 import styles from './prescriptions.scss';
-import PatientAge from '../patient-age/patient-age.component';
 
 interface PrescriptionTabPanelProps {
   searchTerm: string;
@@ -50,7 +50,6 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
   let columns = [
     { header: t('created', 'Created'), key: 'created' },
     { header: t('patientName', 'Patient name'), key: 'patient' },
-    { header: t('patientAge', 'Patient age'), key: 'patientAge' },
     { header: t('prescriber', 'Prescriber'), key: 'prescriber' },
     { header: t('drugs', 'Drugs'), key: 'drugs' },
     { header: t('lastDispenser', 'Last dispenser'), key: 'lastDispenser' },
@@ -75,13 +74,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
         {error && <p>Error</p>}
         {prescriptionsTableRows && (
           <>
-            <DataTable
-              rows={prescriptionsTableRows.map((row) => ({
-                ...row,
-                patientAge: <PatientAge patientUuid={row.patient.uuid} />,
-              }))}
-              headers={columns}
-              isSortable>
+            <DataTable rows={prescriptionsTableRows} headers={columns} isSortable>
               {({ rows, headers, getExpandHeaderProps, getHeaderProps, getRowProps, getTableProps }) => (
                 <TableContainer>
                   <Table {...getTableProps()} useZebraStyles>
@@ -99,13 +92,15 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
                           <TableExpandRow {...getRowProps({ row })}>
                             {row.cells.map((cell) => (
                               <TableCell key={cell.id}>
-                                {cell.id.endsWith('created')
-                                  ? formatDatetime(parseDate(cell.value))
-                                  : cell.id.endsWith('patient')
-                                    ? cell.value.name
-                                    : cell.id.endsWith('status')
-                                      ? t(cell.value)
-                                      : cell.value}
+                                {cell.id.endsWith('created') ? (
+                                  formatDatetime(parseDate(cell.value))
+                                ) : cell.id.endsWith('patient') ? (
+                                  <PatientInfoCell patient={cell.value} />
+                                ) : cell.id.endsWith('status') ? (
+                                  t(cell.value)
+                                ) : (
+                                  cell.value
+                                )}
                               </TableCell>
                             ))}
                           </TableExpandRow>
