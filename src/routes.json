@@ -35,5 +35,11 @@
         "title": "Dispensing"
       }
     }
+  ],
+  "modals": [
+    {
+      "name": "prescription-print-preview-modal",
+      "component": "printPrescriptionPreviewModal"
+    }
   ]
 }

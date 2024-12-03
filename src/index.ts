@@ -4,6 +4,7 @@ import dispensingComponent from './dispensing.component';
 import dispensingLinkComponent from './dispensing-link.component';
 import dispensingDashboardComponent from './dashboard/dispensing-dashboard.component';
 import dispensingLinkHomepageComponent from './dashboard/dispensing-dashboard-link.component';
+import PrescriptionPrintPreviewModal from './print-prescription/prescription-print-preview.modal';
 
 export const importTranslation = require.context('../translations', false, /.json$/, 'lazy');
 
@@ -25,3 +26,4 @@ export function startupApp() {
 }
 
 export const dispensingDashboardLink = getSyncLifecycle(dispensingLinkHomepageComponent, options);
+export const printPrescriptionPreviewModal = getSyncLifecycle(PrescriptionPrintPreviewModal, options);
