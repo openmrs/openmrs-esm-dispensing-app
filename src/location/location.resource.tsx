@@ -4,7 +4,7 @@ import { type LocationResponse, type SimpleLocation } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 
 export function useLocationForFiltering(config: PharmacyConfig) {
-  const { data, error } = useSWR<{ data: LocationResponse }, Error>(
+  const { data, error, isLoading } = useSWR<{ data: LocationResponse }, Error>(
     `${fhirBaseUrl}/Location?_tag=${encodeURIComponent(config.locationBehavior.locationFilter.tag)}&_count=100`,
     openmrsFetch,
   );
@@ -18,8 +18,8 @@ export function useLocationForFiltering(config: PharmacyConfig) {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return {
+    error,
     filterLocations,
-    isError: error,
-    isLoading: !filterLocations && !error,
+    isLoading,
   };
 }

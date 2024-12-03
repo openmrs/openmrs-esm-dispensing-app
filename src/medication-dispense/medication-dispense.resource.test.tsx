@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import useSWR from 'swr';
 import { openmrsFetch, type Session } from '@openmrs/esm-framework';
 import {
@@ -15,7 +16,6 @@ import {
   MedicationRequestStatus,
   type Provider,
 } from '../types';
-import dayjs from 'dayjs';
 
 jest.mocked(openmrsFetch);
 jest.mock('swr');

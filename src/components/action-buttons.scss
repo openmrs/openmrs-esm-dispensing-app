@@ -1,5 +1,7 @@
+@use '@carbon/layout';
+
 .actionBtns {
   float: right;
-  margin-left: 1rem;
-  margin-top: 2rem;
+  margin-left: layout.$spacing-05;
+  margin-top: layout.$spacing-07;
 }

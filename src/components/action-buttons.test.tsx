@@ -1,16 +1,22 @@
-import { render } from '@testing-library/react';
 import React from 'react';
-import ActionButtons from './action-buttons.component';
+import { render, screen } from '@testing-library/react';
+import { getDefaultsFromConfigSchema, useConfig } from '@openmrs/esm-framework';
+import { configSchema, type PharmacyConfig } from '../config-schema';
 import { type MedicationRequest, MedicationRequestStatus } from '../types';
-import { useConfig } from '@openmrs/esm-framework';
+import ActionButtons from './action-buttons.component';
 
-const mockedUseConfig = useConfig as jest.Mock;
+const mockedUseConfig = jest.mocked(useConfig<PharmacyConfig>);
 const mockPatientUuid = '558494fe-5850-4b34-a3bf-06550334ba4a';
 const mockEncounterUuid = '7aee7123-9e50-4f72-a636-895d77a63e98';
 
-describe('Action Buttons Component tests', () => {
+const defaultPharmacyConfig: PharmacyConfig = {
+  ...getDefaultsFromConfigSchema(configSchema),
+};
+
+describe('ActionButtons', () => {
   beforeEach(() => {
     mockedUseConfig.mockReturnValue({
+      ...defaultPharmacyConfig,
       medicationRequestExpirationPeriodInDays: 90,
       actionButtons: {
         pauseButton: {
@@ -27,7 +33,7 @@ describe('Action Buttons Component tests', () => {
     });
   });
 
-  test('component should render dispense button if active medication', () => {
+  test('renders all the action buttons for an active medication request', () => {
     // status = active, and validity period start set to current datetime
     const medicationRequest: MedicationRequest = {
       resourceType: 'MedicationRequest',
@@ -124,18 +130,21 @@ describe('Action Buttons Component tests', () => {
       },
     };
 
-    const { getByText, container } = render(
+    render(
       <ActionButtons
         patientUuid={mockPatientUuid}
         encounterUuid={mockEncounterUuid}
         medicationRequestBundle={{ request: medicationRequest, dispenses: [] }}
       />,
     );
-    expect(getByText('Dispense')).toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: /dispense/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
   });
 
   // status = active, but validity period start time years in the past
-  test('component should not render dispense button if expired medication', () => {
+  test('should not render the dispense button if the medication request is expired', () => {
     // status = active, and validity period start set to current datetime
     const medicationRequest: MedicationRequest = {
       resourceType: 'MedicationRequest',
@@ -232,13 +241,14 @@ describe('Action Buttons Component tests', () => {
       },
     };
 
-    const { queryByText, container } = render(
+    render(
       <ActionButtons
         patientUuid={mockPatientUuid}
         encounterUuid={mockEncounterUuid}
         medicationRequestBundle={{ request: medicationRequest, dispenses: [] }}
       />,
     );
-    expect(queryByText('Dispense')).not.toBeInTheDocument();
+
+    expect(screen.queryByRole('button', { name: /dispense/i })).not.toBeInTheDocument();
   });
 });

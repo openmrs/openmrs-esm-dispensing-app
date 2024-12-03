@@ -2,8 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Location } from '@carbon/react/icons';
 import { useConfig, useSession, formatDate } from '@openmrs/esm-framework';
-import PharmacyIllustration from './pharmacy-illustration.component';
 import { type PharmacyConfig } from '../config-schema';
+import PharmacyIllustration from './pharmacy-illustration.component';
 import styles from './pharmacy-header.scss';
 
 export const PharmacyHeader: React.FC = () => {

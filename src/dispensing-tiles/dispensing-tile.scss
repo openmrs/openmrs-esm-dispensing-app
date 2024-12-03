@@ -1,20 +1,20 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .tileContainer {
-  border: 0.0625rem solid $ui-03;
+  border: 1px solid $ui-03;
   flex-grow: 1;
   height: 7.875rem;
-  padding: 0 spacing.$spacing-05;
-  margin: spacing.$spacing-03 spacing.$spacing-03;
+  padding: 0 layout.$spacing-05;
+  margin: layout.$spacing-03 layout.$spacing-03;
 }
 
 .tileHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: spacing.$spacing-03;
+  margin-bottom: layout.$spacing-03;
 }
 
 .headerLabel {
@@ -35,7 +35,7 @@
 .headerLabelContainer {
   display: flex;
   align-items: center;
-  height: spacing.$spacing-07;
+  height: layout.$spacing-07;
 }
 
 .arrowIcon {

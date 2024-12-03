@@ -1,15 +1,16 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { InlineNotification } from '@carbon/react';
-import Overlay from '../forms/overlay/overlay.component';
+import { useConfig } from '@openmrs/esm-framework';
+import { type PharmacyConfig } from '../config-schema';
 import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
 import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';
-import { useConfig } from '@openmrs/esm-framework';
-import { useTranslation } from 'react-i18next';
-import { type PharmacyConfig } from '../config-schema';
+import Overlay from '../forms/overlay/overlay.component';
 
 export default function DispensingDashboard() {
-  const config = useConfig<PharmacyConfig>();
   const { t } = useTranslation();
+  const config = useConfig<PharmacyConfig>();
+
   if (config.dispenseBehavior.restrictTotalQuantityDispensed && config.dispenseBehavior.allowModifyingPrescription) {
     return (
       <div className={`omrs-main-content`}>
@@ -24,7 +25,7 @@ export default function DispensingDashboard() {
     );
   } else {
     return (
-      <div className={`omrs-main-content`}>
+      <div className="omrs-main-content">
         <PharmacyHeader />
         {/* <DispensingTiles /> */}
         <PrescriptionTabLists />

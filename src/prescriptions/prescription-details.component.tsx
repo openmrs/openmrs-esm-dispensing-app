@@ -16,14 +16,11 @@ const PrescriptionDetails: React.FC<{
   encounterUuid: string;
   patientUuid: PatientUuid;
 }> = ({ encounterUuid, patientUuid }) => {
-  const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
+  const { t } = useTranslation();
   const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid, config.refreshInterval);
-  const { medicationRequestBundles, isError, isLoading } = usePrescriptionDetails(
-    encounterUuid,
-    config.refreshInterval,
-  );
+  const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
 
   useEffect(() => {
     if (typeof totalAllergies == 'number') {
@@ -93,7 +90,7 @@ const PrescriptionDetails: React.FC<{
       <h5 style={{ paddingTop: '8px', paddingBottom: '8px', fontSize: '0.9rem' }}>{t('prescribed', 'Prescribed')}</h5>
 
       {isLoading && <DataTableSkeleton role="progressbar" />}
-      {isError && <p>{t('error', 'Error')}</p>}
+      {error && <p>{t('error', 'Error')}</p>}
       {medicationRequestBundles &&
         medicationRequestBundles.map((bundle) => {
           return (

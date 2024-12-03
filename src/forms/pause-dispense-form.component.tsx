@@ -2,20 +2,20 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ExtensionSlot,
+  ResponsiveWrapper,
   showNotification,
   showToast,
   useConfig,
-  useLayoutType,
   usePatient,
 } from '@openmrs/esm-framework';
 import { Button, ComboBox, InlineLoading } from '@carbon/react';
 import { saveMedicationDispense, useReasonForPauseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { closeOverlay } from '../hooks/useOverlay';
-import styles from './forms.scss';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { getUuidFromReference, revalidate } from '../utils';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
+import styles from './forms.scss';
 
 interface PauseDispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -31,9 +31,8 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   encounterUuid,
 }) => {
   const { t } = useTranslation();
-  const config = useConfig<PharmacyConfig>();
-  const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
+  const config = useConfig<PharmacyConfig>();
 
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
@@ -152,29 +151,30 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
         )}
         {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
         <section className={styles.formGroup}>
-          <ComboBox
-            id="reasonForPause"
-            light={isTablet}
-            items={reasonsForPause}
-            titleText={t('reasonForPause', 'Reason for pause')}
-            itemToString={(item) => item?.text}
-            initialSelectedItem={{
-              id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
-              text: medicationDispense.statusReasonCodeableConcept?.text,
-            }}
-            onChange={({ selectedItem }) => {
-              setMedicationDispensePayload({
-                ...medicationDispensePayload,
-                statusReasonCodeableConcept: {
-                  coding: [
-                    {
-                      code: selectedItem?.id,
-                    },
-                  ],
-                },
-              });
-            }}
-          />
+          <ResponsiveWrapper>
+            <ComboBox
+              id="reasonForPause"
+              items={reasonsForPause}
+              titleText={t('reasonForPause', 'Reason for pause')}
+              itemToString={(item) => item?.text}
+              initialSelectedItem={{
+                id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
+                text: medicationDispense.statusReasonCodeableConcept?.text,
+              }}
+              onChange={({ selectedItem }) => {
+                setMedicationDispensePayload({
+                  ...medicationDispensePayload,
+                  statusReasonCodeableConcept: {
+                    coding: [
+                      {
+                        code: selectedItem?.id,
+                      },
+                    ],
+                  },
+                });
+              }}
+            />
+          </ResponsiveWrapper>
         </section>
         <section className={styles.buttonGroup}>
           <Button disabled={isSubmitting} onClick={() => closeOverlay()} kind="secondary">

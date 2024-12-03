@@ -1,5 +1,5 @@
-import { getGlobalStore } from '@openmrs/esm-framework';
 import { useEffect, useState } from 'react';
+import { getGlobalStore } from '@openmrs/esm-framework';
 
 interface OverlayStore {
   isOverlayOpen: boolean;

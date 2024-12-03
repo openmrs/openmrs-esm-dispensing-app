@@ -1,10 +1,10 @@
 import React from 'react';
-import { type PatientUuid } from '@openmrs/esm-framework';
 import { Tab, Tabs, TabList, TabPanels, TabPanel } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
+import { type PatientUuid } from '@openmrs/esm-framework';
 import HistoryAndComments from '../history/history-and-comments.component';
-import styles from './prescription-expanded.scss';
 import PrescriptionDetails from './prescription-details.component';
+import styles from './prescription-expanded.scss';
 
 interface TabItem {
   name: string;
