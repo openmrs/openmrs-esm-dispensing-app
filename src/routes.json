@@ -34,6 +34,21 @@
         "slot": "dispensing-dashboard-slot",
         "title": "Dispensing"
       }
+    },
+    {
+      "name": "dispense-action-button",
+      "slot": "prescription-action-button-slot",
+      "component": "dispenseActionButton"
+    },
+    {
+      "name": "pause-action-button",
+      "slot": "prescription-action-button-slot",
+      "component": "pauseActionButton"
+    },
+    {
+      "name": "close-action-button",
+      "slot": "prescription-action-button-slot",
+      "component": "closeActionButton"
     }
   ]
 }
