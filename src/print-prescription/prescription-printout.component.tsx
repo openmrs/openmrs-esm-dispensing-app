@@ -97,9 +97,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                           <span className={styles.faintText}>{t('refills', 'Refills')}</span>
                           {': '}{' '}
                           <span>
-                            {refillsAllowed || refillsAllowed === 0
-                              ? refillsAllowed
-                              : t('notRefillable', 'Not Refillable')}
+                            {refillsAllowed || refillsAllowed === 0 ? refillsAllowed : t('notRefills', 'No Refills')}
                           </span>
                         </p>
 
