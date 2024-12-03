@@ -3,17 +3,9 @@
 @import '~@openmrs/esm-styleguide/src/vars';
 @import '../root.scss';
 
-title {
-  width: 6.938rem;
-  height: 1.75rem;
-  margin: 0.438rem 22.875rem 0.813rem 0;
-  font-family: IBMPlexSans;
-  font-size: 1.25rem;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: 1.4;
-  letter-spacing: normal;
+.prescriptionListContainer {
+  margin: spacing.$spacing-05 0;
+  background: $ui-01;
 }
 
 .link {
@@ -35,7 +27,7 @@ title {
 }
 
 .prescriptionTabs {
-  grid-column: 'span 2';
+  grid-column: span 2;
   padding: 0 spacing.$spacing-05;
 }
 
@@ -46,14 +38,17 @@ title {
 }
 
 .tabsContainer {
-  background-color: $ui-02;
+  padding: 0 spacing.$spacing-05;
+}
 
-  :global(.cds--tabs__nav-item--selected) {
-    box-shadow: inset 0 2px 0 0 var(--brand-03) !important;
+.tab {
+  &:active,
+  &:focus {
+    outline: 2px solid var(--brand-03) !important;
   }
 
-  :global(.cds--tab--list) button {
-    max-width: 12rem !important;
+  &[aria-selected='true'] {
+    box-shadow: inset 0 2px 0 0 var(--brand-03) !important;
   }
 }
 
@@ -68,7 +63,7 @@ title {
   height: 100%;
   margin: 0 spacing.$spacing-05;
   background-color: $ui-01;
-  border: 0.5px solid #e0e0e0;
+  border: 0.5px solid $ui-03;
 
   :global(.cds--data-table-container) {
     padding-top: 0 !important;
@@ -98,7 +93,7 @@ title {
   }
 
   :global(.cds--table-expand__button) {
-    height: 2rem !important;
+    height: spacing.$spacing-07 !important;
   }
 }
 
@@ -106,22 +101,22 @@ title {
   display: flex;
   align-items: center;
   flex-direction: row-reverse;
-  padding: 0.5rem 1rem 0;
+  padding: 0 spacing.$spacing-05 0;
 
   :global(.cds--search-magnifier-icon) {
     z-index: 0 !important;
   }
 
   input {
-    background-color: #fff;
+    background-color: white;
   }
 }
 
 .addPrescriptionBtn {
   width: 10rem !important;
-  padding: 0.5rem !important;
-  margin-left: 1rem;
-  margin-right: 1rem;
+  padding: spacing.$spacing-03 !important;
+  margin-left: spacing.$spacing-05;
+  margin-right: spacing.$spacing-05;
 }
 
 .patientSearch {

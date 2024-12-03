@@ -1,18 +1,19 @@
 import React from 'react';
 import { InlineNotification } from '@carbon/react';
-import Overlay from '../forms/overlay/overlay.component';
-import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
-import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';
-import { useConfig } from '@openmrs/esm-framework';
 import { useTranslation } from 'react-i18next';
+import { useConfig } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
+import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
+import Overlay from '../forms/overlay/overlay.component';
+import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';
 
 export default function DispensingDashboard() {
   const config = useConfig<PharmacyConfig>();
   const { t } = useTranslation();
+
   if (config.dispenseBehavior.restrictTotalQuantityDispensed && config.dispenseBehavior.allowModifyingPrescription) {
     return (
-      <div className={`omrs-main-content`}>
+      <div className="omrs-main-content">
         <InlineNotification
           title={t('dispensingAppError', 'Dispensing App Error')}
           subtitle={t(
@@ -24,7 +25,7 @@ export default function DispensingDashboard() {
     );
   } else {
     return (
-      <div className={`omrs-main-content`}>
+      <div className="omrs-main-content">
         <PharmacyHeader />
         {/* <DispensingTiles /> */}
         <PrescriptionTabLists />
