@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Tab, Tabs, TabList, TabPanels, Search, ComboBox } from '@carbon/react';
+import { ComboBox, Search, Tab, TabList, TabPanels, Tabs } from '@carbon/react';
+import { useConfig } from '@openmrs/esm-framework';
 import { useTranslation } from 'react-i18next';
+import { type PharmacyConfig } from '../config-schema';
+import { type SimpleLocation } from '../types';
+import { useLocationForFiltering } from '../location/location.resource';
 import PrescriptionTabPanel from './prescription-tab-panel.component';
 import styles from './prescriptions.scss';
-import { useLocationForFiltering } from '../location/location.resource';
-import { useConfig } from '@openmrs/esm-framework';
-import { type SimpleLocation } from '../types';
-import { type PharmacyConfig } from '../config-schema';
 
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
@@ -45,7 +45,7 @@ const PrescriptionTabLists: React.FC = () => {
   };
 
   return (
-    <main className={`omrs-main-content ${styles.prescriptionListContainer}`}>
+    <main className="omrs-main-content">
       <section className={styles.prescriptionTabsContainer}>
         <Tabs
           className={styles.prescriptionTabs}

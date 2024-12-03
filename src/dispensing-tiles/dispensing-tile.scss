@@ -3,7 +3,7 @@
 @use '@openmrs/esm-styleguide/src/vars' as *;
 
 .tileContainer {
-  border: 0.0625rem solid $ui-03;
+  border: 1px solid $ui-03;
   flex-grow: 1;
   height: 7.875rem;
   padding: 0 layout.$spacing-05;

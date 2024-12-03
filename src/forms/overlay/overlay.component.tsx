@@ -8,9 +8,10 @@ import { closeOverlay, useOverlay } from '../../hooks/useOverlay';
 import styles from './overlay.scss';
 
 const Overlay: React.FC = () => {
+  const { t } = useTranslation();
   const { header, component, isOverlayOpen } = useOverlay();
   const layout = useLayoutType();
-  const { t } = useTranslation();
+
   return (
     <>
       {isOverlayOpen && (

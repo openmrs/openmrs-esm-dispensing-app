@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import useSWR from 'swr';
 import { fhirBaseUrl, openmrsFetch, parseDate } from '@openmrs/esm-framework';
 import {
@@ -12,16 +13,15 @@ import {
   type MedicationRequestBundle,
 } from '../types';
 import {
-  getPrescriptionDetailsEndpoint,
+  computePrescriptionStatusMessageCode,
+  getAssociatedMedicationDispenses,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
+  getPrescriptionDetailsEndpoint,
   getPrescriptionTableActiveMedicationRequestsEndpoint,
   getPrescriptionTableAllMedicationRequestsEndpoint,
   sortMedicationDispensesByWhenHandedOver,
-  computePrescriptionStatusMessageCode,
-  getAssociatedMedicationDispenses,
 } from '../utils';
-import dayjs from 'dayjs';
 import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 
 export function usePrescriptionsTable(
@@ -170,7 +170,7 @@ export function usePrescriptionDetails(encounterUuid: string, refreshInterval = 
   return {
     medicationRequestBundles,
     prescriptionDate,
-    isError: error,
+    error,
     isLoading,
   };
 }
@@ -193,7 +193,7 @@ export function usePatientAllergies(patientUuid: string, refreshInterval) {
   return {
     allergies,
     totalAllergies: data?.data.total,
-    isError: error,
+    error,
   };
 }
 

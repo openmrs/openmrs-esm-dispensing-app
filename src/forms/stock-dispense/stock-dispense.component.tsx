@@ -1,9 +1,9 @@
 import React from 'react';
 import { ComboBox, InlineLoading, InlineNotification, Layer } from '@carbon/react';
+import { useTranslation } from 'react-i18next';
 import { type MedicationDispense, type InventoryItem } from '../../types';
 import { useDispenseStock } from './stock.resource';
 import { formatDate } from '@openmrs/esm-framework';
-import { useTranslation } from 'react-i18next';
 
 type StockDispenseProps = {
   medicationDispense: MedicationDispense;

@@ -1,3 +1,4 @@
+@use '@carbon/colors';
 @use '@carbon/layout';
 @use '@carbon/type';
 @use '@openmrs/esm-styleguide/src/vars' as *;
@@ -9,43 +10,43 @@
     display: flex;
     flex-flow: row wrap;
     align-items: center;
+
+    input {
+      vertical-align: middle;
+      margin: 0 10px 0 0;
+      padding: 10px;
+      border: 1px solid colors.$gray-50 !important;
+      background-color: white;
+    }
+
+    button {
+      width: 90px;
+      height: 20px;
+      min-height: 2.5rem !important;
+    }
+
+    :global(.cds--btn--ghost) {
+      width: 8rem !important;
+    }
   }
 
-  form input {
-    vertical-align: middle;
-    margin: 0 10px 0 0;
-    padding: 10px;
-    border: 1px solid #8d8d8d !important;
-    background-color: white;
-  }
-  form button {
-    width: 90px;
-    height: 20px;
-    min-height: 2.5rem !important;
-  }
-
-  form :global(.cds--btn--ghost) {
-    width: 8rem !important;
+  .baseTile {
+    width: 100%;
+    margin: layout.$spacing-01 0 layout.$spacing-03;
+    padding: 0 layout.$spacing-03 0 layout.$spacing-03;
+    background-color: #fff;
+    color: $text-02;
+    margin-bottom: layout.$spacing-05 !important;
   }
 
   .requestTile {
-    width: 100%;
-    margin: 2px 0 8px;
-    padding: 0 8px 0 8px;
-    background-color: #fff;
-    border-left: 4px solid var(--brand-03);
-    color: $text-02;
-    margin-bottom: 1rem !important;
+    @extend .baseTile;
+    border-left: layout.$spacing-02 solid var(--brand-03);
   }
 
   .dispenseTile {
-    width: 100%;
-    margin: 2px 0 8px;
-    padding: 0 8px 0 8px;
-    background-color: #fff;
-    border-left: 4px solid red;
-    color: $text-02;
-    margin-bottom: 1rem !important;
+    @extend .baseTile;
+    border-left: layout.$spacing-02 solid red;
   }
 
   .medicationEventActionMenu {

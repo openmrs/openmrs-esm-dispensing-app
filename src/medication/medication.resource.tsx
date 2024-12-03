@@ -1,7 +1,7 @@
 import useSWR from 'swr';
 import { type Medication, type MedicationFormulationsResponse } from '../types';
-import { fhirBaseUrl, openmrsFetch } from '@openmrs/esm-framework';
 import { getConceptCodingUuid, getMedicationsByConceptEndpoint } from '../utils';
+import { fhirBaseUrl, openmrsFetch } from '@openmrs/esm-framework';
 
 /**
  * Given a Medication Reference, fetches that Medication and returns the codeable concept associated with it

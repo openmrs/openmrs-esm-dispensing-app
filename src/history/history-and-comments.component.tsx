@@ -2,15 +2,12 @@ import React from 'react';
 import { DataTableSkeleton, OverflowMenu, OverflowMenuItem, Tag, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { formatDatetime, parseDate, type Session, useConfig, userHasAccess, useSession } from '@openmrs/esm-framework';
-import styles from './history-and-comments.scss';
+import { launchOverlay } from '../hooks/useOverlay';
 import {
   updateMedicationRequestFulfillerStatus,
   usePrescriptionDetails,
 } from '../medication-request/medication-request.resource';
 import { deleteMedicationDispense } from '../medication-dispense/medication-dispense.resource';
-import MedicationEvent from '../components/medication-event.component';
-import { launchOverlay } from '../hooks/useOverlay';
-import DispenseForm from '../forms/dispense-form.component';
 import { type MedicationDispense, MedicationDispenseStatus, type MedicationRequestBundle } from '../types';
 import {
   PRIVILEGE_DELETE_DISPENSE,
@@ -26,9 +23,12 @@ import {
   revalidate,
   sortMedicationDispensesByWhenHandedOver,
 } from '../utils';
-import PauseDispenseForm from '../forms/pause-dispense-form.component';
-import CloseDispenseForm from '../forms/close-dispense-form.component';
 import { type PharmacyConfig } from '../config-schema';
+import CloseDispenseForm from '../forms/close-dispense-form.component';
+import DispenseForm from '../forms/dispense-form.component';
+import MedicationEvent from '../components/medication-event.component';
+import PauseDispenseForm from '../forms/pause-dispense-form.component';
+import styles from './history-and-comments.scss';
 
 const HistoryAndComments: React.FC<{
   encounterUuid: string;
@@ -37,7 +37,7 @@ const HistoryAndComments: React.FC<{
   const { t } = useTranslation();
   const session = useSession();
   const config = useConfig<PharmacyConfig>();
-  const { medicationRequestBundles, prescriptionDate, isError, isLoading } = usePrescriptionDetails(
+  const { medicationRequestBundles, prescriptionDate, error, isLoading } = usePrescriptionDetails(
     encounterUuid,
     config.refreshInterval,
   );
@@ -209,7 +209,7 @@ const HistoryAndComments: React.FC<{
   return (
     <div className={styles.historyAndCommentsContainer}>
       {isLoading && <DataTableSkeleton role="progressbar" />}
-      {isError && <p>{t('error', 'Error')}</p>}
+      {error && <p>{t('error', 'Error')}</p>}
       {medicationRequestBundles &&
         medicationRequestBundles
           .flatMap((medicationDispenseBundle) => medicationDispenseBundle.dispenses)
