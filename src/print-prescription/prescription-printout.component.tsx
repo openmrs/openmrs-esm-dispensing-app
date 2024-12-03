@@ -72,9 +72,9 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                               );
                             })}
                           </span>{' '}
-                          &mdash; {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}{' '}
+                          &mdash; {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}
                           {dosageInstruction?.timing?.repeat?.duration
-                            ? 'for ' +
+                            ? ` ${t('for', 'for')} ` +
                               dosageInstruction?.timing?.repeat?.duration +
                               ' ' +
                               dosageInstruction?.timing?.repeat?.durationUnit
@@ -93,15 +93,21 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                           <span className={styles.faintText}>{t('datePrescribed', 'Date prescribed')}</span>
                           {': '} <span>{formatDate(parseDate((request.request as any).authoredOn))}</span>
                         </p>
-                        {(refillsAllowed || refillsAllowed === 0) && (
-                          <p>
-                            <span className={styles.faintText}>{t('refills', 'Refills')}</span>
-                            {': '} <span>{refillsAllowed}</span>
-                          </p>
-                        )}
+                        <p>
+                          <span className={styles.faintText}>{t('refills', 'Refills')}</span>
+                          {': '}{' '}
+                          <span>
+                            {refillsAllowed || refillsAllowed === 0
+                              ? refillsAllowed
+                              : t('notRefillable', 'Not Refillable')}
+                          </span>
+                        </p>
+
                         {dosageInstruction?.text && <p>{dosageInstruction.text}</p>}
                         {dosageInstruction?.additionalInstruction?.length > 0 && (
-                          <p>{dosageInstruction?.additionalInstruction[0].text}</p>
+                          <p>
+                            {dosageInstruction?.additionalInstruction.map((instruction) => instruction.text).join(', ')}
+                          </p>
                         )}
                       </StructuredListCell>
                     </StructuredListRow>
