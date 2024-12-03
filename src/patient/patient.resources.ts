@@ -12,8 +12,3 @@ export const usePatientAge = (patienUuid: string) => {
     mutate,
   };
 };
-
-export function concatAgePatientDisplay(input: string, age: number): string | null {
-  const attrIndex = input.lastIndexOf(')');
-  return input.slice(0, attrIndex) + ', Age: ' + age + input.slice(attrIndex);
-}
