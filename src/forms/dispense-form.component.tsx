@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, FormLabel, InlineLoading } from '@carbon/react';
-import { ExtensionSlot, showNotification, showToast, useConfig, usePatient } from '@openmrs/esm-framework';
+import { ExtensionSlot, showSnackbar, useConfig, usePatient } from '@openmrs/esm-framework';
 import { closeOverlay } from '../hooks/useOverlay';
 import {
   type MedicationDispense,
@@ -91,15 +91,18 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             );
             sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
               () => {
-                showToast({
-                  critical: true,
+                showSnackbar({
                   title: t('stockDispensed', 'Stock dispensed'),
                   kind: 'success',
-                  description: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
+                  subtitle: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
                 });
               },
               (error) => {
-                showToast({ title: 'Stock dispense error', kind: 'error', description: error?.message });
+                showSnackbar({
+                  title: 'Stock dispense error',
+                  kind: 'error',
+                  subtitle: error?.message,
+                });
               },
             );
           }
@@ -110,10 +113,9 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             if (status === 201 || status === 200) {
               closeOverlay();
               revalidate(encounterUuid);
-              showToast({
-                critical: true,
+              showSnackbar({
                 kind: 'success',
-                description: t('medicationListUpdated', 'Medication dispense list has been updated.'),
+                subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
                 title: t(
                   mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
                   mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
@@ -122,14 +124,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             }
           },
           (error) => {
-            showNotification({
+            showSnackbar({
+              kind: 'error',
               title: t(
                 mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
                 mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
               ),
-              kind: 'error',
-              critical: true,
-              description: error?.message,
+              subtitle: error?.message,
             });
             setIsSubmitting(false);
           },

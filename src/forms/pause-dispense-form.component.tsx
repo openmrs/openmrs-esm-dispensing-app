@@ -1,21 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ExtensionSlot,
-  showNotification,
-  showToast,
-  useConfig,
-  useLayoutType,
-  usePatient,
-} from '@openmrs/esm-framework';
 import { Button, ComboBox, InlineLoading } from '@carbon/react';
+import { ExtensionSlot, showSnackbar, useConfig, useLayoutType, usePatient } from '@openmrs/esm-framework';
 import { saveMedicationDispense, useReasonForPauseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { closeOverlay } from '../hooks/useOverlay';
-import styles from './forms.scss';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { getUuidFromReference, revalidate } from '../utils';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
+import styles from './forms.scss';
 
 interface PauseDispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -86,10 +79,9 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
           if (response.ok) {
             closeOverlay();
             revalidate(encounterUuid);
-            showToast({
-              critical: true,
+            showSnackbar({
               kind: 'success',
-              description: t(
+              subtitle: t(
                 mode === 'enter' ? 'medicationDispensePaused' : 'medicationDispenseUpdated',
                 mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',
               ),
@@ -101,14 +93,13 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
           }
         })
         .catch((error) => {
-          showNotification({
+          showSnackbar({
             title: t(
               mode === 'enter' ? 'medicationDispensePauseError' : 'medicationDispenseUpdatedError',
               mode === 'enter' ? 'Error pausing medication dispense.' : 'Error updating dispense record',
             ),
             kind: 'error',
-            critical: true,
-            description: error?.message,
+            subtitle: error?.message,
           });
           setIsSubmitting(false);
         });
