@@ -7,6 +7,9 @@ import dispensingLinkHomepageComponent from './dashboard/dispensing-dashboard-li
 import DispenseActionButton from './components/prescription-actions/dispense-action-button.component';
 import PauseActionButton from './components/prescription-actions/pause-action-button.component';
 import CloseActionButton from './components/prescription-actions/close-action-button.component';
+import DispenseForm from './forms/dispense-form.component';
+import CloseDispenseForm from './forms/close-dispense-form.component';
+import PauseDispenseForm from './forms/pause-dispense-form.component';
 
 export const importTranslation = require.context('../translations', false, /.json$/, 'lazy');
 
@@ -33,3 +36,8 @@ export const dispensingDashboardLink = getSyncLifecycle(dispensingLinkHomepageCo
 export const dispenseActionButton = getSyncLifecycle(DispenseActionButton, options);
 export const pauseActionButton = getSyncLifecycle(PauseActionButton, options);
 export const closeActionButton = getSyncLifecycle(CloseActionButton, options);
+
+// Dispensing workspace
+export const dispenseWorkspace = getSyncLifecycle(DispenseForm, options);
+export const closeDispenseWorkspace = getSyncLifecycle(CloseDispenseForm, options);
+export const pauseDispenseWorkspace = getSyncLifecycle(PauseDispenseForm, options);

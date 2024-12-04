@@ -1,8 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, FormLabel, InlineLoading } from '@carbon/react';
-import { ExtensionSlot, showSnackbar, useConfig, usePatient } from '@openmrs/esm-framework';
-import { closeOverlay } from '../hooks/useOverlay';
+import {
+  type DefaultWorkspaceProps,
+  ExtensionSlot,
+  showSnackbar,
+  useConfig,
+  usePatient,
+} from '@openmrs/esm-framework';
 import {
   type MedicationDispense,
   MedicationDispenseStatus,
@@ -23,14 +28,14 @@ import MedicationDispenseReview from './medication-dispense-review.component';
 import StockDispense from './stock-dispense/stock-dispense.component';
 import styles from './forms.scss';
 
-interface DispenseFormProps {
+type DispenseFormProps = Partial<DefaultWorkspaceProps> & {
   medicationDispense: MedicationDispense;
   medicationRequestBundle: MedicationRequestBundle;
   mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
   quantityRemaining: number;
-}
+};
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
   medicationDispense,
@@ -39,6 +44,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   patientUuid,
   encounterUuid,
   quantityRemaining,
+  closeWorkspace,
+  closeWorkspaceWithSavedChanges,
 }) => {
   const { t } = useTranslation();
   const { patient, isLoading } = usePatient(patientUuid);
@@ -111,7 +118,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         .then(
           ({ status }) => {
             if (status === 201 || status === 200) {
-              closeOverlay();
               revalidate(encounterUuid);
               showSnackbar({
                 kind: 'success',
@@ -121,6 +127,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                   mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
                 ),
               });
+              closeWorkspaceWithSavedChanges();
             }
           },
           (error) => {
@@ -217,7 +224,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           ) : null}
         </section>
         <section className={styles.buttonGroup}>
-          <Button disabled={isSubmitting} onClick={() => closeOverlay()} kind="secondary">
+          <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
             {t('cancel', 'Cancel')}
           </Button>
           <Button disabled={isButtonDisabled} onClick={handleSubmit}>

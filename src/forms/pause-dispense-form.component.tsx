@@ -1,27 +1,28 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, ComboBox, InlineLoading } from '@carbon/react';
-import { ExtensionSlot, showSnackbar, useConfig, useLayoutType, usePatient } from '@openmrs/esm-framework';
+import { type DefaultWorkspaceProps, ExtensionSlot, showSnackbar, useConfig, useLayoutType, usePatient } from '@openmrs/esm-framework';
 import { saveMedicationDispense, useReasonForPauseValueSet } from '../medication-dispense/medication-dispense.resource';
-import { closeOverlay } from '../hooks/useOverlay';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { getUuidFromReference, revalidate } from '../utils';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import styles from './forms.scss';
 
-interface PauseDispenseFormProps {
+type PauseDispenseFormProps = Partial<DefaultWorkspaceProps> & {
   medicationDispense: MedicationDispense;
   mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
-}
+};
 
 const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   medicationDispense,
   mode,
   patientUuid,
   encounterUuid,
+  closeWorkspace,
+  closeWorkspaceWithSavedChanges,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
@@ -77,7 +78,6 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
         })
         .then((response) => {
           if (response.ok) {
-            closeOverlay();
             revalidate(encounterUuid);
             showSnackbar({
               kind: 'success',
@@ -90,6 +90,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
                 mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',
               ),
             });
+            closeWorkspaceWithSavedChanges();
           }
         })
         .catch((error) => {
@@ -168,7 +169,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
           />
         </section>
         <section className={styles.buttonGroup}>
-          <Button disabled={isSubmitting} onClick={() => closeOverlay()} kind="secondary">
+          <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
             {t('cancel', 'Cancel')}
           </Button>
           <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
