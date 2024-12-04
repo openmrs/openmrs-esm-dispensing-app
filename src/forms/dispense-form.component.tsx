@@ -28,7 +28,7 @@ import MedicationDispenseReview from './medication-dispense-review.component';
 import StockDispense from './stock-dispense/stock-dispense.component';
 import styles from './forms.scss';
 
-type DispenseFormProps = Partial<DefaultWorkspaceProps> & {
+type DispenseFormProps = DefaultWorkspaceProps & {
   medicationDispense: MedicationDispense;
   medicationRequestBundle: MedicationRequestBundle;
   mode: 'enter' | 'edit';

@@ -17,8 +17,6 @@ import {
 } from '../medication-request/medication-request.resource';
 import { deleteMedicationDispense } from '../medication-dispense/medication-dispense.resource';
 import MedicationEvent from '../components/medication-event.component';
-import { launchOverlay } from '../hooks/useOverlay';
-import DispenseForm from '../forms/dispense-form.component';
 import { type MedicationDispense, MedicationDispenseStatus, type MedicationRequestBundle } from '../types';
 import {
   PRIVILEGE_DELETE_DISPENSE,
@@ -70,7 +68,7 @@ const HistoryAndComments: React.FC<{
     return false;
   };
 
-  const generateForm: Function = (
+  const getDispenseWorkspaceConfig: Function = (
     medicationDispense: MedicationDispense,
     medicationRequestBundle: MedicationRequestBundle,
   ) => {
@@ -112,7 +110,7 @@ const HistoryAndComments: React.FC<{
     }
   };
 
-  const generateOverlayText: Function = (medicationDispense: MedicationDispense) => {
+  const getWorkspaceTitle: Function = (medicationDispense: MedicationDispense) => {
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
       return t('editDispenseRecord', 'Edit Dispense Record');
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
@@ -130,12 +128,12 @@ const HistoryAndComments: React.FC<{
     const deletable = userCanDelete(session, medicationDispense);
 
     const handleEdit = () => {
-      const { workspaceName, props } = generateForm(medicationDispense, medicationRequestBundle) as {
+      const { workspaceName, props } = getDispenseWorkspaceConfig(medicationDispense, medicationRequestBundle) as {
         workspaceName: string;
         props: Record<string, unknown>;
       };
-      const workspaceTitle = generateOverlayText(medicationDispense);
-      launchWorkspace(workspaceName, { title: workspaceTitle, ...props });
+      const workspaceTitle = getWorkspaceTitle(medicationDispense);
+      launchWorkspace(workspaceName, { workspaceTitle, ...props, });
     };
 
     if (!editable && !deletable) {

@@ -9,7 +9,7 @@ import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFul
 import { type PharmacyConfig } from '../config-schema';
 import styles from './forms.scss';
 
-type PauseDispenseFormProps = Partial<DefaultWorkspaceProps> & {
+type PauseDispenseFormProps = DefaultWorkspaceProps & {
   medicationDispense: MedicationDispense;
   mode: 'enter' | 'edit';
   patientUuid?: string;

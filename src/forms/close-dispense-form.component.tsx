@@ -9,7 +9,7 @@ import { type PharmacyConfig } from '../config-schema';
 import { getUuidFromReference, revalidate } from '../utils';
 import styles from './forms.scss';
 
-type CloseDispenseFormProps =Partial<DefaultWorkspaceProps> & {
+type CloseDispenseFormProps = DefaultWorkspaceProps & {
   medicationDispense: MedicationDispense;
   mode: 'enter' | 'edit';
   patientUuid?: string;
