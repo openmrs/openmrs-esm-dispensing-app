@@ -1,21 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ExtensionSlot,
-  showNotification,
-  showToast,
-  useConfig,
-  useLayoutType,
-  usePatient,
-} from '@openmrs/esm-framework';
 import { Button, ComboBox, InlineLoading } from '@carbon/react';
+import { ExtensionSlot, showSnackbar, useConfig, useLayoutType, usePatient } from '@openmrs/esm-framework';
 import { saveMedicationDispense, useReasonForCloseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { closeOverlay } from '../hooks/useOverlay';
-import styles from './forms.scss';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import { getUuidFromReference, revalidate } from '../utils';
+import styles from './forms.scss';
 
 interface CloseDispenseFormProps {
   medicationDispense: MedicationDispense;
@@ -86,10 +79,9 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
           if (response.ok) {
             closeOverlay();
             revalidate(encounterUuid);
-            showToast({
-              critical: true,
+            showSnackbar({
               kind: 'success',
-              description: t(
+              subtitle: t(
                 mode === 'enter' ? 'medicationDispenseClosed' : 'medicationDispenseUpdated',
                 mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
               ),
@@ -101,14 +93,13 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
           }
         })
         .catch((error) => {
-          showNotification({
+          showSnackbar({
             title: t(
               mode === 'enter' ? 'medicationDispenseCloseError' : 'medicationDispenseUpdatedError',
               mode === 'enter' ? 'Error closing medication dispense.' : 'Error updating dispense record',
             ),
             kind: 'error',
-            critical: true,
-            description: error?.message,
+            subtitle: error?.message,
           });
           setIsSubmitting(false);
         });
