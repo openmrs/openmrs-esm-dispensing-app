@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.openmrs.org/routes.schema.json",
   "backendDependencies": {
     "fhir2": ">=1.2",
     "webservices.rest": "^2.2.0"
@@ -49,6 +50,27 @@
       "name": "close-action-button",
       "slot": "prescription-action-button-slot",
       "component": "closeActionButton"
+    }
+  ],
+  "workspaces": [
+    {
+      "name": "close-dispense-workspace",
+      "component": "closeDispenseWorkspace",
+      "type": "dispense",
+      "title": "Close dispensing"
+    },
+    {
+      "name": "pause-dispense-workspace",
+      "component": "pauseDispenseWorkspace",
+      "type": "dispense",
+      "title": "Pause dispensing"
+    },
+    {
+      "name": "dispense-workspace",
+      "component": "dispenseWorkspace",
+      "type": "dispense",
+      "title": "Dispense",
+      "width": "wider"
     }
   ]
 }

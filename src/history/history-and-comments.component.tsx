@@ -1,7 +1,15 @@
 import React from 'react';
 import { DataTableSkeleton, OverflowMenu, OverflowMenuItem, Tag, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { formatDatetime, parseDate, type Session, useConfig, userHasAccess, useSession } from '@openmrs/esm-framework';
+import {
+  formatDatetime,
+  launchWorkspace,
+  parseDate,
+  type Session,
+  useConfig,
+  userHasAccess,
+  useSession,
+} from '@openmrs/esm-framework';
 import styles from './history-and-comments.scss';
 import {
   updateMedicationRequestFulfillerStatus,
@@ -9,8 +17,6 @@ import {
 } from '../medication-request/medication-request.resource';
 import { deleteMedicationDispense } from '../medication-dispense/medication-dispense.resource';
 import MedicationEvent from '../components/medication-event.component';
-import { launchOverlay } from '../hooks/useOverlay';
-import DispenseForm from '../forms/dispense-form.component';
 import { type MedicationDispense, MedicationDispenseStatus, type MedicationRequestBundle } from '../types';
 import {
   PRIVILEGE_DELETE_DISPENSE,
@@ -26,8 +32,6 @@ import {
   revalidate,
   sortMedicationDispensesByWhenHandedOver,
 } from '../utils';
-import PauseDispenseForm from '../forms/pause-dispense-form.component';
-import CloseDispenseForm from '../forms/close-dispense-form.component';
 import { type PharmacyConfig } from '../config-schema';
 
 const HistoryAndComments: React.FC<{
@@ -64,7 +68,7 @@ const HistoryAndComments: React.FC<{
     return false;
   };
 
-  const generateForm: Function = (
+  const getDispenseWorkspaceConfig: Function = (
     medicationDispense: MedicationDispense,
     medicationRequestBundle: MedicationRequestBundle,
   ) => {
@@ -77,38 +81,36 @@ const HistoryAndComments: React.FC<{
           (medicationDispense?.quantity ? medicationDispense.quantity.value : 0);
       }
 
-      return (
-        <DispenseForm
-          patientUuid={patientUuid}
-          encounterUuid={encounterUuid}
-          medicationDispense={medicationDispense}
-          medicationRequestBundle={medicationRequestBundle}
-          quantityRemaining={quantityRemaining}
-          mode="edit"
-        />
-      );
+      const dispenseFormProps = {
+        patientUuid,
+        encounterUuid,
+        medicationDispense,
+        medicationRequestBundle,
+        quantityRemaining,
+        mode: 'edit',
+      };
+
+      return { workspaceName: 'dispense-workspace', props: dispenseFormProps };
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
-      return (
-        <PauseDispenseForm
-          patientUuid={patientUuid}
-          encounterUuid={encounterUuid}
-          medicationDispense={medicationDispense}
-          mode="edit"
-        />
-      );
+      const pauseDispenseFormProps = {
+        patientUuid,
+        encounterUuid,
+        medicationDispense,
+        mode: 'edit',
+      };
+      return { workspaceName: 'pause-dispense-workspace', props: pauseDispenseFormProps };
     } else if (medicationDispense.status === MedicationDispenseStatus.declined) {
-      return (
-        <CloseDispenseForm
-          patientUuid={patientUuid}
-          encounterUuid={encounterUuid}
-          medicationDispense={medicationDispense}
-          mode="edit"
-        />
-      );
+      const closeDispenseFormProps = {
+        patientUuid,
+        encounterUuid,
+        medicationDispense,
+        mode: 'edit',
+      };
+      return { workspaceName: 'close-dispense-workspace', props: closeDispenseFormProps };
     }
   };
 
-  const generateOverlayText: Function = (medicationDispense: MedicationDispense) => {
+  const getWorkspaceTitle: Function = (medicationDispense: MedicationDispense) => {
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
       return t('editDispenseRecord', 'Edit Dispense Record');
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
@@ -125,6 +127,15 @@ const HistoryAndComments: React.FC<{
     const editable = userCanEdit(session);
     const deletable = userCanDelete(session, medicationDispense);
 
+    const handleEdit = () => {
+      const { workspaceName, props } = getDispenseWorkspaceConfig(medicationDispense, medicationRequestBundle) as {
+        workspaceName: string;
+        props: Record<string, unknown>;
+      };
+      const workspaceTitle = getWorkspaceTitle(medicationDispense);
+      launchWorkspace(workspaceName, { workspaceTitle, ...props, });
+    };
+
     if (!editable && !deletable) {
       return null;
     } else {
@@ -135,12 +146,7 @@ const HistoryAndComments: React.FC<{
           className={styles.medicationEventActionMenu}>
           {editable && (
             <OverflowMenuItem
-              onClick={() =>
-                launchOverlay(
-                  generateOverlayText(medicationDispense),
-                  generateForm(medicationDispense, medicationRequestBundle),
-                )
-              }
+              onClick={handleEdit}
               itemText={t('editRecord', 'Edit Record')}></OverflowMenuItem>
           )}
           {deletable && (
@@ -226,7 +232,7 @@ const HistoryAndComments: React.FC<{
                   {dispense.performer && dispense.performer[0]?.actor?.display} {generateDispenseVerbiage(dispense)} -{' '}
                   {formatDatetime(parseDate(dispense.whenHandedOver))}
                 </h5>
-                <Tile className={styles.dispenseTile}>
+                <Tile className={styles.dispenseTile} data-floating-menu-container>
                   {generateMedicationDispenseActionMenu(
                     dispense,
                     getMedicationRequestBundleContainingMedicationDispense(medicationRequestBundles, dispense),

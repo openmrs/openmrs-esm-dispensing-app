@@ -1,4 +1,4 @@
-import { defineConfigSchema, getSyncLifecycle } from '@openmrs/esm-framework';
+import { defineConfigSchema, getAsyncLifecycle, getSyncLifecycle } from '@openmrs/esm-framework';
 import { configSchema } from './config-schema';
 import dispensingComponent from './dispensing.component';
 import dispensingLinkComponent from './dispensing-link.component';
@@ -33,3 +33,8 @@ export const dispensingDashboardLink = getSyncLifecycle(dispensingLinkHomepageCo
 export const dispenseActionButton = getSyncLifecycle(DispenseActionButton, options);
 export const pauseActionButton = getSyncLifecycle(PauseActionButton, options);
 export const closeActionButton = getSyncLifecycle(CloseActionButton, options);
+
+// Dispensing workspace
+export const dispenseWorkspace = getAsyncLifecycle(() => import('./forms/dispense-form.component'), options);
+export const closeDispenseWorkspace = getAsyncLifecycle(() => import('./forms/close-dispense-form.component'), options);
+export const pauseDispenseWorkspace = getAsyncLifecycle(() => import('./forms/pause-dispense-form.component'), options);
