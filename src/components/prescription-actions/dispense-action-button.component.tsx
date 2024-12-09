@@ -1,11 +1,9 @@
 import React from 'react';
 import { Button } from '@carbon/react';
-import { launchOverlay } from '../../hooks/useOverlay';
 import { useTranslation } from 'react-i18next';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
 import { type Provider, type MedicationRequestBundle } from '../../types';
-import { type Session } from '@openmrs/esm-framework';
-import DispenseForm from '../../forms/dispense-form.component';
+import { launchWorkspace, type Session } from '@openmrs/esm-framework';
 
 type DispenseActionButtonProps = {
   patientUuid: string;
@@ -26,31 +24,20 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   dispensable,
   quantityRemaining,
 }) => {
+  const dispenseWorkspaceProps = {
+    patientUuid: patientUuid,
+    encounterUuid: encounterUuid,
+    medicationDispense: initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, true),
+    medicationRequestBundle: medicationRequestBundle,
+    quantityRemaining: quantityRemaining,
+    mode: 'enter',
+  };
   const { t } = useTranslation();
   if (!dispensable) {
     return null;
   }
   return (
-    <Button
-      kind="primary"
-      onClick={() =>
-        launchOverlay(
-          t('dispensePrescription', 'Dispense prescription'),
-          <DispenseForm
-            patientUuid={patientUuid}
-            encounterUuid={encounterUuid}
-            medicationDispense={initiateMedicationDispenseBody(
-              medicationRequestBundle.request,
-              session,
-              providers,
-              true,
-            )}
-            medicationRequestBundle={medicationRequestBundle}
-            quantityRemaining={quantityRemaining}
-            mode="enter"
-          />,
-        )
-      }>
+    <Button kind="primary" onClick={() => launchWorkspace('dispense-workspace', dispenseWorkspaceProps)}>
       {t('dispense', 'Dispense')}
     </Button>
   );
