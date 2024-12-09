@@ -4,6 +4,7 @@ import { Button, ComboBox, Form, InlineLoading } from '@carbon/react';
 import {
   type DefaultWorkspaceProps,
   ExtensionSlot,
+  getCoreTranslation,
   showSnackbar,
   useConfig,
   useLayoutType,
@@ -178,7 +179,7 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
       </div>
       <section className={styles.buttonGroup}>
         <Button disabled={isSubmitting} onClick={closeWorkspace} kind="secondary">
-          {t('cancel', 'Cancel')}
+          {getCoreTranslation('cancel', 'Cancel')}
         </Button>
         <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
           {t(mode === 'enter' ? 'close' : 'saveChanges', mode === 'enter' ? 'Close' : 'Save changes')}

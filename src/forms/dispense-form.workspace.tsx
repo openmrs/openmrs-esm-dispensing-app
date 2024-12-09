@@ -1,7 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Form, FormLabel, InlineLoading } from '@carbon/react';
-import { type DefaultWorkspaceProps, ExtensionSlot, showSnackbar, useConfig, usePatient } from '@openmrs/esm-framework';
+import {
+  type DefaultWorkspaceProps,
+  ExtensionSlot,
+  getCoreTranslation,
+  showSnackbar,
+  useConfig,
+  usePatient,
+} from '@openmrs/esm-framework';
 import {
   type MedicationDispense,
   MedicationDispenseStatus,
@@ -220,7 +227,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
       </div>
       <section className={styles.buttonGroup}>
         <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
-          {t('cancel', 'Cancel')}
+          {getCoreTranslation('cancel', 'Cancel')}
         </Button>
         <Button disabled={isButtonDisabled} onClick={handleSubmit}>
           {t(

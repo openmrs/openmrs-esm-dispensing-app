@@ -4,6 +4,7 @@ import { Button, ComboBox, Form, InlineLoading } from '@carbon/react';
 import {
   type DefaultWorkspaceProps,
   ExtensionSlot,
+  getCoreTranslation,
   showSnackbar,
   useConfig,
   useLayoutType,
@@ -178,9 +179,11 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
       </div>
       <section className={styles.buttonGroup}>
         <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
-          {t('cancel', 'Cancel')}
+          {getCoreTranslation('cancel', 'Cancel')}
         </Button>
         <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
+          {/* t('pause', 'Pause')
+          t('saveChanges', 'Save changes') */}
           {t(mode === 'enter' ? 'pause' : 'saveChanges', mode === 'enter' ? 'Pause' : 'Save changes')}
         </Button>
       </section>
