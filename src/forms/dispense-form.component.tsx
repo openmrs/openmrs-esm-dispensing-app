@@ -1,13 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, FormLabel, InlineLoading } from '@carbon/react';
-import {
-  type DefaultWorkspaceProps,
-  ExtensionSlot,
-  showSnackbar,
-  useConfig,
-  usePatient,
-} from '@openmrs/esm-framework';
+import { type DefaultWorkspaceProps, ExtensionSlot, showSnackbar, useConfig, usePatient } from '@openmrs/esm-framework';
 import {
   type MedicationDispense,
   MedicationDispenseStatus,

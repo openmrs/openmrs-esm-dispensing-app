@@ -1,7 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, ComboBox, InlineLoading } from '@carbon/react';
-import { type DefaultWorkspaceProps, ExtensionSlot, showSnackbar, useConfig, useLayoutType, usePatient } from '@openmrs/esm-framework';
+import {
+  type DefaultWorkspaceProps,
+  ExtensionSlot,
+  showSnackbar,
+  useConfig,
+  useLayoutType,
+  usePatient,
+} from '@openmrs/esm-framework';
 import { saveMedicationDispense, useReasonForPauseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { getUuidFromReference, revalidate } from '../utils';

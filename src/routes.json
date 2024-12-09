@@ -72,5 +72,11 @@
       "title": "Dispense",
       "width": "wider"
     }
+  ],
+  "modals": [
+    {
+      "name": "prescription-print-preview-modal",
+      "component": "printPrescriptionPreviewModal"
+    }
   ]
 }

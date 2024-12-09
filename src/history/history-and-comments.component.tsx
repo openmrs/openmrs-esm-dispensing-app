@@ -133,7 +133,7 @@ const HistoryAndComments: React.FC<{
         props: Record<string, unknown>;
       };
       const workspaceTitle = getWorkspaceTitle(medicationDispense);
-      launchWorkspace(workspaceName, { workspaceTitle, ...props, });
+      launchWorkspace(workspaceName, { workspaceTitle, ...props });
     };
 
     if (!editable && !deletable) {
@@ -145,9 +145,7 @@ const HistoryAndComments: React.FC<{
           flipped={true}
           className={styles.medicationEventActionMenu}>
           {editable && (
-            <OverflowMenuItem
-              onClick={handleEdit}
-              itemText={t('editRecord', 'Edit Record')}></OverflowMenuItem>
+            <OverflowMenuItem onClick={handleEdit} itemText={t('editRecord', 'Edit Record')}></OverflowMenuItem>
           )}
           {deletable && (
             <OverflowMenuItem
