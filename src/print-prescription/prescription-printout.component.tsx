@@ -36,7 +36,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
               <br />
               <p className={styles.printoutTitle}>{t('prescriptionInstructions', 'Prescription Instructions')}</p>
               {patient && (
-                <p className={classNames(styles.patientName, styles.faintTextC)}>
+                <p className={classNames(styles.patientName, styles.faintText)}>
                   {extractpatientName(patient.display)}
                 </p>
               )}
