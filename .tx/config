@@ -1,7 +1,7 @@
 [main]
 host = https://www.transifex.com
 
-[o:openmrs:p:openmrs-esm-dispensing:r:openmrs-esm-dispensing]
+[o:openmrs:p:openmrs3:r:esm-dispensing]
 file_filter            = translations/<lang>.json
 source_file            = translations/en.json
 source_lang            = en
@@ -9,4 +9,3 @@ type                   = KEYVALUEJSON
 minimum_perc           = 0
 replace_edited_strings = false
 keep_translations      = false
-

@@ -24,20 +24,26 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   dispensable,
   quantityRemaining,
 }) => {
+  const { t } = useTranslation();
   const dispenseWorkspaceProps = {
-    patientUuid: patientUuid,
-    encounterUuid: encounterUuid,
+    patientUuid,
+    encounterUuid,
     medicationDispense: initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, true),
-    medicationRequestBundle: medicationRequestBundle,
-    quantityRemaining: quantityRemaining,
+    medicationRequestBundle,
+    quantityRemaining,
     mode: 'enter',
   };
-  const { t } = useTranslation();
+
+  const handleLaunchWorkspace = () => {
+    launchWorkspace('dispense-workspace', dispenseWorkspaceProps);
+  };
+
   if (!dispensable) {
     return null;
   }
+
   return (
-    <Button kind="primary" onClick={() => launchWorkspace('dispense-workspace', dispenseWorkspaceProps)}>
+    <Button kind="primary" onClick={handleLaunchWorkspace}>
       {t('dispense', 'Dispense')}
     </Button>
   );

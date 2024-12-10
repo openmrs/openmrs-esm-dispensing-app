@@ -1,14 +1,18 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
-
-// TO DO Move this styles to style - guide
-// https://github.com/openmrs/openmrs-esm-core/blob/master/packages/framework/esm-styleguide/src/_vars.scss
-$color-blue-30: #a6c8ff;
+@use '@carbon/colors';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .productiveHeading02 {
   color: $color-gray-70;
   @include type.type-style('productive-heading-02');
+}
+
+.formWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 }
 
 :global(.omrs-breakpoint-lt-desktop) .formWrapper {
@@ -21,8 +25,8 @@ $color-blue-30: #a6c8ff;
 
 .formGroup {
   display: flex;
-  margin-bottom: spacing.$spacing-02;
-  padding: spacing.$spacing-05;
+  margin-bottom: layout.$spacing-02;
+  padding: layout.$spacing-05;
 }
 
 :global(.omrs-breakpoint-lt-desktop) .formGroup > span {
@@ -90,14 +94,14 @@ $color-blue-30: #a6c8ff;
 }
 
 :global(.omrs-breakpoint-lt-desktop) .buttonGroup {
-  padding: spacing.$spacing-05 spacing.$spacing-06;
+  padding: layout.$spacing-05 layout.$spacing-06;
   background-color: $ui-02;
 }
 
 .buttonGroup button {
   max-width: none;
   width: 50%;
-  height: spacing.$spacing-10;
+  height: layout.$spacing-10;
   align-items: flex-start;
 }
 
@@ -114,19 +118,19 @@ $color-blue-30: #a6c8ff;
 }
 
 .contentSwitcherWrapper > div button:first-child {
-  border-top: 1px solid $color-blue-30;
-  border-bottom: 1px solid $color-blue-30;
-  border-left: 1px solid $color-blue-30;
+  border-top: 1px solid colors.$blue-30;
+  border-bottom: 1px solid colors.$blue-30;
+  border-left: 1px solid colors.$blue-30;
   border-right: none;
-  border-radius: spacing.$spacing-02 0 0px spacing.$spacing-02;
+  border-radius: layout.$spacing-02 0 0px layout.$spacing-02;
 }
 
 .contentSwitcherWrapper > div button:last-child {
-  border-top: 1px solid $color-blue-30;
-  border-bottom: 1px solid $color-blue-30;
-  border-right: 1px solid $color-blue-30;
+  border-top: 1px solid colors.$blue-30;
+  border-bottom: 1px solid colors.$blue-30;
+  border-right: 1px solid colors.$blue-30;
   border-left: none;
-  border-radius: 0px spacing.$spacing-02 spacing.$spacing-02 0px;
+  border-radius: 0px layout.$spacing-02 layout.$spacing-02 0px;
 }
 
 .contentSwitcherWrapper > div > button[aria-selected='true'],

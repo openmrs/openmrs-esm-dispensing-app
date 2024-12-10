@@ -24,18 +24,22 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const closeDispenseFormProp = {
-    patientUuid: patientUuid,
-    encounterUuid: encounterUuid,
+  const closeDispenseFormProps = {
+    patientUuid,
+    encounterUuid,
     medicationDispense: initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, false),
     mode: 'enter',
+  };
+
+  const handleLaunchWorkspace = () => {
+    launchWorkspace('close-dispense-workspace', closeDispenseFormProps);
   };
 
   if (!closeable) {
     return null;
   }
   return (
-    <Button kind="danger" onClick={() => launchWorkspace('close-dispense-workspace', closeDispenseFormProp)}>
+    <Button kind="danger" onClick={handleLaunchWorkspace}>
       {t('close', 'Close')}
     </Button>
   );

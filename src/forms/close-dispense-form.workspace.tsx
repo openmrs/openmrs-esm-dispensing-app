@@ -1,29 +1,30 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, ComboBox, InlineLoading } from '@carbon/react';
+import { Button, ComboBox, Form, InlineLoading } from '@carbon/react';
 import {
   type DefaultWorkspaceProps,
   ExtensionSlot,
+  getCoreTranslation,
   showSnackbar,
   useConfig,
   useLayoutType,
   usePatient,
 } from '@openmrs/esm-framework';
-import { saveMedicationDispense, useReasonForPauseValueSet } from '../medication-dispense/medication-dispense.resource';
+import { saveMedicationDispense, useReasonForCloseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
-import { getUuidFromReference, revalidate } from '../utils';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
+import { getUuidFromReference, revalidate } from '../utils';
 import styles from './forms.scss';
 
-type PauseDispenseFormProps = DefaultWorkspaceProps & {
+type CloseDispenseFormProps = DefaultWorkspaceProps & {
   medicationDispense: MedicationDispense;
   mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
 };
 
-const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
+const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
   medicationDispense,
   mode,
   patientUuid,
@@ -44,32 +45,32 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
 
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [reasonsForPause, setReasonsForPause] = useState([]);
-  const { reasonForPauseValueSet } = useReasonForPauseValueSet(config.valueSets.reasonForPause.uuid);
+  const [reasonsForClose, setReasonsForClose] = useState([]);
+  const { reasonForCloseValueSet } = useReasonForCloseValueSet(config.valueSets.reasonForClose.uuid);
 
   useEffect(() => {
-    const reasonForPauseOptions = [];
+    const reasonForCloseOptions = [];
 
-    if (reasonForPauseValueSet?.compose?.include) {
-      const uuidValueSet = reasonForPauseValueSet.compose.include.find((include) => !include.system);
+    if (reasonForCloseValueSet?.compose?.include) {
+      const uuidValueSet = reasonForCloseValueSet.compose.include.find((include) => !include.system);
       if (uuidValueSet) {
         uuidValueSet.concept?.forEach((concept) =>
-          reasonForPauseOptions.push({
+          reasonForCloseOptions.push({
             id: concept.code,
             text: concept.display,
           }),
         );
-        reasonForPauseOptions.sort((a, b) => a.text.localeCompare(b.text));
+        reasonForCloseOptions.sort((a, b) => a.text.localeCompare(b.text));
       }
     }
-    setReasonsForPause(reasonForPauseOptions);
-  }, [reasonForPauseValueSet]);
+    setReasonsForClose(reasonForCloseOptions);
+  }, [reasonForCloseValueSet]);
 
   const handleSubmit = () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
-      saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.on_hold, abortController)
+      saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.declined, abortController)
         .then((response) => {
           // only update request status when added a new dispense event, not updating
           if (response.ok && !medicationDispense.id) {
@@ -77,7 +78,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
               getUuidFromReference(
                 medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
               ),
-              MedicationRequestFulfillerStatus.on_hold,
+              MedicationRequestFulfillerStatus.declined,
             );
           } else {
             return response;
@@ -89,12 +90,12 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
             showSnackbar({
               kind: 'success',
               subtitle: t(
-                mode === 'enter' ? 'medicationDispensePaused' : 'medicationDispenseUpdated',
-                mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',
+                mode === 'enter' ? 'medicationDispenseClosed' : 'medicationDispenseUpdated',
+                mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
               ),
               title: t(
-                mode === 'enter' ? 'medicationDispensePaused' : 'medicationDispenseUpdated',
-                mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',
+                mode === 'enter' ? 'medicationDispenseClosed' : 'medicationDispenseUpdated',
+                mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
               ),
             });
             closeWorkspaceWithSavedChanges();
@@ -103,8 +104,8 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
         .catch((error) => {
           showSnackbar({
             title: t(
-              mode === 'enter' ? 'medicationDispensePauseError' : 'medicationDispenseUpdatedError',
-              mode === 'enter' ? 'Error pausing medication dispense.' : 'Error updating dispense record',
+              mode === 'enter' ? 'medicationDispenseCloseError' : 'medicationDispenseUpdatedError',
+              mode === 'enter' ? 'Error closing medication dispense.' : 'Error updating dispense record',
             ),
             kind: 'error',
             subtitle: error?.message,
@@ -139,8 +140,8 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   }, [patient, patientUuid]);
 
   return (
-    <div className="">
-      <div className={styles.formWrapper}>
+    <Form className={styles.formWrapper}>
+      <div>
         {isLoading && (
           <InlineLoading
             className={styles.bannerLoading}
@@ -154,8 +155,8 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
           <ComboBox
             id="reasonForPause"
             light={isTablet}
-            items={reasonsForPause}
-            titleText={t('reasonForPause', 'Reason for pause')}
+            items={reasonsForClose}
+            titleText={t('reasonForClose', 'Reason for close')}
             itemToString={(item) => item?.text}
             initialSelectedItem={{
               id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
@@ -175,17 +176,17 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
             }}
           />
         </section>
-        <section className={styles.buttonGroup}>
-          <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
-            {t('cancel', 'Cancel')}
-          </Button>
-          <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
-            {t(mode === 'enter' ? 'pause' : 'saveChanges', mode === 'enter' ? 'Pause' : 'Save changes')}
-          </Button>
-        </section>
       </div>
-    </div>
+      <section className={styles.buttonGroup}>
+        <Button disabled={isSubmitting} onClick={closeWorkspace} kind="secondary">
+          {getCoreTranslation('cancel', 'Cancel')}
+        </Button>
+        <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
+          {t(mode === 'enter' ? 'close' : 'saveChanges', mode === 'enter' ? 'Close' : 'Save changes')}
+        </Button>
+      </section>
+    </Form>
   );
 };
 
-export default PauseDispenseForm;
+export default CloseDispenseForm;
