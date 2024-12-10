@@ -1,0 +1,15 @@
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@carbon/colors';
+
+.actionsContainer {
+  flex-direction: row;
+  display: flex;
+  justify-content: space-between;
+}
+
+.actionCluster {
+  gap: layout.$spacing-03;
+  display: flex;
+  flex-direction: row;
+}
