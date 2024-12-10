@@ -22,18 +22,23 @@ const PauseActionButton: React.FC<PauseActionButtonProps> = ({
   providers,
   pauseable,
 }) => {
+  const { t } = useTranslation();
   const pauseWorkspaceProps = {
-    patientUuid: patientUuid,
-    encounterUuid: encounterUuid,
+    patientUuid,
+    encounterUuid,
     medicationDispense: initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, false),
     mode: 'enter',
   };
-  const { t } = useTranslation();
+
+  const handleLaunchWorkspace = () => {
+    launchWorkspace('pause-dispense-workspace', pauseWorkspaceProps);
+  };
+
   if (!pauseable) {
     return null;
   }
   return (
-    <Button kind="secondary" onClick={() => launchWorkspace('pause-dispense-workspace', pauseWorkspaceProps)}>
+    <Button kind="secondary" onClick={handleLaunchWorkspace}>
       {t('pause', 'Pause')}
     </Button>
   );

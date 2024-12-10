@@ -1,7 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, ComboBox, InlineLoading } from '@carbon/react';
-import { type DefaultWorkspaceProps, ExtensionSlot, showSnackbar, useConfig, useLayoutType, usePatient } from '@openmrs/esm-framework';
+import { Button, ComboBox, Form, InlineLoading } from '@carbon/react';
+import {
+  type DefaultWorkspaceProps,
+  ExtensionSlot,
+  getCoreTranslation,
+  showSnackbar,
+  useConfig,
+  useLayoutType,
+  usePatient,
+} from '@openmrs/esm-framework';
 import { saveMedicationDispense, useReasonForPauseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { getUuidFromReference, revalidate } from '../utils';
@@ -132,8 +140,8 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   }, [patient, patientUuid]);
 
   return (
-    <div className="">
-      <div className={styles.formWrapper}>
+    <Form className={styles.formWrapper}>
+      <div>
         {isLoading && (
           <InlineLoading
             className={styles.bannerLoading}
@@ -168,16 +176,18 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
             }}
           />
         </section>
-        <section className={styles.buttonGroup}>
-          <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
-            {t('cancel', 'Cancel')}
-          </Button>
-          <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
-            {t(mode === 'enter' ? 'pause' : 'saveChanges', mode === 'enter' ? 'Pause' : 'Save changes')}
-          </Button>
-        </section>
       </div>
-    </div>
+      <section className={styles.buttonGroup}>
+        <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
+          {getCoreTranslation('cancel', 'Cancel')}
+        </Button>
+        <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
+          {/* t('pause', 'Pause')
+          t('saveChanges', 'Save changes') */}
+          {t(mode === 'enter' ? 'pause' : 'saveChanges', mode === 'enter' ? 'Pause' : 'Save changes')}
+        </Button>
+      </section>
+    </Form>
   );
 };
 

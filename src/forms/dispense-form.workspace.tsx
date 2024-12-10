@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, FormLabel, InlineLoading } from '@carbon/react';
+import { Button, Form, FormLabel, InlineLoading } from '@carbon/react';
 import {
   type DefaultWorkspaceProps,
   ExtensionSlot,
+  getCoreTranslation,
   showSnackbar,
   useConfig,
   usePatient,
@@ -186,8 +187,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   }, [patient, patientUuid]);
 
   return (
-    <div>
-      <div className={styles.formWrapper}>
+    <Form className={styles.formWrapper}>
+      <div>
         {isLoading && (
           <InlineLoading
             className={styles.bannerLoading}
@@ -223,19 +224,19 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             </div>
           ) : null}
         </section>
-        <section className={styles.buttonGroup}>
-          <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
-            {t('cancel', 'Cancel')}
-          </Button>
-          <Button disabled={isButtonDisabled} onClick={handleSubmit}>
-            {t(
-              mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
-              mode === 'enter' ? 'Dispense prescription' : 'Save changes',
-            )}
-          </Button>
-        </section>
       </div>
-    </div>
+      <section className={styles.buttonGroup}>
+        <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
+          {getCoreTranslation('cancel', 'Cancel')}
+        </Button>
+        <Button disabled={isButtonDisabled} onClick={handleSubmit}>
+          {t(
+            mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
+            mode === 'enter' ? 'Dispense prescription' : 'Save changes',
+          )}
+        </Button>
+      </section>
+    </Form>
   );
 };
 

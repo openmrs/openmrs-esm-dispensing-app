@@ -57,19 +57,19 @@
       "name": "close-dispense-workspace",
       "component": "closeDispenseWorkspace",
       "type": "dispense",
-      "title": "Close dispensing"
+      "title": "Close prescription"
     },
     {
       "name": "pause-dispense-workspace",
       "component": "pauseDispenseWorkspace",
       "type": "dispense",
-      "title": "Pause dispensing"
+      "title": "Pause prescription"
     },
     {
       "name": "dispense-workspace",
       "component": "dispenseWorkspace",
       "type": "dispense",
-      "title": "Dispense",
+      "title": "Dispense prescription",
       "width": "wider"
     }
   ]
