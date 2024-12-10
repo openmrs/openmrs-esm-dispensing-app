@@ -41,3 +41,8 @@
   padding: 0 layout.$spacing-05 0 layout.$spacing-05;
   justify-content: space-between;
 }
+
+.patientName {
+  text-transform: capitalize;
+  text-align: center;
+}
