@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
 import {
   DataTable,
   DataTableSkeleton,
+  Layer,
   Pagination,
   Table,
   TableBody,
@@ -14,13 +14,15 @@ import {
   TableHeader,
   TableRow,
   TabPanel,
+  Tile,
 } from '@carbon/react';
-import { useTranslation } from 'react-i18next';
-
 import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
-import PrescriptionExpanded from './prescription-expanded.component';
-import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type PharmacyConfig } from '../config-schema';
+import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import PatientInfoCell from '../patient/patient-info-cell.component';
+import PrescriptionExpanded from './prescription-expanded.component';
 import styles from './prescriptions.scss';
 
 interface PrescriptionTabPanelProps {
@@ -73,12 +75,12 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
         {prescriptionsTableRows && (
           <>
             <DataTable rows={prescriptionsTableRows} headers={columns} isSortable>
-              {({ rows, headers, getHeaderProps, getRowProps, getTableProps }) => (
+              {({ rows, headers, getExpandHeaderProps, getHeaderProps, getRowProps, getTableProps }) => (
                 <TableContainer>
                   <Table {...getTableProps()} useZebraStyles>
                     <TableHead>
                       <TableRow>
-                        <TableExpandHeader />
+                        <TableExpandHeader {...getExpandHeaderProps()} />
                         {headers.map((header) => (
                           <TableHeader {...getHeaderProps({ header })}>{header.header}</TableHeader>
                         ))}
@@ -90,23 +92,29 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
                           <TableExpandRow {...getRowProps({ row })}>
                             {row.cells.map((cell) => (
                               <TableCell key={cell.id}>
-                                {cell.id.endsWith('created')
-                                  ? formatDatetime(parseDate(cell.value))
-                                  : cell.id.endsWith('patient')
-                                    ? cell.value.name
-                                    : cell.id.endsWith('status')
-                                      ? t(cell.value)
-                                      : cell.value}
+                                {cell.id.endsWith('created') ? (
+                                  formatDatetime(parseDate(cell.value))
+                                ) : cell.id.endsWith('patient') ? (
+                                  <PatientInfoCell patient={cell.value} />
+                                ) : cell.id.endsWith('status') ? (
+                                  t(cell.value)
+                                ) : (
+                                  cell.value
+                                )}
                               </TableCell>
                             ))}
                           </TableExpandRow>
-                          <TableExpandedRow colSpan={headers.length + 1}>
-                            <PrescriptionExpanded
-                              encounterUuid={row.id}
-                              patientUuid={row.cells.find((cell) => cell.id.endsWith('patient')).value.uuid}
-                              status={row.cells.find((cell) => cell.id.endsWith('status')).value}
-                            />
-                          </TableExpandedRow>
+                          {row.isExpanded ? (
+                            <TableExpandedRow colSpan={headers.length + 1}>
+                              <PrescriptionExpanded
+                                encounterUuid={row.id}
+                                patientUuid={row.cells.find((cell) => cell.id.endsWith('patient')).value.uuid}
+                                status={row.cells.find((cell) => cell.id.endsWith('status')).value}
+                              />
+                            </TableExpandedRow>
+                          ) : (
+                            <TableExpandedRow className={styles.hiddenRow} colSpan={headers.length + 2} />
+                          )}
                         </React.Fragment>
                       ))}
                     </TableBody>
@@ -114,19 +122,33 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
                 </TableContainer>
               )}
             </DataTable>
-            <div style={{ width: '100%' }}>
-              <Pagination
-                page={page}
-                pageSize={pageSize}
-                pageSizes={[10, 20, 30, 40, 50, 100]}
-                totalItems={totalOrders}
-                onChange={({ page, pageSize }) => {
-                  setPage(page);
-                  setNextOffSet((page - 1) * pageSize);
-                  setPageSize(pageSize);
-                }}
-              />
-            </div>
+            {prescriptionsTableRows?.length === 0 && (
+              <div className={styles.filterEmptyState}>
+                <Layer>
+                  <Tile className={styles.filterEmptyStateTile}>
+                    <p className={styles.filterEmptyStateContent}>
+                      {t('noPrescriptionsToDisplay', 'No prescriptions to display')}
+                    </p>
+                    <p className={styles.filterEmptyStateHelper}>{t('checkFilters', 'Check the filters above')}</p>
+                  </Tile>
+                </Layer>
+              </div>
+            )}
+            {prescriptionsTableRows?.length > 0 && (
+              <div style={{ width: '100%' }}>
+                <Pagination
+                  page={page}
+                  pageSize={pageSize}
+                  pageSizes={[10, 20, 30, 40, 50, 100]}
+                  totalItems={totalOrders}
+                  onChange={({ page, pageSize }) => {
+                    setPage(page);
+                    setNextOffSet((page - 1) * pageSize);
+                    setPageSize(pageSize);
+                  }}
+                />
+              </div>
+            )}
           </>
         )}
       </div>

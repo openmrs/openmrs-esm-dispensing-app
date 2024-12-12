@@ -28,7 +28,7 @@ jobs:
       - run: yarn verify
       - run: yarn build
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
@@ -43,7 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:

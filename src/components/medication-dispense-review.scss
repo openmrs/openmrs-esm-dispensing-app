@@ -8,8 +8,8 @@
   padding-bottom: 10px;
 
   :global(.cds--css-grid) {
-    padding-left:0 !important;
-    padding-right:0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 }
 
@@ -21,7 +21,7 @@
 }
 
 .substitutionReason {
-  width:100%;
+  width: 100%;
 }
 
 .substitutionType {
@@ -47,11 +47,11 @@
   padding: spacing.$spacing-05;
 }
 
-:global(.omrs-breakpoint-lt-desktop) .formGroup>span {
+:global(.omrs-breakpoint-lt-desktop) .formGroup > span {
   flex: 1;
 }
 
-:global(.omrs-breakpoint-lt-desktop) .formGroup>div {
+:global(.omrs-breakpoint-lt-desktop) .formGroup > div {
   flex: 3;
 }
 

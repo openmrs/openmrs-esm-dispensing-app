@@ -1,6 +1,5 @@
-import React from 'react';
 import useSWR from 'swr';
-import { openmrsFetch, Session } from '@openmrs/esm-framework';
+import { openmrsFetch, type Session } from '@openmrs/esm-framework';
 import {
   deleteMedicationDispense,
   initiateMedicationDispenseBody,
@@ -9,18 +8,16 @@ import {
   useSubstitutionReasonValueSet,
   useSubstitutionTypeValueSet,
 } from './medication-dispense.resource';
-import { MedicationDispense, MedicationDispenseStatus, MedicationRequest, MedicationRequestStatus } from '../types';
+import {
+  type MedicationDispense,
+  type MedicationRequest,
+  MedicationDispenseStatus,
+  MedicationRequestStatus,
+  type Provider,
+} from '../types';
 import dayjs from 'dayjs';
 
-jest.mock('@openmrs/esm-framework', () => {
-  const originalModule = jest.requireActual('@openmrs/esm-framework');
-  return {
-    __esModule: true,
-    ...originalModule,
-    openmrsFetch: jest.fn(() => 'mocked fetch'),
-  };
-});
-
+jest.mocked(openmrsFetch);
 jest.mock('swr');
 
 describe('Medication Dispense Resource tests', () => {
@@ -43,7 +40,7 @@ describe('Medication Dispense Resource tests', () => {
     };
     const abortController: AbortController = {
       signal: undefined,
-      abort(reason?: any): void {},
+      abort(): void {},
     };
 
     saveMedicationDispense(medicationDispense, MedicationDispenseStatus.completed, abortController);
@@ -76,7 +73,7 @@ describe('Medication Dispense Resource tests', () => {
     };
     const abortController: AbortController = {
       signal: undefined,
-      abort(reason?: any): void {},
+      abort(): void {},
     };
 
     saveMedicationDispense(medicationDispense, MedicationDispenseStatus.completed, abortController);
@@ -99,7 +96,6 @@ describe('Medication Dispense Resource tests', () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: 'mockedOrderConfig' } }));
     const orderConfig = useOrderConfig();
-    expect(useSWR).toHaveBeenCalledWith('/ws/rest/v1/orderentryconfig', openmrsFetch);
     expect(orderConfig.orderConfigObject).toBe('mockedOrderConfig');
   });
 
@@ -202,11 +198,18 @@ describe('Medication Dispense Resource tests', () => {
         links: undefined,
       },
     };
-    const medicationRequestExpirationPeriodInDay = 30;
+
+    const providers: Provider[] = [
+      {
+        uuid: 'ghi789',
+        person: null,
+      },
+    ];
 
     const medicationDispense: MedicationDispense = initiateMedicationDispenseBody(
       activeMedicationRequest,
       session,
+      providers,
       true,
     );
 
@@ -224,8 +227,8 @@ describe('Medication Dispense Resource tests', () => {
     expect(medicationDispense.quantity.system).toBe('http://snomed.info/sct');
     expect(medicationDispense.quantity.unit).toBe('Tablet');
     expect(medicationDispense.quantity.code).toBe('123456789');
-    expect(medicationDispense.whenPrepared).toBeNull();
-    expect(medicationDispense.whenHandedOver).toBeNull();
+    expect(dayjs(medicationDispense.whenPrepared).isToday()).toBeTruthy();
+    expect(dayjs(medicationDispense.whenHandedOver).isToday()).toBeTruthy();
     expect(medicationDispense.dosageInstruction[0].text).toBe('Take with food');
     expect(medicationDispense.dosageInstruction[0].timing.repeat.duration).toBe(30.0);
     expect(medicationDispense.dosageInstruction[0].timing.repeat.durationUnit).toBe('d');

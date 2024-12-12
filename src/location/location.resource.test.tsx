@@ -1,18 +1,9 @@
-import React from 'react';
 import useSWR from 'swr';
 import { openmrsFetch } from '@openmrs/esm-framework';
 import { useLocationForFiltering } from './location.resource';
-import { PharmacyConfig } from '../config-schema';
+import { type PharmacyConfig } from '../config-schema';
 
-jest.mock('@openmrs/esm-framework', () => {
-  const originalModule = jest.requireActual('@openmrs/esm-framework');
-  return {
-    __esModule: true,
-    ...originalModule,
-    openmrsFetch: jest.fn(() => 'mocked fetch'),
-  };
-});
-
+jest.mocked(openmrsFetch);
 jest.mock('swr');
 
 const pharmacyConfig: PharmacyConfig = {
@@ -29,6 +20,7 @@ const pharmacyConfig: PharmacyConfig = {
     allowModifyingPrescription: false,
     restrictTotalQuantityDispensed: false,
   },
+  dispenserProviderRoles: [],
   locationBehavior: {
     locationColumn: { enabled: false },
     locationFilter: { enabled: false, tag: 'Login Location' },

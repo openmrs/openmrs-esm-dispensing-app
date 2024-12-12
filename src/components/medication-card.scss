@@ -1,6 +1,6 @@
 @use '@carbon/styles/scss/spacing';
 @use '@carbon/styles/scss/type';
-@import "~@openmrs/esm-styleguide/src/vars";
+@import '~@openmrs/esm-styleguide/src/vars';
 
 .medicationTile {
   display: flex;
@@ -18,4 +18,3 @@
 .medicationName {
   font-size: 15px !important;
 }
-

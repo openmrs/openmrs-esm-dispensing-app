@@ -1,2 +1,2 @@
-src/**/*.test.tsx
-**/*.d.tsx
+**/dist/*
+**/node_modules/*

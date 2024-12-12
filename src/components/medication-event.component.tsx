@@ -66,6 +66,9 @@ const MedicationEvent: React.FC<{
         </p>
       )}
       {dosageInstruction?.text && <p className={styles.bodyLong01}>{dosageInstruction.text}</p>}
+      {dosageInstruction?.additionalInstruction?.length > 0 && (
+        <p className={styles.bodyLong01}>{dosageInstruction?.additionalInstruction[0].text}</p>
+      )}
     </div>
   );
 };

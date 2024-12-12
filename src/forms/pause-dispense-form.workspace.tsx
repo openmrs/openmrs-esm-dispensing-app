@@ -1,34 +1,36 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button, ComboBox, Form, InlineLoading } from '@carbon/react';
 import {
+  type DefaultWorkspaceProps,
   ExtensionSlot,
-  showNotification,
-  showToast,
+  getCoreTranslation,
+  showSnackbar,
   useConfig,
   useLayoutType,
   usePatient,
 } from '@openmrs/esm-framework';
-import { Button, ComboBox, InlineLoading } from '@carbon/react';
 import { saveMedicationDispense, useReasonForPauseValueSet } from '../medication-dispense/medication-dispense.resource';
-import { closeOverlay } from '../hooks/useOverlay';
-import styles from './forms.scss';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { getUuidFromReference, revalidate } from '../utils';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
+import styles from './forms.scss';
 
-interface PauseDispenseFormProps {
+type PauseDispenseFormProps = DefaultWorkspaceProps & {
   medicationDispense: MedicationDispense;
   mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
-}
+};
 
 const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   medicationDispense,
   mode,
   patientUuid,
   encounterUuid,
+  closeWorkspace,
+  closeWorkspaceWithSavedChanges,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
@@ -84,12 +86,10 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
         })
         .then((response) => {
           if (response.ok) {
-            closeOverlay();
             revalidate(encounterUuid);
-            showToast({
-              critical: true,
+            showSnackbar({
               kind: 'success',
-              description: t(
+              subtitle: t(
                 mode === 'enter' ? 'medicationDispensePaused' : 'medicationDispenseUpdated',
                 mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',
               ),
@@ -98,17 +98,17 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
                 mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',
               ),
             });
+            closeWorkspaceWithSavedChanges();
           }
         })
         .catch((error) => {
-          showNotification({
+          showSnackbar({
             title: t(
               mode === 'enter' ? 'medicationDispensePauseError' : 'medicationDispenseUpdatedError',
               mode === 'enter' ? 'Error pausing medication dispense.' : 'Error updating dispense record',
             ),
             kind: 'error',
-            critical: true,
-            description: error?.message,
+            subtitle: error?.message,
           });
           setIsSubmitting(false);
         });
@@ -140,8 +140,8 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   }, [patient, patientUuid]);
 
   return (
-    <div className="">
-      <div className={styles.formWrapper}>
+    <Form className={styles.formWrapper}>
+      <div>
         {isLoading && (
           <InlineLoading
             className={styles.bannerLoading}
@@ -176,16 +176,18 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
             }}
           />
         </section>
-        <section className={styles.buttonGroup}>
-          <Button disabled={isSubmitting} onClick={() => closeOverlay()} kind="secondary">
-            {t('cancel', 'Cancel')}
-          </Button>
-          <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
-            {t(mode === 'enter' ? 'pause' : 'saveChanges', mode === 'enter' ? 'Pause' : 'Save changes')}
-          </Button>
-        </section>
       </div>
-    </div>
+      <section className={styles.buttonGroup}>
+        <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
+          {getCoreTranslation('cancel', 'Cancel')}
+        </Button>
+        <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
+          {/* t('pause', 'Pause')
+          t('saveChanges', 'Save changes') */}
+          {t(mode === 'enter' ? 'pause' : 'saveChanges', mode === 'enter' ? 'Pause' : 'Save changes')}
+        </Button>
+      </section>
+    </Form>
   );
 };
 

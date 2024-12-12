@@ -97,7 +97,7 @@ export interface Attribute {
 }
 
 export interface CodeableConcept {
-  coding: Coding[];
+  coding?: Coding[];
   text?: string;
 }
 
@@ -131,6 +131,7 @@ export interface DosageInstruction {
   doseAndRate: Array<{
     doseQuantity: Quantity;
   }>;
+  additionalInstruction?: Array<CodeableConcept>;
 }
 
 export interface Drug {
@@ -419,6 +420,17 @@ export interface Person {
   display: string;
   preferredAddress: OpenmrsResource;
   uuid: string;
+}
+
+export interface Provider {
+  uuid: string;
+  person: {
+    display: string;
+  };
+}
+
+export interface ProviderRequestResponse {
+  results: Array<Provider>;
 }
 
 // represents a row in the main table

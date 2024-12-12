@@ -1,43 +1,42 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button, Form, FormLabel, InlineLoading } from '@carbon/react';
 import {
+  type DefaultWorkspaceProps,
   ExtensionSlot,
-  showNotification,
-  showToast,
+  getCoreTranslation,
+  showSnackbar,
   useConfig,
-  useLayoutType,
   usePatient,
 } from '@openmrs/esm-framework';
-import { Button, FormLabel, InlineLoading } from '@carbon/react';
-import styles from './forms.scss';
-import { closeOverlay } from '../hooks/useOverlay';
 import {
   type MedicationDispense,
   MedicationDispenseStatus,
   type MedicationRequestBundle,
   type InventoryItem,
 } from '../types';
-import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
-import MedicationDispenseReview from './medication-dispense-review.component';
 import {
   computeNewFulfillerStatusAfterDispenseEvent,
   getFulfillerStatus,
   getUuidFromReference,
   revalidate,
 } from '../utils';
-import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { type PharmacyConfig } from '../config-schema';
-import StockDispense from './stock-dispense/stock-dispense.component';
 import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
+import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
+import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
+import MedicationDispenseReview from './medication-dispense-review.component';
+import StockDispense from './stock-dispense/stock-dispense.component';
+import styles from './forms.scss';
 
-interface DispenseFormProps {
+type DispenseFormProps = DefaultWorkspaceProps & {
   medicationDispense: MedicationDispense;
   medicationRequestBundle: MedicationRequestBundle;
   mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
   quantityRemaining: number;
-}
+};
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
   medicationDispense,
@@ -46,9 +45,10 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   patientUuid,
   encounterUuid,
   quantityRemaining,
+  closeWorkspace,
+  closeWorkspaceWithSavedChanges,
 }) => {
   const { t } = useTranslation();
-  const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
   const config = useConfig<PharmacyConfig>();
 
@@ -99,15 +99,18 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             );
             sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
               () => {
-                showToast({
-                  critical: true,
+                showSnackbar({
                   title: t('stockDispensed', 'Stock dispensed'),
                   kind: 'success',
-                  description: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
+                  subtitle: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
                 });
               },
               (error) => {
-                showToast({ title: 'Stock dispense error', kind: 'error', description: error?.message });
+                showSnackbar({
+                  title: 'Stock dispense error',
+                  kind: 'error',
+                  subtitle: error?.message,
+                });
               },
             );
           }
@@ -116,28 +119,26 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         .then(
           ({ status }) => {
             if (status === 201 || status === 200) {
-              closeOverlay();
               revalidate(encounterUuid);
-              showToast({
-                critical: true,
+              showSnackbar({
                 kind: 'success',
-                description: t('medicationListUpdated', 'Medication dispense list has been updated.'),
+                subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
                 title: t(
                   mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
                   mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
                 ),
               });
+              closeWorkspaceWithSavedChanges();
             }
           },
           (error) => {
-            showNotification({
+            showSnackbar({
+              kind: 'error',
               title: t(
                 mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
                 mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
               ),
-              kind: 'error',
-              critical: true,
-              description: error?.message,
+              subtitle: error?.message,
             });
             setIsSubmitting(false);
           },
@@ -148,6 +149,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const checkIsValid = () => {
     if (
       medicationDispensePayload &&
+      medicationDispensePayload.performer &&
+      medicationDispensePayload.performer[0]?.actor.reference &&
       medicationDispensePayload.quantity?.value &&
       (!quantityRemaining || medicationDispensePayload?.quantity?.value <= quantityRemaining) &&
       medicationDispensePayload.quantity?.code &&
@@ -184,8 +187,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   }, [patient, patientUuid]);
 
   return (
-    <div className="">
-      <div className={styles.formWrapper}>
+    <Form className={styles.formWrapper}>
+      <div>
         {isLoading && (
           <InlineLoading
             className={styles.bannerLoading}
@@ -221,19 +224,19 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             </div>
           ) : null}
         </section>
-        <section className={styles.buttonGroup}>
-          <Button disabled={isSubmitting} onClick={() => closeOverlay()} kind="secondary">
-            {t('cancel', 'Cancel')}
-          </Button>
-          <Button disabled={isButtonDisabled} onClick={handleSubmit}>
-            {t(
-              mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
-              mode === 'enter' ? 'Dispense prescription' : 'Save changes',
-            )}
-          </Button>
-        </section>
       </div>
-    </div>
+      <section className={styles.buttonGroup}>
+        <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
+          {getCoreTranslation('cancel', 'Cancel')}
+        </Button>
+        <Button disabled={isButtonDisabled} onClick={handleSubmit}>
+          {t(
+            mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
+            mode === 'enter' ? 'Dispense prescription' : 'Save changes',
+          )}
+        </Button>
+      </section>
+    </Form>
   );
 };
 

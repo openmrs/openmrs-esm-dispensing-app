@@ -1,9 +1,8 @@
 import React from 'react';
 import { InlineNotification } from '@carbon/react';
-import Overlay from '../forms/overlay/overlay.component';
 import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
 import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';
-import { useConfig } from '@openmrs/esm-framework';
+import { useConfig, WorkspaceContainer } from '@openmrs/esm-framework';
 import { useTranslation } from 'react-i18next';
 import { type PharmacyConfig } from '../config-schema';
 
@@ -28,7 +27,7 @@ export default function DispensingDashboard() {
         <PharmacyHeader />
         {/* <DispensingTiles /> */}
         <PrescriptionTabLists />
-        <Overlay />
+        <WorkspaceContainer key="dispensing" contextKey="dispensing" />
       </div>
     );
   }
