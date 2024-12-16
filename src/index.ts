@@ -38,7 +38,7 @@ export const pauseActionButton = getSyncLifecycle(PauseActionButton, options);
 // Dispensing workspace
 // t('closePrescription', 'Close prescription')
 export const closeDispenseWorkspace = getAsyncLifecycle(() => import('./forms/close-dispense-form.workspace'), options);
-// t('dispensDPrescription', 'Dispense prescription')
+// t('dispensePrescription', 'Dispense prescription')
 export const dispenseWorkspace = getAsyncLifecycle(() => import('./forms/dispense-form.workspace'), options);
 // t('pausePrescription', 'Pause prescription')
 export const pauseDispenseWorkspace = getAsyncLifecycle(() => import('./forms/pause-dispense-form.workspace'), options);

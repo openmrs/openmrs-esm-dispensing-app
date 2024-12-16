@@ -1,8 +1,8 @@
+import React from 'react';
+import classNames from 'classnames';
+import { useTranslation } from 'react-i18next';
 import { Layer, StructuredListBody, StructuredListCell, StructuredListRow, StructuredListWrapper } from '@carbon/react';
 import { formatDate, parseDate, useSession } from '@openmrs/esm-framework';
-import classNames from 'classnames';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { type DosageInstruction, type MedicationRequestBundle, type Quantity } from '../types';
 import {
   getDosageInstruction,
@@ -34,7 +34,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
             <StructuredListCell head>
               <br />
               <br />
-              <p className={styles.printoutTitle}>{t('prescriptionInstructions', 'Prescription Instructions')}</p>
+              <p className={styles.printoutTitle}>{t('prescriptionInstructions', 'Prescription instructions')}</p>
               {patient && (
                 <p className={classNames(styles.patientName, styles.faintText)}>
                   {extractPatientName(patient.display)}
@@ -50,7 +50,8 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
               const medicationEvent = request.request;
               const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
               const quantity: Quantity = getQuantity(medicationEvent);
-              const refillsAllowed: number = getRefillsAllowed(medicationEvent);
+              const numberOfRefillsAllowed: number = getRefillsAllowed(medicationEvent);
+
               return (
                 <div key={index}>
                   {dosageInstruction && (
@@ -99,7 +100,9 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                           <span className={styles.faintText}>{t('refills', 'Refills')}</span>
                           {': '}{' '}
                           <span>
-                            {refillsAllowed || refillsAllowed === 0 ? refillsAllowed : t('notRefills', 'No Refills')}
+                            {numberOfRefillsAllowed || numberOfRefillsAllowed === 0
+                              ? numberOfRefillsAllowed
+                              : t('noRefills', 'No refills')}
                           </span>
                         </p>
 

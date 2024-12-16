@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
-import { type DosageInstruction, type MedicationRequestBundle } from '../types';
-import { getDosageInstruction, getMedicationDisplay, getMedicationReferenceOrCodeableConcept } from '../utils';
 import { Checkbox } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
+import { type DosageInstruction, type MedicationRequestBundle } from '../types';
+import { getDosageInstruction, getMedicationDisplay, getMedicationReferenceOrCodeableConcept } from '../utils';
 
 type PrintablePrescriptionsSelectorProps = {
   medicationRequests: Array<MedicationRequestBundle>;
@@ -16,6 +16,7 @@ const PrintablePrescriptionsSelector: React.FC<PrintablePrescriptionsSelectorPro
   excludedPrescription,
 }) => {
   const { t } = useTranslation();
+
   const handleChange = useCallback(
     (checked: boolean, medicationEventId: string) => {
       if (checked) {
@@ -26,6 +27,7 @@ const PrintablePrescriptionsSelector: React.FC<PrintablePrescriptionsSelectorPro
     },
     [onExcludedPrescriptionChange, excludedPrescription],
   );
+
   return (
     <div>
       <p>
@@ -34,6 +36,7 @@ const PrintablePrescriptionsSelector: React.FC<PrintablePrescriptionsSelectorPro
       {medicationRequests?.map((request) => {
         const medicationEvent = request.request;
         const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
+
         return (
           <div key={medicationEvent.id}>
             {dosageInstruction && (

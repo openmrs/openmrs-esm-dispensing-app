@@ -19,7 +19,7 @@ export function useLocationForFiltering(config: PharmacyConfig) {
 
   return {
     filterLocations,
-    isError: error,
+    error,
     isLoading: !filterLocations && !error,
   };
 }

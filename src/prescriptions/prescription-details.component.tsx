@@ -10,8 +10,8 @@ import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
 import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import ActionButtons from '../components/action-buttons.component';
 import MedicationEvent from '../components/medication-event.component';
-import styles from './prescription-details.scss';
 import PrescriptionsActionsFooter from './prescription-actions.component';
+import styles from './prescription-details.scss';
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -21,10 +21,7 @@ const PrescriptionDetails: React.FC<{
   const config = useConfig<PharmacyConfig>();
   const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid, config.refreshInterval);
-  const { medicationRequestBundles, isError, isLoading } = usePrescriptionDetails(
-    encounterUuid,
-    config.refreshInterval,
-  );
+  const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
 
   useEffect(() => {
     if (typeof totalAllergies == 'number') {
@@ -92,7 +89,7 @@ const PrescriptionDetails: React.FC<{
       )}
       <h5 style={{ paddingTop: '8px', paddingBottom: '8px', fontSize: '0.9rem' }}>{t('prescribed', 'Prescribed')}</h5>
       {isLoading && <DataTableSkeleton role="progressbar" />}
-      {isError && <p>{t('error', 'Error')}</p>}
+      {error && <p>{t('error', 'Error')}</p>}
       {medicationRequestBundles &&
         medicationRequestBundles.map((bundle) => {
           return (

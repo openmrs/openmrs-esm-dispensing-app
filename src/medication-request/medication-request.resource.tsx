@@ -170,7 +170,7 @@ export function usePrescriptionDetails(encounterUuid: string, refreshInterval = 
   return {
     medicationRequestBundles,
     prescriptionDate,
-    isError: error,
+    error,
     isLoading,
   };
 }
@@ -193,7 +193,7 @@ export function usePatientAllergies(patientUuid: string, refreshInterval) {
   return {
     allergies,
     totalAllergies: data?.data.total,
-    isError: error,
+    error,
   };
 }
 

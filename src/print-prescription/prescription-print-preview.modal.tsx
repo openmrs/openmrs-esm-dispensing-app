@@ -1,3 +1,6 @@
+import React, { useRef, useState } from 'react';
+import { useReactToPrint } from 'react-to-print';
+import { useTranslation } from 'react-i18next';
 import {
   Button,
   ButtonSet,
@@ -8,13 +11,10 @@ import {
   ModalHeader,
 } from '@carbon/react';
 import { ErrorState, getCoreTranslation } from '@openmrs/esm-framework';
-import React, { useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useReactToPrint } from 'react-to-print';
 import { usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import PrescriptionsPrintout from './prescription-printout.component';
-import styles from './print-prescription.scss';
 import PrintablePrescriptionsSelector from './printable-prescriptions.component';
+import styles from './print-prescription.scss';
 
 type PrescriptionPrintPreviewModalProps = {
   onClose: () => void;
@@ -23,17 +23,14 @@ type PrescriptionPrintPreviewModalProps = {
   status: string;
 };
 
-const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps> = ({
-  onClose,
-  encounterUuid,
-  patientUuid,
-  status,
-}) => {
+const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps> = ({ onClose, encounterUuid }) => {
   const { t } = useTranslation();
-  const { medicationRequestBundles, isError, isLoading } = usePrescriptionDetails(encounterUuid);
+  const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid);
+
   const [excludedPrescriptions, setExcludedPrescriptions] = useState<string[]>([]);
-  const componentRef = useRef<HTMLDivElement>(null);
   const [printError, setPrintError] = useState<string | null>(null);
+  const componentRef = useRef<HTMLDivElement>(null);
+
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
     onBeforeGetContent: () => {
@@ -48,7 +45,7 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
   return (
     <>
       <ModalHeader closeModal={onClose} className={styles.title}>
-        {t('printPrescriptions', 'Print Prescriptions')}
+        {t('printPrescriptions', 'Print prescriptions')}
       </ModalHeader>
       <ModalBody>
         {isLoading && (
@@ -58,7 +55,7 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
             description={t('loading', 'Loading prescriptions') + '....'}
           />
         )}
-        {isError && <ErrorState error={isError} headerTitle={t('error', 'Error')} />}
+        {error && <ErrorState error={error} headerTitle={t('error', 'Error')} />}
         {!isLoading && medicationRequestBundles?.length > 0 && (
           <div className={styles.printoutSelectorRow}>
             <PrintablePrescriptionsSelector
