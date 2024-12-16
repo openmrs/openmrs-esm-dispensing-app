@@ -1,43 +1,47 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { type DosageInstruction, type MedicationRequestBundle } from '../types';
 import { getDosageInstruction, getMedicationDisplay, getMedicationReferenceOrCodeableConcept } from '../utils';
 import { Checkbox } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 
 type PrintablePrescriptionsSelectorProps = {
-  medicationrequests: Array<MedicationRequestBundle>;
+  medicationRequests: Array<MedicationRequestBundle>;
   excludedPrescription: Array<string>;
   onExcludedPrescriptionChange: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const PrintablePrescriptionsSelector: React.FC<PrintablePrescriptionsSelectorProps> = ({
-  medicationrequests,
+  medicationRequests,
   onExcludedPrescriptionChange,
   excludedPrescription,
 }) => {
   const { t } = useTranslation();
+  const handleChange = useCallback(
+    (checked: boolean, medicationEventId: string) => {
+      if (checked) {
+        onExcludedPrescriptionChange(excludedPrescription.filter((id) => id !== medicationEventId));
+      } else {
+        onExcludedPrescriptionChange([...excludedPrescription, medicationEventId]);
+      }
+    },
+    [onExcludedPrescriptionChange, excludedPrescription],
+  );
   return (
     <div>
       <p>
         <strong>{t('selectPrescriptions', 'Check prescriptions to print')}</strong>
       </p>
-      {medicationrequests?.map((request, index) => {
+      {medicationRequests?.map((request) => {
         const medicationEvent = request.request;
         const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
         return (
-          <div key={index}>
+          <div key={medicationEvent.id}>
             {dosageInstruction && (
               <Checkbox
                 id={medicationEvent.id}
                 labelText={getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}
                 checked={!excludedPrescription.includes(medicationEvent.id)}
-                onChange={(_, { checked }) => {
-                  if (checked) {
-                    onExcludedPrescriptionChange(excludedPrescription.filter((id) => id !== medicationEvent.id));
-                  } else {
-                    onExcludedPrescriptionChange([...excludedPrescription, medicationEvent.id]);
-                  }
-                }}
+                onChange={(_, { checked }) => handleChange(checked, medicationEvent.id)}
               />
             )}
           </div>

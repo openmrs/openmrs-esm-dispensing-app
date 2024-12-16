@@ -7,7 +7,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from '@carbon/react';
-import { ErrorState } from '@openmrs/esm-framework';
+import { ErrorState, getCoreTranslation } from '@openmrs/esm-framework';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useReactToPrint } from 'react-to-print';
@@ -31,7 +31,7 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
 }) => {
   const { t } = useTranslation();
   const { medicationRequestBundles, isError, isLoading } = usePrescriptionDetails(encounterUuid);
-  const [excludedPrescription, setExcludedPrescriptions] = useState<string[]>([]);
+  const [excludedPrescriptions, setExcludedPrescriptions] = useState<string[]>([]);
   const componentRef = useRef<HTMLDivElement>(null);
   const [printError, setPrintError] = useState<string | null>(null);
   const handlePrint = useReactToPrint({
@@ -62,14 +62,14 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
         {!isLoading && medicationRequestBundles?.length > 0 && (
           <div className={styles.printoutSelectorRow}>
             <PrintablePrescriptionsSelector
-              medicationrequests={medicationRequestBundles}
-              excludedPrescription={excludedPrescription}
+              medicationRequests={medicationRequestBundles}
+              excludedPrescription={excludedPrescriptions}
               onExcludedPrescriptionChange={setExcludedPrescriptions}
             />
             <div ref={componentRef}>
               <PrescriptionsPrintout
                 medicationrequests={medicationRequestBundles}
-                excludedPrescription={excludedPrescription}
+                excludedPrescription={excludedPrescriptions}
               />
             </div>
           </div>
@@ -81,7 +81,7 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
       <ModalFooter>
         <ButtonSet className={styles.btnSet}>
           <Button kind="secondary" onClick={onClose} type="button">
-            {t('cancel', 'Cancel')}
+            {getCoreTranslation('cancel', 'Cancel')}
           </Button>
           <Button kind="primary" onClick={handlePrint} type="button" disabled={isLoading}>
             {t('print', 'Print')}

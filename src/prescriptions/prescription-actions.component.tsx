@@ -1,6 +1,6 @@
 import React from 'react';
 import PrescriptionPrintAction from '../print-prescription/prescription-print-action.component';
-import styles from './prescriptions-actions.scss';
+import styles from './prescription-actions.scss';
 import { Layer } from '@carbon/react';
 type PrescriptionsActionsFooterProps = {
   encounterUuid: string;
@@ -10,12 +10,12 @@ type PrescriptionsActionsFooterProps = {
 const PrescriptionsActionsFooter: React.FC<PrescriptionsActionsFooterProps> = ({ encounterUuid, patientUuid }) => {
   return (
     <Layer className={styles.actionsContainer}>
-      <div className={styles.actionsContainer}>
+      <div className={styles.actionCluster}>
         {/* Left buttons */}
         <PrescriptionPrintAction encounterUuid={encounterUuid} patientUuid={patientUuid} />
       </div>
 
-      <div className={styles.actionsContainer}>{/* Right buttons */}</div>
+      <div className={styles.actionCluster}>{/* Right buttons */}</div>
     </Layer>
   );
 };

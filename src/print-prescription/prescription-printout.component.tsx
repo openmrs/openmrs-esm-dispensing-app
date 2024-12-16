@@ -25,7 +25,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
   } = useSession();
   const patient = medicationrequests[0]?.request?.subject;
 
-  const extractpatientName = (display: string) => (display.includes('(') ? display.split('(')[0] : display);
+  const extractPatientName = (display: string) => (display.includes('(') ? display.split('(')[0] : display);
   return (
     <Layer className={styles.printOutContainer}>
       <StructuredListWrapper>
@@ -37,7 +37,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
               <p className={styles.printoutTitle}>{t('prescriptionInstructions', 'Prescription Instructions')}</p>
               {patient && (
                 <p className={classNames(styles.patientName, styles.faintText)}>
-                  {extractpatientName(patient.display)}
+                  {extractPatientName(patient.display)}
                 </p>
               )}
               <br />
@@ -93,7 +93,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                         </p>
                         <p>
                           <span className={styles.faintText}>{t('datePrescribed', 'Date prescribed')}</span>
-                          {': '} <span>{formatDate(parseDate((request.request as any).authoredOn))}</span>
+                          {': '} <span>{formatDate(parseDate(request.request.authoredOn))}</span>
                         </p>
                         <p>
                           <span className={styles.faintText}>{t('refills', 'Refills')}</span>
