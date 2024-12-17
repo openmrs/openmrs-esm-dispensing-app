@@ -41,7 +41,7 @@ const HistoryAndComments: React.FC<{
   const { t } = useTranslation();
   const session = useSession();
   const config = useConfig<PharmacyConfig>();
-  const { medicationRequestBundles, prescriptionDate, isError, isLoading } = usePrescriptionDetails(
+  const { medicationRequestBundles, prescriptionDate, error, isLoading } = usePrescriptionDetails(
     encounterUuid,
     config.refreshInterval,
   );
@@ -60,7 +60,7 @@ const HistoryAndComments: React.FC<{
           (performer) =>
             performer?.actor?.reference?.length > 1 &&
             performer.actor.reference.split('/')[1] === session.currentProvider.uuid,
-        ) != null
+        ) !== null
       ) {
         return true;
       }
@@ -133,7 +133,7 @@ const HistoryAndComments: React.FC<{
         props: Record<string, unknown>;
       };
       const workspaceTitle = getWorkspaceTitle(medicationDispense);
-      launchWorkspace(workspaceName, { workspaceTitle, ...props, });
+      launchWorkspace(workspaceName, { workspaceTitle, ...props });
     };
 
     if (!editable && !deletable) {
@@ -145,9 +145,7 @@ const HistoryAndComments: React.FC<{
           flipped={true}
           className={styles.medicationEventActionMenu}>
           {editable && (
-            <OverflowMenuItem
-              onClick={handleEdit}
-              itemText={t('editRecord', 'Edit Record')}></OverflowMenuItem>
+            <OverflowMenuItem onClick={handleEdit} itemText={t('editRecord', 'Edit record')}></OverflowMenuItem>
           )}
           {deletable && (
             <OverflowMenuItem
@@ -215,7 +213,7 @@ const HistoryAndComments: React.FC<{
   return (
     <div className={styles.historyAndCommentsContainer}>
       {isLoading && <DataTableSkeleton role="progressbar" />}
-      {isError && <p>{t('error', 'Error')}</p>}
+      {error && <p>{t('error', 'Error')}</p>}
       {medicationRequestBundles &&
         medicationRequestBundles
           .flatMap((medicationDispenseBundle) => medicationDispenseBundle.dispenses)

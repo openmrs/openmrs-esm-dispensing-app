@@ -329,6 +329,7 @@ export interface MedicationRequest {
       start: string;
     };
   };
+  authoredOn?: string;
 }
 
 export interface MedicationRequestResponse {
