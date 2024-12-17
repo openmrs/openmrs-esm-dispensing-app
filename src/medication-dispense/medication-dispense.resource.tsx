@@ -1,6 +1,6 @@
-import { fhirBaseUrl, restBaseUrl, openmrsFetch, type Session } from '@openmrs/esm-framework';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
+import { fhirBaseUrl, restBaseUrl, openmrsFetch, type Session } from '@openmrs/esm-framework';
 import {
   type MedicationDispense,
   type MedicationDispenseStatus,
@@ -51,8 +51,8 @@ export function useOrderConfig() {
   );
   return {
     orderConfigObject: data ? data.data : null,
+    error,
     isLoading: !data && !error,
-    isError: error,
     isValidating,
   };
 }

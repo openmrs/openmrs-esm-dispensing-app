@@ -14,7 +14,7 @@ export function useMetrics() {
 
   return {
     metrics: metrics,
-    isError: error,
+    error,
     isLoading: !data && !error,
   };
 }
