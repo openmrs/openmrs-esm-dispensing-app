@@ -16,6 +16,14 @@ const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updat
   const drugUuid = medicationDispense?.medicationReference?.reference?.split('/')[1];
   const { inventoryItems, error, isLoading } = useDispenseStock(drugUuid);
   const validInventoryItems = inventoryItems.filter((item) => isValidBatch(medicationDispense, item));
+  const validInventoryItemss = inventoryItems
+    .filter((item) => isValidBatch(medicationDispense, item))
+    .sort((a, b) => {
+      const dateA = new Date(a.expiration);
+      const dateB = new Date(b.expiration);
+
+      return dateA.getDate() - dateB.getDate();
+    });
 
   function parseDate(dateString) {
     return new Date(dateString);
