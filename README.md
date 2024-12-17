@@ -61,6 +61,18 @@ yarn start --backend "http://localhost:8080/" --port 8081 # will run against a l
 Open a browser, pointing the the port indicated above (eg. 8081):
 `http://localhost:8081/openmrs/spa/dispensing`
 
+To run end-to-end tests, run:
+
+```bash
+yarn test-e2e
+```
+
+Read the [e2e testing guide](https://o3-docs.openmrs.org/docs/frontend-modules/end-to-end-testing) to learn more about End-to-End tests in this project.
+
+### Updating Playwright
+
+The Playwright version in the [Bamboo e2e Dockerfile](e2e/support/bamboo/playwright.Dockerfile#L2) and the `package.json` file must match. If you update the Playwright version in one place, you must update it in the other.
+
 ## Troubleshooting
 
 If you run into errors with running the code, and see errors in the console related to having not enough file watchers on Linux,
