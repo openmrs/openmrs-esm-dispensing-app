@@ -80,6 +80,7 @@
     "dayjs": "^1.11.13",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-playwright": "^0.16.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "husky": "^6.0.0",
