@@ -11,10 +11,6 @@ test('Navigate to the dispensing page', async ({ page }) => {
   });
 
   await test.step('Then I should see the active prescriptions tab', async () => {
-    await expect(
-      dispensingPage.page.getByRole('tab', {
-        name: /active prescriptions/i,
-      }),
-    ).toBeVisible();
+    await expect(page.getByRole('tab', { name: /active prescriptions/i })).toBeVisible();
   });
 });
