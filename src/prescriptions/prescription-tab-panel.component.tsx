@@ -47,6 +47,14 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
     config.refreshInterval,
   );
 
+  // dynamic status keys we need to maintain
+  // t('active', 'Active')
+  // t('paused', 'Paused')
+  // t('closed', 'Closed')
+  // t('completed', 'Completed')
+  // t('expired', 'Expired')
+  // t('cancelled', 'Cancelled')
+
   let columns = [
     { header: t('created', 'Created'), key: 'created' },
     { header: t('patientName', 'Patient name'), key: 'patient' },
