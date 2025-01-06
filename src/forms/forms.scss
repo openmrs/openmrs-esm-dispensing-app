@@ -3,6 +3,8 @@
 @use '@carbon/type';
 @use '@openmrs/esm-styleguide/src/vars' as *;
 
+$color-blue-30: #a6c8ff;
+
 .productiveHeading02 {
   color: $color-gray-70;
   @include type.type-style('productive-heading-02');
@@ -115,7 +117,7 @@
   border-bottom: 1px solid $color-blue-30;
   border-left: 1px solid $color-blue-30;
   border-right: none;
-  border-radius: spacing.$spacing-02 0 0px spacing.$spacing-02;
+  border-radius: layout.$spacing-02 0 0px layout.$spacing-02;
 }
 
 .contentSwitcherWrapper > div button:last-child {
@@ -123,7 +125,7 @@
   border-bottom: 1px solid $color-blue-30;
   border-right: 1px solid $color-blue-30;
   border-left: none;
-  border-radius: 0px spacing.$spacing-02 spacing.$spacing-02 0px;
+  border-radius: 0px layout.$spacing-02 layout.$spacing-02 0px;
 }
 
 .contentSwitcherWrapper > div > button[aria-selected='true'],
