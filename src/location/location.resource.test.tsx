@@ -34,9 +34,6 @@ const pharmacyConfig: PharmacyConfig = {
     substitutionType: { uuid: '' },
   },
   enableStockDispense: false,
-  showDiagnosesFromVisit: false,
-  showExtraPatientInformationSlot: false,
-  showPatientConditions: false,
 };
 
 describe('Location Resource tests', () => {

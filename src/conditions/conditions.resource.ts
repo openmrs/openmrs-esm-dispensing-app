@@ -1,6 +1,5 @@
-import { type FetchResponse, fhirBaseUrl, openmrsFetch, useConfig } from '@openmrs/esm-framework';
+import { type FetchResponse, fhirBaseUrl, openmrsFetch } from '@openmrs/esm-framework';
 import useSWR from 'swr';
-import { type PharmacyConfig } from '../config-schema';
 import { useMemo } from 'react';
 
 export interface ConditionsBundle {
@@ -100,12 +99,8 @@ export interface Condition {
 }
 
 export const usePatientConditions = (patientUuid: string) => {
-  const { showPatientConditions } = useConfig<PharmacyConfig>();
   const url = `${fhirBaseUrl}/Condition?patient=${patientUuid}&_count=100&_summary=data`;
-  const { data, isLoading, mutate, error } = useSWR<FetchResponse<ConditionsBundle>>(
-    showPatientConditions ? url : null,
-    openmrsFetch,
-  );
+  const { data, isLoading, mutate, error } = useSWR<FetchResponse<ConditionsBundle>>(url, openmrsFetch);
 
   const conditions = useMemo(() => {
     return data?.data?.entry?.reduce<Array<Condition>>((prev, entry) => {
@@ -128,6 +123,5 @@ export const usePatientConditions = (patientUuid: string) => {
     isLoading,
     error,
     mutate,
-    showPatientConditions,
   };
 };

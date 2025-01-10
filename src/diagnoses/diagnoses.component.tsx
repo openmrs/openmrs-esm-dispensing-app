@@ -1,8 +1,4 @@
-import { InlineLoading, InlineNotification } from '@carbon/react';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { usePatientDiagnosis } from './diagnoses.resource';
-import {
+import { InlineLoading, InlineNotification ,
   StructuredListWrapper,
   StructuredListHead,
   StructuredListRow,
@@ -10,6 +6,9 @@ import {
   StructuredListBody,
   Layer,
 } from '@carbon/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { usePatientDiagnosis } from './diagnoses.resource';
 import styles from './diagnoses.scss';
 import EmptyState from '../components/empty-state.component';
 
@@ -19,11 +18,9 @@ type PatientDiagnosesProps = {
 };
 
 const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, patientUuid }) => {
-  const { diagnoses, isLoading, error, showDiagnosesFromVisit } = usePatientDiagnosis(encounterUuid);
+  const { diagnoses, isLoading, error } = usePatientDiagnosis(encounterUuid);
 
   const { t } = useTranslation();
-
-  if (!showDiagnosesFromVisit) return null;
 
   if (isLoading)
     return (

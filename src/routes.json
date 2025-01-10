@@ -22,14 +22,12 @@
     },
     {
       "name": "patient-diagnoses",
-      "slot": "extra-patient-information-slot",
       "component": "patientDiagnoses",
       "online": true,
       "offline": true
     },
     {
       "name": "patient-conditions",
-      "slot": "extra-patient-information-slot",
       "component": "patientConditions",
       "online": true,
       "offline": true

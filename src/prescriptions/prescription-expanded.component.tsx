@@ -1,11 +1,10 @@
 import React from 'react';
-import { ExtensionSlot, useConfig, type PatientUuid } from '@openmrs/esm-framework';
+import { ExtensionSlot, type PatientUuid } from '@openmrs/esm-framework';
 import { Tab, Tabs, TabList, TabPanels, TabPanel } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import HistoryAndComments from '../history/history-and-comments.component';
 import styles from './prescription-expanded.scss';
 import PrescriptionDetails from './prescription-details.component';
-import { type PharmacyConfig } from '../config-schema';
 
 interface TabItem {
   name: string;
@@ -18,25 +17,16 @@ const PrescriptionExpanded: React.FC<{
   status: string;
 }> = ({ encounterUuid, patientUuid, status }) => {
   const { t } = useTranslation();
-  const { showExtraPatientInformationSlot } = useConfig<PharmacyConfig>();
-
-  const getConfigurableTabs = () => {
-    const configTabs: TabItem[] = [];
-    if (showExtraPatientInformationSlot) {
-      configTabs.push({
-        name: t('extraPatientInfo', 'Extra patient Info'),
-        component: <ExtensionSlot name="extra-patient-information-slot" state={{ patientUuid, encounterUuid }} />,
-      });
-    }
-    return configTabs;
-  };
 
   const tabs: TabItem[] = [
     {
       name: t('prescriptionDetails', 'Prescription details'),
       component: <PrescriptionDetails encounterUuid={encounterUuid} patientUuid={patientUuid} />,
     },
-    ...getConfigurableTabs(),
+    {
+      name: t('extraPatientInfo', 'Extra patient Info'),
+      component: <ExtensionSlot name="extra-patient-information-slot" state={{ patientUuid, encounterUuid }} />,
+    },
     {
       name: t('historyComments', 'History and comments'),
       component: <HistoryAndComments encounterUuid={encounterUuid} patientUuid={patientUuid} />,

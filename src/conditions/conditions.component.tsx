@@ -22,9 +22,7 @@ type PatientConditionsProps = {
 
 const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
-  const { conditions, error, isLoading, mutate, showPatientConditions } = usePatientConditions(patientUuid);
-
-  if (!showPatientConditions) return null;
+  const { conditions, error, isLoading, mutate } = usePatientConditions(patientUuid);
 
   if (isLoading)
     return (
