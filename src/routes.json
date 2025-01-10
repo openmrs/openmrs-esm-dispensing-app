@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.openmrs.org/routes.schema.json",
   "backendDependencies": {
     "fhir2": ">=1.2",
     "webservices.rest": "^2.2.0"
@@ -48,6 +49,48 @@
         "slot": "dispensing-dashboard-slot",
         "title": "Dispensing"
       }
+    },
+    {
+      "name": "dispense-action-button",
+      "slot": "prescription-action-button-slot",
+      "component": "dispenseActionButton"
+    },
+    {
+      "name": "pause-action-button",
+      "slot": "prescription-action-button-slot",
+      "component": "pauseActionButton"
+    },
+    {
+      "name": "close-action-button",
+      "slot": "prescription-action-button-slot",
+      "component": "closeActionButton"
+    }
+  ],
+  "workspaces": [
+    {
+      "name": "close-dispense-workspace",
+      "component": "closeDispenseWorkspace",
+      "type": "dispense",
+      "title": "Close prescription"
+    },
+    {
+      "name": "pause-dispense-workspace",
+      "component": "pauseDispenseWorkspace",
+      "type": "dispense",
+      "title": "Pause prescription"
+    },
+    {
+      "name": "dispense-workspace",
+      "component": "dispenseWorkspace",
+      "type": "dispense",
+      "title": "Dispense prescription",
+      "width": "wider"
+    }
+  ],
+  "modals": [
+    {
+      "name": "prescription-print-preview-modal",
+      "component": "printPrescriptionPreviewModal"
     }
   ]
 }

@@ -23,7 +23,7 @@
   "dispensedBy": "Dispensed by",
   "dispensedMedication": "dispensed medication",
   "dispensePrescription": "Dispense prescription",
-  "dispensing": "Dispensing",
+  "dispensing": "الاستغناء",
   "dispensingAppError": "Dispensing App Error",
   "dispensingAppMisconfigurationMessage": "Please contact your system administration: Misconfiguration - 'restrictTotalQuantityDispensed' cannot be enabled if 'allowModifyingPrescription' is enabled.",
   "dose": "Dose",

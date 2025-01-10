@@ -7,7 +7,7 @@ import styles from './dispensing-tiles.scss';
 
 const DispensingTiles: React.FC = () => {
   const { t } = useTranslation();
-  const { metrics, isError, isLoading } = useMetrics();
+  const { metrics, error, isLoading } = useMetrics();
 
   if (isLoading) {
     return <DataTableSkeleton role="progressbar" />;

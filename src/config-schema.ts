@@ -1,25 +1,5 @@
 import { Type } from '@openmrs/esm-framework';
 
-/**
- * This is the config schema. It expects a configuration object which
- * looks like this:
- *
- * ```json
- * { "casualGreeting": true, "whoToGreet": ["Mom"] }
- * ```
- *
- * In OpenMRS Microfrontends, all config parameters are optional. Thus,
- * all elements must have a reasonable default. A good default is one
- * that works well with the reference application.
- *
- * To understand the schema below, please read the configuration system
- * documentation:
- *   https://openmrs.github.io/openmrs-esm-core/#/main/config
- * Note especially the section "How do I make my module configurable?"
- *   https://openmrs.github.io/openmrs-esm-core/#/main/config?id=im-developing-an-esm-module-how-do-i-make-it-configurable
- * and the Schema Reference
- *   https://openmrs.github.io/openmrs-esm-core/#/main/config?id=schema-reference
- */
 export const configSchema = {
   appName: {
     _type: Type.String,
@@ -99,7 +79,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Pause' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: '2dd3e5c0-3d3f-4f3d-9860-19b3f9ab26ff',
+        _default: '2462a9d7-61fb-4bf5-9359-aedecb8d03cb',
       },
     },
     reasonForClose: {
@@ -107,7 +87,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Close' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: 'bd6c1fc2-7cfc-4562-94a0-e4765e5e977e',
+        _default: '2462a9d7-61fb-4bf5-9359-aedecb8d03cb',
       },
     },
     substitutionReason: {
@@ -115,7 +95,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Substitution' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167862/",
-        _default: 'de8671b8-ed2e-4f7e-a9f8-dcd00878f2eb',
+        _default: '2de6e1be-f2dd-4ba0-9516-8a611aa2af9b',
       },
     },
     substitutionType: {

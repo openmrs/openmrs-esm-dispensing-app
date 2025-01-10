@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import {
   DataTable,
   DataTableSkeleton,
@@ -17,11 +16,13 @@ import {
   TabPanel,
   Tile,
 } from '@carbon/react';
-import { useTranslation } from 'react-i18next';
 import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
-import PrescriptionExpanded from './prescription-expanded.component';
-import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type PharmacyConfig } from '../config-schema';
+import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import PatientInfoCell from '../patient/patient-info-cell.component';
+import PrescriptionExpanded from './prescription-expanded.component';
 import styles from './prescriptions.scss';
 
 interface PrescriptionTabPanelProps {
@@ -45,6 +46,14 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
     config.medicationRequestExpirationPeriodInDays,
     config.refreshInterval,
   );
+
+  // dynamic status keys we need to maintain
+  // t('active', 'Active')
+  // t('paused', 'Paused')
+  // t('closed', 'Closed')
+  // t('completed', 'Completed')
+  // t('expired', 'Expired')
+  // t('cancelled', 'Cancelled')
 
   let columns = [
     { header: t('created', 'Created'), key: 'created' },
@@ -91,13 +100,15 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm,
                           <TableExpandRow {...getRowProps({ row })}>
                             {row.cells.map((cell) => (
                               <TableCell key={cell.id}>
-                                {cell.id.endsWith('created')
-                                  ? formatDatetime(parseDate(cell.value))
-                                  : cell.id.endsWith('patient')
-                                    ? cell.value.name
-                                    : cell.id.endsWith('status')
-                                      ? t(cell.value)
-                                      : cell.value}
+                                {cell.id.endsWith('created') ? (
+                                  formatDatetime(parseDate(cell.value))
+                                ) : cell.id.endsWith('patient') ? (
+                                  <PatientInfoCell patient={cell.value} />
+                                ) : cell.id.endsWith('status') ? (
+                                  t(cell.value)
+                                ) : (
+                                  cell.value
+                                )}
                               </TableCell>
                             ))}
                           </TableExpandRow>
