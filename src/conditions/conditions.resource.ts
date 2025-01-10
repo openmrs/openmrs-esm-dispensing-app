@@ -90,6 +90,7 @@ export interface Recorder {
 }
 
 export interface Condition {
+  id: string;
   status?: 'active' | 'inactive';
   display: string;
   patient: string;
@@ -106,6 +107,7 @@ export const usePatientConditions = (patientUuid: string) => {
     return data?.data?.entry?.reduce<Array<Condition>>((prev, entry) => {
       if (entry?.resource?.resourceType === 'Condition') {
         const condition: Condition = {
+          id: entry.resource.id,
           display: entry?.resource?.code?.text,
           onsetDateTime: entry?.resource?.onsetDateTime,
           patient: entry?.resource?.subject?.display,

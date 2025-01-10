@@ -1,16 +1,20 @@
-import { InlineLoading, InlineNotification ,
-  StructuredListWrapper,
-  StructuredListHead,
-  StructuredListRow,
-  StructuredListCell,
-  StructuredListBody,
+import {
+  DataTable,
+  InlineLoading,
+  InlineNotification,
   Layer,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@carbon/react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { EmptyDataIllustration } from '../components/empty-illustration';
 import { usePatientDiagnosis } from './diagnoses.resource';
 import styles from './diagnoses.scss';
-import EmptyState from '../components/empty-state.component';
 
 type PatientDiagnosesProps = {
   patientUuid: string;
@@ -19,8 +23,13 @@ type PatientDiagnosesProps = {
 
 const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, patientUuid }) => {
   const { diagnoses, isLoading, error } = usePatientDiagnosis(encounterUuid);
-
   const { t } = useTranslation();
+  const headers = useMemo(() => {
+    return [
+      { header: t('diagnosis', 'Diagnosis'), key: 'text' },
+      { header: t('status', 'Status'), key: 'certainty' },
+    ];
+  }, [t]);
 
   if (isLoading)
     return (
@@ -34,34 +43,43 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
   if (error)
     return <InlineNotification kind="error" subtitle={t('diagnosesError', 'Error loading diagnoses')} lowContrast />;
 
-  if (!diagnoses.length)
-    return (
-      <EmptyState
-        title={t('diagnoses', 'Diagnoses')}
-        message={t('noDiagnoses', "No diagnoses for this patient's visit")}
-      />
-    );
-
   return (
     <Layer className={styles.diagnosesContainer}>
-      <StructuredListWrapper>
-        <StructuredListHead>
-          <StructuredListRow head>
-            <StructuredListCell head>
-              {t('diagnoses', 'Diagnoses')} {`(${diagnoses.length})`}
-            </StructuredListCell>
-            <StructuredListCell head>{t('status', 'Status')}</StructuredListCell>
-          </StructuredListRow>
-        </StructuredListHead>
-        <StructuredListBody>
-          {diagnoses.map(({ certainty, text }) => (
-            <StructuredListRow>
-              <StructuredListCell noWrap>{text}</StructuredListCell>
-              <StructuredListCell>{certainty}</StructuredListCell>
-            </StructuredListRow>
-          ))}
-        </StructuredListBody>
-      </StructuredListWrapper>
+      <div className={styles.heading}>
+        <h4>{t('diagnoses', 'Diagnoses')}</h4>
+      </div>
+      <DataTable useZebraStyles rows={diagnoses} headers={headers}>
+        {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
+          <Table {...getTableProps()}>
+            <TableHead>
+              <TableRow>
+                {headers.map((header) => (
+                  <TableHeader {...getHeaderProps({ header })}>{header.header}</TableHeader>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {!rows.length && (
+                <TableRow>
+                  <TableCell colSpan={headers.length}>
+                    <div className={styles.emptyState}>
+                      <EmptyDataIllustration />
+                      <p className={styles.emptyText}>{t('noDiagnoses', "No Diagnoses for this patient's visit")}</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+              {rows.map((row) => (
+                <TableRow {...getRowProps({ row })}>
+                  {row.cells.map((cell) => (
+                    <TableCell key={cell.id}>{cell.value}</TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </DataTable>
     </Layer>
   );
 };

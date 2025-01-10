@@ -1,19 +1,21 @@
-import React from 'react';
 import {
-  StructuredListWrapper,
-  StructuredListHead,
-  StructuredListRow,
-  StructuredListCell,
-  StructuredListBody,
-  Layer,
+  DataTable,
   InlineLoading,
   InlineNotification,
+  Layer,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@carbon/react';
-import styles from './conditions.scss';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { EmptyDataIllustration } from '../components/empty-illustration';
 import { usePatientConditions } from './conditions.resource';
+import styles from './conditions.scss';
 import { formatDate, parseDate } from '@openmrs/esm-framework';
-import EmptyState from '../components/empty-state.component';
 
 type PatientConditionsProps = {
   patientUuid: string;
@@ -23,6 +25,16 @@ type PatientConditionsProps = {
 const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const { conditions, error, isLoading, mutate } = usePatientConditions(patientUuid);
+  const headers = useMemo(() => {
+    return [
+      { header: t('activeConditions', 'Active Conditions'), key: 'display' },
+      { header: t('onsetDate', 'Onset Date'), key: 'onsetDateTime' },
+    ];
+  }, [t]);
+
+  const tablerows = useMemo(() => {
+    return (conditions ?? []).map((c) => ({ ...c, onsetDateTime: formatDate(parseDate(c.onsetDateTime)) }));
+  }, [conditions]);
 
   if (isLoading)
     return (
@@ -36,32 +48,43 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
   if (error)
     return <InlineNotification kind="error" subtitle={t('conditionsError', 'Error loading conditions')} lowContrast />;
 
-  if (!conditions.length)
-    return (
-      <EmptyState title={t('conditions', 'Conditions')} message={t('noConditions', 'No conditions for this patient')} />
-    );
-
   return (
     <Layer className={styles.conditionsContainer}>
-      <StructuredListWrapper>
-        <StructuredListHead>
-          <StructuredListRow head>
-            <StructuredListCell head>
-              {t('activeConditions', 'Active Conditions')}
-              {`(${conditions.length})`}
-            </StructuredListCell>
-            <StructuredListCell head>{t('onSetDate', 'Onset Date')}</StructuredListCell>
-          </StructuredListRow>
-        </StructuredListHead>
-        <StructuredListBody>
-          {conditions.map(({ display, onsetDateTime, status }) => (
-            <StructuredListRow>
-              <StructuredListCell noWrap>{display}</StructuredListCell>
-              <StructuredListCell>{formatDate(parseDate(onsetDateTime))}</StructuredListCell>
-            </StructuredListRow>
-          ))}
-        </StructuredListBody>
-      </StructuredListWrapper>
+      <div className={styles.heading}>
+        <h4>{t('conditions', 'Conditions')}</h4>
+      </div>
+      <DataTable useZebraStyles rows={tablerows} headers={headers}>
+        {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
+          <Table {...getTableProps()}>
+            <TableHead>
+              <TableRow>
+                {headers.map((header) => (
+                  <TableHeader {...getHeaderProps({ header })}>{header.header}</TableHeader>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {!rows.length && (
+                <TableRow>
+                  <TableCell colSpan={headers.length}>
+                    <div className={styles.emptyState}>
+                      <EmptyDataIllustration />
+                      <p className={styles.emptyText}>{t('noConditions', 'No conditions for this patient')}</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+              {rows.map((row) => (
+                <TableRow {...getRowProps({ row })}>
+                  {row.cells.map((cell) => (
+                    <TableCell key={cell.id}>{cell.value}</TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </DataTable>
     </Layer>
   );
 };
