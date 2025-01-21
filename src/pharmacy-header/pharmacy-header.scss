@@ -11,31 +11,31 @@
   justify-content: space-between;
 }
 
-.left-justified-items {
+.leftJustifiedItems {
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-left: 0.75rem;
+  margin-left: 1rem;
 }
 
-.right-justified-items {
+.rightJustifiedItems {
   @include type.type-style('body-compact-02');
   color: $text-02;
   padding-top: 1rem;
 }
 
-.page-name {
+.pageName {
   @include type.type-style('heading-04');
 }
 
-.page-labels {
+.pageLabels {
   margin-left: 1rem;
   p:first-of-type {
     margin-bottom: 0.25rem;
   }
 }
 
-.date-and-location {
+.dateAndLocation {
   display: flex;
   justify-content: flex-end;
   align-items: center;
