@@ -14,15 +14,15 @@ export const PharmacyHeader: React.FC = () => {
 
   return (
     <div className={styles.header}>
-      <div className={styles['left-justified-items']}>
+      <div className={styles.leftJustifiedItems}>
         <PharmacyIllustration />
-        <div className={styles['page-labels']}>
+        <div className={styles.pageLabels}>
           <p>{t('appName', config.appName)}</p>
-          <p className={styles['page-name']}>{t('home', 'Home')}</p>
+          <p className={styles.pageName}>{t('home', 'Home')}</p>
         </div>
       </div>
-      <div className={styles['right-justified-items']}>
-        <div className={styles['date-and-location']}>
+      <div className={styles.rightJustifiedItems}>
+        <div className={styles.dateAndLocation}>
           <Location size={16} />
           <span className={styles.value}>{userLocation}</span>
           <span className={styles.middot}>&middot;</span>
