@@ -1,18 +1,7 @@
-import {
-  DataTable,
-  InlineLoading,
-  InlineNotification,
-  Layer,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@carbon/react';
-import React, { useMemo } from 'react';
+import { InlineLoading, InlineNotification, Tag, Tile } from '@carbon/react';
+import { InformationIcon } from '@openmrs/esm-framework';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { EmptyDataIllustration } from '../components/empty-illustration';
 import { usePatientDiagnosis } from './diagnoses.resource';
 import styles from './diagnoses.scss';
 
@@ -24,12 +13,6 @@ type PatientDiagnosesProps = {
 const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, patientUuid }) => {
   const { diagnoses, isLoading, error } = usePatientDiagnosis(encounterUuid);
   const { t } = useTranslation();
-  const headers = useMemo(() => {
-    return [
-      { header: t('diagnosis', 'Diagnosis'), key: 'text' },
-      { header: t('status', 'Status'), key: 'certainty' },
-    ];
-  }, [t]);
 
   if (isLoading)
     return (
@@ -43,44 +26,18 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
   if (error)
     return <InlineNotification kind="error" subtitle={t('diagnosesError', 'Error loading diagnoses')} lowContrast />;
 
+  if (!diagnoses.length)
+    return (
+      <Tile className={styles.emptyState}>
+        <InformationIcon />
+        <strong>{t('noFinalDiagnoses', 'No patient final diagnosis for this visit')}</strong>
+      </Tile>
+    );
   return (
-    <Layer className={styles.diagnosesContainer}>
-      <div className={styles.heading}>
-        <h4>{t('diagnoses', 'Diagnoses')}</h4>
-      </div>
-      <DataTable useZebraStyles rows={diagnoses} headers={headers}>
-        {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
-          <Table {...getTableProps()}>
-            <TableHead>
-              <TableRow>
-                {headers.map((header) => (
-                  <TableHeader {...getHeaderProps({ header })}>{header.header}</TableHeader>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {!rows.length && (
-                <TableRow>
-                  <TableCell colSpan={headers.length}>
-                    <div className={styles.emptyState}>
-                      <EmptyDataIllustration />
-                      <p className={styles.emptyText}>{t('noDiagnoses', "No Diagnoses for this patient's visit")}</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-              {rows.map((row) => (
-                <TableRow {...getRowProps({ row })}>
-                  {row.cells.map((cell) => (
-                    <TableCell key={cell.id}>{cell.value}</TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </DataTable>
-    </Layer>
+    <Tile>
+      <h5>{t('finalDiagnoses', 'Visit Final Diagnoses')}</h5>
+      <div>{diagnoses?.map(({ id, text }) => <Tag key={id}>{text}</Tag>)}</div>
+    </Tile>
   );
 };
 

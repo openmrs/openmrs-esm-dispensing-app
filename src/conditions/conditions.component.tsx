@@ -1,21 +1,9 @@
-import {
-  DataTable,
-  InlineLoading,
-  InlineNotification,
-  Layer,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@carbon/react';
+import { InlineLoading, InlineNotification, Tag, Tile } from '@carbon/react';
+import { formatDate, InformationIcon, parseDate } from '@openmrs/esm-framework';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EmptyDataIllustration } from '../components/empty-illustration';
 import { usePatientConditions } from './conditions.resource';
 import styles from './conditions.scss';
-import { formatDate, parseDate } from '@openmrs/esm-framework';
 
 type PatientConditionsProps = {
   patientUuid: string;
@@ -25,12 +13,6 @@ type PatientConditionsProps = {
 const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const { conditions, error, isLoading, mutate } = usePatientConditions(patientUuid);
-  const headers = useMemo(() => {
-    return [
-      { header: t('activeConditions', 'Active Conditions'), key: 'display' },
-      { header: t('onsetDate', 'Onset Date'), key: 'onsetDateTime' },
-    ];
-  }, [t]);
 
   const tablerows = useMemo(() => {
     return (conditions ?? []).map((c) => ({ ...c, onsetDateTime: formatDate(parseDate(c.onsetDateTime)) }));
@@ -40,7 +22,7 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
     return (
       <InlineLoading
         iconDescription="Loading"
-        description={t('loadingConditions', 'Loading Conditions ...')}
+        description={t('loadingConditions', 'Loading active Conditions ...')}
         status="active"
       />
     );
@@ -48,44 +30,19 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
   if (error)
     return <InlineNotification kind="error" subtitle={t('conditionsError', 'Error loading conditions')} lowContrast />;
 
+  if (!conditions.length)
+    return (
+      <Tile className={styles.emptyState}>
+        <InformationIcon />
+        <strong>{t('noActiveConditions', 'No active Conditions')}</strong>
+      </Tile>
+    );
+
   return (
-    <Layer className={styles.conditionsContainer}>
-      <div className={styles.heading}>
-        <h4>{t('conditions', 'Conditions')}</h4>
-      </div>
-      <DataTable useZebraStyles rows={tablerows} headers={headers}>
-        {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
-          <Table {...getTableProps()}>
-            <TableHead>
-              <TableRow>
-                {headers.map((header) => (
-                  <TableHeader {...getHeaderProps({ header })}>{header.header}</TableHeader>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {!rows.length && (
-                <TableRow>
-                  <TableCell colSpan={headers.length}>
-                    <div className={styles.emptyState}>
-                      <EmptyDataIllustration />
-                      <p className={styles.emptyText}>{t('noConditions', 'No conditions for this patient')}</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-              {rows.map((row) => (
-                <TableRow {...getRowProps({ row })}>
-                  {row.cells.map((cell) => (
-                    <TableCell key={cell.id}>{cell.value}</TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </DataTable>
-    </Layer>
+    <Tile>
+      <h5>{t('activeConditions', 'Active conditions')}</h5>
+      <div>{conditions?.map(({ id, display }) => <Tag key={id}>{display}</Tag>)}</div>
+    </Tile>
   );
 };
 
