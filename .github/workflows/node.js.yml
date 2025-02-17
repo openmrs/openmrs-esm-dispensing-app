@@ -62,6 +62,7 @@ jobs:
         with:
           name: dist
           path: dist
+          overwrite: true
 
   release:
     runs-on: ubuntu-latest
