@@ -2,10 +2,9 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { type MedicationDispense, MedicationDispenseStatus } from '../types';
 import MedicationDispenseReview from './medication-dispense-review.component';
-import { OpenmrsDatePicker, useConfig } from '@openmrs/esm-framework';
+import { useConfig } from '@openmrs/esm-framework';
 
 const mockUseConfig = jest.mocked(useConfig);
-const mockOpenmrsDatePicker = jest.mocked(OpenmrsDatePicker);
 
 beforeEach(() => {
   mockUseConfig.mockReturnValue({
@@ -18,8 +17,6 @@ beforeEach(() => {
       substitutionReason: { uuid: 'abc' },
     },
   });
-
-  mockOpenmrsDatePicker.mockReturnValue(<div />);
 });
 
 describe('Medication Dispense Review Component tests', () => {
