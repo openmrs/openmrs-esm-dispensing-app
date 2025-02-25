@@ -1,37 +1,5 @@
-import { type FetchResponse, fhirBaseUrl, openmrsFetch } from '@openmrs/esm-framework';
-import useSWR from 'swr';
+import { fhirBaseUrl, useFhirFetchAll } from '@openmrs/esm-framework';
 import { useMemo } from 'react';
-
-export interface ConditionsBundle {
-  resourceType: string;
-  id: string;
-  meta: Meta;
-  type: string;
-  total: number;
-  link: Array<Link>;
-  entry: Array<Entry>;
-}
-
-export interface Meta {
-  lastUpdated: string;
-  tag: Array<Tag>;
-}
-
-export interface Tag {
-  system: string;
-  code: string;
-  display: string;
-}
-
-export interface Link {
-  relation: string;
-  url: string;
-}
-
-export interface Entry {
-  fullUrl: string;
-  resource: Resource;
-}
 
 export interface Resource {
   resourceType: string;
@@ -100,20 +68,20 @@ export interface Condition {
 }
 
 export const usePatientConditions = (patientUuid: string) => {
-  const url = `${fhirBaseUrl}/Condition?patient=${patientUuid}&_count=100&_summary=data`;
-  const { data, isLoading, mutate, error } = useSWR<FetchResponse<ConditionsBundle>>(url, openmrsFetch);
+  const url = `${fhirBaseUrl}/Condition?patient=${patientUuid}&_summary=data`;
+  const { data, isLoading, mutate, error } = useFhirFetchAll<Resource>(url);
 
   const conditions = useMemo(() => {
-    return data?.data?.entry?.reduce<Array<Condition>>((prev, entry) => {
-      if (entry?.resource?.resourceType === 'Condition') {
+    return data?.reduce<Array<Condition>>((prev, entry) => {
+      if (entry?.resourceType === 'Condition') {
         const condition: Condition = {
-          id: entry.resource.id,
-          display: entry?.resource?.code?.text,
-          onsetDateTime: entry?.resource?.onsetDateTime,
-          patient: entry?.resource?.subject?.display,
-          recordedDate: entry?.resource?.recordedDate,
-          recorder: entry?.resource?.recorder?.display,
-          status: entry?.resource?.clinicalStatus?.coding[0]?.code as any,
+          id: entry.id,
+          display: entry?.code?.text,
+          onsetDateTime: entry?.onsetDateTime,
+          patient: entry?.subject?.display,
+          recordedDate: entry?.recordedDate,
+          recorder: entry?.recorder?.display,
+          status: entry?.clinicalStatus?.coding[0]?.code as any,
         };
         return [...prev, condition];
       }
