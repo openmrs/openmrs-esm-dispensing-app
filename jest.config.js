@@ -12,5 +12,9 @@ module.exports = {
     dexie: require.resolve('dexie'),
   },
   setupFilesAfterEnv: ['<rootDir>/src/setup-tests.ts'],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+      "/e2e/"  // Ignore the e2e directory containing Playwright tests
+    ],
   testEnvironment: 'jsdom',
 };
