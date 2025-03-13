@@ -24,7 +24,7 @@ const PrescriptionExpanded: React.FC<{
       component: <PrescriptionDetails encounterUuid={encounterUuid} patientUuid={patientUuid} />,
     },
     {
-      name: t('extraPatientInfo', 'Extra patient Info'),
+      name: t('conditionsAndDiagnoses', 'Conditions and diagnoses'),
       component: <ExtensionSlot name="extra-patient-information-slot" state={{ patientUuid, encounterUuid }} />,
     },
     {

@@ -1,6 +1,6 @@
-import { InlineLoading, InlineNotification, Tag, Tile } from '@carbon/react';
-import { formatDate, InformationIcon, parseDate } from '@openmrs/esm-framework';
-import React, { useMemo } from 'react';
+import { InlineLoading, InlineNotification, Tile } from '@carbon/react';
+import { WarningFilled } from '@carbon/react/icons';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePatientConditions } from './conditions.resource';
 import styles from './conditions.scss';
@@ -14,10 +14,6 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
   const { t } = useTranslation();
   const { conditions, error, isLoading, mutate } = usePatientConditions(patientUuid);
 
-  const tablerows = useMemo(() => {
-    return (conditions ?? []).map((c) => ({ ...c, onsetDateTime: formatDate(parseDate(c.onsetDateTime)) }));
-  }, [conditions]);
-
   if (isLoading)
     return (
       <InlineLoading
@@ -30,18 +26,26 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
   if (error)
     return <InlineNotification kind="error" subtitle={t('conditionsError', 'Error loading conditions')} lowContrast />;
 
-  if (!conditions.length)
-    return (
-      <Tile className={styles.emptyState}>
-        <InformationIcon />
-        <strong>{t('noActiveConditions', 'No active Conditions')}</strong>
-      </Tile>
-    );
-
   return (
-    <Tile>
-      <h5>{t('activeConditions', 'Active conditions')}</h5>
-      <div>{conditions?.map(({ id, display }) => <Tag key={id}>{display}</Tag>)}</div>
+    <Tile className={styles.conditionContainer}>
+      <div className={styles.content}>
+        <div>
+          <WarningFilled size={24} className={styles.icon} />
+          <p>
+            {conditions.length > 0 && (
+              <span>
+                <span style={{ fontWeight: 'bold' }}>
+                  {t('activeConditionsCount', '{{ count }} conditions', {
+                    count: conditions.length,
+                  })}
+                </span>{' '}
+                {conditions?.map(({ display }) => display).join(', ')}
+              </span>
+            )}
+            {conditions.length === 0 && t('noActiveConditions', 'No active Conditions')}
+          </p>
+        </div>
+      </div>
     </Tile>
   );
 };

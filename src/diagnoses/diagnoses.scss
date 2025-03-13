@@ -3,9 +3,45 @@
 @use '@carbon/type';
 @import '~@openmrs/esm-styleguide/src/vars';
 
-.emptyState {
-  border-left: layout.$spacing-03 solid colors.$yellow-30;
-  background-color: $warning-background;
+.diagnosesContainer {
+  height: layout.$spacing-06;
+  padding: 0 layout.$spacing-03 0 0;
+  border-left: layout.$spacing-02 solid #f1c21b;
+  background-color: rgba(253, 209, 58, 0.3);
+  margin: layout.$spacing-03 0 layout.$spacing-03 0;
+  width: 100%;
+}
+
+.content {
+  margin: auto;
+  min-width: 100%;
+  height: 100%;
   display: flex;
-  gap: layout.$spacing-05;
+  align-items: center;
+
+  div {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+  }
+
+  p {
+    margin-left: layout.$spacing-03;
+    font-size: 0.9rem;
+    width: 80%;
+  }
+
+  a {
+    margin: auto;
+    color: #0f62fe;
+    text-decoration: none;
+    text-align: right;
+  }
+}
+
+svg.icon {
+  fill: #f1c21b;
+  vertical-align: middle;
+  margin-left: layout.$spacing-03;
 }
