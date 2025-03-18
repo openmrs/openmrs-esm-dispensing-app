@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Layer, StructuredListBody, StructuredListCell, StructuredListRow, StructuredListWrapper } from '@carbon/react';
@@ -24,6 +24,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
     sessionLocation: { display: facilityName },
   } = useSession();
   const patient = medicationrequests[0]?.request?.subject;
+  const reqester = useRef<string>(null);
 
   const extractPatientName = (display: string) => (display.includes('(') ? display.split('(')[0] : display);
   return (
@@ -48,6 +49,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
             ?.filter((req) => !excludedPrescription.includes(req.request.id))
             ?.map((request, index) => {
               const medicationEvent = request.request;
+              reqester.current = medicationEvent?.requester?.display;
               const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
               const quantity: Quantity = getQuantity(medicationEvent);
               const numberOfRefillsAllowed: number = getRefillsAllowed(medicationEvent);
@@ -118,6 +120,11 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                 </div>
               );
             })}
+          {reqester.current && (
+            <p className={styles.facilityName}>
+              {t('requester', 'Requester')}: {reqester.current}
+            </p>
+          )}
           <p className={styles.facilityName}>{facilityName}</p>
         </StructuredListBody>
       </StructuredListWrapper>

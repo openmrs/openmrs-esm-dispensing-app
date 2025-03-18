@@ -16,9 +16,10 @@
 }
 
 .printOutContainer {
-  background-color: colors.$gray-20;
+  background-color: colors.$gray-10;
   padding: layout.$spacing-05;
   width: 20rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .printoutTitle {
