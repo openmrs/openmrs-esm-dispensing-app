@@ -1,7 +1,7 @@
 @use '@carbon/layout';
 @use '@carbon/colors';
 @use '@carbon/type';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .conditionContainer {
   background-color: colors.$white-0;

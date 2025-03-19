@@ -2,13 +2,13 @@ import {
   DataTable,
   DataTableSkeleton,
   Layer,
+  Pagination,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  Pagination,
 } from '@carbon/react';
 import { ErrorState, usePagination } from '@openmrs/esm-framework';
 import { CardHeader, EmptyState } from '@openmrs/esm-patient-common-lib';
@@ -56,14 +56,16 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
           <Table {...getTableProps()}>
             <TableHead>
               <TableRow>
-                {headers.map((header) => (
-                  <TableHeader {...getHeaderProps({ header })}>{header.header}</TableHeader>
+                {headers.map((header, i) => (
+                  <TableHeader {...getHeaderProps({ header })} key={i}>
+                    {header.header}
+                  </TableHeader>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
-                <TableRow {...getRowProps({ row })}>
+              {rows.map((row, i) => (
+                <TableRow {...getRowProps({ row })} key={i}>
                   {row.cells.map((cell) => (
                     <TableCell key={cell.id}>{cell.value}</TableCell>
                   ))}

@@ -2,11 +2,9 @@ import { defineConfigSchema, getAsyncLifecycle, getSyncLifecycle } from '@openmr
 import CloseActionButton from './components/prescription-actions/close-action-button.component';
 import DispenseActionButton from './components/prescription-actions/dispense-action-button.component';
 import PauseActionButton from './components/prescription-actions/pause-action-button.component';
-import PatientConditions from './conditions/conditions.component';
 import { configSchema } from './config-schema';
 import DispensingLinkHomepageComponent from './dashboard/dispensing-dashboard-link.component';
 import DispensingDashboardComponent from './dashboard/dispensing-dashboard.component';
-import PatientDiagnoses from './diagnoses/diagnoses.component';
 import DispensingLinkComponent from './dispensing-link.component';
 import DispensingComponent from './dispensing.component';
 import PrescriptionPrintPreviewModal from './print-prescription/prescription-print-preview.modal';
@@ -47,5 +45,5 @@ export const pauseDispenseWorkspace = getAsyncLifecycle(() => import('./forms/pa
 
 export const printPrescriptionPreviewModal = getSyncLifecycle(PrescriptionPrintPreviewModal, options);
 
-export const patientDiagnoses = getSyncLifecycle(PatientDiagnoses, options);
-export const patientConditions = getSyncLifecycle(PatientConditions, options);
+export const patientDiagnoses = getAsyncLifecycle(() => import('./diagnoses/diagnoses.component'), options);
+export const patientConditions = getAsyncLifecycle(() => import('./conditions/conditions.component'), options);

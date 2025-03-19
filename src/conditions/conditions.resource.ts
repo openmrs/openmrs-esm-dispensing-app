@@ -1,4 +1,4 @@
-import { fhirBaseUrl, useFhirFetchAll } from '@openmrs/esm-framework';
+import { fhirBaseUrl, formatDate, parseDate, useFhirFetchAll } from '@openmrs/esm-framework';
 import { useMemo } from 'react';
 
 export interface Resource {
@@ -68,7 +68,7 @@ export interface Condition {
 }
 
 export const usePatientConditions = (patientUuid: string) => {
-  const url = `${fhirBaseUrl}/Condition?patient=${patientUuid}&_summary=data`;
+  const url = `${fhirBaseUrl}/Condition?patient=${patientUuid}&_summary=data&clinical-status=active`;
   const { data, isLoading, mutate, error } = useFhirFetchAll<Resource>(url);
 
   const conditions = useMemo(() => {
@@ -77,21 +77,24 @@ export const usePatientConditions = (patientUuid: string) => {
         const condition: Condition = {
           id: entry.id,
           display: entry?.code?.text,
-          onsetDateTime: entry?.onsetDateTime,
           patient: entry?.subject?.display,
           recordedDate: entry?.recordedDate,
           recorder: entry?.recorder?.display,
-          status: entry?.clinicalStatus?.coding[0]?.code as any,
+          status: entry?.clinicalStatus?.coding[0]?.code as 'active' | 'inactive',
+          onsetDateTime: formatDate(parseDate(entry.onsetDateTime)),
         };
-        return [...prev, condition];
+        prev.push(condition);
       }
       return prev;
     }, []);
   }, [data]);
+
   return {
-    conditions: (conditions ?? []).filter((condition) => condition.status === 'active'),
+    conditions,
     isLoading,
     error,
     mutate,
   };
 };
+
+export const pageSizesOptions = [3, 5, 10, 20, 50, 100];

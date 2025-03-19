@@ -2,19 +2,19 @@ import {
   DataTable,
   DataTableSkeleton,
   Layer,
+  Pagination,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  Pagination,
 } from '@carbon/react';
-import { ErrorState, formatDate, parseDate, usePagination } from '@openmrs/esm-framework';
+import { ErrorState, usePagination } from '@openmrs/esm-framework';
 import { CardHeader, EmptyState } from '@openmrs/esm-patient-common-lib';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePatientConditions } from './conditions.resource';
+import { pageSizesOptions, usePatientConditions } from './conditions.resource';
 import styles from './conditions.scss';
 
 type PatientConditionsProps = {
@@ -26,7 +26,6 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
   const { t } = useTranslation();
   const { conditions, error, isLoading, mutate } = usePatientConditions(patientUuid);
   const [pageSize, setPageSize] = useState(3);
-  const pageSizesOptions = useMemo(() => [3, 5, 10, 20, 50, 100], []);
   const { results, totalPages, currentPage, goTo } = usePagination(conditions, pageSize);
   const headers = useMemo(() => {
     return [
@@ -35,9 +34,6 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
     ];
   }, [t]);
 
-  const tablerows = useMemo(() => {
-    return (results ?? []).map((c) => ({ ...c, onsetDateTime: formatDate(parseDate(c.onsetDateTime)) }));
-  }, [results]);
   const title = t('activecondition', 'Active Condition');
 
   if (isLoading) return <DataTableSkeleton />;
@@ -56,19 +52,21 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
       <CardHeader title={title}>
         <React.Fragment />
       </CardHeader>
-      <DataTable useZebraStyles rows={tablerows} headers={headers}>
+      <DataTable useZebraStyles rows={results} headers={headers}>
         {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
           <Table {...getTableProps()}>
             <TableHead>
               <TableRow>
-                {headers.map((header) => (
-                  <TableHeader {...getHeaderProps({ header })}>{header.header}</TableHeader>
+                {headers.map((header, index) => (
+                  <TableHeader {...getHeaderProps({ header })} key={index}>
+                    {header.header}
+                  </TableHeader>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
-                <TableRow {...getRowProps({ row })}>
+              {rows.map((row, index) => (
+                <TableRow {...getRowProps({ row })} key={index}>
                   {row.cells.map((cell) => (
                     <TableCell key={cell.id}>{cell.value}</TableCell>
                   ))}
