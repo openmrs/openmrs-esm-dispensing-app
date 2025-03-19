@@ -49,6 +49,7 @@
   },
   "peerDependencies": {
     "@openmrs/esm-framework": "*",
+    "@openmrs/esm-patient-common-lib": "*",
     "dayjs": "1.x",
     "react": "18.x",
     "react-dom": "18.x",
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "@openmrs/esm-framework": "next",
+    "@openmrs/esm-patient-common-lib": "next",
     "@swc/core": "^1.7.14",
     "@swc/jest": "^0.2.36",
     "@testing-library/dom": "^8.20.1",
