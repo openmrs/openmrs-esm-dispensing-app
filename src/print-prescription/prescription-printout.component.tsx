@@ -24,7 +24,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
     sessionLocation: { display: facilityName },
   } = useSession();
   const patient = medicationrequests[0]?.request?.subject;
-  const reqester = useRef<string>(null);
+  const requester = useRef<string>(null);
 
   const extractPatientName = (display: string) => (display.includes('(') ? display.split('(')[0] : display);
   return (
@@ -49,7 +49,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
             ?.filter((req) => !excludedPrescription.includes(req.request.id))
             ?.map((request, index) => {
               const medicationEvent = request.request;
-              reqester.current = medicationEvent?.requester?.display;
+              requester.current = medicationEvent?.requester?.display;
               const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
               const quantity: Quantity = getQuantity(medicationEvent);
               const numberOfRefillsAllowed: number = getRefillsAllowed(medicationEvent);
@@ -120,9 +120,9 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                 </div>
               );
             })}
-          {reqester.current && (
+          {requester.current && (
             <p className={styles.prescriber}>
-              {t('prescribedBy', 'Prescribed By')}: {reqester.current?.split('(')?.at(0)}
+              {t('prescribedBy', 'Prescribed By')}: {requester.current?.split('(')?.at(0)}
             </p>
           )}
           <p className={styles.facilityName}>{facilityName}</p>
