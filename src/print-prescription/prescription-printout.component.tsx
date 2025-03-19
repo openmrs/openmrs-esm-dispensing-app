@@ -121,8 +121,8 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
               );
             })}
           {reqester.current && (
-            <p className={styles.facilityName}>
-              {t('requester', 'Requester')}: {reqester.current}
+            <p className={styles.prescriber}>
+              {t('prescribedBy', 'Prescribed By')}: {reqester.current?.split('(')?.at(0)}
             </p>
           )}
           <p className={styles.facilityName}>{facilityName}</p>

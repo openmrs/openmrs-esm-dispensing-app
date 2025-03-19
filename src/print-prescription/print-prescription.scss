@@ -35,6 +35,12 @@
   @include type.type-style('label-01');
 }
 
+.prescriber {
+  color: colors.$gray-50;
+  padding: layout.$spacing-05 0 layout.$spacing-05 0;
+  @include type.type-style('label-01');
+}
+
 .printoutSelectorRow {
   display: flex;
   flex-direction: row;
