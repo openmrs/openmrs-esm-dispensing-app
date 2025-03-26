@@ -23,12 +23,14 @@
     {
       "name": "patient-diagnoses",
       "component": "patientDiagnoses",
+      "slot": "dispensing-condition-and-diagnoses",
       "online": true,
       "offline": true
     },
     {
       "name": "patient-conditions",
       "component": "patientConditions",
+      "slot": "dispensing-condition-and-diagnoses",
       "online": true,
       "offline": true
     },
