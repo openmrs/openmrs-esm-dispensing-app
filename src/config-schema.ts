@@ -111,7 +111,7 @@ export const configSchema = {
     _type: Type.Boolean,
     _description:
       'Enable or disable stock deduction during the dispensing process. Requires the stock management module to be installed and configured.',
-    _default: true,
+    _default: false,
   },
 
   validateBatch: {
