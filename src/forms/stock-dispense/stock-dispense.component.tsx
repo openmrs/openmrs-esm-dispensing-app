@@ -34,6 +34,7 @@ const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updat
 
   //check whether the drug will expire before the medication period ends
   function isValidBatch(medicationToDispense, inventoryItem) {
+    if (!config?.validateBatch) return true;
     if (medicationToDispense?.dosageInstruction && medicationToDispense?.dosageInstruction.length > 0) {
       return medicationToDispense.dosageInstruction.some((instruction) => {
         if (
@@ -114,7 +115,7 @@ const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updat
     <Layer>
       <ComboBox
         id="stockDispense"
-        items={config.validateBatch ? validInventoryItems : inventoryItems}
+        items={validInventoryItems}
         onChange={({ selectedItem }) => {
           updateInventoryItem(selectedItem);
         }}

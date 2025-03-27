@@ -113,12 +113,11 @@ export const configSchema = {
       'Enable or disable stock deduction during the dispensing process. Requires the stock management module to be installed and configured.',
     _default: false,
   },
-
   validateBatch: {
     _type: Type.Boolean,
     _description:
-      'Enable or disable stock item batch number validation.Requires the stock management module to be installed and configured.',
-    _default: false,
+      'Enable or disable stock item batch number validation. Requires the stock management module to be installed and configured.',
+    _default: true,
   },
 };
 
