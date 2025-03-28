@@ -21,6 +21,20 @@
       "offline": true
     },
     {
+      "name": "patient-diagnoses",
+      "component": "patientDiagnoses",
+      "slot": "dispensing-condition-and-diagnoses",
+      "online": true,
+      "offline": true
+    },
+    {
+      "name": "patient-conditions",
+      "component": "patientConditions",
+      "slot": "dispensing-condition-and-diagnoses",
+      "online": true,
+      "offline": true
+    },
+    {
       "name": "dispensing-dashboard",
       "slot": "dispensing-dashboard-slot",
       "component": "dispensingDashboard",
