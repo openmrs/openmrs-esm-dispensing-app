@@ -16,9 +16,10 @@
 }
 
 .printOutContainer {
-  background-color: colors.$gray-20;
+  background-color: colors.$gray-10;
   padding: layout.$spacing-05;
   width: 20rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .printoutTitle {
@@ -30,6 +31,12 @@
 .facilityName {
   color: colors.$gray-50;
   text-align: end;
+  padding: layout.$spacing-05 0 layout.$spacing-05 0;
+  @include type.type-style('label-01');
+}
+
+.prescriber {
+  color: colors.$gray-50;
   padding: layout.$spacing-05 0 layout.$spacing-05 0;
   @include type.type-style('label-01');
 }
