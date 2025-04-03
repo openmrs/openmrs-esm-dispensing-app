@@ -1,14 +1,14 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { type DosageInstruction, type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
-import styles from './medication-event.scss';
 import {
   getDosageInstruction,
-  getQuantity,
-  getRefillsAllowed,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
+  getQuantity,
+  getRefillsAllowed,
 } from '../utils';
-import { useTranslation } from 'react-i18next';
+import styles from './medication-event.scss';
 
 // can render MedicationRequest or MedicationDispense
 const MedicationEvent: React.FC<{

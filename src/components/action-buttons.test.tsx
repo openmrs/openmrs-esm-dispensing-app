@@ -1,15 +1,15 @@
-import { render } from '@testing-library/react';
 import React from 'react';
-import ActionButtons from './action-buttons.component';
-import { MedicationDispenseStatus, type MedicationRequest, MedicationRequestStatus } from '../types';
+import { render } from '@testing-library/react';
 import { useConfig, ExtensionSlot } from '@openmrs/esm-framework';
+import { computeMedicationRequestStatus, getMostRecentMedicationDispenseStatus } from '../utils';
+import { MedicationDispenseStatus, type MedicationRequest, MedicationRequestStatus } from '../types';
+import ActionButtons from './action-buttons.component';
+import CloseActionButton from './prescription-actions/close-action-button.component';
 import DispenseActionButton from './prescription-actions/dispense-action-button.component';
 import PauseActionButton from './prescription-actions/pause-action-button.component';
-import CloseActionButton from './prescription-actions/close-action-button.component';
-import { computeMedicationRequestStatus, getMostRecentMedicationDispenseStatus } from '../utils';
 
-const mockedUseConfig = useConfig as jest.Mock;
-const mockedExtensionSlot = ExtensionSlot as jest.Mock;
+const mockedUseConfig = jest.mocked(useConfig);
+const mockedExtensionSlot = jest.mocked(ExtensionSlot);
 const mockPatientUuid = '558494fe-5850-4b34-a3bf-06550334ba4a';
 const mockEncounterUuid = '7aee7123-9e50-4f72-a636-895d77a63e98';
 

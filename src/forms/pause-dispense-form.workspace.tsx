@@ -5,6 +5,7 @@ import {
   type DefaultWorkspaceProps,
   ExtensionSlot,
   getCoreTranslation,
+  ResponsiveWrapper,
   showSnackbar,
   useConfig,
   useLayoutType,
@@ -152,29 +153,30 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
         )}
         {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
         <section className={styles.formGroup}>
-          <ComboBox
-            id="reasonForPause"
-            light={isTablet}
-            items={reasonsForPause}
-            titleText={t('reasonForPause', 'Reason for pause')}
-            itemToString={(item) => item?.text}
-            initialSelectedItem={{
-              id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
-              text: medicationDispense.statusReasonCodeableConcept?.text,
-            }}
-            onChange={({ selectedItem }) => {
-              setMedicationDispensePayload({
-                ...medicationDispensePayload,
-                statusReasonCodeableConcept: {
-                  coding: [
-                    {
-                      code: selectedItem?.id,
-                    },
-                  ],
-                },
-              });
-            }}
-          />
+          <ResponsiveWrapper>
+            <ComboBox
+              id="reasonForPause"
+              items={reasonsForPause}
+              titleText={t('reasonForPause', 'Reason for pause')}
+              itemToString={(item) => item?.text}
+              initialSelectedItem={{
+                id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
+                text: medicationDispense.statusReasonCodeableConcept?.text,
+              }}
+              onChange={({ selectedItem }) => {
+                setMedicationDispensePayload({
+                  ...medicationDispensePayload,
+                  statusReasonCodeableConcept: {
+                    coding: [
+                      {
+                        code: selectedItem?.id,
+                      },
+                    ],
+                  },
+                });
+              }}
+            />
+          </ResponsiveWrapper>
         </section>
       </div>
       <section className={styles.buttonGroup}>

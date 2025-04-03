@@ -1,18 +1,23 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .medicationName {
-  font-size: 15px !important;
+  font-size: layout.$spacing-05 !important;
 }
 
 .bodyLong01 {
+  @include type.type-style('body-01');
   font-size: 13px !important;
+}
+
+.label01 {
+  @include type.type-style('label-01');
 }
 
 .dosage,
 .quantity,
 .refills {
-  color: #525252;
+  color: $text-02;
   font-weight: bold;
 }

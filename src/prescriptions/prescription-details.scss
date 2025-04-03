@@ -1,22 +1,22 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type/index';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .prescriptionTile {
   width: 100%;
-  margin: 2px 0 8px;
+  margin: layout.$spacing-01 0 layout.$spacing-03;
   padding: 0;
   background-color: #fff;
-  border-left: 4px solid var(--brand-03);
+  border-left: layout.$spacing-02 solid var(--brand-03);
   color: $text-02;
-  margin-bottom: 1rem !important;
+  margin-bottom: layout.$spacing-05 !important;
 }
 
 .prescriptionContainer {
   display: flex;
   flex-direction: column;
   max-width: 80%;
-  margin-bottom: 1rem;
+  margin-bottom: layout.$spacing-05;
 
   &:global(.cds--tile) {
     min-height: 3rem !important;
@@ -31,9 +31,9 @@
 }
 
 .allergiesTile {
-  height: 24px;
-  padding: 0 8px 0 0;
-  border-left: 4px solid #f1c21b;
+  height: layout.$spacing-06;
+  padding: 0 layout.$spacing-03 0 0;
+  border-left: layout.$spacing-02 solid #f1c21b;
   background-color: rgba(253, 209, 58, 0.3);
   margin: auto;
   width: 100%;

@@ -1,6 +1,6 @@
-import { type FetchResponse, openmrsFetch, restBaseUrl, type Visit } from '@openmrs/esm-framework';
 import { useMemo } from 'react';
 import useSWR from 'swr';
+import { type FetchResponse, openmrsFetch, restBaseUrl, type Visit } from '@openmrs/esm-framework';
 
 export const usePatientDiagnosis = (encounterUuid: string) => {
   const customRepresentation =

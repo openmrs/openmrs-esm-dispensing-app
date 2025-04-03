@@ -1,5 +1,5 @@
-import { fhirBaseUrl, formatDate, parseDate, useFhirFetchAll } from '@openmrs/esm-framework';
 import { useMemo } from 'react';
+import { fhirBaseUrl, formatDate, parseDate, useFhirFetchAll } from '@openmrs/esm-framework';
 
 export interface Resource {
   resourceType: string;

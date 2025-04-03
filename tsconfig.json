@@ -4,8 +4,9 @@
     "esModuleInterop": true,
     "jsx": "react",
     "lib": [
-      "es2022",
-      "es5",
+      "dom",
+      "dom.iterable",
+      "esnext"
     ],
     "module": "esnext",
     "moduleResolution": "node",
