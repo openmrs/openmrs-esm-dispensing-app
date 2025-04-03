@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { attach, detach, ExtensionSlot, type PatientUuid, usePatient } from '@openmrs/esm-framework';
 import styles from './patient-details.scss';
@@ -10,10 +10,10 @@ const PatientDetails: React.FC<{
   const { patient } = usePatient(patientUuid);
 
   const patientName = patient;
-  const patientPhotoSlotState = React.useMemo(() => ({ patientUuid, patientName }), [patientUuid, patientName]);
+  const patientPhotoSlotState = useMemo(() => ({ patientUuid, patientName }), [patientUuid, patientName]);
 
-  const [showContactDetails, setShowContactDetails] = React.useState(false);
-  const toggleContactDetails = React.useCallback((event: MouseEvent) => {
+  const [showContactDetails, setShowContactDetails] = useState(false);
+  const toggleContactDetails = useCallback((event: MouseEvent) => {
     event.stopPropagation();
     setShowContactDetails((value) => !value);
   }, []);
