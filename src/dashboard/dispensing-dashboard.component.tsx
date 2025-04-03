@@ -1,7 +1,7 @@
-import { InlineNotification } from '@carbon/react';
-import { setLeftNav, unsetLeftNav, useConfig, WorkspaceContainer } from '@openmrs/esm-framework';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { InlineNotification } from '@carbon/react';
+import { setLeftNav, unsetLeftNav, useConfig, WorkspaceContainer } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
 import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';

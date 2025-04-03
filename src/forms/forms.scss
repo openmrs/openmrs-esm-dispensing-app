@@ -5,7 +5,7 @@
 
 .productiveHeading02 {
   color: $color-gray-70;
-  @include type.type-style('productive-heading-02');
+  @include type.type-style('heading-02');
 }
 
 .formWrapper {
@@ -37,10 +37,6 @@
   flex: 3;
 }
 
-.formGroup span {
-  @extend .productiveHeading02;
-}
-
 .bannerLoading {
   width: 100%;
   display: flex;
@@ -51,13 +47,13 @@
   position: sticky;
   z-index: 1000;
   background-color: $ui-02;
-  top: 3rem;
+  top: layout.$spacing-09;
   overflow-y: auto;
 }
 
 .dateTimeContainer {
   display: flex;
-  margin: 1rem 0;
+  margin: layout.$spacing-05 0;
 }
 
 .timePickersContainer,
@@ -65,7 +61,7 @@
   display: flex;
 
   > div {
-    margin-right: 0.5rem;
+    margin-right: layout.$spacing-03;
   }
 }
 
@@ -74,7 +70,7 @@
   flex-direction: column;
 
   > div {
-    margin-bottom: 1rem;
+    margin-bottom: layout.$spacing-05;
   }
 }
 

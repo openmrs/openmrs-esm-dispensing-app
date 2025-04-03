@@ -1,6 +1,6 @@
 import React from 'react';
-import { usePatientAge } from './patient.resources';
 import { useTranslation } from 'react-i18next';
+import { usePatientAge } from './patient.resources';
 
 type PatientInfoCellProps = {
   patient: {

@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { mutate } from 'swr';
 import {
   type Coding,
@@ -21,7 +22,6 @@ import {
   PRESCRIPTION_DETAILS_ENDPOINT,
   PRESCRIPTIONS_TABLE_ENDPOINT,
 } from './constants';
-import dayjs from 'dayjs';
 
 const unitsDontMatchErrorMessage =
   "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. " +

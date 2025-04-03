@@ -1,12 +1,12 @@
 import { defineConfigSchema, getAsyncLifecycle, getSyncLifecycle } from '@openmrs/esm-framework';
+import { configSchema } from './config-schema';
 import CloseActionButton from './components/prescription-actions/close-action-button.component';
 import DispenseActionButton from './components/prescription-actions/dispense-action-button.component';
-import PauseActionButton from './components/prescription-actions/pause-action-button.component';
-import { configSchema } from './config-schema';
-import DispensingLinkHomepageComponent from './dashboard/dispensing-dashboard-link.component';
+import DispensingComponent from './dispensing.component';
 import DispensingDashboardComponent from './dashboard/dispensing-dashboard.component';
 import DispensingLinkComponent from './dispensing-link.component';
-import DispensingComponent from './dispensing.component';
+import DispensingLinkHomepageComponent from './dashboard/dispensing-dashboard-link.component';
+import PauseActionButton from './components/prescription-actions/pause-action-button.component';
 import PrescriptionPrintPreviewModal from './print-prescription/prescription-print-preview.modal';
 
 export const importTranslation = require.context('../translations', false, /.json$/, 'lazy');

@@ -1,13 +1,13 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .patientDetailsContainer > div {
-  margin-bottom: 1rem;
+  margin-bottom: layout.$spacing-05;
 }
 
 .container {
-  border-bottom: 0.063rem solid $ui-03;
+  border-bottom: 1px solid $ui-03;
   background-color: $ui-02;
   display: grid;
   grid-template-columns: 1fr auto;
@@ -21,13 +21,13 @@
 
 .patientName {
   @include type.type-style('heading-03');
-  margin-right: 0.25rem;
+  margin-right: layout.$spacing-02;
 }
 
 .patientAvatar {
-  width: 5rem;
-  height: 5rem;
-  margin: 1rem;
+  width: layout.$spacing-11;
+  height: layout.$spacing-11;
+  margin: layout.$spacing-05;
   border-radius: 1px;
 }
 
@@ -40,7 +40,7 @@
 
 .patientInfo {
   width: 100%;
-  padding-right: 1rem;
+  padding-right: layout.$spacing-05;
 }
 
 .demographics {
@@ -57,7 +57,7 @@
 }
 
 .patientNameRow {
-  margin-top: spacing.$spacing-05;
+  margin-top: layout.$spacing-05;
 }
 
 .flexRow {
@@ -73,7 +73,7 @@
 }
 
 .tooltipPadding {
-  padding: 0.25rem;
+  padding: layout.$spacing-02;
 }
 
 .tooltipSmallText {

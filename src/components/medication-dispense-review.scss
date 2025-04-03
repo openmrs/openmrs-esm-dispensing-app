@@ -1,6 +1,6 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .medicationDispenseReviewContainer {
   display: flex;
@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: row;
   flex: 1;
-  gap: spacing.$spacing-05;
+  gap: layout.$spacing-05;
 }
 
 .substitutionReason {
@@ -30,7 +30,7 @@
 
 .productiveHeading02 {
   color: $color-gray-70;
-  @include type.type-style('productive-heading-02');
+  @include type.type-style('heading-02');
 }
 
 :global(.omrs-breakpoint-lt-desktop) .formWrapper {
@@ -43,8 +43,8 @@
 
 .formGroup {
   display: flex;
-  margin-bottom: spacing.$spacing-02;
-  padding: spacing.$spacing-05;
+  margin-bottom: layout.$spacing-02;
+  padding: layout.$spacing-05;
 }
 
 :global(.omrs-breakpoint-lt-desktop) .formGroup > span {
@@ -63,7 +63,7 @@
   position: sticky;
   z-index: 1000;
   background-color: $ui-02;
-  top: 3rem;
+  top: layout.$spacing-09;
   overflow-y: auto;
 }
 
@@ -83,13 +83,13 @@
 }
 
 :global(.omrs-breakpoint-lt-desktop) .buttonGroup {
-  padding: spacing.$spacing-05 spacing.$spacing-06;
+  padding: layout.$spacing-05 layout.$spacing-06;
   background-color: $ui-02;
 }
 
 .buttonGroup button {
   max-width: none;
   width: 50%;
-  height: spacing.$spacing-10;
+  height: layout.$spacing-10;
   align-items: flex-start;
 }

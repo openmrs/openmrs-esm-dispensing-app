@@ -1,20 +1,20 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .medicationTile {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
-  margin: 2px 0 8px;
-  padding: 0 8px 0 8px;
+  margin: layout.$spacing-01 0 layout.$spacing-03;
+  padding: 0 layout.$spacing-03 0 layout.$spacing-03;
   background-color: #fff;
-  border-left: 4px solid var(--brand-03);
+  border-left: layout.$spacing-02 solid var(--brand-03);
   color: $text-02;
-  margin-bottom: 1rem !important;
+  margin-bottom: layout.$spacing-05 !important;
 }
 
 .medicationName {
-  font-size: 15px !important;
+  font-size: layout.$spacing-05 !important;
 }

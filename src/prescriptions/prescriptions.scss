@@ -1,20 +1,6 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
-@import '../root.scss';
-
-title {
-  width: 6.938rem;
-  height: 1.75rem;
-  margin: 0.438rem 22.875rem 0.813rem 0;
-  font-family: IBMPlexSans;
-  font-size: 1.25rem;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: 1.4;
-  letter-spacing: normal;
-}
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .link {
   text-decoration: none;
@@ -36,7 +22,7 @@ title {
 
 .prescriptionTabs {
   grid-column: 'span 2';
-  padding: 0 spacing.$spacing-05;
+  padding: 0 layout.$spacing-05;
 }
 
 .newListButton {
@@ -47,10 +33,10 @@ title {
 
 .tabsContainer {
   background-color: $ui-02;
-  padding: 0 spacing.$spacing-05;
+  padding: 0 layout.$spacing-05;
 
   :global(.cds--tabs__nav-item--selected) {
-    box-shadow: inset 0 2px 0 0 var(--brand-03) !important;
+    box-shadow: inset 0 layout.$spacing-01 0 0 var(--brand-03) !important;
   }
 
   :global(.cds--tab--list) button {
@@ -67,7 +53,7 @@ title {
   grid-row: 3 / 4;
   grid-column: 1 / 2;
   height: 100%;
-  margin: 0 spacing.$spacing-05;
+  margin: 0 layout.$spacing-05;
   background-color: $ui-01;
   border: 0.5px solid #e0e0e0;
 
@@ -99,7 +85,7 @@ title {
   }
 
   :global(.cds--table-expand__button) {
-    height: 2rem !important;
+    height: layout.$spacing-07 !important;
   }
 }
 
@@ -107,7 +93,7 @@ title {
   display: flex;
   align-items: center;
   flex-direction: row-reverse;
-  padding: 0.5rem 1rem 0;
+  padding: layout.$spacing-05 layout.$spacing-05 0;
 
   :global(.cds--search-magnifier-icon) {
     z-index: 0 !important;
@@ -119,10 +105,10 @@ title {
 }
 
 .addPrescriptionBtn {
-  width: 10rem !important;
-  padding: 0.5rem !important;
-  margin-left: 1rem;
-  margin-right: 1rem;
+  width: layout.$spacing-13 !important;
+  padding: layout.$spacing-05 !important;
+  margin-left: layout.$spacing-05;
+  margin-right: layout.$spacing-05;
 }
 
 .patientSearch {
@@ -149,7 +135,7 @@ title {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: spacing.$spacing-09;
+  padding: layout.$spacing-09;
   text-align: center;
   background-color: $ui-02;
 }
@@ -162,7 +148,7 @@ title {
 .filterEmptyStateContent {
   @include type.type-style('heading-compact-02');
   color: $text-02;
-  margin-bottom: spacing.$spacing-03;
+  margin-bottom: layout.$spacing-03;
 }
 
 .filterEmptyStateHelper {

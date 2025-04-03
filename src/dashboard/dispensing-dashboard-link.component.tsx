@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import classNames from 'classnames';
-import { useTranslation } from 'react-i18next';
 import { BrowserRouter } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ConfigurableLink } from '@openmrs/esm-framework';
 
 const DispensingDashboardLink = () => {
