@@ -1,3 +1,5 @@
+/** @type {import('jest').Config} */
+
 module.exports = {
   transform: {
     '^.+\\.tsx?$': '@swc/jest',
@@ -11,6 +13,6 @@ module.exports = {
     '^uuid$': '<rootDir>/node_modules/uuid/dist/index.js',
     dexie: require.resolve('dexie'),
   },
-  setupFilesAfterEnv: ['<rootDir>/src/setup-tests.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tools/setup-tests.ts'],
   testEnvironment: 'jsdom',
 };
