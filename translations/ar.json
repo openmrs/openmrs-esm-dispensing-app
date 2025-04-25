@@ -1,5 +1,7 @@
 {
   "active": "نشط",
+  "activecondition": "Active Condition",
+  "activeConditions": "Active Condition",
   "activePrescriptions": "الأدوية النشطة",
   "age": "Age",
   "allergiesCount_one": "{{count}} حساسية",
@@ -14,9 +16,12 @@
   "closedDispense": "الاستغناء مغلقة",
   "closePrescription": "إغلاق الوصفة الطبية",
   "completed": "مكتمل",
+  "conditions": "Condition",
+  "conditionsAndDiagnoses": "Conditions and diagnoses",
   "created": "مخلوق",
   "datePrescribed": "Date prescribed",
   "delete": "حذف",
+  "diagnosis": "Diagnosis",
   "dispense": "Dispense",
   "dispensed": "Dispensed",
   "dispenseDate": "Date of Dispense",
@@ -38,6 +43,7 @@
   "errorLoadingInventoryItems": "Error fetching inventory items",
   "expired": "Expired",
   "filterByLocation": "التصفية حسب الموقع",
+  "finalDiagnoses": "Final Diagnoses",
   "for": "for",
   "frequency": "التكرار",
   "historyComments": "التاريخ والتعليقات",
@@ -54,6 +60,7 @@
   "noPrescriptionsToDisplay": "No prescriptions to display",
   "noRefills": "No refills",
   "numberIsNotValid": "Number is not valid",
+  "onsetDate": "Onset Date",
   "ordered": "مُطلوب",
   "orderedMedication ": "ordered medication",
   "orders": "طلبات",
@@ -88,5 +95,6 @@
   "substitutionType": "Type of substitution",
   "tabList": "Tab List",
   "today": "Today",
-  "view": "عرض"
+  "view": "عرض",
+  "visitFinalDiagnoses": "Visit final diagnoses"
 }
