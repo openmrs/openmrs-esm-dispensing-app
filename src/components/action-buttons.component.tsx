@@ -6,6 +6,7 @@ import {
   computeMedicationRequestStatus,
   computeQuantityRemaining,
   getMostRecentMedicationDispenseStatus,
+  computeTotalQuantityDispensed,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 import { useProviders } from '../medication-dispense/medication-dispense.resource';
@@ -49,11 +50,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
     quantityRemaining = computeQuantityRemaining(medicationRequestBundle);
   }
 
+  let quantityDispensed = 0;
+  if (medicationRequestBundle.dispenses) {
+    quantityDispensed = computeTotalQuantityDispensed(medicationRequestBundle.dispenses);
+  }
+
   const prescriptionActionsState = {
     dispensable,
     pauseable,
     closeable,
     quantityRemaining,
+    quantityDispensed,
     patientUuid,
     encounterUuid,
     medicationRequestBundle,

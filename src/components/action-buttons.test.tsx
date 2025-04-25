@@ -118,6 +118,7 @@ const prescriptionActionsState = {
   pauseable: true,
   closeable: true,
   quantityRemaining: 0,
+  quantityDispensed: 0,
   patientUuid: mockPatientUuid,
   encounterUuid: mockEncounterUuid,
   medicationRequestBundle: { request: medicationRequest, dispenses: [] },

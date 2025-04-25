@@ -36,6 +36,7 @@ type DispenseFormProps = DefaultWorkspaceProps & {
   patientUuid?: string;
   encounterUuid: string;
   quantityRemaining: number;
+  quantityDispensed: number;
 };
 
 const DispenseForm: React.FC<DispenseFormProps> = ({
@@ -45,6 +46,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   patientUuid,
   encounterUuid,
   quantityRemaining,
+  quantityDispensed,
   closeWorkspace,
   closeWorkspaceWithSavedChanges,
 }) => {
@@ -213,6 +215,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 medicationDispense={medicationDispensePayload}
                 updateMedicationDispense={setMedicationDispensePayload}
                 quantityRemaining={quantityRemaining}
+                quantityDispensed={quantityDispensed}
               />
               {config.enableStockDispense && (
                 <StockDispense
