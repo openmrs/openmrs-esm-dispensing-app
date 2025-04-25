@@ -93,3 +93,9 @@
   height: layout.$spacing-10;
   align-items: flex-start;
 }
+
+.quantitySummary {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+}

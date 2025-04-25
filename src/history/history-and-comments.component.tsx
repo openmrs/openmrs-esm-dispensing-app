@@ -31,6 +31,7 @@ import {
   getUuidFromReference,
   revalidate,
   sortMedicationDispensesByWhenHandedOver,
+  computeTotalQuantityDispensed,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 
@@ -81,12 +82,18 @@ const HistoryAndComments: React.FC<{
           (medicationDispense?.quantity ? medicationDispense.quantity.value : 0);
       }
 
+      let quantityDispensed = 0;
+      if (medicationRequestBundle.dispenses) {
+        quantityDispensed = computeTotalQuantityDispensed(medicationRequestBundle.dispenses);
+      }
+
       const dispenseFormProps = {
         patientUuid,
         encounterUuid,
         medicationDispense,
         medicationRequestBundle,
         quantityRemaining,
+        quantityDispensed,
         mode: 'edit',
       };
 

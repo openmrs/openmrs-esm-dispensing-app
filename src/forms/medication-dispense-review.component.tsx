@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
+import { ComboBox, Dropdown, NumberInput, Stack, TextArea  } from '@carbon/react';
 import {
   OpenmrsDatePicker,
   useLayoutType,
@@ -10,7 +10,11 @@ import {
   userHasAccess,
   ResponsiveWrapper,
 } from '@openmrs/esm-framework';
-import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
+import {
+  getConceptCodingUuid,
+  getMedicationReferenceOrCodeableConcept,
+  getOpenMRSMedicineDrugName,
+} from '../utils';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
 import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import {
@@ -29,12 +33,14 @@ interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
   updateMedicationDispense: Function;
   quantityRemaining: number;
+  quantityDispensed: number;
 }
 
 const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   medicationDispense,
   updateMedicationDispense,
   quantityRemaining,
+  quantityDispensed,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
@@ -306,6 +312,21 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             </ResponsiveWrapper>
           </div>
         )}
+        <ResponsiveWrapper>
+          <div>
+            <p className={styles.quantitySummary}>
+              {t('quantityPrescribed', 'Quantity Prescribed')}:{medicationDispense.quantity.value}
+            </p>
+            <p className={styles.quantitySummary}>
+              {t('quantityDispensed', 'Quantity Dispensed')}: {quantityDispensed}
+            </p>
+            {config.dispenseBehavior.restrictTotalQuantityDispensed ? (
+              <p className={styles.quantitySummary}>
+                {t('quantityRemaining', 'Quantity Remaining to Dispense')}:{quantityRemaining}
+              </p>
+            ) : null}
+          </div>
+        </ResponsiveWrapper>
 
         <div className={styles.dispenseDetailsContainer}>
           <NumberInput
@@ -315,14 +336,10 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             id="quantity"
             invalidText={t('numberIsNotValid', 'Number is not valid')}
             label={
-              t('quantity', 'Quantity') +
-              (config.dispenseBehavior.restrictTotalQuantityDispensed
-                ? ' (' + t('maxQuantityRemaining', 'Maximum quantity remaining:') + ' ' + quantityRemaining + ')'
-                : '')
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>{t('quantity', 'Quantity')}</div>
             }
             min={0}
             max={config.dispenseBehavior.restrictTotalQuantityDispensed ? quantityRemaining : undefined}
-            value={medicationDispense.quantity.value}
             onChange={(e) => {
               updateMedicationDispense({
                 ...medicationDispense,
@@ -333,7 +350,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               });
             }}
           />
-
           <ResponsiveWrapper>
             <ComboBox
               id="quantityUnits"
