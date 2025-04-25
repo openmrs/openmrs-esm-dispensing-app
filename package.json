@@ -16,7 +16,7 @@
     "test:watch": "jest --config jest.config.js --watch",
     "typescript": "tsc",
     "verify": "concurrently 'yarn:lint' 'yarn:test' 'yarn:typescript'",
-    "extract-translations": "i18next 'src/**/*.component.tsx' 'src/**/*.workspace.tsx' 'src/index.ts' --config ./i18next-parser.config.js",
+    "extract-translations": "i18next 'src/**/*.component.tsx' 'src/**/*.workspace.tsx' 'src/index.ts' --config ./tools/i18next-parser.config.js",
     "coverage": "yarn test --coverage",
     "postinstall": "husky install"
   },
