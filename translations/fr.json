@@ -1,5 +1,7 @@
 {
   "active": "Actif",
+  "activecondition": "Active Condition",
+  "activeConditions": "Active Condition",
   "activePrescriptions": "Ordonnances actives",
   "age": "Âge",
   "allergiesCount_one": "{{count}} allergie",
@@ -14,9 +16,12 @@
   "closedDispense": "distribution terminée",
   "closePrescription": "Fermer l’ordonnance",
   "completed": "Complété",
+  "conditions": "Condition",
+  "conditionsAndDiagnoses": "Conditions and diagnoses",
   "created": "Date de création",
   "datePrescribed": "Date de prescription",
   "delete": "Supprimer",
+  "diagnosis": "Diagnosis",
   "dispense": "Délivrer",
   "dispensed": "Délivré",
   "dispenseDate": "Date de distribution",
@@ -38,6 +43,7 @@
   "errorLoadingInventoryItems": "Erreur d'obtention des articles en stock",
   "expired": "Périmé",
   "filterByLocation": "Filtrer par localisation",
+  "finalDiagnoses": "Final Diagnoses",
   "for": "pour",
   "frequency": "Fréquence",
   "historyComments": "Historique et commentaires",
@@ -54,6 +60,7 @@
   "noPrescriptionsToDisplay": "Aucune ordonnance à afficher",
   "noRefills": "Pas de renouvellement",
   "numberIsNotValid": "Le numéro n’est pas valide",
+  "onsetDate": "Onset Date",
   "ordered": "Commandé",
   "orderedMedication ": "médicament prescrit",
   "orders": "Prescriptions",
@@ -88,5 +95,6 @@
   "substitutionType": "Type de remplacement",
   "tabList": "Liste des onglets",
   "today": "Aujourd’hui",
-  "view": "Aperçu"
+  "view": "Aperçu",
+  "visitFinalDiagnoses": "Visit final diagnoses"
 }

@@ -1,5 +1,7 @@
 {
   "active": "激活",
+  "activecondition": "Active Condition",
+  "activeConditions": "Active Condition",
   "activePrescriptions": "当前处方",
   "age": "年龄",
   "allergiesCount_one": "{{count}} 过敏",
@@ -14,9 +16,12 @@
   "closedDispense": "配药已关闭",
   "closePrescription": "关闭处方",
   "completed": "已完成",
+  "conditions": "Condition",
+  "conditionsAndDiagnoses": "Conditions and diagnoses",
   "created": "已创建",
   "datePrescribed": "处方日期",
   "delete": "删除",
+  "diagnosis": "Diagnosis",
   "dispense": "配药",
   "dispensed": "已配药",
   "dispenseDate": "配药日期",
@@ -38,6 +43,7 @@
   "errorLoadingInventoryItems": "提取库存时出错",
   "expired": "已过期",
   "filterByLocation": "根据地点过滤",
+  "finalDiagnoses": "Final Diagnoses",
   "for": "为",
   "frequency": "频率",
   "historyComments": "历史和备注",
@@ -54,6 +60,7 @@
   "noPrescriptionsToDisplay": "没有可显示的处方",
   "noRefills": "没有补充项",
   "numberIsNotValid": "数值无效",
+  "onsetDate": "Onset Date",
   "ordered": "已下医嘱",
   "orderedMedication ": "处方用药",
   "orders": "医嘱",
@@ -88,5 +95,6 @@
   "substitutionType": "替换类型",
   "tabList": "表列表",
   "today": "今日",
-  "view": "查看"
+  "view": "查看",
+  "visitFinalDiagnoses": "Visit final diagnoses"
 }

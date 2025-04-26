@@ -1,5 +1,7 @@
 {
   "active": "Attivo",
+  "activecondition": "Active Condition",
+  "activeConditions": "Active Condition",
   "activePrescriptions": "Prescrizioni attive",
   "age": "Età",
   "allergiesCount_one": "{{count}} allergia",
@@ -14,9 +16,12 @@
   "closedDispense": "dispensazione chiusa",
   "closePrescription": "Chiudi prescrizione",
   "completed": "Completato",
+  "conditions": "Condition",
+  "conditionsAndDiagnoses": "Conditions and diagnoses",
   "created": "Creato",
   "datePrescribed": "Data di prescrizione",
   "delete": "Elimina",
+  "diagnosis": "Diagnosis",
   "dispense": "Dispensa",
   "dispensed": "Dispensato",
   "dispenseDate": "Data di dispensazione",
@@ -38,6 +43,7 @@
   "errorLoadingInventoryItems": "Errore nel recupero degli articoli di inventario",
   "expired": "Scaduto",
   "filterByLocation": "Filtra per sede",
+  "finalDiagnoses": "Final Diagnoses",
   "for": "per",
   "frequency": "Frequenza",
   "historyComments": "Storico e commenti",
@@ -54,8 +60,9 @@
   "noPrescriptionsToDisplay": "Nessuna prescrizione da visualizzare",
   "noRefills": "Nessun rinnovo",
   "numberIsNotValid": "Numero non valido",
+  "onsetDate": "Onset Date",
   "ordered": "Ordinato",
-  "orderedMedication ": "ordered medication",
+  "orderedMedication ": "farmaci ordinati",
   "orders": "Ordini",
   "ordersForHomeDelivery": "Ordini per consegna a domicilio",
   "patientInstructions": "Istruzioni per il paziente",
@@ -88,5 +95,6 @@
   "substitutionType": "Tipo di sostituzione",
   "tabList": "Elenco schede",
   "today": "Oggi",
-  "view": "Visualizza"
+  "view": "Visualizza",
+  "visitFinalDiagnoses": "Visit final diagnoses"
 }

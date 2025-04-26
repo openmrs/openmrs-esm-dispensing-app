@@ -1,5 +1,7 @@
 {
   "active": "Kích hoạt",
+  "activecondition": "Active Condition",
+  "activeConditions": "Active Condition",
   "activePrescriptions": "Đơn thuốc đang hoạt động",
   "age": "Age",
   "allergiesCount_one": "{{count}} dị ứng",
@@ -14,9 +16,12 @@
   "closedDispense": "đóng cửa phân phối",
   "closePrescription": "Đóng đơn thuốc",
   "completed": "Hoàn thành",
+  "conditions": "Condition",
+  "conditionsAndDiagnoses": "Conditions and diagnoses",
   "created": "Đã tạo",
   "datePrescribed": "Date prescribed",
   "delete": "Xóa",
+  "diagnosis": "Diagnosis",
   "dispense": "Phân chia",
   "dispensed": "Đã phân chia",
   "dispenseDate": "Date of Dispense",
@@ -38,6 +43,7 @@
   "errorLoadingInventoryItems": "Error fetching inventory items",
   "expired": "Hết hạn",
   "filterByLocation": "Lọc theo vị trí",
+  "finalDiagnoses": "Final Diagnoses",
   "for": "for",
   "frequency": "Tính thường xuyên",
   "historyComments": "Lịch sử và bình luận",
@@ -54,6 +60,7 @@
   "noPrescriptionsToDisplay": "No prescriptions to display",
   "noRefills": "No refills",
   "numberIsNotValid": "Số không hợp lệ",
+  "onsetDate": "Onset Date",
   "ordered": "Đã đặt hàng",
   "orderedMedication ": "ordered medication",
   "orders": "Đơn hàng",
@@ -88,5 +95,6 @@
   "substitutionType": "Loại thay thế",
   "tabList": "Danh sách thẻ",
   "today": "Hôm nay",
-  "view": "Xem"
+  "view": "Xem",
+  "visitFinalDiagnoses": "Visit final diagnoses"
 }

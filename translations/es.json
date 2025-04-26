@@ -1,5 +1,7 @@
 {
   "active": "Activo",
+  "activecondition": "Active Condition",
+  "activeConditions": "Active Condition",
   "activePrescriptions": "Recetas activas",
   "age": "Edad",
   "allergiesCount_one": "{{count}} alergia",
@@ -14,9 +16,12 @@
   "closedDispense": "dispensa cerrada",
   "closePrescription": "Receta cerrada",
   "completed": "Completada",
+  "conditions": "Condition",
+  "conditionsAndDiagnoses": "Conditions and diagnoses",
   "created": "Creada",
   "datePrescribed": "Fecha de receta",
   "delete": "Eliminar",
+  "diagnosis": "Diagnosis",
   "dispense": "Dispensar",
   "dispensed": "Dispensado",
   "dispenseDate": "Fecha de entrega",
@@ -38,6 +43,7 @@
   "errorLoadingInventoryItems": "Se produjo un error al cargar los elementos del inventario",
   "expired": "Expirado",
   "filterByLocation": "Filtrar por ubicación",
+  "finalDiagnoses": "Final Diagnoses",
   "for": "para",
   "frequency": "Frecuencia",
   "historyComments": "Historial y comentarios",
@@ -54,6 +60,7 @@
   "noPrescriptionsToDisplay": "No hay recetas para mostrar",
   "noRefills": "Sin recargas",
   "numberIsNotValid": "El número no es válido",
+  "onsetDate": "Onset Date",
   "ordered": "Ordenado",
   "orderedMedication ": "Medicamento prescrito",
   "orders": "Órdenes",
@@ -88,5 +95,6 @@
   "substitutionType": "Tipo de sustitución",
   "tabList": "Lista de Pestañas",
   "today": "Hoy",
-  "view": "Ver"
+  "view": "Ver",
+  "visitFinalDiagnoses": "Visit final diagnoses"
 }
