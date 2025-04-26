@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process';
 
 try {
-  execSync(`yarn up --fixed '@openmrs/esm-framework@next' '@openmrs@next' '@openmrs/esm-patient-common-lib@next'`, {
+  execSync(`yarn up --fixed '@openmrs/esm-framework@next' 'openmrs@next' '@openmrs/esm-patient-common-lib@next'`, {
     stdio: ['ignore', 'inherit', 'inherit'],
     windowsHide: true,
   });
