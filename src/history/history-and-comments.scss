@@ -43,7 +43,7 @@
     justify-content: space-between;
     width: 100%;
     margin: layout.$spacing-01 0 layout.$spacing-03;
-    padding: 0 layout.$spacing-03 0 layout.$spacing-03;
+    padding: 0 0 0 layout.$spacing-03;
     background-color: #fff;
     border-left: layout.$spacing-03 solid red;
     color: $text-02;
@@ -53,4 +53,8 @@
   .medicationEventActionMenu {
     float: right;
   }
+}
+
+.menuitem {
+  max-width: none;
 }
