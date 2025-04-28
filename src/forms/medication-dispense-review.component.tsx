@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { ComboBox, Dropdown, NumberInput, Stack, TextArea  } from '@carbon/react';
+import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
 import {
   OpenmrsDatePicker,
   useLayoutType,
@@ -10,11 +10,7 @@ import {
   userHasAccess,
   ResponsiveWrapper,
 } from '@openmrs/esm-framework';
-import {
-  getConceptCodingUuid,
-  getMedicationReferenceOrCodeableConcept,
-  getOpenMRSMedicineDrugName,
-} from '../utils';
+import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
 import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import {
@@ -59,6 +55,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const [substitutionTypes, setSubstitutionTypes] = useState([]);
   // reason for substitution question
   const [substitutionReasons, setSubstitutionReasons] = useState([]);
+  //quantity prescribed
+  const [quantityPrescribed, setQuantityPrescribed] = useState(medicationDispense.quantity.value);
   const [userCanModify, setUserCanModify] = useState(false);
 
   const isTablet = useLayoutType() === 'tablet';
@@ -315,7 +313,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         <ResponsiveWrapper>
           <div>
             <p className={styles.quantitySummary}>
-              {t('quantityPrescribed', 'Quantity Prescribed')}:{medicationDispense.quantity.value}
+              {t('quantityPrescribed', 'Quantity Prescribed')}:{quantityPrescribed}
             </p>
             <p className={styles.quantitySummary}>
               {t('quantityDispensed', 'Quantity Dispensed')}: {quantityDispensed}
@@ -330,7 +328,8 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
         <div className={styles.dispenseDetailsContainer}>
           <NumberInput
-            allowEmpty={false}
+            allowEmpty={true}
+            value={0}
             disabled={!userCanModify}
             hideSteppers={true}
             id="quantity"
