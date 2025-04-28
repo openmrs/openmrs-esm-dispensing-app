@@ -237,7 +237,7 @@ const HistoryAndComments: React.FC<{
                   {dispense.performer && dispense.performer[0]?.actor?.display} {generateDispenseVerbiage(dispense)} -{' '}
                   {formatDatetime(parseDate(dispense.whenHandedOver))}
                 </h5>
-                <Tile className={styles.dispenseTile} data-floating-menu-container>
+                <Tile className={styles.dispenseTile}>
                   <MedicationEvent medicationEvent={dispense} status={generateDispenseTag(dispense)} />
                   {generateMedicationDispenseActionMenu(
                     dispense,
