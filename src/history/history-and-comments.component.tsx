@@ -148,18 +148,24 @@ const HistoryAndComments: React.FC<{
     } else {
       return (
         <OverflowMenu
-          ariaLabel={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
-          flipped={true}
-          className={styles.medicationEventActionMenu}>
+          aria-label={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
+          className={styles.medicationEventActionMenu}
+          flipped>
           {editable && (
-            <OverflowMenuItem onClick={handleEdit} itemText={t('editRecord', 'Edit record')}></OverflowMenuItem>
+            <OverflowMenuItem
+              className={styles.menuitem}
+              itemText={t('editRecord', 'Edit record')}
+              onClick={handleEdit}
+            />
           )}
           {deletable && (
             <OverflowMenuItem
-              onClick={() => {
-                handleDelete(medicationDispense, medicationRequestBundle);
-              }}
-              itemText={t('delete', 'Delete')}></OverflowMenuItem>
+              className={styles.menuitem}
+              hasDivider
+              isDelete
+              itemText={t('delete', 'Delete')}
+              onClick={() => handleDelete(medicationDispense, medicationRequestBundle)}
+            />
           )}
         </OverflowMenu>
       );
@@ -237,7 +243,7 @@ const HistoryAndComments: React.FC<{
                   {dispense.performer && dispense.performer[0]?.actor?.display} {generateDispenseVerbiage(dispense)} -{' '}
                   {formatDatetime(parseDate(dispense.whenHandedOver))}
                 </h5>
-                <Tile className={styles.dispenseTile} data-floating-menu-container>
+                <Tile className={styles.dispenseTile}>
                   <MedicationEvent medicationEvent={dispense} status={generateDispenseTag(dispense)} />
                   {generateMedicationDispenseActionMenu(
                     dispense,
