@@ -238,11 +238,11 @@ const HistoryAndComments: React.FC<{
                   {formatDatetime(parseDate(dispense.whenHandedOver))}
                 </h5>
                 <Tile className={styles.dispenseTile} data-floating-menu-container>
+                  <MedicationEvent medicationEvent={dispense} status={generateDispenseTag(dispense)} />
                   {generateMedicationDispenseActionMenu(
                     dispense,
                     getMedicationRequestBundleContainingMedicationDispense(medicationRequestBundles, dispense),
                   )}
-                  <MedicationEvent medicationEvent={dispense} status={generateDispenseTag(dispense)} />
                 </Tile>
               </div>
             );

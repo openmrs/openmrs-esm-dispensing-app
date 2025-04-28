@@ -1,5 +1,7 @@
 {
   "active": "Active",
+  "activecondition": "Active Condition",
+  "activeConditions": "Active Condition",
   "activePrescriptions": "מרשמים פעילים",
   "age": "גיל",
   "allergiesCount_one": "אלרגיה {{count}}",
@@ -14,9 +16,12 @@
   "closedDispense": "closed dispense",
   "closePrescription": "סגירת מרשם",
   "completed": "הושלם",
+  "conditions": "Condition",
+  "conditionsAndDiagnoses": "Conditions and diagnoses",
   "created": "נוצר",
   "datePrescribed": "Date prescribed",
   "delete": "מחיקה",
+  "diagnosis": "Diagnosis",
   "dispense": "ניפוק",
   "dispensed": "נופק",
   "dispenseDate": "Date of Dispense",
@@ -38,6 +43,7 @@
   "errorLoadingInventoryItems": "Error fetching inventory items",
   "expired": "פג תוקף",
   "filterByLocation": "סינון לפי מקום",
+  "finalDiagnoses": "Final Diagnoses",
   "for": "for",
   "frequency": "תדירות",
   "historyComments": "היסטוריה ותגובות",
@@ -54,6 +60,7 @@
   "noPrescriptionsToDisplay": "No prescriptions to display",
   "noRefills": "No refills",
   "numberIsNotValid": "המספר שגוי",
+  "onsetDate": "Onset Date",
   "ordered": "הוזמן",
   "orderedMedication ": "ordered medication",
   "orders": "הזמנות",
@@ -88,5 +95,6 @@
   "substitutionType": "סוג ההחלפה",
   "tabList": "Tab List",
   "today": "היום",
-  "view": "תצוגה"
+  "view": "תצוגה",
+  "visitFinalDiagnoses": "Visit final diagnoses"
 }
