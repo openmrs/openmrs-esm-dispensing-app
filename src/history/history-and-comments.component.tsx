@@ -6,6 +6,7 @@ import {
   launchWorkspace,
   parseDate,
   type Session,
+  showModal,
   useConfig,
   userHasAccess,
   useSession,
@@ -142,6 +143,19 @@ const HistoryAndComments: React.FC<{
       const workspaceTitle = getWorkspaceTitle(medicationDispense);
       launchWorkspace(workspaceName, { workspaceTitle, ...props });
     };
+    const handleDeleteClick = ({ medicationDispense, medicationRequestBundle }) => {
+      const dispose = showModal('delete-confirm-modal', {
+        title: t('deleteDispenseRecord', 'Delete Dispense Record'),
+        message: t('deleteDispenseRecordMessage', 'Are you sure you want to delete this dispense record?'),
+        onDelete: () => {
+          handleDelete(medicationDispense, medicationRequestBundle);
+          dispose();
+        },
+        onClose: () => {
+          dispose();
+        },
+      });
+    };
 
     if (!editable && !deletable) {
       return null;
@@ -164,7 +178,7 @@ const HistoryAndComments: React.FC<{
               hasDivider
               isDelete
               itemText={t('delete', 'Delete')}
-              onClick={() => handleDelete(medicationDispense, medicationRequestBundle)}
+              onClick={() => handleDeleteClick({ medicationDispense, medicationRequestBundle })}
             />
           )}
         </OverflowMenu>
