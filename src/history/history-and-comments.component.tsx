@@ -6,6 +6,8 @@ import {
   launchWorkspace,
   parseDate,
   type Session,
+  showModal,
+  showSnackbar,
   useConfig,
   userHasAccess,
   useSession,
@@ -142,6 +144,19 @@ const HistoryAndComments: React.FC<{
       const workspaceTitle = getWorkspaceTitle(medicationDispense);
       launchWorkspace(workspaceName, { workspaceTitle, ...props });
     };
+    const handleDeleteClick = ({ medicationDispense, medicationRequestBundle }) => {
+      const dispose = showModal('delete-confirm-modal', {
+        title: t('deleteDispenseRecord', 'Delete Dispense Record'),
+        message: t('deleteDispenseRecordMessage', 'Are you sure you want to delete this dispense record?'),
+        onDelete: () => {
+          handleDelete(medicationDispense, medicationRequestBundle);
+          dispose();
+        },
+        onClose: () => {
+          dispose();
+        },
+      });
+    };
 
     if (!editable && !deletable) {
       return null;
@@ -164,7 +179,7 @@ const HistoryAndComments: React.FC<{
               hasDivider
               isDelete
               itemText={t('delete', 'Delete')}
-              onClick={() => handleDelete(medicationDispense, medicationRequestBundle)}
+              onClick={() => handleDeleteClick({ medicationDispense, medicationRequestBundle })}
             />
           )}
         </OverflowMenu>
@@ -206,20 +221,41 @@ const HistoryAndComments: React.FC<{
       medicationRequestBundle,
       config.dispenseBehavior.restrictTotalQuantityDispensed,
     );
-    if (currentFulfillerStatus !== newFulfillerStatus) {
-      updateMedicationRequestFulfillerStatus(
-        getUuidFromReference(
-          medicationDispense.authorizingPrescription[0].reference, // assumes authorizing prescription exist
-        ),
-        newFulfillerStatus,
-      ).then(() => {
+
+    deleteMedicationDispense(medicationDispense.id)
+      .then(() => {
+        showSnackbar({
+          kind: 'success',
+          title: t('success', 'Success'),
+          subtitle: t('medicationDispenseDeleted', 'Medication dispense was deleted successfully'),
+        });
+        if (currentFulfillerStatus !== newFulfillerStatus) {
+          updateMedicationRequestFulfillerStatus(
+            getUuidFromReference(
+              medicationDispense.authorizingPrescription[0].reference, // assumes authorizing prescription exist
+            ),
+            newFulfillerStatus,
+          )
+            .then(() => {
+              revalidate(encounterUuid);
+            })
+            .catch(() => {
+              showSnackbar({
+                kind: 'error',
+                title: t('updateStatusFailed', 'Update Status Failed'),
+                subtitle: t('couldNotUpdateMedicationRequestStatus', 'Could not update medication request status'),
+              });
+            });
+        }
         revalidate(encounterUuid);
+      })
+      .catch(() => {
+        showSnackbar({
+          kind: 'error',
+          title: t('deleteFailed', 'Delete Failed'),
+          subtitle: t('couldNotDeleteMedicationDispense', 'Could not delete medication dispense'),
+        });
       });
-    }
-    // do the actual delete
-    deleteMedicationDispense(medicationDispense.id).then(() => {
-      revalidate(encounterUuid);
-    });
   };
 
   // TODO: assumption is dispenses always are after requests?

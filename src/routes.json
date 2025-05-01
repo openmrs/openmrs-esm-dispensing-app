@@ -91,6 +91,11 @@
     {
       "name": "prescription-print-preview-modal",
       "component": "printPrescriptionPreviewModal"
+    },
+    {
+      "name": "delete-confirm-modal",
+      "component": "deleteConfirmModal"
+
     }
   ]
 }
