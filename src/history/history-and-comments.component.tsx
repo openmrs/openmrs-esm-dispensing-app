@@ -7,6 +7,7 @@ import {
   parseDate,
   type Session,
   showModal,
+  showSnackbar,
   useConfig,
   userHasAccess,
   useSession,
@@ -220,20 +221,41 @@ const HistoryAndComments: React.FC<{
       medicationRequestBundle,
       config.dispenseBehavior.restrictTotalQuantityDispensed,
     );
-    if (currentFulfillerStatus !== newFulfillerStatus) {
-      updateMedicationRequestFulfillerStatus(
-        getUuidFromReference(
-          medicationDispense.authorizingPrescription[0].reference, // assumes authorizing prescription exist
-        ),
-        newFulfillerStatus,
-      ).then(() => {
+
+    deleteMedicationDispense(medicationDispense.id)
+      .then(() => {
+        showSnackbar({
+          kind: 'success',
+          title: 'Success',
+          subtitle: 'Medication dispense was deleted successfully',
+        });
+        if (currentFulfillerStatus !== newFulfillerStatus) {
+          updateMedicationRequestFulfillerStatus(
+            getUuidFromReference(
+              medicationDispense.authorizingPrescription[0].reference, // assumes authorizing prescription exist
+            ),
+            newFulfillerStatus,
+          )
+            .then(() => {
+              revalidate(encounterUuid);
+            })
+            .catch(() => {
+              showSnackbar({
+                kind: 'error',
+                title: 'Update Status Failed',
+                subtitle: 'Could not update medication request status',
+              });
+            });
+        }
         revalidate(encounterUuid);
+      })
+      .catch(() => {
+        showSnackbar({
+          kind: 'error',
+          title: 'Delete Failed',
+          subtitle: 'Could not delete medication dispense',
+        });
       });
-    }
-    // do the actual delete
-    deleteMedicationDispense(medicationDispense.id).then(() => {
-      revalidate(encounterUuid);
-    });
   };
 
   // TODO: assumption is dispenses always are after requests?
