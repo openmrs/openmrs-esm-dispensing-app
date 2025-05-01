@@ -226,8 +226,8 @@ const HistoryAndComments: React.FC<{
       .then(() => {
         showSnackbar({
           kind: 'success',
-          title: 'Success',
-          subtitle: 'Medication dispense was deleted successfully',
+          title: t('success', 'Success'),
+          subtitle: t('medicationDispenseDeleted', 'Medication dispense was deleted successfully'),
         });
         if (currentFulfillerStatus !== newFulfillerStatus) {
           updateMedicationRequestFulfillerStatus(
@@ -242,8 +242,8 @@ const HistoryAndComments: React.FC<{
             .catch(() => {
               showSnackbar({
                 kind: 'error',
-                title: 'Update Status Failed',
-                subtitle: 'Could not update medication request status',
+                title: t('updateStatusFailed', 'Update Status Failed'),
+                subtitle: t('couldNotUpdateMedicationRequestStatus', 'Could not update medication request status'),
               });
             });
         }
@@ -252,8 +252,8 @@ const HistoryAndComments: React.FC<{
       .catch(() => {
         showSnackbar({
           kind: 'error',
-          title: 'Delete Failed',
-          subtitle: 'Could not delete medication dispense',
+          title: t('deleteFailed', 'Delete Failed'),
+          subtitle: t('couldNotDeleteMedicationDispense', 'Could not delete medication dispense'),
         });
       });
   };
