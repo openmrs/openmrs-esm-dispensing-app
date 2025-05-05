@@ -15,7 +15,7 @@
     "test": "jest --config jest.config.js",
     "test:watch": "jest --config jest.config.js --watch",
     "typescript": "tsc",
-    "verify": "concurrently 'yarn:lint' 'yarn:test' 'yarn:typescript'",
+    "verify": "turbo run lint test typescript",
     "extract-translations": "i18next 'src/**/*.component.tsx' 'src/**/*.workspace.tsx' 'src/index.ts' --config ./tools/i18next-parser.config.js",
     "coverage": "yarn test --coverage",
     "postinstall": "husky install"
@@ -74,7 +74,6 @@
     "@types/webpack-env": "^1.16.0",
     "@typescript-eslint/eslint-plugin": "^7.5.0",
     "@typescript-eslint/parser": "^7.5.0",
-    "concurrently": "^6.2.0",
     "dayjs": "^1.11.13",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.31.0",
