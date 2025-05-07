@@ -48,7 +48,7 @@ jobs:
         if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
         run: gh pr review --approve "${{ steps.cpr.outputs.pull-request-number }}"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.OMRS_BOT_GH_TOKEN }}
 
       # Step 5: Auto-merge the PR if created or updated
       - name: 🔀 Auto merge PR
