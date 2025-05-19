@@ -36,7 +36,6 @@ jobs:
           branch: 'chore/update-transifex'
           author: 'OpenMRS Bot <infrastructure@openmrs.org>'
           token: ${{ secrets.OMRS_BOT_GH_TOKEN }}
-      # Step 4: Auto-approve the PR if created or updated
       - name: ✅ Auto approve PR
         if: steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated'
         run: gh pr review --approve "${{ steps.cpr.outputs.pull-request-number }}"
