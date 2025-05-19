@@ -24,8 +24,6 @@ jobs:
       # Step 1: Check out repository
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1   # Shallow clone for better performance
 
       # Step 2: Setup Node.js environment
       - name: 🟢 Setup Node.js
