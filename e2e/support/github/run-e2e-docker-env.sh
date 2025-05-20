@@ -18,7 +18,7 @@ do
   # add to our array
   app_names+=("$app_name.tgz");
   # run yarn pack for our app and add it to the working directory
-  yarn pack -o "working_dir/$app_name.tgz" >/dev/null
+  yarn pack -o "$working_dir/$app_name.tgz" >/dev/null
 done;
 echo "Created packed app archives"
 
