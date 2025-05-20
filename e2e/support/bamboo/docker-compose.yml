@@ -9,7 +9,7 @@ services:
       args:
         USER_ID: ${USER_ID}
         GROUP_ID: ${GROUP_ID}
-    container_name: patient-chart-e2e-tests-container
+    container_name: dispensing-e2e-tests-container
     working_dir: /app
     command: sh /app/e2e/support/bamboo/e2e-test-runner.sh
     volumes:
