@@ -15,7 +15,8 @@ env:
 
 jobs:
   run_e2e_tests:
-    runs-on: ubuntu-latest
+    name: Run E2E Tests
+    runs-on: ubuntu-latest  
     steps:
       - name: 📥 Checkout repo
         uses: actions/checkout@v4
@@ -26,7 +27,7 @@ jobs:
       - name: 🛠️ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
 
       - name: 💾 Cache dependencies
         id: cache-dependencies
@@ -100,4 +101,3 @@ jobs:
           path: './logs'
           retention-days: 2
           overwrite: true
-      

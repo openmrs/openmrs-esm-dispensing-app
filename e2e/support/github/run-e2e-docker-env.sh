@@ -5,7 +5,7 @@ script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # create a temporary working directory
 working_dir=$(mktemp -d "${TMPDIR:-/tmp/}openmrs-e2e-frontends.XXXXXXXXXX")
 # get a list of all the apps in this workspace
-apps=$(yarn workspaces list --json | jq -r 'select((.location != ".") and (.location | test("form-entry-app") | not) and (.location | test("-app"))) | .name')
+apps=$(yarn workspaces list --json | jq -r 'select(.name | test("-app")) | .name')
 # this array will hold all of the packed app names
 app_names=()
 
@@ -18,7 +18,7 @@ do
   # add to our array
   app_names+=("$app_name.tgz");
   # run yarn pack for our app and add it to the working directory
-  yarn workspace "$app" pack -o "$working_dir/$app_name.tgz" >/dev/null;
+  yarn pack -o "working_dir/$app_name.tgz" >/dev/null
 done;
 echo "Created packed app archives"
 
@@ -29,7 +29,12 @@ echo "Creating dynamic spa-assemble-config.json..."
 jq -n \
   --arg apps "$apps" \
   --arg app_names "$(echo ${app_names[@]})" \
-  '{"@openmrs/esm-primary-navigation-app": "next", "@openmrs/esm-dispensing-app": "next", "@openmrs/esm-home-app": "next"} + (
+  '{
+    "@openmrs/esm-primary-navigation-app": "next",
+    "@openmrs/esm-home-app": "next",
+    "@openmrs/esm-patient-chart-app": "next",
+    "@openmrs/esm-patient-banner-app": "next"
+  } + (
     ($apps | split("\n")) as $apps | ($app_names | split(" ") | map("/app/" + .)) as $app_files
     | [$apps, $app_files]
     | transpose
