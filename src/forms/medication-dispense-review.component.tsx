@@ -227,18 +227,20 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                   (formulation) => formulation.id === medicationDispense.medicationReference?.reference.split('/')[1],
                 ),
               }}
+              titleText={t('medicationFormulation', 'Medication Formulation')}
+              label={t('medicationFormulation', 'Medication Formulation')}
               onChange={({ selectedItem }) => {
+                const typedItem = selectedItem as Medication;
                 updateMedicationDispense({
                   ...medicationDispense,
                   medicationCodeableConcept: undefined,
                   medicationReference: {
-                    reference: 'Medication/' + selectedItem?.id,
-                    display: getOpenMRSMedicineDrugName(selectedItem),
+                    reference: 'Medication/' + typedItem?.id,
+                    display: getOpenMRSMedicineDrugName(typedItem),
                   },
                 });
                 setIsEditingFormulation(false);
               }}
-              required
             />
           </ResponsiveWrapper>
         )}
@@ -339,12 +341,12 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             }
             min={0}
             max={config.dispenseBehavior.restrictTotalQuantityDispensed ? quantityRemaining : undefined}
-            onChange={(e) => {
+            onChange={(event, state) => {
               updateMedicationDispense({
                 ...medicationDispense,
                 quantity: {
                   ...medicationDispense.quantity,
-                  value: e.target?.value ? parseFloat(e.target.value) : '',
+                  value: state.value ? parseFloat(state.value.toString()) : '',
                 },
               });
             }}
@@ -385,7 +387,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             min={0}
             label={t('dose', 'Dose')}
             value={medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.value}
-            onChange={(e) => {
+            onChange={(event, state) => {
               updateMedicationDispense({
                 ...medicationDispense,
                 dosageInstruction: [
@@ -396,7 +398,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                         ...medicationDispense.dosageInstruction[0].doseAndRate[0],
                         doseQuantity: {
                           ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
-                          value: e.target?.value ? parseFloat(e.target.value) : '',
+                          value: state.value ? parseFloat(state.value.toString()) : '',
                         },
                       },
                     ],
