@@ -78,8 +78,7 @@ e2e
 ```
 When you want to write a new test case, start by creating a new spec in `./specs`.
 Depending on what you want to achieve, you might want to create new fixtures and/or
-page object models. To see examples, have a look at the existing code to see how these
-different concepts play together.
+page object models. To see examples, have a look at the existing code to see how these different concepts play together.
 
 ## Open reports from GitHub Actions / Bamboo
 To download the report from the GitHub action/Bamboo plan, follow these steps:
@@ -106,6 +105,7 @@ one for running on commits.
 and run tests only on chromium. This is done in order to quickly provide feedback to the developer. 
 The tests are designed to generate their own data and clean up after themselves once they are finished. 
 This ensures that the tests will have minimum effect from changes made to dev3 by other developers. 
+
 In the future, we plan to use a docker container to run the tests in an isolated environment once we 
 figure out a way to spin up the container within a small amount of time.
 2. When running on commits, the workflow will spin up a docker container and run the dev server against

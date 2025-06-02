@@ -9,7 +9,7 @@ test('View active prescriptions', async ({ page }) => {
     await dispensingPage.goTo();
 
     await test.step('Then I should be at the prescriptions page', async () => {
-      await expect(page).toHaveURL(`${process.env.E2E_BASE_URL}spa/dispensing`);
+      await expect(page).toHaveURL(`${process.env.E2E_BASE_URL}/spa/dispensing`);
     });
   });
 });
