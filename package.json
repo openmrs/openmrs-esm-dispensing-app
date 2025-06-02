@@ -18,7 +18,8 @@
     "verify": "turbo run lint test typescript",
     "extract-translations": "i18next 'src/**/*.component.tsx' 'src/**/*.workspace.tsx' 'src/index.ts' --config ./tools/i18next-parser.config.js",
     "coverage": "yarn test --coverage",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "test-e2e": "playwright test"
   },
   "browserslist": [
     "extends browserslist-config-openmrs"
@@ -60,12 +61,14 @@
   "devDependencies": {
     "@openmrs/esm-framework": "next",
     "@openmrs/esm-patient-common-lib": "next",
+    "@playwright/test": "^1.52.0",
     "@swc/core": "^1.7.14",
     "@swc/jest": "^0.2.36",
     "@testing-library/dom": "^8.20.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.5.2",
+    "@types/dotenv": "^8.2.3",
     "@types/jest": "^28.1.4",
     "@types/react": "^18.0.14",
     "@types/react-dom": "^18.0.5",
@@ -75,6 +78,7 @@
     "@typescript-eslint/eslint-plugin": "^7.5.0",
     "@typescript-eslint/parser": "^7.5.0",
     "dayjs": "^1.11.13",
+    "dotenv": "^16.3.1",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-react-hooks": "^5.0.0",
