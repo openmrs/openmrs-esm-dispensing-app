@@ -19,7 +19,7 @@ module.exports = {
   ],
   testPathIgnorePatterns: [
     "/node_modules/",
-      "/e2e/"  // Ignore the e2e directory containing Playwright tests
+    "/e2e/"  // Ignore the e2e directory containing Playwright tests
     ],
   setupFilesAfterEnv: ['<rootDir>/tools/setup-tests.ts'],
   testEnvironment: 'jsdom',

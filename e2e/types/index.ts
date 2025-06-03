@@ -1,28 +1,5 @@
 import { type OpenmrsResource } from '@openmrs/esm-framework';
 
-export type PatientRegistrationSex = 'male' | 'female' | 'other' | 'unknown';
-
-export interface PatientRegistrationFormValues {
-  givenName?: string;
-  middleName?: string;
-  familyName?: string;
-  sex?: PatientRegistrationSex;
-  birthdate?: {
-    day: string;
-    month: string;
-    year: string;
-  };
-  postalCode?: string;
-  address1?: string;
-  address2?: string;
-  country?: string;
-  countyDistrict?: string;
-  stateProvince?: string;
-  cityVillage?: string;
-  phone?: string;
-  email?: string;
-}
-
 export interface Encounter {
   uuid: string;
   encounterDateTime: string;
@@ -131,44 +108,6 @@ export interface Provider {
   response?: string;
   person: OpenmrsResource;
   name?: string;
-}
-
-export interface CohortType {
-  uuid: string;
-  name: string;
-  description: string;
-  display: string;
-  links: { rel: string; uri: string; resourceAlias: string }[];
-  resourceVersion: string;
-}
-
-export interface Cohort {
-  uuid: string;
-  name: string;
-  description: string;
-  attributes: any[];
-  links: any[];
-  location: any;
-  groupCohort: boolean | null;
-  startDate: Date;
-  endDate: Date;
-  voidReason: string | null;
-  voided: boolean;
-  isStarred?: boolean;
-  type?: string;
-  size: number;
-  cohortType?: CohortType;
-  resourceVersion: string;
-}
-
-export interface CohortMember {
-  attributes: Array<any>;
-  description: string;
-  endDate: string;
-  startDate: string;
-  name: string;
-  uuid: string;
-  patient: Patient;
 }
 
 export interface Patient {

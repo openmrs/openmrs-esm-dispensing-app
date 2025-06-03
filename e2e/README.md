@@ -74,7 +74,6 @@ e2e
 |   ^ Contains the actual test cases/specs. New tests should be placed in this folder.
 |__ support
     ^ Contains support files that requires to run e2e tests, e.g. docker compose files. 
-
 ```
 When you want to write a new test case, start by creating a new spec in `./specs`.
 Depending on what you want to achieve, you might want to create new fixtures and/or
