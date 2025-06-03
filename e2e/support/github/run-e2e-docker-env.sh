@@ -45,3 +45,4 @@ cp "$script_dir/docker-compose.yml" "$working_dir/docker-compose.yml"
 cd "$working_dir"
 docker compose build --build-arg CACHE_BUST=$(date +%s) frontend
 docker compose up -d
+
