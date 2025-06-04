@@ -94,17 +94,15 @@ const PrescriptionTabLists: React.FC = () => {
                   />
                 )}
             </div>
-            <div className={styles.hiddenTabsContent}>
-              <TabPanels>
-                {tabs.map((tab, index) => {
-                  return index === selectedTab ? (
-                    <PrescriptionTabPanel location={location} searchTerm={searchTerm} status={tab.status} />
-                  ) : (
-                    <></>
-                  );
-                })}
-              </TabPanels>
-            </div>
+            <TabPanels>
+              {tabs.map((tab, index) => {
+                return index === selectedTab ? (
+                  <PrescriptionTabPanel location={location} searchTerm={searchTerm} status={tab.status} />
+                ) : (
+                  <></>
+                );
+              })}
+            </TabPanels>
           </Tabs>
         </div>
       </section>
