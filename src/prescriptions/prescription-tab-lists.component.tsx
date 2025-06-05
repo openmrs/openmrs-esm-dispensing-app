@@ -47,19 +47,18 @@ const PrescriptionTabLists: React.FC = () => {
   return (
     <main className="omrs-main-content">
       <section className={styles.prescriptionTabsContainer}>
-        <div className={styles.prescriptionTabs}>
-          <Tabs onChange={handleTabChange}>
-            <TabList aria-label={t('tabList', 'Tab List')} contained className={styles.tabsContainer}>
-              {tabs.map((tab, index) => {
-                return (
-                  <Tab title={t(tab.key)} key={index} id={'tab-' + index} className={styles.tab}>
-                    {t(tab.header)}
-                  </Tab>
-                );
-              })}
-            </TabList>
-            <div className={styles.searchContainer}>
-              {/* <Button
+        <Tabs onChange={handleTabChange}>
+          <TabList aria-label={t('tabList', 'Tab List')} contained className={styles.tabsContainer}>
+            {tabs.map((tab, index) => {
+              return (
+                <Tab title={t(tab.key)} key={index} id={'tab-' + index} className={styles.tab}>
+                  {t(tab.header)}
+                </Tab>
+              );
+            })}
+          </TabList>
+          <div className={styles.searchContainer}>
+            {/* <Button
                 kind="primary"
                 renderIcon={(props) => <Add size={24} />}
                 className={styles.addPrescriptionBtn}
@@ -67,44 +66,43 @@ const PrescriptionTabLists: React.FC = () => {
               >
                 {t("fillPrescription", "Fill prescription")}
               </Button>*/}
-              <Search
-                closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
-                defaultValue={searchTermUserInput}
-                placeholder={t('searchByPatientIdOrName', 'Search by patient ID or name')}
-                labelText={t('searchByPatientIdOrName', 'Search by patient ID or name')}
-                onChange={(e) => {
-                  e.preventDefault();
-                  setSearchTermUserInput(e.target.value);
-                }}
-                size="md"
-                className={styles.patientSearch}
-              />
-              {config.locationBehavior?.locationFilter?.enabled &&
-                !isFilterLocationsLoading &&
-                filterLocations?.length > 1 && (
-                  <ComboBox
-                    id="locationFilter"
-                    placeholder={t('filterByLocation', 'Filter by location')}
-                    items={isFilterLocationsLoading ? [] : filterLocations}
-                    itemToString={(item: SimpleLocation) => item?.name}
-                    onChange={({ selectedItem }) => {
-                      setLocation(selectedItem?.id);
-                    }}
-                    className={styles.locationFilter}
-                  />
-                )}
-            </div>
-            <TabPanels>
-              {tabs.map((tab, index) => {
-                return index === selectedTab ? (
-                  <PrescriptionTabPanel location={location} searchTerm={searchTerm} status={tab.status} />
-                ) : (
-                  <></>
-                );
-              })}
-            </TabPanels>
-          </Tabs>
-        </div>
+            <Search
+              closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
+              defaultValue={searchTermUserInput}
+              placeholder={t('searchByPatientIdOrName', 'Search by patient ID or name')}
+              labelText={t('searchByPatientIdOrName', 'Search by patient ID or name')}
+              onChange={(e) => {
+                e.preventDefault();
+                setSearchTermUserInput(e.target.value);
+              }}
+              size="md"
+              className={styles.patientSearch}
+            />
+            {config.locationBehavior?.locationFilter?.enabled &&
+              !isFilterLocationsLoading &&
+              filterLocations?.length > 1 && (
+                <ComboBox
+                  id="locationFilter"
+                  placeholder={t('filterByLocation', 'Filter by location')}
+                  items={isFilterLocationsLoading ? [] : filterLocations}
+                  itemToString={(item: SimpleLocation) => item?.name}
+                  onChange={({ selectedItem }) => {
+                    setLocation(selectedItem?.id);
+                  }}
+                  className={styles.locationFilter}
+                />
+              )}
+          </div>
+          <TabPanels>
+            {tabs.map((tab, index) => {
+              return index === selectedTab ? (
+                <PrescriptionTabPanel location={location} searchTerm={searchTerm} status={tab.status} />
+              ) : (
+                <></>
+              );
+            })}
+          </TabPanels>
+        </Tabs>
       </section>
     </main>
   );
