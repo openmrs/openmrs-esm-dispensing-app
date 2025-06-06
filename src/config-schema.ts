@@ -1,4 +1,4 @@
-import { Type } from '@openmrs/esm-framework';
+import { Type, validators } from '@openmrs/esm-framework';
 
 export const configSchema = {
   appName: {
@@ -119,6 +119,12 @@ export const configSchema = {
       'Enable or disable stock item batch number validation. Requires the stock management module to be installed and configured.',
     _default: true,
   },
+  leftNavMode: {
+    _type: Type.String,
+    _description: 'Sets the left nav mode for the dispensing app.',
+    _validators: [validators.oneOf(['normal', 'collapsed', 'hidden'])],
+    _default: 'collapsed',
+  },
 };
 
 export interface PharmacyConfig {
@@ -164,4 +170,5 @@ export interface PharmacyConfig {
   enableStockDispense: boolean;
 
   validateBatch: boolean;
+  leftNavMode: 'normal' | 'collapsed' | 'hidden';
 }
