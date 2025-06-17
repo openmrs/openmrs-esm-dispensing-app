@@ -38,7 +38,7 @@ test('Dispensing medication in pharmacy app', async ({ page, patient }) => {
     await expect(page).toHaveURL(process.env.E2E_BASE_URL + `/spa/dispensing`);
   });
 
-  await test.step('Then I expand the patient row', async () => {
+  await test.step('And I expand the patient row', async () => {
     const rowText = new RegExp(`Expand current row`);
     await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
     await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
@@ -68,8 +68,8 @@ test('Dispensing medication in pharmacy app', async ({ page, patient }) => {
 });
 
 test.afterEach(async ({ api }) => {
-  if (encounter) await deleteEncounter(api, encounter.uuid);
-  if (drugOrder) await deleteDrugOrder(api, drugOrder.uuid);
-  if (patient) await deletePatient(api, patient.uuid);
-  if (visit) await endVisit(api, visit);
+  await deleteEncounter(api, encounter.uuid);
+  await deleteDrugOrder(api, drugOrder.uuid);
+  await deletePatient(api, patient.uuid);
+  await endVisit(api, visit);
 });
