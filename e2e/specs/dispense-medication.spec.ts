@@ -1,7 +1,6 @@
 import { expect } from '@playwright/test';
 import { type Visit } from '@openmrs/esm-framework';
 import {
-  type Patient,
   generateRandomDrugOrder,
   deleteDrugOrder,
   createEncounter,
@@ -15,13 +14,12 @@ import { type Order } from '@openmrs/esm-patient-common-lib';
 import { test } from '../core';
 import { DispensingPage } from '../pages';
 
-let patient: Patient;
 let visit: Visit;
 let drugOrder: Order;
 let encounter: Encounter;
 let orderer: Provider;
 
-test.beforeEach(async ({ api }) => {
+test.beforeEach(async ({ api, patient }) => {
   visit = await startVisit(api, patient.uuid);
   orderer = await getProvider(api);
   encounter = await createEncounter(api, patient.uuid, orderer.uuid, visit);
