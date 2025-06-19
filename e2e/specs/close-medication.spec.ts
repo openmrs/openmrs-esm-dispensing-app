@@ -15,7 +15,7 @@ test.beforeEach(async ({ api, patient, visit }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 });
 
-test('Close medication', async ({ page, patient }) => {
+test('Close medication', async ({ page, patient, visit }) => {
   const dispensingPage = new DispensingPage(page);
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
@@ -28,27 +28,27 @@ test('Close medication', async ({ page, patient }) => {
     await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
   });
 
-  await test.step('Then I click danger close', async () => {
+  await test.step('Then I click the Close button on the Prescription tile', async () => {
     await page.getByRole('button', { name: 'danger Close' }).click();
-    await expect(page.getByText('Close prescription')).toBeVisible();
-    await expect(page.getByText('Reason for close')).toBeVisible();
   });
 
-  await test.step('Then I select the reason for closing and click close', async () => {
+  await test.step('Then I should see the Close prescription form launched in the workspace', async () => {
+    await expect(page.getByText(/close prescription/i)).toBeVisible();
+    await expect(page.getByText(/reason for close/i)).toBeVisible();
+  });
+
+  await test.step('And when I select Allergy as the reason for closing and submit the form', async () => {
     await page.getByRole('button', { name: 'Open', exact: true }).click();
     await page.getByText('Allergy', { exact: true }).click();
     await page.locator('form').getByRole('button', { name: 'Close' }).click();
   });
 
   await test.step('Then I should see a success notification', async () => {
-    await expect(
-      page.getByText(/Snackbar notificationMedication dispense closed.Medication dispense closed./i),
-    ).toBeVisible();
+    await expect(page.getByText(/medication dispense closed/i)).toBeVisible();
   });
 
-  await test.step('Then I click on History and comments and should see Dispensed status', async () => {
-    await page.getByRole('tab', { name: 'History and comments' }).click();
-    await expect(page.getByText('Closed', { exact: true })).toBeVisible();
+  await test.step('And I should not see the prescription in the Prescriptions table', async () => {
+    await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).not.toBeVisible();
   });
 });
 
