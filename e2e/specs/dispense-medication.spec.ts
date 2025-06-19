@@ -26,7 +26,7 @@ test.beforeEach(async ({ api, patient }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 });
 
-test('Dispensing medication in pharmacy app', async ({ page, patient }) => {
+test('Dispense medication in the pharmacy app', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
