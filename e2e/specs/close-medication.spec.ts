@@ -30,11 +30,8 @@ test('Close medication', async ({ page, patient, visit }) => {
 
   await test.step('Then I click the Close button on the Prescription tile', async () => {
     await page.getByRole('button', { name: 'danger Close' }).click();
-  });
-
-  await test.step('Then I should see the Close prescription form launched in the workspace', async () => {
-    await expect(page.getByText(/close prescription/i)).toBeVisible();
-    await expect(page.getByText(/reason for close/i)).toBeVisible();
+    await expect(page.getByText('Close prescription')).toBeVisible();
+    await expect(page.getByText('Reason for close')).toBeVisible();
   });
 
   await test.step('And when I select Allergy as the reason for closing and submit the form', async () => {
@@ -44,11 +41,12 @@ test('Close medication', async ({ page, patient, visit }) => {
   });
 
   await test.step('Then I should see a success notification', async () => {
-    await expect(page.getByText(/medication dispense closed/i)).toBeVisible();
+    await expect(page.getByText(/medication dispense closed./i)).toBeVisible();
   });
 
-  await test.step('And I should not see the prescription in the Prescriptions table', async () => {
-    await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).not.toBeVisible();
+  await test.step('Then I click on History and comments and should see Dispensed status', async () => {
+    await page.getByRole('tab', { name: 'History and comments' }).click();
+    await expect(page.getByText('Closed', { exact: true })).toBeVisible();
   });
 });
 
