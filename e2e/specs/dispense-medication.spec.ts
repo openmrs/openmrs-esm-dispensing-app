@@ -1,15 +1,26 @@
 import { expect } from '@playwright/test';
-import { generateRandomDrugOrder, deleteDrugOrder, createEncounter, deleteEncounter, getProvider } from '../commands';
+import { type Visit } from '@openmrs/esm-framework';
+import {
+  generateRandomDrugOrder,
+  deleteDrugOrder,
+  createEncounter,
+  deleteEncounter,
+  getProvider,
+  startVisit,
+  endVisit,
+} from '../commands';
 import { type Encounter, type Provider } from '../commands/types';
 import { type Order } from '@openmrs/esm-patient-common-lib';
 import { test } from '../core';
 import { DispensingPage } from '../pages';
 
+let visit: Visit;
 let drugOrder: Order;
 let encounter: Encounter;
 let orderer: Provider;
 
-test.beforeEach(async ({ api, patient, visit }) => {
+test.beforeEach(async ({ api, patient }) => {
+  visit = await startVisit(api, patient.uuid);
   orderer = await getProvider(api);
   encounter = await createEncounter(api, patient.uuid, orderer.uuid, visit);
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
@@ -50,4 +61,5 @@ test('Dispense prescription', async ({ page, patient }) => {
 test.afterEach(async ({ api }) => {
   await deleteEncounter(api, encounter.uuid);
   await deleteDrugOrder(api, drugOrder.uuid);
+  await endVisit(api, visit);
 });
