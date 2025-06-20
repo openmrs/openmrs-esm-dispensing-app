@@ -96,14 +96,6 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
                 mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
               ),
             });
-            // showSnackbar({
-            //   kind: 'success',
-            //  subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
-            //   title: t(
-            //     mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
-            //     mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
-            //   ),
-            // });
             closeWorkspaceWithSavedChanges();
           }
         })
