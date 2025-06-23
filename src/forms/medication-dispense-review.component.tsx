@@ -211,12 +211,14 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const initialDispenser = useMemo(() => {
     return medicationDispense?.performer?.[0]?.actor?.reference
       ? providers?.find((provider) => provider.uuid === medicationDispense.performer[0].actor.reference.split('/')[1])
-      : {
-          uuid: session?.currentProvider?.uuid ?? '',
-          person: {
-            display: session?.user?.person?.display ?? '',
-          },
-        };
+      : session?.currentProvider?.uuid
+        ? {
+            uuid: session.currentProvider.uuid,
+            person: {
+              display: session?.user?.person?.display ?? '',
+            },
+          }
+        : undefined;
   }, [medicationDispense?.performer, providers, session?.currentProvider?.uuid, session?.user?.person?.display]);
 
   useEffect(() => {
