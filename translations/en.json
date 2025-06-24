@@ -30,7 +30,6 @@
   "dispensePrescription": "Dispense prescription",
   "dispensing": "Dispensing",
   "dispensingAppError": "Dispensing App Error",
-  "dispenseClosed":"Medication dispense has been closed",
   "dispensingAppMisconfigurationMessage": "Please contact your system administration: Misconfiguration - 'restrictTotalQuantityDispensed' cannot be enabled if 'allowModifyingPrescription' is enabled.",
   "dose": "Dose",
   "doseUnit": "Dose unit",
