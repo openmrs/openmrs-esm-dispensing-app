@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
@@ -207,6 +207,34 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   useEffect(() => {
     setUserCanModify(session?.user && userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user));
   }, [session]);
+
+  const initialDispenser = useMemo(() => {
+    return medicationDispense?.performer?.[0]?.actor?.reference
+      ? providers?.find((provider) => provider.uuid === medicationDispense.performer[0].actor.reference.split('/')[1])
+      : session?.currentProvider?.uuid
+        ? {
+            uuid: session.currentProvider.uuid,
+            person: {
+              display: session?.user?.person?.display ?? '',
+            },
+          }
+        : undefined;
+  }, [medicationDispense?.performer, providers, session?.currentProvider?.uuid, session?.user?.person?.display]);
+
+  useEffect(() => {
+    if (initialDispenser?.uuid) {
+      updateMedicationDispense({
+        ...medicationDispense,
+        performer: [
+          {
+            actor: {
+              reference: `Practitioner/${initialDispenser.uuid}`,
+            },
+          },
+        ],
+      });
+    }
+  }, [initialDispenser, medicationDispense, updateMedicationDispense]);
 
   return (
     <div className={styles.medicationDispenseReviewContainer}>
@@ -548,13 +576,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           <ResponsiveWrapper>
             <ComboBox
               id="dispenser"
-              initialSelectedItem={
-                medicationDispense?.performer[0].actor.reference
-                  ? providers.find(
-                      (provider) => provider.uuid === medicationDispense?.performer[0].actor.reference.split('/')[1],
-                    )
-                  : null
-              }
+              initialSelectedItem={initialDispenser}
               onChange={({ selectedItem }) => {
                 updateMedicationDispense({
                   ...medicationDispense,
