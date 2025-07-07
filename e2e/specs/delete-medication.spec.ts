@@ -14,8 +14,7 @@ import { type MedicationDispense } from '../../src/types';
 import { type Order } from '@openmrs/esm-patient-common-lib';
 import { test } from '../core';
 import { DispensingPage } from '../pages';
-import { deleteMedicationDespense, generateMedicationDispense } from '../commands/medication-request-operation';
-// import { fhirApi } from '../fixtures';
+import { deleteMedicationDespense, generateMedicationDispense } from '../commands/medication-dispense-operation';
 
 let visit: Visit;
 let drugOrder: Order;
@@ -31,20 +30,32 @@ test.beforeEach(async ({ fhirApi, api, patient }) => {
   medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer);
 });
 
-test('Delete medication dispense', async ({ page, patient }) => {
+test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
   const dispensingPage = new DispensingPage(page);
-  await test.step('When I navigate to the dispensing app', async () => {
+
+  await test.step('Given I am on the dispensing page', async () => {
     await dispensingPage.goTo();
     await expect(page).toHaveURL(process.env.E2E_BASE_URL + `/spa/dispensing`);
   });
 
-  await test.step('And I expand a table row in the Prescriptions table corresponding to an active prescription', async () => {
+  await test.step('When I expand the prescription row', async () => {
     const rowText = new RegExp(`Expand current row`);
     await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
+  });
+
+  await test.step('And I navigate to the History and comments tab', async () => {
     await page.getByRole('tab', { name: 'History and comments' }).click();
+  });
+
+  await test.step('And I click on the Options menu', async () => {
     await page.getByRole('button', { name: 'Options' }).first().click();
+  });
+
+  await test.step('And I select the Delete option', async () => {
     await page.getByRole('menuitem', { name: 'Delete' }).click();
-    await page.getByRole('button', { name: 'danger Delete' }).click();
+  });
+
+  await test.step('Then I should see a "medication dispense deleted" success notification', async () => {
     await expect(page.getByText(/medication dispense was deleted successfully/i)).toBeVisible();
   });
 });

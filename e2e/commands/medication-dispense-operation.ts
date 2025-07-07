@@ -1,15 +1,13 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/await-thenable */
 import { type APIRequestContext, expect } from '@playwright/test';
-import { type Patient } from '../commands';
+import { type Patient } from '.';
 import { MedicationDispenseStatus, type MedicationDispense } from '../../src/types';
-import { type Provider } from '../commands/types';
+import { type Provider } from './types';
+import dayjs from 'dayjs';
 
 export const generateMedicationDispense = async (
   fhirApi: APIRequestContext,
   patient: Patient,
   provider: Provider,
-  // medicationRequest: MedicationRequest,
 ): Promise<MedicationDispense> => {
   const dispense = await fhirApi.post('MedicationDispense?_summary=data', {
     data: {
@@ -17,7 +15,7 @@ export const generateMedicationDispense = async (
       status: MedicationDispenseStatus.completed,
       authorizingPrescription: [
         {
-          reference: 'MedicationRequest/03f95e47-243a-4f5e-997f-e8a86122c7bf',
+          // reference: 'MedicationRequest/' + medicationRequest.id,
           type: 'MedicationRequest',
         },
       ],
@@ -41,7 +39,7 @@ export const generateMedicationDispense = async (
       },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,
-      whenHandedOver: '',
+      whenHandedOver: dayjs().format(),
       whenPrepared: '',
 
       quantity: {
@@ -105,8 +103,7 @@ export const generateMedicationDispense = async (
       ],
     },
   });
-  await expect(dispense.ok()).toBeTruthy();
-  console.log(dispense.json);
+  expect(dispense.ok()).toBeTruthy();
   return await dispense.json();
 };
 
