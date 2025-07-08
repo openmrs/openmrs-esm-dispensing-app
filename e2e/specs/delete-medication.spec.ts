@@ -27,7 +27,7 @@ test.beforeEach(async ({ fhirApi, api, patient }) => {
   orderer = await getProvider(api);
   encounter = await createEncounter(api, patient.uuid, orderer.uuid, visit);
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
-  medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer);
+  medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
 });
 
 test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
@@ -35,7 +35,7 @@ test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
 
   await test.step('Given I am on the dispensing page', async () => {
     await dispensingPage.goTo();
-    await expect(page).toHaveURL(process.env.E2E_BASE_URL + `/spa/dispensing`);
+    await expect(page).toHaveURL(`/openmrs/spa/dispensing`);
   });
 
   await test.step('When I expand the prescription row', async () => {
@@ -53,6 +53,10 @@ test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
 
   await test.step('And I select the Delete option', async () => {
     await page.getByRole('menuitem', { name: 'Delete' }).click();
+  });
+
+  await test.step('And I select the Delete button in the modal', async () => {
+    await page.getByRole('button', { name: 'danger Delete' }).click();
   });
 
   await test.step('Then I should see a "medication dispense deleted" success notification', async () => {
