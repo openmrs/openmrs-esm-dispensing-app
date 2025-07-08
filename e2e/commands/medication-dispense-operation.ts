@@ -8,6 +8,7 @@ export const generateMedicationDispense = async (
   fhirApi: APIRequestContext,
   patient: Patient,
   provider: Provider,
+  medicationRequestUuid: string,
 ): Promise<MedicationDispense> => {
   const dispense = await fhirApi.post('MedicationDispense?_summary=data', {
     data: {
@@ -15,7 +16,7 @@ export const generateMedicationDispense = async (
       status: MedicationDispenseStatus.completed,
       authorizingPrescription: [
         {
-          // reference: 'MedicationRequest/' + medicationRequest.id,
+          reference: `MedicationRequest/${medicationRequestUuid}`,
           type: 'MedicationRequest',
         },
       ],
