@@ -7,3 +7,14 @@
   border: 1px solid colors.$gray-20;
   margin-bottom: layout.$spacing-05;
 }
+
+.prescriptionTile {
+  width: 100%;
+  margin: layout.$spacing-01 0 layout.$spacing-02;
+  padding: layout.$spacing-02;
+  padding-left: layout.$spacing-03;
+  background-color: #fff;
+  border-left: layout.$spacing-02 solid var(--brand-03);
+  color: $text-02;
+  margin-bottom: layout.$spacing-01 !important;
+}
