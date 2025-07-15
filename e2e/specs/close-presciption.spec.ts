@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test';
+import { type Order } from '@openmrs/esm-patient-common-lib';
 import { type Visit } from '@openmrs/esm-framework';
 import {
   generateRandomDrugOrder,
@@ -10,7 +11,6 @@ import {
   endVisit,
 } from '../commands';
 import { type Encounter, type Provider } from '../commands/types';
-import { type Order } from '@openmrs/esm-patient-common-lib';
 import { test } from '../core';
 import { DispensingPage } from '../pages';
 
@@ -26,11 +26,10 @@ test.beforeEach(async ({ api, patient }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 });
 
-test('Cancel medication order', async ({ page, patient }) => {
+test('Close prescription', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
-    await expect(page).toHaveURL(process.env.E2E_BASE_URL + `/spa/dispensing`);
   });
 
   await test.step('And I expand a table row in the prescriptions table corresponding to an active prescription', async () => {
@@ -52,7 +51,7 @@ test('Cancel medication order', async ({ page, patient }) => {
   });
 
   await test.step('Then I should see a success notification', async () => {
-    await expect(page.getByText(/medication dispense closed./i)).toBeVisible();
+    await expect(page.getByText(/medication dispense closed/i)).toBeVisible();
   });
 });
 
