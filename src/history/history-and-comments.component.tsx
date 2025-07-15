@@ -1,7 +1,17 @@
 import React from 'react';
 import { DataTableSkeleton, OverflowMenu, OverflowMenuItem, Tag, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { formatDatetime, parseDate, type Session, useConfig, userHasAccess, useSession } from '@openmrs/esm-framework';
+import {
+  formatDatetime,
+  launchWorkspace,
+  parseDate,
+  type Session,
+  showModal,
+  showSnackbar,
+  useConfig,
+  userHasAccess,
+  useSession,
+} from '@openmrs/esm-framework';
 import styles from './history-and-comments.scss';
 import {
   updateMedicationRequestFulfillerStatus,
@@ -9,8 +19,6 @@ import {
 } from '../medication-request/medication-request.resource';
 import { deleteMedicationDispense } from '../medication-dispense/medication-dispense.resource';
 import MedicationEvent from '../components/medication-event.component';
-import { launchOverlay } from '../hooks/useOverlay';
-import DispenseForm from '../forms/dispense-form.component';
 import { type MedicationDispense, MedicationDispenseStatus, type MedicationRequestBundle } from '../types';
 import {
   PRIVILEGE_DELETE_DISPENSE,
@@ -20,15 +28,13 @@ import {
 import {
   computeNewFulfillerStatusAfterDelete,
   computeQuantityRemaining,
-  getDateRecorded,
   getFulfillerStatus,
   getMedicationRequestBundleContainingMedicationDispense,
   getUuidFromReference,
   revalidate,
-  sortMedicationDispensesByDateRecorded,
+  sortMedicationDispensesByWhenHandedOver,
+  computeTotalQuantityDispensed,
 } from '../utils';
-import PauseDispenseForm from '../forms/pause-dispense-form.component';
-import CloseDispenseForm from '../forms/close-dispense-form.component';
 import { type PharmacyConfig } from '../config-schema';
 
 const HistoryAndComments: React.FC<{
@@ -38,7 +44,7 @@ const HistoryAndComments: React.FC<{
   const { t } = useTranslation();
   const session = useSession();
   const config = useConfig<PharmacyConfig>();
-  const { medicationRequestBundles, prescriptionDate, isError, isLoading } = usePrescriptionDetails(
+  const { medicationRequestBundles, prescriptionDate, error, isLoading } = usePrescriptionDetails(
     encounterUuid,
     config.refreshInterval,
   );
@@ -57,7 +63,7 @@ const HistoryAndComments: React.FC<{
           (performer) =>
             performer?.actor?.reference?.length > 1 &&
             performer.actor.reference.split('/')[1] === session.currentProvider.uuid,
-        ) != null
+        ) !== null
       ) {
         return true;
       }
@@ -65,7 +71,7 @@ const HistoryAndComments: React.FC<{
     return false;
   };
 
-  const generateForm: Function = (
+  const getDispenseWorkspaceConfig: Function = (
     medicationDispense: MedicationDispense,
     medicationRequestBundle: MedicationRequestBundle,
   ) => {
@@ -78,38 +84,42 @@ const HistoryAndComments: React.FC<{
           (medicationDispense?.quantity ? medicationDispense.quantity.value : 0);
       }
 
-      return (
-        <DispenseForm
-          patientUuid={patientUuid}
-          encounterUuid={encounterUuid}
-          medicationDispense={medicationDispense}
-          medicationRequestBundle={medicationRequestBundle}
-          quantityRemaining={quantityRemaining}
-          mode="edit"
-        />
-      );
+      let quantityDispensed = 0;
+      if (medicationRequestBundle.dispenses) {
+        quantityDispensed = computeTotalQuantityDispensed(medicationRequestBundle.dispenses);
+      }
+
+      const dispenseFormProps = {
+        patientUuid,
+        encounterUuid,
+        medicationDispense,
+        medicationRequestBundle,
+        quantityRemaining,
+        quantityDispensed,
+        mode: 'edit',
+      };
+
+      return { workspaceName: 'dispense-workspace', props: dispenseFormProps };
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
-      return (
-        <PauseDispenseForm
-          patientUuid={patientUuid}
-          encounterUuid={encounterUuid}
-          medicationDispense={medicationDispense}
-          mode="edit"
-        />
-      );
+      const pauseDispenseFormProps = {
+        patientUuid,
+        encounterUuid,
+        medicationDispense,
+        mode: 'edit',
+      };
+      return { workspaceName: 'pause-dispense-workspace', props: pauseDispenseFormProps };
     } else if (medicationDispense.status === MedicationDispenseStatus.declined) {
-      return (
-        <CloseDispenseForm
-          patientUuid={patientUuid}
-          encounterUuid={encounterUuid}
-          medicationDispense={medicationDispense}
-          mode="edit"
-        />
-      );
+      const closeDispenseFormProps = {
+        patientUuid,
+        encounterUuid,
+        medicationDispense,
+        mode: 'edit',
+      };
+      return { workspaceName: 'close-dispense-workspace', props: closeDispenseFormProps };
     }
   };
 
-  const generateOverlayText: Function = (medicationDispense: MedicationDispense) => {
+  const getWorkspaceTitle: Function = (medicationDispense: MedicationDispense) => {
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
       return t('editDispenseRecord', 'Edit Dispense Record');
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
@@ -126,30 +136,51 @@ const HistoryAndComments: React.FC<{
     const editable = userCanEdit(session);
     const deletable = userCanDelete(session, medicationDispense);
 
+    const handleEdit = () => {
+      const { workspaceName, props } = getDispenseWorkspaceConfig(medicationDispense, medicationRequestBundle) as {
+        workspaceName: string;
+        props: Record<string, unknown>;
+      };
+      const workspaceTitle = getWorkspaceTitle(medicationDispense);
+      launchWorkspace(workspaceName, { workspaceTitle, ...props });
+    };
+    const handleDeleteClick = ({ medicationDispense, medicationRequestBundle }) => {
+      const dispose = showModal('delete-confirm-modal', {
+        title: t('deleteDispenseRecord', 'Delete Dispense Record'),
+        message: t('deleteDispenseRecordMessage', 'Are you sure you want to delete this dispense record?'),
+        onDelete: () => {
+          handleDelete(medicationDispense, medicationRequestBundle);
+          dispose();
+        },
+        onClose: () => {
+          dispose();
+        },
+      });
+    };
+
     if (!editable && !deletable) {
       return null;
     } else {
       return (
         <OverflowMenu
-          ariaLabel={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
-          flipped={true}
-          className={styles.medicationEventActionMenu}>
+          aria-label={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
+          className={styles.medicationEventActionMenu}
+          flipped>
           {editable && (
             <OverflowMenuItem
-              onClick={() =>
-                launchOverlay(
-                  generateOverlayText(medicationDispense),
-                  generateForm(medicationDispense, medicationRequestBundle),
-                )
-              }
-              itemText={t('editRecord', 'Edit Record')}></OverflowMenuItem>
+              className={styles.menuitem}
+              itemText={t('editRecord', 'Edit record')}
+              onClick={handleEdit}
+            />
           )}
           {deletable && (
             <OverflowMenuItem
-              onClick={() => {
-                handleDelete(medicationDispense, medicationRequestBundle);
-              }}
-              itemText={t('delete', 'Delete')}></OverflowMenuItem>
+              className={styles.menuitem}
+              hasDivider
+              isDelete
+              itemText={t('delete', 'Delete')}
+              onClick={() => handleDeleteClick({ medicationDispense, medicationRequestBundle })}
+            />
           )}
         </OverflowMenu>
       );
@@ -190,31 +221,52 @@ const HistoryAndComments: React.FC<{
       medicationRequestBundle,
       config.dispenseBehavior.restrictTotalQuantityDispensed,
     );
-    if (currentFulfillerStatus !== newFulfillerStatus) {
-      updateMedicationRequestFulfillerStatus(
-        getUuidFromReference(
-          medicationDispense.authorizingPrescription[0].reference, // assumes authorizing prescription exist
-        ),
-        newFulfillerStatus,
-      ).then(() => {
+
+    deleteMedicationDispense(medicationDispense.id)
+      .then(() => {
+        showSnackbar({
+          kind: 'success',
+          title: t('success', 'Success'),
+          subtitle: t('medicationDispenseDeleted', 'Medication dispense was deleted successfully'),
+        });
+        if (currentFulfillerStatus !== newFulfillerStatus) {
+          updateMedicationRequestFulfillerStatus(
+            getUuidFromReference(
+              medicationDispense.authorizingPrescription[0].reference, // assumes authorizing prescription exist
+            ),
+            newFulfillerStatus,
+          )
+            .then(() => {
+              revalidate(encounterUuid);
+            })
+            .catch(() => {
+              showSnackbar({
+                kind: 'error',
+                title: t('updateStatusFailed', 'Update Status Failed'),
+                subtitle: t('couldNotUpdateMedicationRequestStatus', 'Could not update medication request status'),
+              });
+            });
+        }
         revalidate(encounterUuid);
+      })
+      .catch(() => {
+        showSnackbar({
+          kind: 'error',
+          title: t('deleteFailed', 'Delete Failed'),
+          subtitle: t('couldNotDeleteMedicationDispense', 'Could not delete medication dispense'),
+        });
       });
-    }
-    // do the actual delete
-    deleteMedicationDispense(medicationDispense.id).then(() => {
-      revalidate(encounterUuid);
-    });
   };
 
   // TODO: assumption is dispenses always are after requests?
   return (
     <div className={styles.historyAndCommentsContainer}>
       {isLoading && <DataTableSkeleton role="progressbar" />}
-      {isError && <p>{t('error', 'Error')}</p>}
+      {error && <p>{t('error', 'Error')}</p>}
       {medicationRequestBundles &&
         medicationRequestBundles
           .flatMap((medicationDispenseBundle) => medicationDispenseBundle.dispenses)
-          .sort(sortMedicationDispensesByDateRecorded)
+          .sort(sortMedicationDispensesByWhenHandedOver)
           .map((dispense) => {
             return (
               <div key={dispense.id}>
@@ -225,14 +277,14 @@ const HistoryAndComments: React.FC<{
                     fontSize: '0.9rem',
                   }}>
                   {dispense.performer && dispense.performer[0]?.actor?.display} {generateDispenseVerbiage(dispense)} -{' '}
-                  {formatDatetime(parseDate(getDateRecorded(dispense)))}
+                  {formatDatetime(parseDate(dispense.whenHandedOver))}
                 </h5>
                 <Tile className={styles.dispenseTile}>
+                  <MedicationEvent medicationEvent={dispense} status={generateDispenseTag(dispense)} />
                   {generateMedicationDispenseActionMenu(
                     dispense,
                     getMedicationRequestBundleContainingMedicationDispense(medicationRequestBundles, dispense),
                   )}
-                  <MedicationEvent medicationEvent={dispense} status={generateDispenseTag(dispense)} />
                 </Tile>
               </div>
             );

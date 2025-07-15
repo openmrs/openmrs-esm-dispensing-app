@@ -1,53 +1,53 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import '~@openmrs/esm-styleguide/src/vars';
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .header {
   @include type.type-style('body-compact-02');
   color: $text-02;
-  height: spacing.$spacing-12;
+  height: layout.$spacing-12;
   background-color: $ui-02;
   display: flex;
   justify-content: space-between;
 }
 
-.left-justified-items {
+.leftJustifiedItems {
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-left: 0.75rem;
+  margin-left: layout.$spacing-05;
 }
 
-.right-justified-items {
+.rightJustifiedItems {
   @include type.type-style('body-compact-02');
   color: $text-02;
-  padding-top: 1rem;
+  padding-top: layout.$spacing-05;
 }
 
-.page-name {
+.pageName {
   @include type.type-style('heading-04');
 }
 
-.page-labels {
-  margin-left: 1rem;
+.pageLabels {
+  margin-left: layout.$spacing-05;
   p:first-of-type {
-    margin-bottom: 0.25rem;
+    margin-bottom: layout.$spacing-02;
   }
 }
 
-.date-and-location {
+.dateAndLocation {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-right: 1rem;
+  margin-right: layout.$spacing-05;
 }
 
 .value {
-  margin-left: 0.25rem;
+  margin-left: layout.$spacing-02;
 }
 
 .middot {
-  margin: 0 0.5rem;
+  margin: 0 layout.$spacing-03;
 }
 
 .view {

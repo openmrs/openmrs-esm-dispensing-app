@@ -1,16 +1,17 @@
 import { DataTableSkeleton, Tag, Tile } from '@carbon/react';
-import React, { useEffect, useState } from 'react';
-import styles from './prescription-details.scss';
 import { WarningFilled } from '@carbon/react/icons';
-import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
-import { useTranslation } from 'react-i18next';
-import MedicationEvent from '../components/medication-event.component';
 import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import ActionButtons from '../components/action-buttons.component';
+import MedicationEvent from '../components/medication-event.component';
+import { type PharmacyConfig } from '../config-schema';
+import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
+import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
 import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay } from '../utils';
-import ActionButtons from '../components/action-buttons.component';
-import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
-import { type PharmacyConfig } from '../config-schema';
+import PrescriptionsActionsFooter from './prescription-actions.component';
+import styles from './prescription-details.scss';
 
 const PrescriptionDetails: React.FC<{
   encounterUuid: string;
@@ -20,10 +21,7 @@ const PrescriptionDetails: React.FC<{
   const config = useConfig<PharmacyConfig>();
   const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid, config.refreshInterval);
-  const { medicationRequestBundles, isError, isLoading } = usePrescriptionDetails(
-    encounterUuid,
-    config.refreshInterval,
-  );
+  const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
 
   useEffect(() => {
     if (typeof totalAllergies == 'number') {
@@ -60,6 +58,7 @@ const PrescriptionDetails: React.FC<{
   };
 
   const displayAllergies: Function = (allergies: Array<AllergyIntolerance>) => {
+    // TODO: Use the `text` property for non-coded allergies
     return allergies.map((allergy) => getConceptCodingDisplay(allergy.code.coding)).join(', ');
   };
 
@@ -68,29 +67,29 @@ const PrescriptionDetails: React.FC<{
       {isAllergiesLoading && <DataTableSkeleton role="progressbar" />}
       {!isAllergiesLoading && (
         <Tile className={styles.allergiesTile}>
-          <div className={styles.allergesContent}>
+          <div className={styles.allergiesContent}>
             <div>
               <WarningFilled size={24} className={styles.allergiesIcon} />
               <p>
                 {totalAllergies > 0 && (
                   <span>
                     <span style={{ fontWeight: 'bold' }}>
-                      {totalAllergies} {t('allergies', 'allergies').toLowerCase()}
+                      {t('allergiesCount', '{{ count }} allergies', {
+                        count: totalAllergies,
+                      })}
                     </span>{' '}
                     {displayAllergies(allergies)}
                   </span>
                 )}
-                {totalAllergies == 0 && t('noAllergyDetailsFound', 'No allergy details found')}
+                {totalAllergies === 0 && t('noAllergyDetailsFound', 'No allergy details found')}
               </p>
             </div>
           </div>
         </Tile>
       )}
-
       <h5 style={{ paddingTop: '8px', paddingBottom: '8px', fontSize: '0.9rem' }}>{t('prescribed', 'Prescribed')}</h5>
-
       {isLoading && <DataTableSkeleton role="progressbar" />}
-      {isError && <p>{t('error', 'Error')}</p>}
+      {error && <p>{t('error', 'Error')}</p>}
       {medicationRequestBundles &&
         medicationRequestBundles.map((bundle) => {
           return (
@@ -110,6 +109,7 @@ const PrescriptionDetails: React.FC<{
             </Tile>
           );
         })}
+      <PrescriptionsActionsFooter encounterUuid={encounterUuid} patientUuid={patientUuid} />
     </div>
   );
 };

@@ -1,25 +1,5 @@
-import { Type } from '@openmrs/esm-framework';
+import { Type, validators } from '@openmrs/esm-framework';
 
-/**
- * This is the config schema. It expects a configuration object which
- * looks like this:
- *
- * ```json
- * { "casualGreeting": true, "whoToGreet": ["Mom"] }
- * ```
- *
- * In OpenMRS Microfrontends, all config parameters are optional. Thus,
- * all elements must have a reasonable default. A good default is one
- * that works well with the reference application.
- *
- * To understand the schema below, please read the configuration system
- * documentation:
- *   https://openmrs.github.io/openmrs-esm-core/#/main/config
- * Note especially the section "How do I make my module configurable?"
- *   https://openmrs.github.io/openmrs-esm-core/#/main/config?id=im-developing-an-esm-module-how-do-i-make-it-configurable
- * and the Schema Reference
- *   https://openmrs.github.io/openmrs-esm-core/#/main/config?id=schema-reference
- */
 export const configSchema = {
   appName: {
     _type: Type.String,
@@ -54,6 +34,12 @@ export const configSchema = {
         'Enable/Disable restricting dispensing quantity greater than total quantity ordered. Marks prescription as complete when total quantity dispensed. If true, allowModifyingPrescription *must* be false, as this functionality relies solely on numeric quantity and assumes no change in formulation, dosage, unit, etc',
       _default: false,
     },
+  },
+  dispenserProviderRoles: {
+    _type: Type.Array,
+    _description:
+      'Array of provider roles uuids.  If specified, only providers with these roles will be listed in the "Dispensed By" dropdown.  Note that this simply restricts the providers that can be recorded as Dispensers, it does not limit who can create dispense events.',
+    _default: [],
   },
   medicationRequestExpirationPeriodInDays: {
     _type: Type.Number,
@@ -93,7 +79,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Pause' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: '2dd3e5c0-3d3f-4f3d-9860-19b3f9ab26ff',
+        _default: '2462a9d7-61fb-4bf5-9359-aedecb8d03cb',
       },
     },
     reasonForClose: {
@@ -101,7 +87,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Close' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/168099/",
-        _default: 'bd6c1fc2-7cfc-4562-94a0-e4765e5e977e',
+        _default: '2462a9d7-61fb-4bf5-9359-aedecb8d03cb',
       },
     },
     substitutionReason: {
@@ -109,7 +95,7 @@ export const configSchema = {
         _type: Type.UUID,
         _description:
           "UUID for the Value Set of valid answers to the 'Reason for Substitution' question. Defaults to CIEL value set: https://app.openconceptlab.org/#/orgs/CIEL/sources/CIEL/concepts/167862/",
-        _default: 'de8671b8-ed2e-4f7e-a9f8-dcd00878f2eb',
+        _default: '2de6e1be-f2dd-4ba0-9516-8a611aa2af9b',
       },
     },
     substitutionType: {
@@ -123,9 +109,22 @@ export const configSchema = {
   },
   enableStockDispense: {
     _type: Type.Boolean,
-    _description: 'Enable or disable stock deduction during the dispensing process. Requires the stock management module to be installed and configured.',
+    _description:
+      'Enable or disable stock deduction during the dispensing process. Requires the stock management module to be installed and configured.',
     _default: false,
-},
+  },
+  validateBatch: {
+    _type: Type.Boolean,
+    _description:
+      'Enable or disable stock item batch number validation. Requires the stock management module to be installed and configured.',
+    _default: true,
+  },
+  leftNavMode: {
+    _type: Type.String,
+    _description: 'Sets the left nav mode for the dispensing app.',
+    _validators: [validators.oneOf(['normal', 'collapsed', 'hidden'])],
+    _default: 'collapsed',
+  },
 };
 
 export interface PharmacyConfig {
@@ -143,6 +142,7 @@ export interface PharmacyConfig {
     allowModifyingPrescription: boolean;
     restrictTotalQuantityDispensed: boolean;
   };
+  dispenserProviderRoles: [];
   medicationRequestExpirationPeriodInDays: number;
   locationBehavior: {
     locationColumn: {
@@ -168,4 +168,7 @@ export interface PharmacyConfig {
     };
   };
   enableStockDispense: boolean;
+
+  validateBatch: boolean;
+  leftNavMode: 'normal' | 'collapsed' | 'hidden';
 }

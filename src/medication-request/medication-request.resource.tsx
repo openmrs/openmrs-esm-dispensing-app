@@ -17,7 +17,7 @@ import {
   getMedicationReferenceOrCodeableConcept,
   getPrescriptionTableActiveMedicationRequestsEndpoint,
   getPrescriptionTableAllMedicationRequestsEndpoint,
-  sortMedicationDispensesByDateRecorded,
+  sortMedicationDispensesByWhenHandedOver,
   computePrescriptionStatusMessageCode,
   getAssociatedMedicationDispenses,
 } from '../utils';
@@ -60,7 +60,7 @@ export function usePrescriptionsTable(
       const medicationDispenses = entries
         .filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
         .map((entry) => entry.resource as MedicationDispense)
-        .sort(sortMedicationDispensesByDateRecorded);
+        .sort(sortMedicationDispensesByWhenHandedOver);
       prescriptionsTableRows = encounters.map((encounter) => {
         const medicationRequestsForEncounter = medicationRequests.filter(
           (medicationRequest) => medicationRequest.encounter.reference == 'Encounter/' + encounter.id,
@@ -123,7 +123,7 @@ function buildPrescriptionsTableRow(
   };
 }
 
-export function usePrescriptionDetails(encounterUuid: string, refreshInterval) {
+export function usePrescriptionDetails(encounterUuid: string, refreshInterval = null) {
   const medicationRequestBundles: Array<MedicationRequestBundle> = [];
   let prescriptionDate: Date;
   let isLoading = true;
@@ -152,13 +152,13 @@ export function usePrescriptionDetails(encounterUuid: string, refreshInterval) {
       const medicationDispenses = results
         ?.filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
         .map((entry) => entry.resource as MedicationDispense)
-        .sort(sortMedicationDispensesByDateRecorded);
+        .sort(sortMedicationDispensesByWhenHandedOver);
 
       medicationRequests.every((medicationRequest) =>
         medicationRequestBundles.push({
           request: medicationRequest,
           dispenses: getAssociatedMedicationDispenses(medicationRequest, medicationDispenses).sort(
-            sortMedicationDispensesByDateRecorded,
+            sortMedicationDispensesByWhenHandedOver,
           ),
         }),
       );
@@ -170,7 +170,7 @@ export function usePrescriptionDetails(encounterUuid: string, refreshInterval) {
   return {
     medicationRequestBundles,
     prescriptionDate,
-    isError: error,
+    error,
     isLoading,
   };
 }
@@ -193,7 +193,7 @@ export function usePatientAllergies(patientUuid: string, refreshInterval) {
   return {
     allergies,
     totalAllergies: data?.data.total,
-    isError: error,
+    error,
   };
 }
 

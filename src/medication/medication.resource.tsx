@@ -35,7 +35,7 @@ export function useMedicationFormulations(medicationCodeableConcept: string) {
     openmrsFetch,
   );
 
-  if (data) {
+  if (data?.data?.entry) {
     return {
       medicationFormulations: data.data.entry.map((e) => e.resource),
     };

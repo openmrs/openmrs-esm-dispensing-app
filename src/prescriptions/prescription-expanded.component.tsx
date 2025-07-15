@@ -1,5 +1,5 @@
 import React from 'react';
-import { type PatientUuid } from '@openmrs/esm-framework';
+import { ExtensionSlot, type PatientUuid } from '@openmrs/esm-framework';
 import { Tab, Tabs, TabList, TabPanels, TabPanel } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import HistoryAndComments from '../history/history-and-comments.component';
@@ -24,17 +24,13 @@ const PrescriptionExpanded: React.FC<{
       component: <PrescriptionDetails encounterUuid={encounterUuid} patientUuid={patientUuid} />,
     },
     {
+      name: t('conditionsAndDiagnoses', 'Conditions and diagnoses'),
+      component: <ExtensionSlot name="dispensing-condition-and-diagnoses" state={{ patientUuid, encounterUuid }} />,
+    },
+    {
       name: t('historyComments', 'History and comments'),
       component: <HistoryAndComments encounterUuid={encounterUuid} patientUuid={patientUuid} />,
     },
-    /* {
-      name: t("patientDetails", "Patient details"),
-      component: <PatientDetails patientUuid={patientUuid} />,
-    },*/
-    // {
-    //   name: t("billing", "Billing"),
-    //   component: <div>Billing</div>,
-    // },
   ];
 
   return (

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Tab, Tabs, TabList, TabPanels, Search, ComboBox } from '@carbon/react';
+import { ComboBox, Search, Tab, Tabs, TabList, TabPanels } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import PrescriptionTabPanel from './prescription-tab-panel.component';
-import styles from './prescriptions.scss';
-import { useLocationForFiltering } from '../location/location.resource';
 import { useConfig } from '@openmrs/esm-framework';
+import { useLocationForFiltering } from '../location/location.resource';
 import { type SimpleLocation } from '../types';
 import { type PharmacyConfig } from '../config-schema';
+import PrescriptionTabPanel from './prescription-tab-panel.component';
+import styles from './prescriptions.scss';
 
 const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
@@ -45,13 +45,9 @@ const PrescriptionTabLists: React.FC = () => {
   };
 
   return (
-    <main className={`omrs-main-content ${styles.prescriptionListContainer}`}>
+    <main className="omrs-main-content">
       <section className={styles.prescriptionTabsContainer}>
-        <Tabs
-          className={styles.prescriptionTabs}
-          onChange={handleTabChange}
-          type="container"
-          tabContentClassName={styles.hiddenTabsContent}>
+        <Tabs onChange={handleTabChange}>
           <TabList aria-label={t('tabList', 'Tab List')} contained className={styles.tabsContainer}>
             {tabs.map((tab, index) => {
               return (
@@ -63,13 +59,13 @@ const PrescriptionTabLists: React.FC = () => {
           </TabList>
           <div className={styles.searchContainer}>
             {/* <Button
-              kind="primary"
-              renderIcon={(props) => <Add size={24} />}
-              className={styles.addPrescriptionBtn}
-              size="sm"
-            >
-              {t("fillPrescription", "Fill prescription")}
-            </Button>*/}
+                kind="primary"
+                renderIcon={(props) => <Add size={24} />}
+                className={styles.addPrescriptionBtn}
+                size="sm"
+              >
+                {t("fillPrescription", "Fill prescription")}
+              </Button>*/}
             <Search
               closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
               defaultValue={searchTermUserInput}

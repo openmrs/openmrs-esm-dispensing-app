@@ -1,11 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { InlineNotification } from '@carbon/react';
-import Overlay from '../forms/overlay/overlay.component';
+import { useConfig } from '@openmrs/esm-framework';
+import { type PharmacyConfig } from '../config-schema';
 import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
 import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';
-import { useConfig } from '@openmrs/esm-framework';
-import { useTranslation } from 'react-i18next';
-import { type PharmacyConfig } from '../config-schema';
 
 export default function DispensingDashboard() {
   const config = useConfig<PharmacyConfig>();
@@ -28,7 +27,6 @@ export default function DispensingDashboard() {
         <PharmacyHeader />
         {/* <DispensingTiles /> */}
         <PrescriptionTabLists />
-        <Overlay />
       </div>
     );
   }

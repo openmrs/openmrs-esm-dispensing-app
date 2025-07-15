@@ -1,9 +1,10 @@
 import React from 'react';
-import { ComboBox, InlineLoading, InlineNotification, Layer } from '@carbon/react';
-import { type MedicationDispense, type InventoryItem } from '../../types';
-import { useDispenseStock } from './stock.resource';
-import { formatDate } from '@openmrs/esm-framework';
 import { useTranslation } from 'react-i18next';
+import { ComboBox, InlineLoading, InlineNotification, Layer } from '@carbon/react';
+import { formatDate, useConfig } from '@openmrs/esm-framework';
+import { type MedicationDispense, type InventoryItem } from '../../types';
+import { type PharmacyConfig } from '../../config-schema';
+import { useDispenseStock } from './stock.resource';
 
 type StockDispenseProps = {
   medicationDispense: MedicationDispense;
@@ -13,9 +14,13 @@ type StockDispenseProps = {
 
 const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updateInventoryItem }) => {
   const { t } = useTranslation();
+  const config = useConfig<PharmacyConfig>();
+
   const drugUuid = medicationDispense?.medicationReference?.reference?.split('/')[1];
   const { inventoryItems, error, isLoading } = useDispenseStock(drugUuid);
-  const validInventoryItems = inventoryItems.filter((item) => isValidBatch(medicationDispense, item));
+  const validInventoryItems = inventoryItems
+    .filter((item) => isValidBatch(medicationDispense, item))
+    .sort((a, b) => new Date(a.expiration).getTime() - new Date(b.expiration).getTime());
 
   function parseDate(dateString) {
     return new Date(dateString);
@@ -23,6 +28,9 @@ const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updat
 
   //check whether the drug will expire before the medication period ends
   function isValidBatch(medicationToDispense, inventoryItem) {
+    if (typeof config !== 'undefined' && !config.validateBatch) {
+      return true;
+    }
     if (medicationToDispense?.dosageInstruction && medicationToDispense?.dosageInstruction.length > 0) {
       return medicationToDispense.dosageInstruction.some((instruction) => {
         if (

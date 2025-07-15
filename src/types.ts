@@ -329,6 +329,7 @@ export interface MedicationRequest {
       start: string;
     };
   };
+  authoredOn?: string;
 }
 
 export interface MedicationRequestResponse {
@@ -420,6 +421,17 @@ export interface Person {
   display: string;
   preferredAddress: OpenmrsResource;
   uuid: string;
+}
+
+export interface Provider {
+  uuid: string;
+  person: {
+    display: string;
+  };
+}
+
+export interface ProviderRequestResponse {
+  results: Array<Provider>;
 }
 
 // represents a row in the main table

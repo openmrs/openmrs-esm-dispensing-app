@@ -1,0 +1,9 @@
+@use '@carbon/layout';
+@use '@carbon/colors';
+@use '@openmrs/esm-styleguide/src/vars' as *;
+
+.diagnosesContainer {
+  background-color: colors.$white-0;
+  border: 1px solid colors.$gray-20;
+  margin-bottom: layout.$spacing-05;
+}

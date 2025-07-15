@@ -1,20 +1,6 @@
-@use '@carbon/styles/scss/spacing';
-@use '@carbon/styles/scss/type';
-@import "~@openmrs/esm-styleguide/src/vars";
-@import '../root.scss';
-
-title {
-  width: 6.938rem;
-  height: 1.75rem;
-  margin: 0.438rem 22.875rem 0.813rem 0;
-  font-family: IBMPlexSans;
-  font-size: 1.25rem;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: 1.4;
-  letter-spacing: normal;
-}
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
 
 .link {
   text-decoration: none;
@@ -34,11 +20,6 @@ title {
   }
 }
 
-.prescriptionTabs {
-  grid-column: 'span 2';
-  padding: 0 spacing.$spacing-05;
-}
-
 .newListButton {
   width: fit-content;
   justify-self: end;
@@ -47,9 +28,10 @@ title {
 
 .tabsContainer {
   background-color: $ui-02;
+  padding: 0 layout.$spacing-05;
 
   :global(.cds--tabs__nav-item--selected) {
-    box-shadow: inset 0 2px 0 0 var(--brand-03) !important;
+    box-shadow: inset 0 layout.$spacing-01 0 0 var(--brand-03) !important;
   }
 
   :global(.cds--tab--list) button {
@@ -57,15 +39,11 @@ title {
   }
 }
 
-.hiddenTabsContent, .tabs .hiddenTabsContent {
-  display: none;
-}
-
 .patientListTableContainer {
   grid-row: 3 / 4;
   grid-column: 1 / 2;
   height: 100%;
-  margin: 0.5rem spacing.$spacing-05;
+  margin: 0 layout.$spacing-05;
   background-color: $ui-01;
   border: 0.5px solid #e0e0e0;
 
@@ -73,7 +51,7 @@ title {
     padding-top: 0 !important;
   }
 
-  tbody>tr>:nth-child(2) {
+  tbody > tr > :nth-child(2) {
     white-space: nowrap;
   }
 
@@ -91,13 +69,21 @@ title {
     background-color: $ui-01;
     border-bottom: 1px solid $ui-03;
   }
+
+  :global(.cds--pagination) {
+    border-top: none !important;
+  }
+
+  :global(.cds--table-expand__button) {
+    height: layout.$spacing-07 !important;
+  }
 }
 
 .searchContainer {
   display: flex;
   align-items: center;
   flex-direction: row-reverse;
-  padding-top: 0.5rem;
+  padding: layout.$spacing-05 layout.$spacing-05 0;
 
   :global(.cds--search-magnifier-icon) {
     z-index: 0 !important;
@@ -109,10 +95,10 @@ title {
 }
 
 .addPrescriptionBtn {
-  width: 10rem !important;
-  padding: 0.5rem !important;
-  margin-left: 1rem;
-  margin-right: 1rem;
+  width: layout.$spacing-13 !important;
+  padding: layout.$spacing-05 !important;
+  margin-left: layout.$spacing-05;
+  margin-right: layout.$spacing-05;
 }
 
 .patientSearch {
@@ -129,4 +115,33 @@ title {
   max-width: 16rem;
   background-color: $ui-02;
   border-bottom-color: $ui-03;
+}
+
+.hiddenRow {
+  display: none;
+}
+
+.filterEmptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: layout.$spacing-09;
+  text-align: center;
+  background-color: $ui-02;
+}
+
+.filterEmptyStateTile {
+  margin: auto;
+  background-color: $ui-01;
+}
+
+.filterEmptyStateContent {
+  @include type.type-style('heading-compact-02');
+  color: $text-02;
+  margin-bottom: layout.$spacing-03;
+}
+
+.filterEmptyStateHelper {
+  @include type.type-style('body-compact-01');
+  color: $text-02;
 }

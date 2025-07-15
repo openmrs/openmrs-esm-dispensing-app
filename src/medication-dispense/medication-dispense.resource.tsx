@@ -1,11 +1,13 @@
-import { fhirBaseUrl, openmrsFetch, type Session } from '@openmrs/esm-framework';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
+import { fhirBaseUrl, restBaseUrl, openmrsFetch, type Session } from '@openmrs/esm-framework';
 import {
   type MedicationDispense,
-  MedicationDispenseStatus,
+  type MedicationDispenseStatus,
   type MedicationRequest,
   type OrderConfig,
+  type Provider,
+  type ProviderRequestResponse,
   type ValueSet,
 } from '../types';
 
@@ -23,21 +25,9 @@ export function saveMedicationDispense(
 
   medicationDispense.status = medicationDispenseStatus;
 
-  // timestamp if needed
-  if (medicationDispenseStatus === MedicationDispenseStatus.completed) {
-    if (medicationDispense.whenHandedOver === null) {
-      medicationDispense.whenHandedOver = dayjs();
-    }
-  }
+  // TODO for now we don't support a different prepared and handed over date, so just set the handed over to the prepared date
+  medicationDispense.whenPrepared = medicationDispense.whenHandedOver;
 
-  if (
-    //   medicationDispenseStatus === MedicationDispenseStatus.in_progress ||  NOT YET IMPLEMENTED
-    medicationDispenseStatus === MedicationDispenseStatus.completed
-  ) {
-    if (medicationDispense.whenPrepared === null) {
-      medicationDispense.whenPrepared = dayjs();
-    }
-  }
   return openmrsFetch(url, {
     method: method,
     signal: abortController.signal,
@@ -56,15 +46,26 @@ export function deleteMedicationDispense(medicationDispenseUuid: string) {
 
 export function useOrderConfig() {
   const { data, error, isValidating } = useSWR<{ data: OrderConfig }, Error>(
-    `/ws/rest/v1/orderentryconfig`,
+    `${restBaseUrl}/orderentryconfig`,
     openmrsFetch,
   );
   return {
     orderConfigObject: data ? data.data : null,
+    error,
     isLoading: !data && !error,
-    isError: error,
     isValidating,
   };
+}
+
+export function useProviders(providerRoles: Array<string>) {
+  const rep = 'custom:(uuid,person:(display)';
+  const { data } = useSWR<{ data: ProviderRequestResponse }, Error>(
+    providerRoles && providerRoles.length > 0
+      ? `${restBaseUrl}/provider?providerRoles=${providerRoles.join(',')}&v=${rep})`
+      : `${restBaseUrl}/provider?v=${rep})`,
+    openmrsFetch,
+  );
+  return data?.data?.results.sort((a, b) => a.person?.display.localeCompare(b.person?.display));
 }
 
 export function useReasonForPauseValueSet(uuid: string) {
@@ -96,6 +97,7 @@ export function useValueSet(uuid: string) {
 export function initiateMedicationDispenseBody(
   medicationRequest: MedicationRequest,
   session: Session,
+  providers: Provider[],
   populateDispenseInformation: boolean,
 ): MedicationDispense {
   let medicationDispense: MedicationDispense = {
@@ -113,13 +115,19 @@ export function initiateMedicationDispenseBody(
     performer: [
       {
         actor: {
-          reference: session?.currentProvider ? `Practitioner/${session.currentProvider.uuid}` : '',
+          reference:
+            session?.currentProvider &&
+            providers &&
+            providers.some((provider) => provider.uuid == session.currentProvider.uuid)
+              ? `Practitioner/${session.currentProvider.uuid}`
+              : '',
         },
       },
     ],
     location: {
       reference: session?.sessionLocation ? `Location/${session.sessionLocation.uuid}` : '',
     },
+    whenHandedOver: dayjs().format(),
   };
 
   if (populateDispenseInformation) {
@@ -131,8 +139,6 @@ export function initiateMedicationDispenseBody(
         unit: medicationRequest.dispenseRequest?.quantity?.unit,
         system: medicationRequest.dispenseRequest?.quantity?.system,
       },
-      whenPrepared: null,
-      whenHandedOver: null,
       dosageInstruction: [
         {
           // see https://openmrs.atlassian.net/browse/O3-3791 for an explanation for the reason for the below
