@@ -16,7 +16,7 @@ env:
 jobs:
   run_e2e_tests:
     name: Run E2E Tests
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout repo
         uses: actions/checkout@v4
@@ -65,11 +65,6 @@ jobs:
       - name: 🏗️ Build apps
         run: yarn turbo run build --color --concurrency=5
 
-      - name: Build .tgz package
-        run: |
-          npm pack
-          mv *.tgz ./_openmrs_esm_dispensing_app.tgz  
-          
       - name: 🖥️ Run dev server
         run: bash e2e/support/github/run-e2e-docker-env.sh
 
@@ -88,7 +83,7 @@ jobs:
           else
             echo "No containers to stop."
           fi
-        
+
       - name: 📤 Upload Report
         uses: actions/upload-artifact@v4
         if: always()
@@ -112,4 +107,3 @@ jobs:
           path: './logs'
           retention-days: 2
           overwrite: true
-          

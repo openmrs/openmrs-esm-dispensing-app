@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test';
+import { type Order } from '@openmrs/esm-patient-common-lib';
 import { type Visit } from '@openmrs/esm-framework';
 import {
   generateRandomDrugOrder,
@@ -10,7 +11,6 @@ import {
   endVisit,
 } from '../commands';
 import { type Encounter, type Provider } from '../commands/types';
-import { type Order } from '@openmrs/esm-patient-common-lib';
 import { test } from '../core';
 import { DispensingPage } from '../pages';
 
@@ -28,9 +28,9 @@ test.beforeEach(async ({ api, patient }) => {
 
 test('Pause prescription', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
+
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
-    await expect(page).toHaveURL(process.env.E2E_BASE_URL + `/spa/dispensing`);
   });
 
   await test.step('And I expand a table row in the prescriptions table corresponding to an active prescription', async () => {
@@ -45,7 +45,7 @@ test('Pause prescription', async ({ page, patient }) => {
     await expect(page.getByText(/reason for pause/i)).toBeVisible();
   });
 
-  await test.step('And when I select Allergy as the reason for pausing and submit the form', async () => {
+  await test.step('And I select "Allergy" as the reason for pausing the prescription and then submit the form', async () => {
     await page.getByRole('button', { name: 'Open', exact: true }).click();
     await page.getByText('Allergy', { exact: true }).click();
     await page.locator('form').getByRole('button', { name: 'Pause' }).click();

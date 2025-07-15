@@ -9,8 +9,8 @@ apps=$(yarn workspaces list --json | jq -r 'select(.name | test("-app")) | .name
 # this array will hold all of the packed app names
 app_names=()
 
-echo "Copying local dispensing app..."
-cp ./_openmrs_esm_dispensing_app.tgz "$working_dir/_openmrs_esm_dispensing_app.tgz"
+echo "Packing local dispensing app..."
+yarn workspace "@openmrs/esm-dispensing-app" pack -o "$working_dir/_openmrs_esm_dispensing_app.tgz" >/dev/null
 app_names+=("_openmrs_esm_dispensing_app.tgz")
 
 echo "Packing other apps..."
@@ -30,7 +30,7 @@ jq -n \
     "@openmrs/esm-primary-navigation-app": "next",
     "@openmrs/esm-patient-banner-app": "next"
   } + (
-    ($apps | split("\n")) as $apps | 
+    ($apps | split("\n")) as $apps |
     ($app_names | split(" ") | map("/app/" + .)) as $app_files
     | [$apps, $app_files]
     | transpose
