@@ -30,10 +30,10 @@ test.beforeEach(async ({ fhirApi, api, patient }) => {
   medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
 });
 
-test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
+test('Delete prescription', async ({ fhirApi, page, patient }) => {
   const dispensingPage = new DispensingPage(page);
 
-  await test.step('Given I am on the dispensing page', async () => {
+  await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
     await expect(page).toHaveURL(`/openmrs/spa/dispensing`);
   });

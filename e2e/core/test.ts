@@ -16,9 +16,6 @@ export interface CustomTestFixtures {
 
 export interface CustomWorkerFixtures {
   api: APIRequestContext;
-}
-
-export interface CustomWorkerFixtures {
   fhirApi: APIRequestContext;
 }
 
