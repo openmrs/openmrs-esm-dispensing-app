@@ -14,7 +14,7 @@ import { type MedicationDispense } from '../../src/types';
 import { type Order } from '@openmrs/esm-patient-common-lib';
 import { test } from '../core';
 import { DispensingPage } from '../pages';
-import { deleteMedicationDespense, generateMedicationDispense } from '../commands/medication-dispense-operation';
+import { deleteMedicationDispense, generateMedicationDispense } from '../commands/medication-dispense-operation';
 
 let visit: Visit;
 let drugOrder: Order;
@@ -33,12 +33,12 @@ test.beforeEach(async ({ fhirApi, api, patient }) => {
 test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
   const dispensingPage = new DispensingPage(page);
 
-  await test.step('Given I am on the dispensing page', async () => {
+  await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
     await expect(page).toHaveURL(`/openmrs/spa/dispensing`);
   });
 
-  await test.step('When I expand the prescription row', async () => {
+  await test.step('And I expand a table row in the Prescriptions table corresponding to an active prescription', async () => {
     const rowText = new RegExp(`Expand current row`);
     await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
   });
@@ -57,7 +57,7 @@ test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
   });
 
   await test.step('And I update the quantity', async () => {
-    page.getByRole('spinbutton', { name: 'Quantity' }).click();
+    await page.getByRole('spinbutton', { name: 'Quantity' }).click();
     await page.getByRole('spinbutton', { name: 'Quantity' }).fill('9');
   });
 
@@ -69,13 +69,13 @@ test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
     await expect(page.getByText(/medication dispense list has been updated/i)).toBeVisible();
   });
 
-  await test.step('Then I see the quantity updated from 5 to 9 to confirm the dispesne event has been updated', async () => {
+  await test.step('Then I see the quantity updated from 5 to 9 to confirm the dispense event has been updated', async () => {
     await expect(page.getByText('QUANTITY 9 Tablet')).toBeVisible();
   });
 });
 
 test.afterEach(async ({ api, fhirApi }) => {
-  await deleteMedicationDespense(fhirApi, medicationDispense.id);
+  await deleteMedicationDispense(fhirApi, medicationDispense.id);
   await deleteEncounter(api, encounter.uuid);
   await deleteDrugOrder(api, drugOrder.uuid);
   await endVisit(api, visit);
