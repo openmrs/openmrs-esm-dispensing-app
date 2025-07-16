@@ -23,6 +23,5 @@ export const fhirApi: WorkerFixture<APIRequestContext, PlaywrightWorkerArgs> = a
     },
   });
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   await use(fhirctx);
 };

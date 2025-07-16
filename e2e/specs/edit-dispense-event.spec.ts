@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test';
+import { type Order } from '@openmrs/esm-patient-common-lib';
 import { type Visit } from '@openmrs/esm-framework';
 import {
   generateRandomDrugOrder,
@@ -9,12 +10,11 @@ import {
   startVisit,
   endVisit,
 } from '../commands';
+import { deleteMedicationDispense, generateMedicationDispense } from '../commands/medication-dispense-operation';
+import { DispensingPage } from '../pages';
+import { test } from '../core';
 import { type Encounter, type Provider } from '../commands/types';
 import { type MedicationDispense } from '../../src/types';
-import { type Order } from '@openmrs/esm-patient-common-lib';
-import { test } from '../core';
-import { DispensingPage } from '../pages';
-import { deleteMedicationDispense, generateMedicationDispense } from '../commands/medication-dispense-operation';
 
 let visit: Visit;
 let drugOrder: Order;

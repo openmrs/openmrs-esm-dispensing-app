@@ -36,7 +36,7 @@ export const generateMedicationDispense = async (
         },
       ],
       location: {
-        reference: `Location/${process.env.E2E_LOGIN_DEFAULT_LOCATION_UUID}`,
+        reference: `Location/${process.env.E2E_DEFAULT_LOGIN_LOCATION_UUID}`,
       },
       substitution: { reason: [], type: undefined, wasSubstituted: false },
       type: undefined,

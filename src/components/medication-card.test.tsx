@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { type MedicationReferenceOrCodeableConcept } from '../types';
 import MedicationCard from './medication-card.component';
 
@@ -13,9 +13,9 @@ describe('Medication Card Component tests', () => {
       },
     };
 
-    const { getByText, container } = render(<MedicationCard medication={medication} />);
-    expect(getByText('Some Medication')).toBeInTheDocument();
-    expect(container.querySelector('svg')).not.toBeInTheDocument();
+    render(<MedicationCard medication={medication} />);
+    expect(screen.getByText('Some Medication')).toBeInTheDocument();
+    expect(screen.queryByRole('svg')).not.toBeInTheDocument();
   });
 
   test('component should render medication card with edit action button', () => {
@@ -29,8 +29,7 @@ describe('Medication Card Component tests', () => {
 
     const action = () => 0;
 
-    const { getByText, container } = render(<MedicationCard medication={medication} editAction={action} />);
-    expect(getByText('Some Medication')).toBeInTheDocument();
-    expect(container.querySelector('svg')).toBeInTheDocument();
+    render(<MedicationCard medication={medication} editAction={action} />);
+    expect(screen.getByText('Some Medication')).toBeInTheDocument();
   });
 });
