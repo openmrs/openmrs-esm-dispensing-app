@@ -6,15 +6,33 @@
   background-color: colors.$white-0;
   border: 1px solid colors.$gray-20;
   margin-bottom: layout.$spacing-05;
+  padding: layout.$spacing-03;
+  display: flex;
+  flex-direction: column;
 }
 
 .prescriptionTile {
   width: 100%;
-  margin: layout.$spacing-01 0 layout.$spacing-02;
-  padding: layout.$spacing-02;
-  padding-left: layout.$spacing-03;
-  background-color: #fff;
-  border-left: layout.$spacing-02 solid var(--brand-03);
+  margin: layout.$spacing-05 0;
+  padding: layout.$spacing-03;
+  background-color: colors.$white-0;
+  border-left: 3px solid var(--brand-03);
   color: $text-02;
-  margin-bottom: layout.$spacing-01 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: layout.$spacing-03;
+
+  &:not(:last-child) {
+    margin-bottom: layout.$spacing-03;
+  }
+
+  & > * {
+    margin: 0;
+  }
+
+  :global(.cds--tag) {
+    margin-left: layout.$spacing-03;
+  }
 }
