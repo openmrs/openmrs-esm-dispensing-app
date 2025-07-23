@@ -90,10 +90,6 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
             revalidate(encounterUuid);
             showSnackbar({
               kind: 'success',
-              subtitle: t(
-                mode === 'enter' ? 'medicationDispenseClosed' : 'medicationDispenseUpdated',
-                mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
-              ),
               title: t(
                 mode === 'enter' ? 'medicationDispenseClosed' : 'medicationDispenseUpdated',
                 mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
