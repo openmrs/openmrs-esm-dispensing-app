@@ -128,6 +128,8 @@ export const configSchema = {
 };
 
 export interface PharmacyConfig {
+  checkDuplicateDispense: any;
+  enableDuplicateDispenseCheck: any;
   appName: string;
   actionButtons: {
     pauseButton: {
