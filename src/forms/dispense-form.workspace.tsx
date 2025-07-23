@@ -5,6 +5,7 @@ import {
   type DefaultWorkspaceProps,
   ExtensionSlot,
   getCoreTranslation,
+  showModal,
   showSnackbar,
   useConfig,
   usePatient,
@@ -54,23 +55,38 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const { patient, isLoading } = usePatient(patientUuid);
   const config = useConfig<PharmacyConfig>();
 
-  // Keep track of inventory item
   const [inventoryItem, setInventoryItem] = useState<InventoryItem>();
-
-  // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
-
-  // whether or not the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
-
-  // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Submit medication dispense form
+  const isDuplicateMedication = (dispense: MedicationDispense): boolean => {
+    const dispenses = medicationRequestBundle?.dispenses ?? [];
+
+    return dispenses.some((existingDispense) => {
+      return (
+        existingDispense.medicationCodeableConcept?.coding?.[0]?.code ===
+          dispense.medicationCodeableConcept?.coding?.[0]?.code &&
+        existingDispense.performer?.[0]?.actor?.reference === dispense.performer?.[0]?.actor?.reference &&
+        existingDispense.quantity?.value === dispense.quantity?.value &&
+        existingDispense.quantity?.code === dispense.quantity?.code &&
+        existingDispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value ===
+          dispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value &&
+        existingDispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.code ===
+          dispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.code &&
+        existingDispense.dosageInstruction?.[0]?.route?.coding?.[0]?.code ===
+          dispense.dosageInstruction?.[0]?.route?.coding?.[0]?.code &&
+        existingDispense.dosageInstruction?.[0]?.timing?.code?.coding?.[0]?.code ===
+          dispense.dosageInstruction?.[0]?.timing?.code?.coding?.[0]?.code
+      );
+    });
+  };
+
   const handleSubmit = () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
+
       saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
         .then((response) => {
           if (response.ok) {
@@ -81,9 +97,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             );
             if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
               return updateMedicationRequestFulfillerStatus(
-                getUuidFromReference(
-                  medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
-                ),
+                getUuidFromReference(medicationDispensePayload.authorizingPrescription[0].reference),
                 newFulfillerStatus,
               );
             }
@@ -148,6 +162,16 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     }
   };
 
+  const handleDuplicateMedication = () => {
+    const dispose = showModal('duplicate-prescription-modal', {
+      onClose: () => dispose(),
+      medicationName: medicationDispensePayload?.medicationCodeableConcept?.text || '',
+      onConfirm: () => {
+        handleSubmit();
+      },
+    });
+  };
+
   const checkIsValid = () => {
     if (
       medicationDispensePayload &&
@@ -160,9 +184,9 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
       medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
       medicationDispensePayload.dosageInstruction[0]?.route?.coding[0].code &&
       medicationDispensePayload.dosageInstruction[0]?.timing?.code.coding[0].code &&
-      (!medicationDispensePayload.substitution.wasSubstituted ||
-        (medicationDispensePayload.substitution.reason[0]?.coding[0].code &&
-          medicationDispensePayload.substitution.type?.coding[0].code))
+      (!medicationDispensePayload.substitution?.wasSubstituted ||
+        (medicationDispensePayload.substitution.reason?.[0]?.coding?.[0]?.code &&
+          medicationDispensePayload.substitution.type?.coding?.[0]?.code))
     ) {
       setIsValid(true);
     } else {
@@ -170,10 +194,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     }
   };
 
-  // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
-
-  // check is valid on any changes
   useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining, inventoryItem]);
 
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
@@ -232,7 +253,15 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
           {getCoreTranslation('cancel', 'Cancel')}
         </Button>
-        <Button disabled={isButtonDisabled} onClick={handleSubmit}>
+        <Button
+          disabled={isButtonDisabled}
+          onClick={() => {
+            if (medicationDispensePayload && isDuplicateMedication(medicationDispensePayload)) {
+              handleDuplicateMedication();
+            } else {
+              handleSubmit();
+            }
+          }}>
           {t(
             mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
             mode === 'enter' ? 'Dispense prescription' : 'Save changes',

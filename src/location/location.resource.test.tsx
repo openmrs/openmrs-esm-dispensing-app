@@ -36,6 +36,8 @@ const pharmacyConfig: PharmacyConfig = {
   enableStockDispense: false,
   validateBatch: false,
   leftNavMode: 'collapsed',
+  checkDuplicateDispense: false,
+  enableDuplicateDispenseCheck: false,
 };
 
 describe('Location Resource tests', () => {
