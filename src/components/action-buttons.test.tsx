@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { useConfig, ExtensionSlot } from '@openmrs/esm-framework';
 import { computeMedicationRequestStatus, getMostRecentMedicationDispenseStatus } from '../utils';
 import { MedicationDispenseStatus, type MedicationRequest, MedicationRequestStatus } from '../types';
@@ -155,14 +155,15 @@ describe('Action Buttons Component tests', () => {
       </div>
     ));
 
-    const { getByText, container } = render(
+    render(
       <ActionButtons
         patientUuid={mockPatientUuid}
         encounterUuid={mockEncounterUuid}
         medicationRequestBundle={{ request: medicationRequest, dispenses: [] }}
       />,
     );
-    expect(getByText('Dispense')).toBeInTheDocument();
+
+    expect(screen.getByText('Dispense')).toBeInTheDocument();
   });
 
   // status = active, but validity period start time years in the past
@@ -201,7 +202,7 @@ describe('Action Buttons Component tests', () => {
       </div>
     ));
 
-    const { queryByText } = render(
+    render(
       <ActionButtons
         patientUuid={mockPatientUuid}
         encounterUuid={mockEncounterUuid}
@@ -209,6 +210,6 @@ describe('Action Buttons Component tests', () => {
       />,
     );
 
-    expect(queryByText('Dispense')).not.toBeInTheDocument();
+    expect(screen.queryByText('Dispense')).not.toBeInTheDocument();
   });
 });

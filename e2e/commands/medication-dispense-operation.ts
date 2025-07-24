@@ -1,44 +1,60 @@
-/* eslint-disable @typescript-eslint/await-thenable */
 import { type APIRequestContext, expect } from '@playwright/test';
-import { type Order } from '@openmrs/esm-patient-common-lib';
-import { type Patient } from '../commands';
-import { type Encounter } from './types';
-import { type MedicationRequest } from '../../src/types';
+import { type Patient } from '.';
+import { MedicationDispenseStatus, type MedicationDispense } from '../../src/types';
+import { type Provider } from './types';
+import dayjs from 'dayjs';
 
-export const generateRandomMedicationRequest = async (
+export const generateMedicationDispense = async (
   fhirApi: APIRequestContext,
   patient: Patient,
-  encounter: Encounter,
-  providerUuid: string,
-  drugOrder: Order,
-): Promise<MedicationRequest> => {
-  const dispense = await fhirApi.post('MedicationRequest?_summary=data', {
+  provider: Provider,
+  medicationRequestUuid: string,
+): Promise<MedicationDispense> => {
+  const dispense = await fhirApi.post('MedicationDispense?_summary=data', {
     data: {
       resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      authorizingPrescription: [
+        {
+          reference: `MedicationRequest/${medicationRequestUuid}`,
+          type: 'MedicationRequest',
+        },
+      ],
       medicationReference: {
-        reference: 'Medication/',
+        reference: 'Medication/09e58895-e7f0-4649-b7c0-e665c5c08e93',
+        type: 'Medication',
+        display: 'Aspirin 81mg',
       },
-      encounter: encounter,
-      intent: String,
-      priority: String,
-      subject: patient,
-      requester: [
+      subject: {
+        reference: `Patient/${patient.uuid}`,
+      },
+      performer: [
         {
           actor: {
-            reference: providerUuid,
+            reference: `Practitioner/${provider.uuid}`,
           },
         },
       ],
-      quantity: {
-        value: 1,
-        unit: 'Tablet',
-        code: '1513AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      location: {
+        reference: `Location/${process.env.E2E_DEFAULT_LOGIN_LOCATION_UUID}`,
       },
-      asNeededBoolean: false,
-      location: process.env.E2E_LOGIN_DEFAULT_LOCATION_UUID,
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: dayjs().format(),
+      whenPrepared: '',
+
+      quantity: {
+        value: 5,
+        code: '1513AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        unit: 'Tablet',
+      },
       dosageInstruction: [
         {
+          text: '',
           timing: {
+            repeat: {
+              durationUnit: 'd',
+            },
             code: {
               coding: [
                 {
@@ -88,10 +104,10 @@ export const generateRandomMedicationRequest = async (
       ],
     },
   });
-  await expect(dispense.ok()).toBeTruthy();
+  expect(dispense.ok()).toBeTruthy();
   return await dispense.json();
 };
 
-export const deleteMedicationRequest = async (fhirApi: APIRequestContext, uuid: string) => {
-  await fhirApi.delete(`MedicationDispense/${uuid}`, { data: {} });
+export const deleteMedicationDispense = async (fhirApi: APIRequestContext, id: string) => {
+  await fhirApi.delete(`MedicationDispense/${id}`, { data: {} });
 };
