@@ -29,7 +29,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
   const extractPatientName = (display: string) => (display.includes('(') ? display.split('(')[0] : display);
   return (
     <Layer className={styles.printOutContainer}>
-      <StructuredListWrapper>
+      <StructuredListWrapper className={styles.structuredListWrapper}>
         <StructuredListBody>
           <StructuredListRow head>
             <StructuredListCell head>
@@ -59,7 +59,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                   {dosageInstruction && (
                     <StructuredListRow>
                       <StructuredListCell>
-                        <p>
+                        <p className={styles.medicationName}>
                           <strong>
                             {getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}
                           </strong>
@@ -68,27 +68,30 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                         <p>
                           <span className={styles.faintText}>{t('dose', 'Dose')}</span>
                           {': '}
-                          <span>
+                          <span className={styles.prescriptionInfo}>
                             {dosageInstruction?.doseAndRate?.map((doseAndRate, index) => {
                               return (
-                                <span key={index}>
+                                <span className={styles.prescriptionInfo} key={index}>
                                   {doseAndRate?.doseQuantity?.value} {doseAndRate?.doseQuantity?.unit}
                                 </span>
                               );
                             })}
                           </span>{' '}
-                          &mdash; {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}
-                          {dosageInstruction?.timing?.repeat?.duration
-                            ? ` ${t('for', 'for')} ` +
-                              dosageInstruction?.timing?.repeat?.duration +
-                              ' ' +
-                              dosageInstruction?.timing?.repeat?.durationUnit
-                            : ' '}
+                          &mdash;{' '}
+                          <span className={styles.prescriptionInfo}>
+                            {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}
+                            {dosageInstruction?.timing?.repeat?.duration
+                              ? ` ${t('for', 'for')} ` +
+                                dosageInstruction?.timing?.repeat?.duration +
+                                ' ' +
+                                dosageInstruction?.timing?.repeat?.durationUnit
+                              : ' '}
+                          </span>
                           {quantity && (
                             <p>
                               <span className={styles.faintText}>{t('quantity', 'Quantity')}</span>
                               {': '}
-                              <span>
+                              <span className={styles.prescriptionInfo}>
                                 {quantity.value} {quantity.unit}
                               </span>
                             </p>
@@ -96,12 +99,15 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
                         </p>
                         <p>
                           <span className={styles.faintText}>{t('datePrescribed', 'Date prescribed')}</span>
-                          {': '} <span>{formatDate(parseDate(request.request.authoredOn), { noToday: true })}</span>
+                          {': '}{' '}
+                          <span className={styles.prescriptionInfo}>
+                            {formatDate(parseDate(request.request.authoredOn), { noToday: true })}
+                          </span>
                         </p>
                         <p>
                           <span className={styles.faintText}>{t('refills', 'Refills')}</span>
                           {': '}{' '}
-                          <span>
+                          <span className={styles.prescriptionInfo}>
                             {numberOfRefillsAllowed || numberOfRefillsAllowed === 0
                               ? numberOfRefillsAllowed
                               : t('noRefills', 'No refills')}
