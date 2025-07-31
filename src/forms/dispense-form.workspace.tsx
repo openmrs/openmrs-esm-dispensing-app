@@ -28,6 +28,7 @@ import { updateMedicationRequestFulfillerStatus } from '../medication-request/me
 import MedicationDispenseReview from './medication-dispense-review.component';
 import StockDispense from './stock-dispense/stock-dispense.component';
 import styles from './forms.scss';
+import DuplicatePrescriptionModal from './duplicate-prescription.modal';
 
 type DispenseFormProps = DefaultWorkspaceProps & {
   medicationDispense: MedicationDispense;
@@ -54,138 +55,167 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   const { patient, isLoading } = usePatient(patientUuid);
   const config = useConfig<PharmacyConfig>();
 
-  // Keep track of inventory item
   const [inventoryItem, setInventoryItem] = useState<InventoryItem>();
-
-  // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
-
-  // whether or not the form is valid and ready to submit
   const [isValid, setIsValid] = useState(false);
-
-  // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Submit medication dispense form
+  // State to control modal open/close
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const [previousDispenseDetails, setPreviousDispenseDetails] = useState<{
+    date: string;
+    quantity: number;
+  } | null>(null);
+
+  // Check if a duplicate dispense exists
+  const checkDuplicateDispense = (): boolean => {
+    const pastDispenses = medicationRequestBundle?.dispenses || [];
+    const current = medicationDispensePayload;
+
+    return pastDispenses.some((dispense) => {
+      const currentDose = current?.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value ?? undefined;
+      const currentQty = current?.quantity?.value ?? undefined;
+      const currentTiming = current?.dosageInstruction?.[0]?.timing?.code?.coding?.[0]?.code ?? undefined;
+
+      const prevDose = dispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value ?? undefined;
+      const prevQty = dispense.quantity?.value ?? undefined;
+      const prevTiming = dispense.dosageInstruction?.[0]?.timing?.code?.coding?.[0]?.code ?? undefined;
+
+      const isSame = currentDose === prevDose && currentQty === prevQty && currentTiming === prevTiming;
+
+      if (isSame) {
+        setPreviousDispenseDetails({
+          date: dispense.whenHandedOver ?? '',
+          quantity: dispense.quantity?.value ?? 0,
+        });
+      }
+
+      return isSame;
+    });
+  };
+
+  // Handle form submission
   const handleSubmit = () => {
     if (!isSubmitting) {
-      setIsSubmitting(true);
-      const abortController = new AbortController();
-      saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
-        .then((response) => {
-          if (response.ok) {
-            const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
-              medicationDispensePayload,
-              medicationRequestBundle,
-              config.dispenseBehavior.restrictTotalQuantityDispensed,
-            );
-            if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
-              return updateMedicationRequestFulfillerStatus(
-                getUuidFromReference(
-                  medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
-                ),
-                newFulfillerStatus,
-              );
-            }
-          }
-          return response;
-        })
-        .then((response) => {
-          const { status } = response;
-          if (config.enableStockDispense && (status === 201 || status === 200)) {
-            const stockDispenseRequestPayload = createStockDispenseRequestPayload(
-              inventoryItem,
-              patientUuid,
-              encounterUuid,
-              medicationDispensePayload,
-            );
-            sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
-              () => {
-                showSnackbar({
-                  title: t('stockDispensed', 'Stock dispensed'),
-                  kind: 'success',
-                  subtitle: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
-                });
-              },
-              (error) => {
-                showSnackbar({
-                  title: 'Stock dispense error',
-                  kind: 'error',
-                  subtitle: error?.message,
-                });
-              },
-            );
-          }
-          return response;
-        })
-        .then(
-          ({ status }) => {
-            if (status === 201 || status === 200) {
-              revalidate(encounterUuid);
-              showSnackbar({
-                kind: 'success',
-                subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
-                title: t(
-                  mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
-                  mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
-                ),
-              });
-              closeWorkspaceWithSavedChanges();
-            }
-          },
-          (error) => {
-            showSnackbar({
-              kind: 'error',
-              title: t(
-                mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
-                mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
-              ),
-              subtitle: error?.message,
-            });
-            setIsSubmitting(false);
-          },
-        );
+      const isDuplicate = checkDuplicateDispense();
+      if (isDuplicate) {
+        setIsDuplicateModalOpen(true); // Show modal if duplicate
+        return;
+      }
+
+      proceedWithDispense();
     }
+  };
+
+  // Called when modal confirms dispensing despite duplicate
+  const proceedWithDispense = () => {
+    setIsSubmitting(true);
+    const abortController = new AbortController();
+    saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
+      .then((response) => {
+        if (response.ok) {
+          const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
+            medicationDispensePayload,
+            medicationRequestBundle,
+            config.dispenseBehavior.restrictTotalQuantityDispensed,
+          );
+          if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
+            return updateMedicationRequestFulfillerStatus(
+              getUuidFromReference(medicationDispensePayload.authorizingPrescription[0].reference),
+              newFulfillerStatus,
+            );
+          }
+        }
+        return response;
+      })
+      .then((response) => {
+        const { status } = response;
+        if (config.enableStockDispense && (status === 201 || status === 200)) {
+          const stockDispenseRequestPayload = createStockDispenseRequestPayload(
+            inventoryItem,
+            patientUuid,
+            encounterUuid,
+            medicationDispensePayload,
+          );
+          sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
+            () => {
+              showSnackbar({
+                title: t('stockDispensed', 'Stock dispensed'),
+                kind: 'success',
+                subtitle: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
+              });
+            },
+            (error) => {
+              showSnackbar({
+                title: 'Stock dispense error',
+                kind: 'error',
+                subtitle: error?.message,
+              });
+            },
+          );
+        }
+        return response;
+      })
+      .then(
+        ({ status }) => {
+          if (status === 201 || status === 200) {
+            revalidate(encounterUuid);
+            showSnackbar({
+              kind: 'success',
+              subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
+              title: t(
+                mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
+                mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
+              ),
+            });
+            closeWorkspaceWithSavedChanges();
+          }
+        },
+        (error) => {
+          showSnackbar({
+            kind: 'error',
+            title: t(
+              mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
+              mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
+            ),
+            subtitle: error?.message,
+          });
+          setIsSubmitting(false);
+        },
+      );
   };
 
   const checkIsValid = () => {
-    if (
+    const valid =
       medicationDispensePayload &&
-      medicationDispensePayload.performer &&
-      medicationDispensePayload.performer[0]?.actor.reference &&
+      medicationDispensePayload.performer?.[0]?.actor?.reference &&
       medicationDispensePayload.quantity?.value &&
       (!quantityRemaining || medicationDispensePayload?.quantity?.value <= quantityRemaining) &&
       medicationDispensePayload.quantity?.code &&
-      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value &&
-      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
-      medicationDispensePayload.dosageInstruction[0]?.route?.coding[0].code &&
-      medicationDispensePayload.dosageInstruction[0]?.timing?.code.coding[0].code &&
-      (!medicationDispensePayload.substitution.wasSubstituted ||
-        (medicationDispensePayload.substitution.reason[0]?.coding[0].code &&
-          medicationDispensePayload.substitution.type?.coding[0].code))
-    ) {
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-    }
+      medicationDispensePayload.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value &&
+      medicationDispensePayload.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.code &&
+      medicationDispensePayload.dosageInstruction?.[0]?.route?.coding?.[0]?.code &&
+      medicationDispensePayload.dosageInstruction?.[0]?.timing?.code?.coding?.[0]?.code &&
+      (!medicationDispensePayload.substitution?.wasSubstituted ||
+        (medicationDispensePayload.substitution.reason?.[0]?.coding?.[0]?.code &&
+          medicationDispensePayload.substitution.type?.coding?.[0]?.code));
+
+    setIsValid(!!valid);
   };
 
-  // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
-
-  // check is valid on any changes
   useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining, inventoryItem]);
 
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
 
   const bannerState = useMemo(() => {
-    if (patient) {
-      return {
-        patient,
-        patientUuid,
-        hideActionsOverflow: true,
-      };
-    }
+    return patient
+      ? {
+          patient,
+          patientUuid,
+          hideActionsOverflow: true,
+        }
+      : undefined;
   }, [patient, patientUuid]);
 
   return (
@@ -209,8 +239,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 : 'You may edit quantity dispensed here',
             )}
           </FormLabel>
-          {medicationDispensePayload ? (
-            <div>
+          {medicationDispensePayload && (
+            <>
               <MedicationDispenseReview
                 medicationDispense={medicationDispensePayload}
                 updateMedicationDispense={setMedicationDispensePayload}
@@ -224,8 +254,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                   updateInventoryItem={setInventoryItem}
                 />
               )}
-            </div>
-          ) : null}
+            </>
+          )}
         </section>
       </div>
       <section className={styles.buttonGroup}>
@@ -239,6 +269,22 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           )}
         </Button>
       </section>
+
+      <DuplicatePrescriptionModal
+        open={isDuplicateModalOpen}
+        onCancel={() => setIsDuplicateModalOpen(false)}
+        onConfirm={() => {
+          setIsDuplicateModalOpen(false);
+          proceedWithDispense();
+        }}
+        previousDispenseDate={previousDispenseDetails?.date}
+        previousQuantity={previousDispenseDetails?.quantity}
+        title={t('duplicateDispenseWarning', 'Duplicate Dispense Warning')}
+        message={t(
+          'duplicateDispenseMessage',
+          `A similar dispense record exists from ${previousDispenseDetails?.date} with quantity ${previousDispenseDetails?.quantity}. Are you sure you want to proceed?`,
+        )}
+      />
     </Form>
   );
 };
