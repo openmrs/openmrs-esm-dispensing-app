@@ -30,9 +30,17 @@ test.beforeEach(async ({ fhirApi, api, patient }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 
   // Wait for OpenMRS to process the order and make it available via FHIR
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  // Increased wait time to ensure data is properly indexed
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 
-  medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
+  try {
+    medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
+  } catch (error) {
+    console.error('Failed to generate medication dispense:', error);
+    // Add additional wait and retry if needed
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
+  }
 });
 
 test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
@@ -41,9 +49,15 @@ test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
     await expect(page).toHaveURL(`/openmrs/spa/dispensing`);
+
+    // Wait for the page to load and data to be available
+    await page.waitForLoadState('domcontentloaded');
   });
 
   await test.step('When I expand an active prescription', async () => {
+    // Wait for the prescriptions table to be visible
+    await page.getByRole('table').waitFor({ timeout: 10000 });
+
     const rowText = new RegExp('Expand current row');
     await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
   });

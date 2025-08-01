@@ -24,6 +24,9 @@ test.beforeEach(async ({ api, patient }) => {
   orderer = await getProvider(api);
   encounter = await createEncounter(api, patient.uuid, orderer.uuid, visit);
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
+
+  // Wait for OpenMRS to process the order and make it available
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 });
 
 test('Pause prescription', async ({ page, patient }) => {
@@ -31,6 +34,9 @@ test('Pause prescription', async ({ page, patient }) => {
 
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
+
+    // Wait for the page to load and data to be available
+    await page.waitForLoadState('domcontentloaded');
   });
 
   await test.step('And I click on the Active prescriptions tab', async () => {
@@ -39,6 +45,9 @@ test('Pause prescription', async ({ page, patient }) => {
   });
 
   await test.step('When I expand an active prescription', async () => {
+    // Wait for the prescriptions table to be visible
+    await page.getByRole('table').waitFor({ timeout: 10000 });
+
     const rowText = new RegExp('Expand current row');
     await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
     await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
