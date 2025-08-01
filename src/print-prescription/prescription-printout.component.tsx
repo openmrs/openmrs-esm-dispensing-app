@@ -14,33 +14,33 @@ import {
 import styles from './print-prescription.scss';
 
 type PrescriptionsPrintoutProps = {
-  medicationrequests: Array<MedicationRequestBundle>;
   excludedPrescription: Array<string>;
+  medicationRequests: Array<MedicationRequestBundle>;
 };
 
-const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicationrequests, excludedPrescription }) => {
+const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ excludedPrescription, medicationRequests }) => {
   const { t } = useTranslation();
   const {
     sessionLocation: { display: facilityName },
   } = useSession();
-  const patient = medicationrequests[0]?.request?.subject;
+  const patient = medicationRequests[0]?.request?.subject;
 
   const extractPatientName = (display: string) => (display.includes('(') ? display.split('(')[0] : display);
 
   const requesters = useMemo(() => {
     const uniqueRequesters = new Set<string>();
-    medicationrequests
+    medicationRequests
       ?.filter((req) => !excludedPrescription.includes(req.request.id))
       ?.forEach((request) => {
         const display = request.request?.requester?.display;
         if (display) uniqueRequesters.add(display);
       });
     return uniqueRequesters;
-  }, [medicationrequests, excludedPrescription]);
+  }, [medicationRequests, excludedPrescription]);
 
   const filteredRequests = useMemo(
-    () => medicationrequests?.filter((req) => !excludedPrescription.includes(req.request.id)) || [],
-    [medicationrequests, excludedPrescription],
+    () => medicationRequests?.filter((req) => !excludedPrescription.includes(req.request.id)) || [],
+    [medicationRequests, excludedPrescription],
   );
 
   return (
@@ -61,14 +61,14 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ medicatio
               <br />
             </StructuredListCell>
           </StructuredListRow>
-          {filteredRequests.map((request, index) => {
+          {filteredRequests.map((request) => {
             const medicationEvent = request.request;
             const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
             const quantity: Quantity = getQuantity(medicationEvent);
             const numberOfRefillsAllowed: number = getRefillsAllowed(medicationEvent);
 
             return (
-              <div key={index}>
+              <div key={request.request.id}>
                 {dosageInstruction && (
                   <StructuredListRow>
                     <StructuredListCell>
