@@ -31,7 +31,6 @@ const config: PlaywrightTestConfig = {
       },
     },
   ],
-  outputDir: '../../e2e/results',
 };
 
 export default config;
