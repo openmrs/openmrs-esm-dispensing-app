@@ -16,7 +16,6 @@
 }
 
 .printOutContainer {
-  padding: layout.$spacing-05;
   width: 20rem;
   background-color: colors.$white;
   padding: layout.$spacing-03;
@@ -74,4 +73,3 @@
   @include type.type-style('body-compact-02');
   color: colors.$black;
 }
-
