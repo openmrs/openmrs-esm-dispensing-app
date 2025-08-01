@@ -5,11 +5,13 @@ import { DispensingPage } from '../pages';
 test('View active prescriptions', async ({ page }) => {
   const dispensingPage = new DispensingPage(page);
 
-  await test.step('Given I am on the dispensing page', async () => {
+  await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
+    await expect(page).toHaveURL(`${process.env.E2E_BASE_URL}/spa/dispensing`);
+  });
 
-    await test.step('Then I should be at the prescriptions page', async () => {
-      await expect(page).toHaveURL(`${process.env.E2E_BASE_URL}/spa/dispensing`);
-    });
+  await test.step('Then I should see the prescriptions table with active prescriptions', async () => {
+    await expect(page.getByRole('table')).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Active prescriptions' })).toBeVisible();
   });
 });
