@@ -1,13 +1,13 @@
 import { expect } from '@playwright/test';
 import { type Visit } from '@openmrs/esm-framework';
 import {
-  generateRandomDrugOrder,
-  deleteDrugOrder,
   createEncounter,
+  deleteDrugOrder,
   deleteEncounter,
+  endVisit,
+  generateRandomDrugOrder,
   getProvider,
   startVisit,
-  endVisit,
 } from '../commands';
 import { type Encounter, type Provider } from '../commands/types';
 import { type Order } from '@openmrs/esm-patient-common-lib';
@@ -28,6 +28,7 @@ test.beforeEach(async ({ api, patient }) => {
 
 test('Dispense prescription', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
+
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
     await expect(page).toHaveURL(process.env.E2E_BASE_URL + `/spa/dispensing`);
@@ -37,18 +38,18 @@ test('Dispense prescription', async ({ page, patient }) => {
     await page.getByRole('tab', { name: 'Active prescriptions' }).click();
   });
 
-  await test.step('And I expand a table row in the Prescriptions table corresponding to an active prescription', async () => {
-    const rowText = new RegExp(`Expand current row`);
+  await test.step('When I expand an active prescription', async () => {
+    const rowText = new RegExp('Expand current row');
     await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
     await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
   });
 
-  await test.step('Then I click the Dispense button to launch the Dispense prescription form', async () => {
+  await test.step('And I click the Dispense button', async () => {
     await page.getByRole('button', { name: 'Dispense', exact: true }).click();
     await expect(page.getByLabel('Workspace header').getByText('Dispense prescription')).toBeVisible();
   });
 
-  await test.step('Then I submit the form by clicking the Dispense prescription button', async () => {
+  await test.step('And I submit the dispense form', async () => {
     await page.getByRole('button', { name: 'Dispense prescription' }).click();
   });
 
@@ -56,7 +57,7 @@ test('Dispense prescription', async ({ page, patient }) => {
     await expect(page.getByText(/medication successfully dispensed/i)).toBeVisible();
   });
 
-  await test.step('And when I click the `History and comments` tab I should see the updated `Dispensed` status reflected', async () => {
+  await test.step('And the prescription status should be updated to Dispensed', async () => {
     await page.getByRole('tab', { name: 'History and comments' }).click();
     await expect(page.getByText('Dispensed', { exact: true })).toBeVisible();
   });

@@ -2,13 +2,13 @@ import { expect } from '@playwright/test';
 import { type Order } from '@openmrs/esm-patient-common-lib';
 import { type Visit } from '@openmrs/esm-framework';
 import {
-  generateRandomDrugOrder,
-  deleteDrugOrder,
   createEncounter,
+  deleteDrugOrder,
   deleteEncounter,
+  endVisit,
+  generateRandomDrugOrder,
   getProvider,
   startVisit,
-  endVisit,
 } from '../commands';
 import { type Encounter, type Provider } from '../commands/types';
 import { test } from '../core';
@@ -28,7 +28,8 @@ test.beforeEach(async ({ api, patient }) => {
 
 test('Close prescription', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
-  await test.step('When I navigate to the dispensing app', async () => {
+
+  await test.step('Given I am on the dispensing app', async () => {
     await dispensingPage.goTo();
   });
 
@@ -37,19 +38,19 @@ test('Close prescription', async ({ page, patient }) => {
     await expect(page.getByRole('tab', { name: 'Active prescriptions' })).toHaveAttribute('aria-selected', 'true');
   });
 
-  await test.step('And I expand a table row in the prescriptions table corresponding to an active prescription', async () => {
-    const rowText = new RegExp(`Expand current row`);
+  await test.step('When I expand an active prescription', async () => {
+    const rowText = new RegExp('Expand current row');
     await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
     await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
   });
 
-  await test.step('Then I click the Close button on the prescription tile', async () => {
+  await test.step('And I click the Close button', async () => {
     await page.getByRole('button', { name: 'danger Close' }).click();
     await expect(page.getByText('Close prescription')).toBeVisible();
     await expect(page.getByText('Reason for close')).toBeVisible();
   });
 
-  await test.step('And when I select Allergy as the reason for closing and submit the form', async () => {
+  await test.step('And I select Allergy as the reason and submit', async () => {
     await page.getByRole('button', { name: 'Open', exact: true }).click();
     await page.getByText('Allergy', { exact: true }).click();
     await page.locator('form').getByRole('button', { name: 'Close' }).click();

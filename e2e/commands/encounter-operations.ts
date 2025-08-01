@@ -47,7 +47,7 @@ export const createEncounter = async (
           provider: providerId,
         },
       ],
-      location: process.env.E2E_LOGIN_DEFAULT_LOCATION_UUID,
+      location: process.env.E2E_DEFAULT_LOGIN_LOCATION_UUID,
       encounterType: '39da3525-afe4-45ff-8977-c53b7b359158',
     },
   });
