@@ -65,8 +65,8 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
             />
             <div ref={componentRef}>
               <PrescriptionsPrintout
-                medicationrequests={medicationRequestBundles}
                 excludedPrescription={excludedPrescriptions}
+                medicationRequests={medicationRequestBundles}
               />
             </div>
           </div>
