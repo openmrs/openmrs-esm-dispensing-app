@@ -90,10 +90,6 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
             revalidate(encounterUuid);
             showSnackbar({
               kind: 'success',
-              subtitle: t(
-                mode === 'enter' ? 'medicationDispensePaused' : 'medicationDispenseUpdated',
-                mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',
-              ),
               title: t(
                 mode === 'enter' ? 'medicationDispensePaused' : 'medicationDispenseUpdated',
                 mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',

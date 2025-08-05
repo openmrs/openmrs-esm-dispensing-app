@@ -11,14 +11,20 @@
 }
 
 .faintText {
-  color: colors.$gray-50;
+  color: colors.$black;
   @include type.type-style('heading-01');
 }
 
 .printOutContainer {
-  background-color: colors.$gray-20;
-  padding: layout.$spacing-05;
   width: 20rem;
+  background-color: colors.$white;
+  padding: layout.$spacing-03;
+
+  @media print {
+    background-color: colors.$white;
+    height: 100vh;
+    padding: 0;
+  }
 }
 
 .printoutTitle {
@@ -28,9 +34,15 @@
 }
 
 .facilityName {
-  color: colors.$gray-50;
+  color: colors.$black;
   text-align: end;
-  padding: layout.$spacing-05 0 layout.$spacing-05 0;
+  padding: layout.$spacing-05;
+  @include type.type-style('label-01');
+}
+
+.prescriber {
+  color: colors.$black;
+  padding: layout.$spacing-05;
   @include type.type-style('label-01');
 }
 
@@ -45,4 +57,19 @@
 .patientName {
   text-transform: capitalize;
   text-align: center;
+}
+
+.printPreviewContainer {
+  background-color: colors.$white;
+}
+
+.prescriptionInfo {
+  color: colors.$black;
+  font-weight: bolder;
+  @include type.type-style('label-01');
+}
+
+.medicationName {
+  @include type.type-style('body-compact-02');
+  color: colors.$black;
 }
