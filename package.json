@@ -1,6 +1,6 @@
 {
   "name": "@openmrs/esm-dispensing-app",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "license": "MPL-2.0",
   "description": "Medication dispensing application",
   "browser": "dist/openmrs-esm-dispensing-app.js",
