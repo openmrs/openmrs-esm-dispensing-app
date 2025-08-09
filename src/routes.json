@@ -95,7 +95,10 @@
     {
       "name": "delete-confirm-modal",
       "component": "deleteConfirmModal"
-
+    },
+    {
+      "name": "duplicate-prescription-modal",
+      "component": "duplicatePrescriptionModal"
     }
   ]
 }
