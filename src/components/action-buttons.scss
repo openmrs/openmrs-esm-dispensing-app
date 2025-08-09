@@ -1,9 +1,20 @@
+@use '@carbon/layout';
+
 .actionBtns {
   position: absolute;
   bottom: 0;
   right: 0;
   display: flex;
   gap: 0;
+
+  @media (max-width: 1024px) and (min-width: 768px) {
+    position: relative;
+    width: 100%;
+    justify-content: center;
+    gap: layout.$spacing-03;
+    margin-top: layout.$spacing-04;
+    padding: 0 layout.$spacing-04;
+  }
 }
 
 .extensionSlot {
@@ -12,4 +23,25 @@
   justify-content: space-between;
   height: 100%;
   position: relative;
+
+  @media (max-width: 1024px) and (min-width: 768px) {
+    flex-direction: row;
+    justify-content: center;
+    height: auto;
+    position: static;
+    flex-wrap: wrap;
+    gap: layout.$spacing-03;
+
+    :global(.cds--btn) {
+      flex: 1 1 auto;
+      min-width: 8rem;
+      max-width: 12rem;
+      white-space: normal;
+      word-wrap: break-word;
+      padding: layout.$spacing-03 layout.$spacing-04;
+      line-height: 1.2;
+      height: auto;
+      min-height: 3rem;
+    }
+  }
 }
