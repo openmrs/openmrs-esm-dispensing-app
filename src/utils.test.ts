@@ -850,7 +850,6 @@ describe('Util Tests', () => {
       newMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
       newMedicationDispense.whenHandedOver = '2023-01-03T14:00:00-05:00';
       newMedicationDispense.whenPrepared = '2023-01-03T14:00:00-05:00';
-      newMedicationDispense.status = MedicationDispenseStatus.completed;
       newMedicationDispense.quantity.value = 30;
       expect(
         computeNewFulfillerStatusAfterDispenseEvent(
@@ -889,7 +888,7 @@ describe('Util Tests', () => {
 
     test('when adding new dispense should return null if total dispensed less than total ordered and restrict total quantity dispensed config is true', () => {
       newMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
-      newMedicationDispense.status = MedicationDispenseStatus.completed;
+      newMedicationDispense.status = null;
       newMedicationDispense.quantity.value = 20;
       expect(
         computeNewFulfillerStatusAfterDispenseEvent(
@@ -934,10 +933,10 @@ describe('Util Tests', () => {
 
     test('when adding new dispense to request with existing dispense should return null if does not meet total quantiy order and  restrict total quantity dispensed config is true', () => {
       newMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
-      newMedicationDispense.status = MedicationDispenseStatus.completed;
       newMedicationDispense.quantity.value = 10;
+      newMedicationDispense.status = null;
       existingMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
-      existingMedicationDispense.status = MedicationDispenseStatus.completed;
+      existingMedicationDispense.status = null;
       existingMedicationDispense.quantity.value = 10;
       expect(
         computeNewFulfillerStatusAfterDispenseEvent(
@@ -953,7 +952,6 @@ describe('Util Tests', () => {
 
     test('when editing existing dispense should return null if does not meet total quantity order and  restrict total quantity dispensed config is true', () => {
       existingMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
-      existingMedicationDispense.status = MedicationDispenseStatus.completed;
       existingMedicationDispense.quantity.value = 30;
       const editedExistingMedicationDispense = {
         ...existingMedicationDispense,
@@ -973,7 +971,6 @@ describe('Util Tests', () => {
 
     test('when editing existing dispense should return complete if meets total quantity order and  restrict total quantity dispensed config is true', () => {
       existingMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
-      existingMedicationDispense.status = MedicationDispenseStatus.completed;
       existingMedicationDispense.quantity.value = 20;
       const editedExistingMedicationDispense = {
         ...existingMedicationDispense,

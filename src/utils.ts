@@ -53,6 +53,10 @@ export function computeFulfillerStatus(
     return MedicationRequestFulfillerStatus.on_hold;
   }
 
+  if (mostRecentMedicationDispenseStatus === MedicationDispenseStatus.completed) {
+    return MedicationRequestFulfillerStatus.completed;
+  }
+
   return null;
 }
 /**
