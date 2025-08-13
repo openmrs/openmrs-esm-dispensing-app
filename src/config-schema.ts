@@ -125,6 +125,11 @@ export const configSchema = {
     _validators: [validators.oneOf(['normal', 'collapsed', 'hidden'])],
     _default: 'collapsed',
   },
+  completeOrderWithThisDispense: {
+    _type: Type.Boolean,
+    _description: 'Enable or disable the "Complete order with this dispense" checkbox on the dispense form.',
+    _default: false,
+  },
 };
 
 export interface PharmacyConfig {
@@ -168,7 +173,7 @@ export interface PharmacyConfig {
     };
   };
   enableStockDispense: boolean;
-
+  completeOrderWithThisDispense: boolean;
   validateBatch: boolean;
   leftNavMode: 'normal' | 'collapsed' | 'hidden';
 }

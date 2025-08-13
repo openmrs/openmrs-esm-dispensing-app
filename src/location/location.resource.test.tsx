@@ -34,6 +34,7 @@ const pharmacyConfig: PharmacyConfig = {
     substitutionType: { uuid: '' },
   },
   enableStockDispense: false,
+  completeOrderWithThisDispense: false,
   validateBatch: false,
   leftNavMode: 'collapsed',
 };
