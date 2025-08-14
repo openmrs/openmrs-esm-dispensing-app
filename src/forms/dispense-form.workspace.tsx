@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, FormLabel, InlineLoading } from '@carbon/react';
+import { Button, Checkbox, Form, FormLabel, InlineLoading } from '@carbon/react';
 import {
   type DefaultWorkspaceProps,
   ExtensionSlot,
@@ -14,6 +14,7 @@ import {
   MedicationDispenseStatus,
   type MedicationRequestBundle,
   type InventoryItem,
+  MedicationRequestFulfillerStatus,
 } from '../types';
 import {
   computeNewFulfillerStatusAfterDispenseEvent,
@@ -66,6 +67,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [shouldCompleteOrder, setShouldCompleteOrder] = useState(false);
+
   // Submit medication dispense form
   const handleSubmit = () => {
     if (!isSubmitting) {
@@ -74,6 +77,14 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
       saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
         .then((response) => {
           if (response.ok) {
+            if (config.completeOrderWithThisDispense && shouldCompleteOrder) {
+              return updateMedicationRequestFulfillerStatus(
+                getUuidFromReference(
+                  medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
+                ),
+                MedicationRequestFulfillerStatus.completed,
+              );
+            }
             const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
               medicationDispensePayload,
               medicationRequestBundle,
@@ -217,6 +228,14 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 quantityRemaining={quantityRemaining}
                 quantityDispensed={quantityDispensed}
               />
+              {config.completeOrderWithThisDispense && (
+                <Checkbox
+                  id="completeOrder"
+                  labelText={t('completeOrderWithThisDispense', 'Complete order with this dispense')}
+                  checked={shouldCompleteOrder}
+                  onChange={() => setShouldCompleteOrder(!shouldCompleteOrder)}
+                />
+              )}
               {config.enableStockDispense && (
                 <StockDispense
                   inventoryItem={inventoryItem}
