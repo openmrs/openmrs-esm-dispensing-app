@@ -1,11 +1,12 @@
 @use '@carbon/layout';
 
 .actionBtns {
-  position: absolute;
-  bottom: 0;
-  right: 0;
+  position: relative;
   display: flex;
   gap: 0;
+  justify-content: flex-end;
+  margin-top: layout.$spacing-04;
+  padding: layout.$spacing-03 layout.$spacing-04;
 
   @media (max-width: 1024px) and (min-width: 768px) {
     position: relative;
@@ -19,9 +20,9 @@
 
 .extensionSlot {
   display: flex;
-  flex-direction: row-reverse;
-  justify-content: space-between;
-  height: 100%;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: layout.$spacing-03;
   position: relative;
 
   @media (max-width: 1024px) and (min-width: 768px) {
