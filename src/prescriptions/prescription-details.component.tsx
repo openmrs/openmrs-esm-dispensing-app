@@ -8,8 +8,17 @@ import MedicationEvent from '../components/medication-event.component';
 import { type PharmacyConfig } from '../config-schema';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
 import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
-import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
-import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay } from '../utils';
+import {
+  type AllergyIntolerance,
+  MedicationRequestCombinedStatus,
+  type MedicationRequestBundle,
+  MedicationDispenseStatus,
+} from '../types';
+import {
+  computeMedicationRequestCombinedStatus,
+  getConceptCodingDisplay,
+  getMostRecentMedicationDispenseStatus,
+} from '../utils';
 import PrescriptionsActionsFooter from './prescription-actions.component';
 import styles from './prescription-details.scss';
 
@@ -29,11 +38,17 @@ const PrescriptionDetails: React.FC<{
     }
   }, [totalAllergies]);
 
-  const generateStatusTag: Function = (medicationRequest: MedicationRequest) => {
+  const generateStatusTag: Function = (medicationRequestBundle: MedicationRequestBundle) => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
-      medicationRequest,
+      medicationRequestBundle.request,
       config.medicationRequestExpirationPeriodInDays,
     );
+
+    const mostRecentDispenseStatus = getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
+    if (mostRecentDispenseStatus === MedicationDispenseStatus.completed) {
+      return <Tag type="gray">{t('dispensed', 'Dispensed')}</Tag>;
+    }
+
     if (combinedStatus === MedicationRequestCombinedStatus.cancelled) {
       return <Tag type="red">{t('cancelled', 'Cancelled')}</Tag>;
     }
@@ -93,7 +108,16 @@ const PrescriptionDetails: React.FC<{
       {medicationRequestBundles &&
         medicationRequestBundles.map((bundle) => {
           return (
+
             <Tile className={styles.prescriptionTile}>
+
+            <Tile key={bundle.request.id} className={styles.prescriptionTile}>
+              <MedicationEvent
+                key={bundle.request.id}
+                medicationEvent={bundle.request}
+                status={generateStatusTag(bundle)}
+              />
+              
               <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
                 <ActionButtons
                   patientUuid={patientUuid}
