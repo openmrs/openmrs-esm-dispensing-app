@@ -2,14 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
-import {
-  OpenmrsDatePicker,
-  useLayoutType,
-  useConfig,
-  useSession,
-  userHasAccess,
-  ResponsiveWrapper,
-} from '@openmrs/esm-framework';
+import { OpenmrsDatePicker, useConfig, useSession, userHasAccess, ResponsiveWrapper } from '@openmrs/esm-framework';
 import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
 import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
@@ -58,8 +51,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   //quantity prescribed
   const [quantityPrescribed, setQuantityPrescribed] = useState(medicationDispense.quantity.value);
   const [userCanModify, setUserCanModify] = useState(false);
-
-  const isTablet = useLayoutType() === 'tablet';
 
   const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
 
@@ -343,14 +334,14 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         <ResponsiveWrapper>
           <div>
             <p className={styles.quantitySummary}>
-              {t('quantityPrescribed', 'Quantity Prescribed')}:{quantityPrescribed}
+              {t('quantityPrescribed', 'Quantity Prescribed')}: {quantityPrescribed}
             </p>
             <p className={styles.quantitySummary}>
               {t('quantityDispensed', 'Quantity Dispensed')}: {quantityDispensed}
             </p>
             {config.dispenseBehavior.restrictTotalQuantityDispensed ? (
               <p className={styles.quantitySummary}>
-                {t('quantityRemaining', 'Quantity Remaining to Dispense')}:{quantityRemaining}
+                {t('quantityRemaining', 'Quantity Remaining to Dispense')}: {quantityRemaining}
               </p>
             ) : null}
           </div>
@@ -359,7 +350,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         <div className={styles.dispenseDetailsContainer}>
           <NumberInput
             allowEmpty={true}
-            value={0}
+            value={medicationDispense.quantity.value}
             disabled={!userCanModify}
             hideSteppers={true}
             id="quantity"
@@ -393,7 +384,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               onChange={({ selectedItem }) => {
                 updateMedicationDispense({
                   ...medicationDispense,
-                  // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
+                  // note that we specifically recreate doseQuantity to overwrite any unit or system properties that may have been set
                   quantity: {
                     value: medicationDispense.quantity.value,
                     code: selectedItem?.id,
@@ -410,7 +401,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             allowEmpty={false}
             disabled={!userCanModify || !allowEditing}
             hideSteppers={true}
-            id="dosingQuanity"
+            id="dosingQuantity"
             invalidText={t('numberIsNotValid', 'Number is not valid')}
             min={0}
             label={t('dose', 'Dose')}
@@ -456,7 +447,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                       doseAndRate: [
                         {
                           doseQuantity: {
-                            // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
+                            // note that we specifically recreate doseQuantity to overwrite any unit or system properties that may have been set
                             value: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.value,
                             code: selectedItem?.id,
                           },

@@ -69,7 +69,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.on_hold,
           },
         ],
@@ -103,7 +103,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.declined,
           },
         ],
@@ -137,7 +137,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.completed,
           },
         ],
@@ -199,7 +199,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.on_hold,
           },
         ],
@@ -233,7 +233,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.declined,
           },
         ],
@@ -295,7 +295,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.on_hold,
           },
         ],
@@ -329,7 +329,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.declined,
           },
         ],
@@ -558,7 +558,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       extension: [
         {
-          url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
           valueCode: MedicationRequestFulfillerStatus.declined,
         },
       ],
@@ -772,7 +772,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       extension: [
         {
-          url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
           valueCode: MedicationRequestFulfillerStatus.completed,
         },
       ],
@@ -1098,7 +1098,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       extension: [
         {
-          url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
           valueCode: MedicationRequestFulfillerStatus.on_hold,
         },
       ],
@@ -1131,7 +1131,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       extension: [
         {
-          url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
           valueCode: MedicationRequestFulfillerStatus.declined,
         },
       ],
@@ -1164,7 +1164,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       extension: [
         {
-          url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
           valueCode: MedicationRequestFulfillerStatus.completed,
         },
       ],
@@ -1263,7 +1263,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       extension: [
         {
-          url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
           valueCode: MedicationRequestFulfillerStatus.completed,
         },
       ],
@@ -1370,7 +1370,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       extension: [
         {
-          url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
           valueCode: MedicationRequestFulfillerStatus.completed,
         },
       ],
@@ -1544,7 +1544,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.completed,
           },
         ],
@@ -1580,7 +1580,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.completed,
           },
         ],
@@ -1612,7 +1612,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.completed,
           },
         ],
@@ -1852,7 +1852,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.completed,
           },
         ],
@@ -1886,7 +1886,7 @@ describe('Util Tests', () => {
         subject: { display: '', reference: '', type: '' },
         extension: [
           {
-            url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+            url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
             valueCode: MedicationRequestFulfillerStatus.completed,
           },
         ],
@@ -2586,7 +2586,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
       extension: [
         {
-          url: 'http://fhir.openmrs.org/ext/medicationrequest/fullfillerstatus',
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
           valueCode: MedicationRequestFulfillerStatus.completed,
         },
       ],
