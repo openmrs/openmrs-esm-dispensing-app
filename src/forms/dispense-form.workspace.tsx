@@ -182,7 +182,15 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   };
 
   // initialize the internal dispense payload with the dispenses passed in as props
-  useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
+  useEffect(() => {
+    setMedicationDispensePayload({
+      ...medicationDispense,
+      quantity: {
+        ...medicationDispense.quantity,
+        value: medicationDispense.quantity?.value || quantityDispensed || 0,
+      },
+    });
+  }, [medicationDispense, quantityDispensed]);
 
   // check is valid on any changes
   useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining, inventoryItem]);

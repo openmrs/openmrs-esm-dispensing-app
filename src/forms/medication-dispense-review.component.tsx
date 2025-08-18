@@ -359,7 +359,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         <div className={styles.dispenseDetailsContainer}>
           <NumberInput
             allowEmpty={true}
-            value={0}
+            value={medicationDispense.quantity.value}
             disabled={!userCanModify}
             hideSteppers={true}
             id="quantity"
