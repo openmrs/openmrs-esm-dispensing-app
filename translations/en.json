@@ -68,6 +68,8 @@
   "noRefills": "No refills",
   "numberIsNotValid": "Number is not valid",
   "onsetDate": "Onset Date",
+  "orderCompleted": "Order completed",
+  "orderCompletedSuccessfully": "Order completed successfully.",
   "ordered": "Ordered",
   "orderedMedication ": "ordered medication",
   "orders": "Orders",

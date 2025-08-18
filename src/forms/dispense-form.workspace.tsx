@@ -132,6 +132,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         .then(
           (response) => {
             const { status } = response;
+            if (config.completeOrderWithThisDispense && shouldCompleteOrder && response?.data?.status === 'completed') {
+              showSnackbar({
+                title: t('orderCompleted', 'Order completed'),
+                kind: 'success',
+                subtitle: t('orderCompletedSuccessfully', 'Order completed successfully.'),
+              });
+            }
             if (status === 201 || status === 200) {
               revalidate(encounterUuid);
               showSnackbar({
@@ -232,12 +239,12 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 quantityRemaining={quantityRemaining}
                 quantityDispensed={quantityDispensed}
               />
-              {config.completeOrderWithThisDispense && (
+              {config.completeOrderWithThisDispense && mode === 'enter' && !medicationDispense?.id && (
                 <Checkbox
-                  id="completeOrder"
+                  id="complete-order-with-this-dispense"
                   labelText={t('completeOrderWithThisDispense', 'Complete order with this dispense')}
                   checked={shouldCompleteOrder}
-                  onChange={() => setShouldCompleteOrder(!shouldCompleteOrder)}
+                  onChange={(_, { checked }) => setShouldCompleteOrder(checked)}
                 />
               )}
               {config.enableStockDispense && (
