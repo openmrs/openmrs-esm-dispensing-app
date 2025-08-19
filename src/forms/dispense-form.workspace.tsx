@@ -252,7 +252,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
         </section>
       </div>
       <section className={styles.buttonGroup}>
-        <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
+        <Button onClick={() => closeWorkspace()} kind="secondary">
           {getCoreTranslation('cancel', 'Cancel')}
         </Button>
         <Button disabled={isButtonDisabled} onClick={handleSubmit}>
