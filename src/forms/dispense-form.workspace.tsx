@@ -83,7 +83,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                   medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
                 ),
                 MedicationRequestFulfillerStatus.completed,
-              );
+              ).then(() => response);
             }
             const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
               medicationDispensePayload,
@@ -96,7 +96,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                   medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
                 ),
                 newFulfillerStatus,
-              );
+              ).then(() => response);
             }
           }
           return response;
@@ -130,7 +130,8 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           return response;
         })
         .then(
-          ({ status }) => {
+          (response) => {
+            const { status } = response;
             if (status === 201 || status === 200) {
               revalidate(encounterUuid);
               showSnackbar({
@@ -138,10 +139,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
                 title: t(
                   mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
-                  mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
+                  mode === 'enter'
+                    ? 'Medication successfully dispensed.'
+                    : 'Medication dispense record successfully updated.',
                 ),
               });
               closeWorkspaceWithSavedChanges();
+              setIsSubmitting(false);
             }
           },
           (error) => {
