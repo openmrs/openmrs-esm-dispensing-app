@@ -134,9 +134,12 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             const { status } = response;
             if (config.completeOrderWithThisDispense && shouldCompleteOrder && response?.data?.status === 'completed') {
               showSnackbar({
-                title: t('orderCompleted', 'Order completed'),
+                title: t('prescriptionCompleted', 'Prescription completed'),
                 kind: 'success',
-                subtitle: t('orderCompletedSuccessfully', 'Order completed successfully.'),
+                subtitle: t(
+                  'prescriptionCompletedSuccessfully',
+                  'Medication dispensed and prescription marked as completed',
+                ),
               });
             }
             if (status === 201 || status === 200) {
