@@ -27,7 +27,7 @@ export const PharmacyHeader: React.FC = () => {
           <span className={styles.value}>{userLocation}</span>
           <span className={styles.middot}>&middot;</span>
           <Calendar size={16} />
-          <span className={styles.value}>{formatDate(new Date(), { mode: 'standard' })}</span>
+          <span className={styles.value}>{formatDate(new Date(), { noToday: true })}</span>
         </div>
       </div>
     </div>
