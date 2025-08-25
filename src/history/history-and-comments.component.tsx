@@ -125,7 +125,7 @@ const HistoryAndComments: React.FC<{
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
       return t('editPauseRecord', 'Edit Pause Record');
     } else if (medicationDispense.status === MedicationDispenseStatus.declined) {
-      return t('editCloseeRecord', 'Edit Close Record');
+      return t('editCloseRecord', 'Edit Close Record');
     }
   };
 
