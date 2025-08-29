@@ -52,6 +52,8 @@ jobs:
       - name: ⬆️ Create PR if necessary
         id: cpr
         uses: peter-evans/create-pull-request@v7
+        env:
+          HUSKY: 0
         with:
           commit-message: '(chore) Update OpenMRS dependencies'
           title: '(chore) Update OpenMRS dependencies'
