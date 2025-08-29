@@ -93,6 +93,10 @@
       "component": "printPrescriptionPreviewModal"
     },
     {
+      "name": "label-print-preview-modal",
+      "component": "printLabelPreviewModal"
+    },
+    {
       "name": "delete-confirm-modal",
       "component": "deleteConfirmModal"
 
