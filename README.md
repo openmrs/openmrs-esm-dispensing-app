@@ -54,6 +54,12 @@ Note that following privileges need to be installed and assigned to roles:
 
 ```sh
 yarn  # to install dependencies
+
+# You can start the microfrontend by running `yarn start`.
+# By default, this will proxy requests to `https://dev3.openmrs.org`.
+yarn start
+
+# If you want to run against a local OpenMRS server, you can specify the backend URL and port:
 yarn start --backend "http://localhost:8080/" --port 8081 # will run against a local OpenMRS server at localhost:8080, serving the frontend from 8081
 ```
 
