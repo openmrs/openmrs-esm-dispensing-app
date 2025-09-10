@@ -9,7 +9,7 @@ import { type PharmacyConfig } from '../config-schema';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
 import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
-import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay } from '../utils';
+import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay, useStaleEncounterUuids } from '../utils';
 import PrescriptionsActionsFooter from './prescription-actions.component';
 import styles from './prescription-details.scss';
 
@@ -22,6 +22,7 @@ const PrescriptionDetails: React.FC<{
   const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
   const { allergies, totalAllergies } = usePatientAllergies(patientUuid, config.refreshInterval);
   const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
+  const { staleEncounterUuids } = useStaleEncounterUuids();
 
   useEffect(() => {
     if (typeof totalAllergies == 'number') {
@@ -99,6 +100,7 @@ const PrescriptionDetails: React.FC<{
                   patientUuid={patientUuid}
                   encounterUuid={encounterUuid}
                   medicationRequestBundle={bundle}
+                  disabled={staleEncounterUuids.includes(encounterUuid)}
                 />
               </UserHasAccess>
               <MedicationEvent

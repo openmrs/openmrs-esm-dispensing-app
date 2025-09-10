@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import { mutate } from 'swr';
 import {
   type Coding,
+  type DispensingStore,
   type DosageInstruction,
   type Medication,
   type MedicationDispense,
@@ -14,7 +15,12 @@ import {
   MedicationRequestStatus,
   type Quantity,
 } from './types';
-import { fhirBaseUrl, parseDate } from '@openmrs/esm-framework';
+import {
+  createGlobalStore,
+  fhirBaseUrl,
+  parseDate,
+  useStore,
+} from '@openmrs/esm-framework';
 import {
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
@@ -565,16 +571,29 @@ export function isMostRecentMedicationDispense(
 
 /**
  * Revalidated (reloads) both the prescription associated with the encounter uuid,
- * and the entire prescrption table
+ * and the entire prescription table
  * @param encounterUuid
  */
-export function revalidate(encounterUuid: string) {
-  mutate(
+export async function revalidate(encounterUuid: string) {
+  await mutate(
     (key) =>
       typeof key === 'string' &&
       (key.startsWith(`${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}`) ||
         key.startsWith(`${fhirBaseUrl}/${PRESCRIPTION_DETAILS_ENDPOINT}?encounter=${encounterUuid}`)),
   );
+  dispensingStore.setState((state) => ({
+    staleEncounterUuids: state.staleEncounterUuids.filter((uuid) => uuid !== encounterUuid),
+  }));
+}
+
+/**
+ * Mark the specified encounter as stale. The encounter will be unmarked on calling
+ * revalidate() to reload the data associated with the encounter.
+ */
+export function markEncounterAsStale(encounterUuid: string) {
+  dispensingStore.setState((state) => ({
+    staleEncounterUuids: [...state.staleEncounterUuids, encounterUuid],
+  }));
 }
 
 export function sortMedicationDispensesByWhenHandedOver(a: MedicationDispense, b: MedicationDispense): number {
@@ -589,4 +608,12 @@ export function sortMedicationDispensesByWhenHandedOver(a: MedicationDispense, b
   } else {
     return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
   }
+}
+
+const dispensingStore = createGlobalStore<DispensingStore>('dispensing-store', {
+  staleEncounterUuids: [],
+});
+
+export function useStaleEncounterUuids() {
+  return useStore(dispensingStore);
 }

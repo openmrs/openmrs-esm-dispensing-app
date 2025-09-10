@@ -124,6 +124,7 @@ const prescriptionActionsState = {
   medicationRequestBundle: { request: medicationRequest, dispenses: [] },
   session: undefined,
   providers: [],
+  disabled: false,
 };
 
 describe('Action Buttons Component tests', () => {
@@ -160,6 +161,7 @@ describe('Action Buttons Component tests', () => {
         patientUuid={mockPatientUuid}
         encounterUuid={mockEncounterUuid}
         medicationRequestBundle={{ request: medicationRequest, dispenses: [] }}
+        disabled={false}
       />,
     );
     expect(getByText('Dispense')).toBeInTheDocument();
@@ -206,6 +208,7 @@ describe('Action Buttons Component tests', () => {
         patientUuid={mockPatientUuid}
         encounterUuid={mockEncounterUuid}
         medicationRequestBundle={{ request: expiredMedicationRequest, dispenses: [] }}
+        disabled={false}
       />,
     );
 
