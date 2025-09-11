@@ -15,7 +15,7 @@ import { saveMedicationDispense, useReasonForCloseValueSet } from '../medication
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
-import { getUuidFromReference, revalidate } from '../utils';
+import { getUuidFromReference, markEncounterAsStale, revalidate } from '../utils';
 import styles from './forms.scss';
 
 type CloseDispenseFormProps = DefaultWorkspaceProps & {
@@ -71,6 +71,7 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
+      markEncounterAsStale(encounterUuid);
       saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.declined, abortController)
         .then((response) => {
           // only update request status when added a new dispense event, not updating

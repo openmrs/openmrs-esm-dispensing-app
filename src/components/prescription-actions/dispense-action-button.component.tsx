@@ -14,6 +14,7 @@ type DispenseActionButtonProps = {
   dispensable: boolean;
   quantityRemaining: number;
   quantityDispensed: number;
+  disabled: boolean;
 };
 
 const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
@@ -25,6 +26,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   dispensable,
   quantityRemaining,
   quantityDispensed,
+  disabled,
 }) => {
   const { t } = useTranslation();
   const dispenseWorkspaceProps = {
@@ -46,7 +48,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   }
 
   return (
-    <Button kind="primary" onClick={handleLaunchWorkspace}>
+    <Button kind="primary" onClick={handleLaunchWorkspace} disabled={disabled}>
       {t('dispense', 'Dispense')}
     </Button>
   );

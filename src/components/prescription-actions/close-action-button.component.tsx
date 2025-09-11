@@ -12,6 +12,7 @@ type CloseActionButtonProps = {
   session: Session;
   providers: Array<Provider>;
   closeable: boolean;
+  disabled: boolean;
 };
 
 const CloseActionButton: React.FC<CloseActionButtonProps> = ({
@@ -21,6 +22,7 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
   session,
   providers,
   closeable,
+  disabled,
 }) => {
   const { t } = useTranslation();
 
@@ -39,7 +41,7 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
     return null;
   }
   return (
-    <Button kind="danger" onClick={handleLaunchWorkspace}>
+    <Button kind="danger" onClick={handleLaunchWorkspace} disabled={disabled}>
       {t('close', 'Close')}
     </Button>
   );

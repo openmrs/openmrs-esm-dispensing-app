@@ -523,3 +523,12 @@ export type StockDispenseRequest = {
   stockItemPackagingUOM: string;
   quantity: number;
 };
+
+export interface DispensingStore {
+  /**
+   * A list of encounterUuids with stale data due to
+   * updates (like pausing of dispensing medication) actions,
+   * and subsequent SWR revalidation has not yet completed
+   */
+  staleEncounterUuids: string[];
+}

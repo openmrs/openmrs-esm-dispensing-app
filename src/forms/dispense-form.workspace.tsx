@@ -20,6 +20,7 @@ import {
   computeNewFulfillerStatusAfterDispenseEvent,
   getFulfillerStatus,
   getUuidFromReference,
+  markEncounterAsStale,
   revalidate,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
@@ -74,6 +75,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
+      markEncounterAsStale(encounterUuid);
       saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
         .then((response) => {
           if (response.ok) {

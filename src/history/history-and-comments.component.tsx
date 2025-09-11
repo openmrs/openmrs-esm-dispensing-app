@@ -34,6 +34,7 @@ import {
   revalidate,
   sortMedicationDispensesByWhenHandedOver,
   computeTotalQuantityDispensed,
+  markEncounterAsStale,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 
@@ -222,6 +223,7 @@ const HistoryAndComments: React.FC<{
       config.dispenseBehavior.restrictTotalQuantityDispensed,
     );
 
+    markEncounterAsStale(encounterUuid);
     deleteMedicationDispense(medicationDispense.id)
       .then(() => {
         showSnackbar({
