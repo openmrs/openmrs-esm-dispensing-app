@@ -1,0 +1,25 @@
+@use '@carbon/layout';
+@use '~@openmrs/esm-styleguide/src/vars' as *;
+
+.searchTabPanel {
+  display: flex;
+  flex-direction: column;
+  margin: layout.$spacing-05 layout.$spacing-04;
+  gap: layout.$spacing-05;
+}
+
+.searchForPatientPlaceholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 400px;
+  flex: 1;
+  border: solid 1px $grey-2;
+}
+
+.searchBar {
+  input {
+    background-color: $ui-02;
+  }
+}

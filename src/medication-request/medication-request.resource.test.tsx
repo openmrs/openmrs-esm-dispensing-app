@@ -18,7 +18,7 @@ describe('Medication Request Resource Test', () => {
   test('usePrescriptionsTable should call active endpoint and proper date based on expiration period if status parameter is active', () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: 'mockedReturnData' } }));
-    usePrescriptionsTable(5, 5, 'bob', null, 'ACTIVE', 10, 10000);
+    usePrescriptionsTable(true, 5, 5, 'bob', null, 'ACTIVE', 10, 10000);
     expect(useSWR).toHaveBeenCalledWith(
       `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=5&_count=5&date=ge${dayjs()
         .startOf('day')
@@ -32,7 +32,7 @@ describe('Medication Request Resource Test', () => {
   test('usePrescriptionsTable should call all endpoint if status parameter is not active', () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: 'mockedReturnData' } }));
-    usePrescriptionsTable(5, 5, 'bob', null, null, 10, 10000);
+    usePrescriptionsTable(true, 5, 5, 'bob', null, null, 10, 10000);
     expect(useSWR).toHaveBeenCalledWith(
       `/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=5&_count=5&patientSearchTerm=bob`,
       openmrsFetch,
@@ -587,7 +587,7 @@ describe('Medication Request Resource Test', () => {
 
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: queryResultsBundle } }));
-    const { prescriptionsTableRows, totalOrders } = usePrescriptionsTable(2, 0, 'bob', 'ACTIVE', null, 90, 10000);
+    const { prescriptionsTableRows, totalOrders } = usePrescriptionsTable(true, 2, 0, 'bob', 'ACTIVE', null, 90, 10000);
     expect(totalOrders).toBe(26);
     expect(prescriptionsTableRows.length).toBe(2);
     expect(prescriptionsTableRows[0].id).toBe('7aee7123-9e50-4f72-a636-895d77a63e98');

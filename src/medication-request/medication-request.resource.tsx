@@ -25,6 +25,7 @@ import dayjs from 'dayjs';
 import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 
 export function usePrescriptionsTable(
+  loadData: boolean,
   pageSize: number = 10,
   pageOffset: number = 0,
   patientSearchTerm: string = '',
@@ -34,15 +35,17 @@ export function usePrescriptionsTable(
   refreshInterval: number,
 ) {
   const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
-    status === 'ACTIVE'
-      ? getPrescriptionTableActiveMedicationRequestsEndpoint(
-          pageOffset,
-          pageSize,
-          dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString(),
-          patientSearchTerm,
-          location,
-        )
-      : getPrescriptionTableAllMedicationRequestsEndpoint(pageOffset, pageSize, patientSearchTerm, location),
+    loadData
+      ? status === 'ACTIVE'
+        ? getPrescriptionTableActiveMedicationRequestsEndpoint(
+            pageOffset,
+            pageSize,
+            dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString(),
+            patientSearchTerm,
+            location,
+          )
+        : getPrescriptionTableAllMedicationRequestsEndpoint(pageOffset, pageSize, patientSearchTerm, location)
+      : null,
     openmrsFetch,
     { refreshInterval: refreshInterval },
   );
