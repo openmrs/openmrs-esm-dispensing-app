@@ -52,19 +52,23 @@ Note that following privileges need to be installed and assigned to roles:
 
 ## Running this code
 
+First, install dependencies:
+
 ```sh
-yarn  # to install dependencies
-
-# You can start the microfrontend by running `yarn start`.
-# By default, this will proxy requests to `https://dev3.openmrs.org`.
-yarn start
-
-# If you want to run against a local OpenMRS server, you can specify the backend URL and port:
-yarn start --backend "http://localhost:8080/" --port 8081 # will run against a local OpenMRS server at localhost:8080, serving the frontend from 8081
+yarn
 ```
 
-Open a browser, pointing to the port indicated above (eg. 8081):
-`http://localhost:8081/openmrs/spa/dispensing`
+Start the microfrontend by running `yarn start`. By default, this will proxy requests to the demo O3 server at `https://dev3.openmrs.org`.
+
+If you want to run against a different OpenMRS server, you can specify the backend URL and port using the optional `--backend` and `--port` CLI arguments:
+
+```sh
+yarn start --backend "http://localhost:8080/" --port 8081
+```
+
+This will start the microfrontend at `http://localhost:8081/openmrs/spa`. Log in and navigate to `/openmrs/spa/dispensing` to access the Dispensing app. Alternatively, once on the home page, you can click on the App menu icon in the top right corner of the navbar and select "Dispensing".
+
+Note: All backend requests will be proxied to your local OpenMRS instance running on `http://localhost:8080/`.
 
 ## Troubleshooting
 
