@@ -1,37 +1,44 @@
 import React, { useState } from 'react';
-import { Search, TabPanel } from '@carbon/react';
+import { Button, Search, TabPanel } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { AppointmentsPictogram, useDebounce } from '@openmrs/esm-framework';
+import { AppointmentsPictogram } from '@openmrs/esm-framework';
 import PrescriptionsTable from './prescriptions-table.component';
 import styles from './patient-search-tab-panel.scss';
 
 const PatientSearchTabPanel: React.FC = () => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [submittedSearchTerm, setSubmittedSearchTerm] = useState('');
 
   return (
     <TabPanel>
       <div className={styles.searchTabPanel}>
-        <div>
+        <form
+          className={styles.searchBar}
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSubmittedSearchTerm(searchTerm);
+          }}>
           <Search
             closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
             defaultValue={searchTerm}
             placeholder={t('searchForPatient', 'Search for a patient by name or identifier number')}
             labelText={t('searchForPatient', 'Search for a patient by name or identifier number')}
             onChange={(e) => {
-              e.preventDefault();
               setSearchTerm(e.target.value);
             }}
-            size="md"
-            className={styles.searchBar}
+            onClear={() => setSubmittedSearchTerm('')}
+            size="lg"
           />
-        </div>
-        {debouncedSearchTerm ? (
+          <Button kind="secondary" type="submit">
+            {t('search', 'Search')}
+          </Button>
+        </form>
+        {submittedSearchTerm ? (
           <PrescriptionsTable
             loadData={true}
             status={'ACTIVE'}
-            debouncedSearchTerm={debouncedSearchTerm}
+            debouncedSearchTerm={submittedSearchTerm}
             location={''}
           />
         ) : (
