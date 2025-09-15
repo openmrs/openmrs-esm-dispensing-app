@@ -94,21 +94,22 @@ const PrescriptionDetails: React.FC<{
       {medicationRequestBundles &&
         medicationRequestBundles.map((bundle) => {
           return (
-            <Tile className={styles.prescriptionTile}>
-              <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
-                <ActionButtons
-                  patientUuid={patientUuid}
-                  encounterUuid={encounterUuid}
-                  medicationRequestBundle={bundle}
-                  disabled={staleEncounterUuids.includes(encounterUuid)}
+            <React.Fragment>
+              <Tile className={styles.prescriptionTile}>
+                <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}></UserHasAccess>
+                <MedicationEvent
+                  key={bundle.request.id}
+                  medicationEvent={bundle.request}
+                  status={generateStatusTag(bundle.request)}
                 />
-              </UserHasAccess>
-              <MedicationEvent
-                key={bundle.request.id}
-                medicationEvent={bundle.request}
-                status={generateStatusTag(bundle.request)}
+              </Tile>
+              <ActionButtons
+                patientUuid={patientUuid}
+                encounterUuid={encounterUuid}
+                medicationRequestBundle={bundle}
+                disabled={staleEncounterUuids.includes(encounterUuid)}
               />
-            </Tile>
+            </React.Fragment>
           );
         })}
       <PrescriptionsActionsFooter encounterUuid={encounterUuid} patientUuid={patientUuid} />
