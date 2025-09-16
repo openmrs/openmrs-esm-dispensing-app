@@ -96,19 +96,20 @@ const PrescriptionDetails: React.FC<{
           return (
             <React.Fragment>
               <Tile className={styles.prescriptionTile}>
-                <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}></UserHasAccess>
                 <MedicationEvent
                   key={bundle.request.id}
                   medicationEvent={bundle.request}
                   status={generateStatusTag(bundle.request)}
                 />
               </Tile>
-              <ActionButtons
-                patientUuid={patientUuid}
-                encounterUuid={encounterUuid}
-                medicationRequestBundle={bundle}
-                disabled={staleEncounterUuids.includes(encounterUuid)}
-              />
+              <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
+                <ActionButtons
+                  patientUuid={patientUuid}
+                  encounterUuid={encounterUuid}
+                  medicationRequestBundle={bundle}
+                  disabled={staleEncounterUuids.includes(encounterUuid)}
+                />
+              </UserHasAccess>
             </React.Fragment>
           );
         })}
