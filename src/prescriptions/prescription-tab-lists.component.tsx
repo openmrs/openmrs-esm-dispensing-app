@@ -9,19 +9,6 @@ const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const [selectedTab, setSelectedTab] = useState(0);
 
-  const tabs = [
-    {
-      key: 'activePrescriptions',
-      header: t('activePrescriptions', 'Active Prescriptions'),
-      status: 'ACTIVE',
-    },
-    {
-      key: 'allPrescriptions',
-      header: t('allPrescriptions', 'All Prescriptions'),
-      status: '',
-    },
-  ];
-
   const handleTabChange = (event) => {
     setSelectedTab(event.selectedIndex);
   };
@@ -34,13 +21,15 @@ const PrescriptionTabLists: React.FC = () => {
             <Tab title={t('search', 'Search')} id={'tab-search'} className={styles.tab}>
               {t('search', 'Search')}
             </Tab>
-            {tabs.map((tab, index) => {
-              return (
-                <Tab title={t(tab.key)} key={index} id={'tab-' + index} className={styles.tab}>
-                  {t(tab.header)}
-                </Tab>
-              );
-            })}
+            <Tab
+              title={t('activePrescriptions', 'Active Prescriptions')}
+              id={'tab-active-prescription'}
+              className={styles.tab}>
+              {t('activePrescriptions', 'Active Prescriptions')}
+            </Tab>
+            <Tab title={t('allPrescriptions', 'All Prescriptions')} id={'tab-all-prescription'} className={styles.tab}>
+              {t('allPrescriptions', 'All Prescriptions')}
+            </Tab>
           </TabList>
           <TabPanels>
             <PatientSearchTabPanel />

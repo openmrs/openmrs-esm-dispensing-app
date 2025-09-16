@@ -45,8 +45,8 @@ const PatientSearchTabPanel: React.FC = () => {
           <div className={styles.searchForPatientPlaceholder}>
             <div>
               <AppointmentsPictogram />
-              <h5>Search for a patient</h5>
-              <div>Search for a patient by name or identifier number</div>
+              <h5>{t('searchForPatientHeader', 'Search for a patient')}</h5>
+              <div>{t('searchForPatient', 'Search for a patient by name or identifier number')}</div>
             </div>
           </div>
         )}
