@@ -99,6 +99,7 @@
   "search": "Search",
   "searchByPatientIdOrName": "Search by patient ID or name",
   "searchForPatient": "Search for a patient by name or identifier number",
+  "searchForPatientHeader": "Search for a patient",
   "selectPrescriptions": "Check prescriptions to print",
   "selectStockDispense": "Select stock to dispense from",
   "status": "Status",
