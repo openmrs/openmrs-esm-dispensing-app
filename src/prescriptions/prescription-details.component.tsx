@@ -110,6 +110,11 @@ const PrescriptionDetails: React.FC<{
                   disabled={staleEncounterUuids.includes(encounterUuid)}
                 />
               </UserHasAccess>
+              <MedicationEvent
+                key={bundle.request.id}
+                medicationEvent={bundle.request}
+                status={generateStatusTag(bundle.request)}
+              />
             </React.Fragment>
           );
         })}
