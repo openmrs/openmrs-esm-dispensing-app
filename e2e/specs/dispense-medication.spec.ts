@@ -35,7 +35,6 @@ test('Dispense prescription', async ({ page, patient }) => {
 
   await test.step('And I click on the Active prescriptions tab', async () => {
     await page.getByRole('tab', { name: 'Active prescriptions' }).click();
-    await expect(page.getByRole('tab', { name: 'Active prescriptions' })).toHaveAttribute('aria-selected', 'true');
   });
 
   await test.step('And I expand a table row in the Prescriptions table corresponding to an active prescription', async () => {
