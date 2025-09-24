@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Search, TabPanel } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { AppointmentsPictogram } from '@openmrs/esm-framework';
+import { PatientSearchPictogram } from '@openmrs/esm-framework';
 import PrescriptionsTable from './prescriptions-table.component';
 import styles from './patient-search-tab-panel.scss';
 
@@ -44,7 +44,7 @@ const PatientSearchTabPanel: React.FC = () => {
         ) : (
           <div className={styles.searchForPatientPlaceholder}>
             <div>
-              <AppointmentsPictogram />
+              <PatientSearchPictogram />
               <h5>{t('searchForPatientHeader', 'Search for a patient')}</h5>
               <div>{t('searchForPatient', 'Search for a patient by name or identifier number')}</div>
             </div>
