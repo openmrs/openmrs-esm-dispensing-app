@@ -126,7 +126,7 @@ describe('Medication Dispense Review Component tests', () => {
       },
     };
 
-    const mockUpdate: Function = jest.fn();
+    const mockUpdate = jest.fn();
     render(
       <MedicationDispenseReview
         medicationDispense={medicationDispense}

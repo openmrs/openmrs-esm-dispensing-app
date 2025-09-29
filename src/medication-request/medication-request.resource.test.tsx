@@ -13,6 +13,10 @@ import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } 
 
 jest.mocked(openmrsFetch);
 jest.mock('swr');
+jest.mock('react', () => ({
+  ...jest.requireActual('react'),
+  useMemo: jest.fn((fn) => fn()),
+}));
 
 describe('Medication Request Resource Test', () => {
   test('usePrescriptionsTable should call active endpoint and proper date based on expiration period if status parameter is active', () => {
