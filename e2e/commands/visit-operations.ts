@@ -16,15 +16,16 @@ export const startVisit = async (api: APIRequestContext, patientId: string): Pro
   });
 
   expect(visitRes.ok()).toBeTruthy();
-  return await visitRes.json();
+  const visit = await visitRes.json();
+  return await getVisit(api, visit.uuid);
 };
 
 export const endVisit = async (api: APIRequestContext, visit: Visit) => {
   const visitRes = await api.post(`visit/${visit.uuid}`, {
     data: {
-      location: visit.location.uuid,
-      startDatetime: visit.startDatetime,
-      visitType: visit.visitType.uuid,
+      location: visit?.location?.uuid,
+      startDatetime: visit?.startDatetime,
+      visitType: visit?.visitType?.uuid,
       stopDatetime: dayjs().format('YYYY-MM-DDTHH:mm:ss.SSSZZ'),
     },
   });
