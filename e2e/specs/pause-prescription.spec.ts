@@ -33,6 +33,11 @@ test('Pause prescription', async ({ page, patient }) => {
     await dispensingPage.goTo();
   });
 
+  await test.step('And I click on the Active prescriptions tab', async () => {
+    await page.getByRole('tab', { name: 'Active prescriptions' }).click();
+    await expect(page.getByRole('tab', { name: 'Active prescriptions' })).toHaveAttribute('aria-selected', 'true');
+  });
+
   await test.step('And I expand a table row in the prescriptions table corresponding to an active prescription', async () => {
     const rowText = new RegExp(`Expand current row`);
     await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
