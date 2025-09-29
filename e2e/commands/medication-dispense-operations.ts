@@ -1,8 +1,8 @@
+import dayjs from 'dayjs';
 import { type APIRequestContext, expect } from '@playwright/test';
 import { type Patient } from '.';
-import { MedicationDispenseStatus, type MedicationDispense } from '../../src/types';
 import { type Provider } from './types';
-import dayjs from 'dayjs';
+import { MedicationDispenseStatus, type MedicationDispense } from '../../src/types';
 
 export const generateMedicationDispense = async (
   fhirApi: APIRequestContext,
@@ -108,6 +108,6 @@ export const generateMedicationDispense = async (
   return await dispense.json();
 };
 
-export const deleteMedicationDespense = async (fhirApi: APIRequestContext, id: string) => {
+export const deleteMedicationDispense = async (fhirApi: APIRequestContext, id: string) => {
   await fhirApi.delete(`MedicationDispense/${id}`, { data: {} });
 };

@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import { type Visit } from '@openmrs/esm-framework';
+import { type Order } from '@openmrs/esm-patient-common-lib';
 import {
   generateRandomDrugOrder,
   deleteDrugOrder,
@@ -9,12 +10,11 @@ import {
   startVisit,
   endVisit,
 } from '../commands';
+import { deleteMedicationDispense, generateMedicationDispense } from '../commands/medication-dispense-operations';
+import { DispensingPage } from '../pages';
+import { test } from '../core';
 import { type Encounter, type Provider } from '../commands/types';
 import { type MedicationDispense } from '../../src/types';
-import { type Order } from '@openmrs/esm-patient-common-lib';
-import { test } from '../core';
-import { DispensingPage } from '../pages';
-import { deleteMedicationDespense, generateMedicationDispense } from '../commands/medication-dispense-operation';
 
 let visit: Visit;
 let drugOrder: Order;
@@ -39,8 +39,7 @@ test('Delete prescription', async ({ fhirApi, page, patient }) => {
   });
 
   await test.step('When I expand the prescription row', async () => {
-    const rowText = new RegExp(`Expand current row`);
-    await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
+    await page.getByRole('row', { name: 'Expand current row' }).getByLabel('Expand current row').nth(0).click();
   });
 
   await test.step('And I navigate to the History and comments tab', async () => {
@@ -65,7 +64,7 @@ test('Delete prescription', async ({ fhirApi, page, patient }) => {
 });
 
 test.afterEach(async ({ api, fhirApi }) => {
-  await deleteMedicationDespense(fhirApi, medicationDispense.id);
+  await deleteMedicationDispense(fhirApi, medicationDispense.id);
   await deleteEncounter(api, encounter.uuid);
   await deleteDrugOrder(api, drugOrder.uuid);
   await endVisit(api, visit);
