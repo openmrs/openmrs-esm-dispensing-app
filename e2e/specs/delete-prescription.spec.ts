@@ -2,13 +2,13 @@ import { expect } from '@playwright/test';
 import { type Visit } from '@openmrs/esm-framework';
 import { type Order } from '@openmrs/esm-patient-common-lib';
 import {
-  generateRandomDrugOrder,
-  deleteDrugOrder,
   createEncounter,
+  deleteDrugOrder,
   deleteEncounter,
+  endVisit,
+  generateRandomDrugOrder,
   getProvider,
   startVisit,
-  endVisit,
 } from '../commands';
 import { deleteMedicationDispense, generateMedicationDispense } from '../commands/medication-dispense-operations';
 import { DispensingPage } from '../pages';
@@ -16,11 +16,11 @@ import { test } from '../core';
 import { type Encounter, type Provider } from '../commands/types';
 import { type MedicationDispense } from '../../src/types';
 
-let visit: Visit;
 let drugOrder: Order;
 let encounter: Encounter;
-let orderer: Provider;
 let medicationDispense: MedicationDispense;
+let orderer: Provider;
+let visit: Visit;
 
 test.beforeEach(async ({ fhirApi, api, patient }) => {
   visit = await startVisit(api, patient.uuid);
