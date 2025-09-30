@@ -35,7 +35,7 @@ test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
 
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
-    await expect(page).toHaveURL(`/openmrs/spa/dispensing`);
+    await expect(page).toHaveURL(`${process.env.E2E_BASE_URL}/spa/dispensing`);
   });
 
   await test.step('And I click on the "Active prescriptions" tab', async () => {
@@ -47,8 +47,8 @@ test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
     await expect(page.getByRole('table')).toBeVisible();
   });
 
-  await test.step('And I should see the Aspirin prescription', async () => {
-    await expect(page.getByText('Aspirin 81mg')).toBeVisible({ timeout: 60000 });
+  await test.step('And I should see Aspirin 81mg in the prescriptions table', async () => {
+    await expect(page.getByRole('table').getByText('Aspirin 81mg').first()).toBeVisible();
   });
 
   await test.step('And I expand the prescription row', async () => {
