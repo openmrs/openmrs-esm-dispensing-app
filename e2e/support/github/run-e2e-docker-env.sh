@@ -4,6 +4,8 @@
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # create a temporary working directory
 working_dir=$(mktemp -d "${TMPDIR:-/tmp/}openmrs-e2e-frontends.XXXXXXXXXX")
+# cleanup temp directory on exit
+trap 'rm -rf "$working_dir"' EXIT
 # get the app name
 app_name=$(jq -r '.name' "$script_dir/../../../package.json")
 

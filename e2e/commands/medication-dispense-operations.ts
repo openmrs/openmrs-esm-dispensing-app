@@ -84,11 +84,6 @@ export const generateMedicationDispense = async (
     },
   });
 
-  if (!dispense.ok()) {
-    const errorBody = await dispense.text();
-    console.error('Failed to create MedicationDispense:', dispense.status(), errorBody);
-  }
-
   expect(dispense.ok()).toBeTruthy();
   return await dispense.json();
 };
