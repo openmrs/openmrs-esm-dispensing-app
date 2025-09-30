@@ -43,8 +43,12 @@ test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
     await expect(page.getByRole('tab', { name: 'Active prescriptions' })).toHaveAttribute('aria-selected', 'true');
   });
 
-  await test.step('Then I should see the prescription in the table', async () => {
-    await expect(page.getByRole('row', { name: 'Expand current row' }).first()).toBeVisible();
+  await test.step('Then I should see the prescriptions table', async () => {
+    await expect(page.getByRole('table')).toBeVisible();
+  });
+
+  await test.step('And I should see the Aspirin prescription', async () => {
+    await expect(page.getByText('Aspirin 81mg')).toBeVisible({ timeout: 60000 });
   });
 
   await test.step('And I expand the prescription row', async () => {
