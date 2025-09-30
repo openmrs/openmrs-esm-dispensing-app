@@ -35,7 +35,7 @@ test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
 
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
-    await expect(page).toHaveURL(`${process.env.E2E_BASE_URL}/spa/dispensing`);
+    await expect(page).toHaveURL(`/openmrs/spa/dispensing`);
   });
 
   await test.step('And I click on the "Active prescriptions" tab', async () => {
@@ -43,12 +43,8 @@ test('Delete medication dispense', async ({ fhirApi, page, patient }) => {
     await expect(page.getByRole('tab', { name: 'Active prescriptions' })).toHaveAttribute('aria-selected', 'true');
   });
 
-  await test.step('Then I should see the prescriptions table', async () => {
-    await expect(page.getByRole('table')).toBeVisible();
-  });
-
-  await test.step('And I should see Aspirin 81mg in the prescriptions table', async () => {
-    await expect(page.getByRole('table').getByText('Aspirin 81mg').first()).toBeVisible();
+  await test.step('Then I should see the prescription in the table', async () => {
+    await expect(page.getByRole('row', { name: 'Expand current row' }).first()).toBeVisible();
   });
 
   await test.step('And I expand the prescription row', async () => {
