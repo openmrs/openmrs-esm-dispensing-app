@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/await-thenable */
 import { type APIRequestContext, expect } from '@playwright/test';
 import { type Encounter } from './types';
 import { type Visit } from '@openmrs/esm-framework';
@@ -52,10 +51,10 @@ export const createEncounter = async (
       encounterType: '39da3525-afe4-45ff-8977-c53b7b359158',
     },
   });
-  await expect(encounterRes.ok()).toBeTruthy();
+  expect(encounterRes.ok()).toBeTruthy();
   return await encounterRes.json();
 };
 
 export const deleteEncounter = async (api: APIRequestContext, uuid: string) => {
-  await api.delete(`encounter/${uuid}`, { data: {} });
+  await api.delete(`encounter/${uuid}`);
 };

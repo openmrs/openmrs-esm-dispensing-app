@@ -13,14 +13,15 @@ import { type APIRequestContext, type PlaywrightWorkerArgs, type WorkerFixture }
  * });
  * ```
  */
-export const api: WorkerFixture<APIRequestContext, PlaywrightWorkerArgs> = async ({ playwright }, use) => {
-  const ctx = await playwright.request.newContext({
-    baseURL: `${process.env.E2E_BASE_URL}/ws/rest/v1/`,
+
+export const fhirApi: WorkerFixture<APIRequestContext, PlaywrightWorkerArgs> = async ({ playwright }, use) => {
+  const fhirctx = await playwright.request.newContext({
+    baseURL: `${process.env.E2E_BASE_URL}/ws/fhir2/R4/`,
     httpCredentials: {
       username: process.env.E2E_USER_ADMIN_USERNAME,
       password: process.env.E2E_USER_ADMIN_PASSWORD,
     },
   });
 
-  use(ctx);
+  use(fhirctx);
 };
