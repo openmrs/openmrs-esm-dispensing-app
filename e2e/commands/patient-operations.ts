@@ -51,8 +51,7 @@ export const generateRandomPatient = async (api: APIRequestContext): Promise<Pat
     data: {},
   });
 
-  // eslint-disable-next-line @typescript-eslint/await-thenable
-  await expect(identifierRes.ok()).toBeTruthy();
+  expect(identifierRes.ok()).toBeTruthy();
   const { identifier } = await identifierRes.json();
 
   const patientRes = await api.post('patient', {
@@ -94,8 +93,7 @@ export const generateRandomPatient = async (api: APIRequestContext): Promise<Pat
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/await-thenable
-  await expect(patientRes.ok()).toBeTruthy();
+  expect(patientRes.ok()).toBeTruthy();
   return await patientRes.json();
 };
 
@@ -105,5 +103,5 @@ export const getPatient = async (api: APIRequestContext, uuid: string): Promise<
 };
 
 export const deletePatient = async (api: APIRequestContext, uuid: string) => {
-  await api.delete(`patient/${uuid}`, { data: {} });
+  await api.delete(`patient/${uuid}`);
 };

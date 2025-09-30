@@ -14,6 +14,14 @@
   },
   "plugins": ["@typescript-eslint", "import", "react-hooks", "unused-imports"],
   "root": true,
+  "overrides": [
+    {
+      "files": ["e2e/**/*.ts"],
+      "rules": {
+        "react-hooks/rules-of-hooks": "off"
+      }
+    }
+  ],
   "rules": {
     "react-hooks/exhaustive-deps": "warn",
     "react-hooks/rules-of-hooks": "error",

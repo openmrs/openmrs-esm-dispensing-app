@@ -10,7 +10,7 @@ export const generateMedicationDispense = async (
   provider: Provider,
   medicationRequestUuid: string,
 ): Promise<MedicationDispense> => {
-  const dispense = await fhirApi.post('MedicationDispense?_summary=data', {
+  const dispense = await fhirApi.post('MedicationDispense', {
     data: {
       resourceType: 'MedicationDispense',
       status: MedicationDispenseStatus.completed,
@@ -38,11 +38,7 @@ export const generateMedicationDispense = async (
       location: {
         reference: `Location/${process.env.E2E_LOGIN_DEFAULT_LOCATION_UUID}`,
       },
-      substitution: { reason: [], type: undefined, wasSubstituted: false },
-      type: undefined,
       whenHandedOver: dayjs().format(),
-      whenPrepared: '',
-
       quantity: {
         value: 5,
         code: '1513AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
@@ -50,7 +46,6 @@ export const generateMedicationDispense = async (
       },
       dosageInstruction: [
         {
-          text: '',
           timing: {
             repeat: {
               durationUnit: 'd',
@@ -60,14 +55,6 @@ export const generateMedicationDispense = async (
                 {
                   code: '160862AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
                   display: 'Once daily',
-                },
-                {
-                  system: 'https://cielterminology.org',
-                  code: '160862',
-                },
-                {
-                  system: 'http://snomed.info/sct/',
-                  code: '229797004',
                 },
               ],
               text: 'Once daily',
@@ -79,14 +66,6 @@ export const generateMedicationDispense = async (
               {
                 code: '160240AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
                 display: 'Oral',
-              },
-              {
-                system: 'https://cielterminology.org',
-                code: '160240',
-              },
-              {
-                system: 'http://snomed.info/sct/',
-                code: '26643006',
               },
             ],
             text: 'Oral',
@@ -104,10 +83,11 @@ export const generateMedicationDispense = async (
       ],
     },
   });
+
   expect(dispense.ok()).toBeTruthy();
   return await dispense.json();
 };
 
 export const deleteMedicationDispense = async (fhirApi: APIRequestContext, id: string) => {
-  await fhirApi.delete(`MedicationDispense/${id}`, { data: {} });
+  await fhirApi.delete(`MedicationDispense/${id}`);
 };
