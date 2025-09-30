@@ -6,8 +6,8 @@ import {
   deleteDrugOrder,
   deleteEncounter,
   deleteMedicationDispense,
-  generateMedicationDispense,
   endVisit,
+  generateMedicationDispense,
   generateRandomDrugOrder,
   getProvider,
   startVisit,
@@ -17,30 +17,18 @@ import { test } from '../core';
 import { type Encounter, type Provider } from '../commands/types';
 import { type MedicationDispense } from '../../src/types';
 
+let visit: Visit;
 let drugOrder: Order;
 let encounter: Encounter;
-let medicationDispense: MedicationDispense;
 let orderer: Provider;
-let visit: Visit;
+let medicationDispense: MedicationDispense;
 
 test.beforeEach(async ({ fhirApi, api, patient }) => {
   visit = await startVisit(api, patient.uuid);
   orderer = await getProvider(api);
   encounter = await createEncounter(api, patient.uuid, orderer.uuid, visit);
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
-
-  // Wait for OpenMRS to process the order and make it available via FHIR
-  // Increased wait time to ensure data is properly indexed
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-
-  try {
-    medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
-  } catch (error) {
-    console.error('Failed to generate medication dispense:', error);
-    // Add additional wait and retry if needed
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
-  }
+  medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
 });
 
 test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
@@ -48,18 +36,20 @@ test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
 
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
-    await expect(page).toHaveURL(`/openmrs/spa/dispensing`);
-
-    // Wait for the page to load and data to be available
-    await page.waitForLoadState('domcontentloaded');
+    await expect(page).toHaveURL(`${process.env.E2E_BASE_URL}/spa/dispensing`);
   });
 
-  await test.step('When I expand an active prescription', async () => {
-    // Wait for the prescriptions table to be visible
-    await page.getByRole('table').waitFor({ timeout: 10000 });
+  await test.step('And I click on the "Active prescriptions" tab', async () => {
+    await page.getByRole('tab', { name: 'Active prescriptions' }).click();
+    await expect(page.getByRole('tab', { name: 'Active prescriptions' })).toHaveAttribute('aria-selected', 'true');
+  });
 
-    const rowText = new RegExp('Expand current row');
-    await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
+  await test.step('Then I should see the prescription in the table', async () => {
+    await expect(page.getByRole('row', { name: 'Expand current row' }).first()).toBeVisible();
+  });
+
+  await test.step('And I expand the prescription row', async () => {
+    await page.getByRole('row', { name: 'Expand current row' }).getByLabel('Expand current row').first().click();
   });
 
   await test.step('And I navigate to the History and comments tab', async () => {
@@ -68,7 +58,7 @@ test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
   });
 
   await test.step('And I edit the dispense record', async () => {
-    await page.getByRole('button', { name: 'Options' }).first().click();
+    await page.getByLabel('History and comments').getByRole('button', { name: 'Options' }).click();
     await page.getByRole('menuitem', { name: 'Edit Record' }).click();
   });
 
@@ -81,7 +71,7 @@ test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
     await page.getByRole('button', { name: 'Save changes' }).click();
   });
 
-  await test.step('Then I should see a success notification', async () => {
+  await test.step('Then I should see a success notification confirming the update', async () => {
     await expect(page.getByText(/medication dispense list has been updated/i)).toBeVisible();
   });
 
