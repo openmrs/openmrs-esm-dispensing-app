@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/await-thenable */
 import { type APIRequestContext, expect } from '@playwright/test';
 import { type Order } from '@openmrs/esm-patient-common-lib';
 import { type Encounter } from './types';
@@ -34,10 +35,10 @@ export const generateRandomDrugOrder = async (
       orderReasonNonCoded: 'order reason',
     },
   });
-  expect(order.ok()).toBeTruthy();
+  await expect(order.ok()).toBeTruthy();
   return await order.json();
 };
 
 export const deleteDrugOrder = async (api: APIRequestContext, uuid: string) => {
-  await api.delete(`order/${uuid}`);
+  await api.delete(`order/${uuid}`, { data: {} });
 };

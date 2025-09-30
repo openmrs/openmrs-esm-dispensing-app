@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { type APIRequestContext, type PlaywrightWorkerArgs, type WorkerFixture } from '@playwright/test';
 
 /**
@@ -22,5 +23,5 @@ export const api: WorkerFixture<APIRequestContext, PlaywrightWorkerArgs> = async
     },
   });
 
-  use(ctx);
+  await use(ctx);
 };

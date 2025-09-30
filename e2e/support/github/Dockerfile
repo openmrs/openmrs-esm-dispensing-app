@@ -1,4 +1,5 @@
-FROM --platform=$BUILDPLATFORM node:22-alpine as dev
+# syntax=docker/dockerfile:1.3
+FROM --platform=$BUILDPLATFORM node:18-alpine as dev
 
 ARG APP_SHELL_VERSION=next
 

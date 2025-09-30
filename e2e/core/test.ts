@@ -1,5 +1,5 @@
 import { type APIRequestContext, type Page, test as base } from '@playwright/test';
-import { api, fhirApi } from '../fixtures';
+import { api } from '../fixtures';
 import { type Patient } from '../types';
 import { generateRandomPatient, deletePatient } from '../commands';
 
@@ -16,12 +16,10 @@ export interface CustomTestFixtures {
 
 export interface CustomWorkerFixtures {
   api: APIRequestContext;
-  fhirApi: APIRequestContext;
 }
 
 export const test = base.extend<CustomTestFixtures, CustomWorkerFixtures>({
   api: [api, { scope: 'worker' }],
-  fhirApi: [fhirApi, { scope: 'worker' }],
   patient: [
     async ({ api }, use) => {
       const patient = await generateRandomPatient(api);
