@@ -29,6 +29,9 @@ test.beforeEach(async ({ fhirApi, api, patient }) => {
   encounter = await createEncounter(api, patient.uuid, orderer.uuid, visit);
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
   medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
+
+  // Wait for OpenMRS to process the order and dispense and make them available
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 });
 
 test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
@@ -39,12 +42,13 @@ test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
     await expect(page).toHaveURL(`${process.env.E2E_BASE_URL}/spa/dispensing`);
   });
 
-  await test.step('And I click on the "Active prescriptions" tab', async () => {
-    await page.getByRole('tab', { name: 'Active prescriptions' }).click();
-    await expect(page.getByRole('tab', { name: 'Active prescriptions' })).toHaveAttribute('aria-selected', 'true');
+  await test.step('And I click on the "All prescriptions" tab', async () => {
+    await page.getByRole('tab', { name: 'All prescriptions' }).click();
+    await expect(page.getByRole('tab', { name: 'All prescriptions' })).toHaveAttribute('aria-selected', 'true');
   });
 
   await test.step('Then I should see the prescription in the table', async () => {
+    await page.getByRole('table').waitFor({ timeout: 10000 });
     await expect(page.getByRole('row', { name: 'Expand current row' }).first()).toBeVisible();
   });
 
