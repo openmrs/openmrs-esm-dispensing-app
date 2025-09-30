@@ -140,7 +140,16 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     medicationDispense?.medicationReference?.reference &&
     medicationRequest.medicationReference.reference != medicationDispense.medicationReference.reference;
   const substitution = useMemo(() => {
-    return isSubstitution ? medicationDispense.substitution : blankSubstitution;
+    if (isSubstitution) {
+      // make sure that the value medicationDispense.substitution.wasSubstituted exists and is truthy
+      if (medicationDispense.substitution.wasSubstituted) {
+        return medicationDispense.substitution;
+      } else {
+        return { ...medicationDispense.substitution, wasSubstituted: true };
+      }
+    } else {
+      return blankSubstitution;
+    }
   }, [isSubstitution, medicationDispense]);
   useEffect(() => {
     updateMedicationDispense({
