@@ -23,5 +23,5 @@ export const fhirApi: WorkerFixture<APIRequestContext, PlaywrightWorkerArgs> = a
     },
   });
 
-  await use(fhirctx);
+  use(fhirctx);
 };
