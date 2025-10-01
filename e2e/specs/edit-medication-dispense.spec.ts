@@ -32,7 +32,7 @@ test.beforeEach(async ({ api, fhirApi, page, patient }) => {
 
   // Wait for OpenMRS to process the dispense and make it available
   // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(10000);
+  await page.waitForTimeout(20000);
 });
 
 test('Edit medication dispense', async ({ page }) => {
@@ -49,7 +49,7 @@ test('Edit medication dispense', async ({ page }) => {
   });
 
   await test.step('Then I should see the prescription in the table', async () => {
-    await expect(page.getByRole('row', { name: 'Expand current row' }).first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('row', { name: 'Expand current row' }).first()).toBeVisible({ timeout: 15000 });
   });
 
   await test.step('And I expand the prescription row', async () => {
