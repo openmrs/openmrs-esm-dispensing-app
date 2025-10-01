@@ -23,6 +23,7 @@ import {
 } from '../utils';
 import dayjs from 'dayjs';
 import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
+import { useMemo } from 'react';
 
 export function usePrescriptionsTable(
   loadData: boolean,
@@ -127,54 +128,53 @@ function buildPrescriptionsTableRow(
 }
 
 export function usePrescriptionDetails(encounterUuid: string, refreshInterval = null) {
-  const medicationRequestBundles: Array<MedicationRequestBundle> = [];
-  let prescriptionDate: Date;
-  let isLoading = true;
-
-  const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
+  const { data, ...rest } = useSWR<{ data: MedicationRequestResponse }, Error>(
     getPrescriptionDetailsEndpoint(encounterUuid),
     openmrsFetch,
     { refreshInterval: refreshInterval },
   );
 
-  if (data) {
-    const results = data?.data.entry;
+  const { medicationRequestBundles, prescriptionDate } = useMemo(() => {
+    const medicationRequestBundles: Array<MedicationRequestBundle> = [];
+    let prescriptionDate: Date;
+    if (data) {
+      const results = data?.data.entry;
 
-    const encounter = results
-      ?.filter((entry) => entry?.resource?.resourceType == 'Encounter')
-      .map((entry) => entry.resource as Encounter);
+      const encounter = results
+        ?.filter((entry) => entry?.resource?.resourceType == 'Encounter')
+        .map((entry) => entry.resource as Encounter);
 
-    if (encounter) {
-      // by definition of the request (search by encounter) there should be one and only one encounter
-      prescriptionDate = parseDate(encounter[0]?.period.start);
+      if (encounter) {
+        // by definition of the request (search by encounter) there should be one and only one encounter
+        prescriptionDate = parseDate(encounter[0]?.period.start);
 
-      const medicationRequests = results
-        ?.filter((entry) => entry?.resource?.resourceType == 'MedicationRequest')
-        .map((entry) => entry.resource as MedicationRequest);
+        const medicationRequests = results
+          ?.filter((entry) => entry?.resource?.resourceType == 'MedicationRequest')
+          .map((entry) => entry.resource as MedicationRequest);
 
-      const medicationDispenses = results
-        ?.filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
-        .map((entry) => entry.resource as MedicationDispense)
-        .sort(sortMedicationDispensesByWhenHandedOver);
+        const medicationDispenses = results
+          ?.filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
+          .map((entry) => entry.resource as MedicationDispense)
+          .sort(sortMedicationDispensesByWhenHandedOver);
 
-      medicationRequests.every((medicationRequest) =>
-        medicationRequestBundles.push({
-          request: medicationRequest,
-          dispenses: getAssociatedMedicationDispenses(medicationRequest, medicationDispenses).sort(
-            sortMedicationDispensesByWhenHandedOver,
-          ),
-        }),
-      );
+        medicationRequests.every((medicationRequest) =>
+          medicationRequestBundles.push({
+            request: medicationRequest,
+            dispenses: getAssociatedMedicationDispenses(medicationRequest, medicationDispenses).sort(
+              sortMedicationDispensesByWhenHandedOver,
+            ),
+          }),
+        );
+      }
     }
-  }
 
-  isLoading = (!medicationRequestBundles || medicationRequestBundles.length == 0) && !error;
+    return { medicationRequestBundles, prescriptionDate };
+  }, [data]);
 
   return {
     medicationRequestBundles,
     prescriptionDate,
-    error,
-    isLoading,
+    ...rest,
   };
 }
 
