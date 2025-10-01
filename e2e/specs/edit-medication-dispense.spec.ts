@@ -23,18 +23,47 @@ let encounter: Encounter;
 let orderer: Provider;
 let medicationDispense: MedicationDispense;
 
-test.beforeEach(async ({ fhirApi, api, patient }) => {
+test.beforeEach(async ({ api, fhirApi, page, patient }) => {
   visit = await startVisit(api, patient.uuid);
   orderer = await getProvider(api);
   encounter = await createEncounter(api, patient.uuid, orderer.uuid, visit);
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
   medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
 
-  // Wait for OpenMRS to process the order and dispense and make them available
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  // Poll the FHIR encounters API to verify the medication request is queryable
+  const maxAttempts = 10;
+  const delayMs = 1000;
+  let encounterFound = false;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const encountersResponse = await fhirApi.get(
+      `Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=0&_count=10&_summary=data`,
+    );
+
+    if (encountersResponse.ok()) {
+      const data = await encountersResponse.json();
+      const entries = data.entry || [];
+      encounterFound = entries.some((entry: any) => entry.resource?.id === encounter.uuid);
+
+      if (encounterFound) {
+        break;
+      }
+    }
+
+    if (attempt < maxAttempts - 1) {
+      // eslint-disable-next-line playwright/no-wait-for-timeout
+      await page.waitForTimeout(delayMs);
+    }
+  }
+
+  if (!encounterFound) {
+    throw new Error(
+      `Encounter ${encounter.uuid} with medication request not found in FHIR API after ${maxAttempts} attempts.`,
+    );
+  }
 });
 
-test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
+test('Edit medication dispense', async ({ page }) => {
   const dispensingPage = new DispensingPage(page);
 
   await test.step('When I navigate to the dispensing app', async () => {
@@ -48,8 +77,7 @@ test('Edit medication dispense', async ({ fhirApi, page, patient }) => {
   });
 
   await test.step('Then I should see the prescription in the table', async () => {
-    await page.getByRole('table').waitFor({ timeout: 10000 });
-    await expect(page.getByRole('row', { name: 'Expand current row' }).first()).toBeVisible();
+    await expect(page.getByRole('row', { name: 'Expand current row' }).first()).toBeVisible({ timeout: 5000 });
   });
 
   await test.step('And I expand the prescription row', async () => {
