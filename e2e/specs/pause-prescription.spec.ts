@@ -27,7 +27,7 @@ test.beforeEach(async ({ api, page, patient }) => {
 
   // Wait for OpenMRS to process the order and make it available
   // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(10000);
 });
 
 test('Pause prescription', async ({ page, patient }) => {
