@@ -7,6 +7,7 @@ import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenM
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
 import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import {
+  blankSubstitution,
   useOrderConfig,
   useProviders,
   useSubstitutionReasonValueSet,
@@ -139,23 +140,21 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     medicationRequest?.medicationReference?.reference &&
     medicationDispense?.medicationReference?.reference &&
     medicationRequest.medicationReference.reference != medicationDispense.medicationReference.reference;
-  const substitution = useMemo(() => {
+
+  const { substitution } = medicationDispense;
+  useEffect(() => {
     if (isSubstitution) {
-      // make sure that the value medicationDispense.substitution.wasSubstituted exists and is truthy
-      if (medicationDispense.substitution.wasSubstituted) {
-        return medicationDispense.substitution;
-      } else {
-        return { ...medicationDispense.substitution, wasSubstituted: true };
+      // make sure that the value substitution.wasSubstituted exists and is truthy
+      if (!substitution.wasSubstituted) {
+        const newSubstitution = { ...substitution, wasSubstituted: true };
+        updateMedicationDispense({ substitution: newSubstitution });
       }
     } else {
-      return blankSubstitution;
+      if (substitution != blankSubstitution) {
+        updateMedicationDispense({ substitution: blankSubstitution });
+      }
     }
-  }, [isSubstitution, medicationDispense]);
-  useEffect(() => {
-    updateMedicationDispense({
-      substitution,
-    });
-  }, [substitution, updateMedicationDispense]);
+  }, [isSubstitution, substitution, updateMedicationDispense]);
 
   useEffect(() => {
     setUserCanModify(session?.user && userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user));
@@ -538,16 +537,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
       </Stack>
     </div>
   );
-};
-
-const blankSubstitution = {
-  wasSubstituted: false,
-  reason: [
-    {
-      coding: [{ code: null }],
-    },
-  ],
-  type: { coding: [{ code: null }] },
 };
 
 export default MedicationDispenseReview;
