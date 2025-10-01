@@ -19,14 +19,15 @@ let drugOrder: Order;
 let encounter: Encounter;
 let orderer: Provider;
 
-test.beforeEach(async ({ api, patient }) => {
+test.beforeEach(async ({ api, page, patient }) => {
   visit = await startVisit(api, patient.uuid);
   orderer = await getProvider(api);
   encounter = await createEncounter(api, patient.uuid, orderer.uuid, visit);
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 
   // Wait for OpenMRS to process the order and make it available
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  // eslint-disable-next-line playwright/no-wait-for-timeout
+  await page.waitForTimeout(5000);
 });
 
 test('Pause prescription', async ({ page, patient }) => {
@@ -45,11 +46,8 @@ test('Pause prescription', async ({ page, patient }) => {
   });
 
   await test.step('When I expand an active prescription', async () => {
-    // Wait for the prescriptions table to be visible
-    await page.getByRole('table').waitFor({ timeout: 10000 });
-
     const rowText = new RegExp('Expand current row');
-    await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
+    await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click({ timeout: 15000 });
     await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
   });
 
