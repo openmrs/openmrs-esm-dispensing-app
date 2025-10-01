@@ -30,37 +30,9 @@ test.beforeEach(async ({ api, fhirApi, page, patient }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
   medicationDispense = await generateMedicationDispense(fhirApi, patient, orderer, drugOrder.uuid);
 
-  // Poll the FHIR encounters API to verify the medication request is queryable
-  const maxAttempts = 10;
-  const delayMs = 1000;
-  let encounterFound = false;
-
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const encountersResponse = await fhirApi.get(
-      `Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=0&_count=10&_summary=data`,
-    );
-
-    if (encountersResponse.ok()) {
-      const data = await encountersResponse.json();
-      const entries = data.entry || [];
-      encounterFound = entries.some((entry: any) => entry.resource?.id === encounter.uuid);
-
-      if (encounterFound) {
-        break;
-      }
-    }
-
-    if (attempt < maxAttempts - 1) {
-      // eslint-disable-next-line playwright/no-wait-for-timeout
-      await page.waitForTimeout(delayMs);
-    }
-  }
-
-  if (!encounterFound) {
-    throw new Error(
-      `Encounter ${encounter.uuid} with medication request not found in FHIR API after ${maxAttempts} attempts.`,
-    );
-  }
+  // Wait for OpenMRS to process the dispense and make it available
+  // eslint-disable-next-line playwright/no-wait-for-timeout
+  await page.waitForTimeout(10000);
 });
 
 test('Edit medication dispense', async ({ page }) => {
