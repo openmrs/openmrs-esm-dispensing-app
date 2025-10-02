@@ -2,13 +2,13 @@ import { expect } from '@playwright/test';
 import { type Order } from '@openmrs/esm-patient-common-lib';
 import { type Visit } from '@openmrs/esm-framework';
 import {
-  generateRandomDrugOrder,
-  deleteDrugOrder,
   createEncounter,
+  deleteDrugOrder,
   deleteEncounter,
+  endVisit,
+  generateRandomDrugOrder,
   getProvider,
   startVisit,
-  endVisit,
 } from '../commands';
 import { type Encounter, type Provider } from '../commands/types';
 import { test } from '../core';
@@ -19,11 +19,15 @@ let drugOrder: Order;
 let encounter: Encounter;
 let orderer: Provider;
 
-test.beforeEach(async ({ api, patient }) => {
+test.beforeEach(async ({ api, page, patient }) => {
   visit = await startVisit(api, patient.uuid);
   orderer = await getProvider(api);
   encounter = await createEncounter(api, patient.uuid, orderer.uuid, visit);
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
+
+  // Wait for OpenMRS to process the order and make it available
+  // eslint-disable-next-line playwright/no-wait-for-timeout
+  await page.waitForTimeout(20000);
 });
 
 test('Pause prescription', async ({ page, patient }) => {
@@ -31,6 +35,9 @@ test('Pause prescription', async ({ page, patient }) => {
 
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
+
+    // Wait for the page to load and data to be available
+    await page.waitForLoadState('domcontentloaded');
   });
 
   await test.step('And I click on the Active prescriptions tab', async () => {
@@ -38,19 +45,19 @@ test('Pause prescription', async ({ page, patient }) => {
     await expect(page.getByRole('tab', { name: 'Active prescriptions' })).toHaveAttribute('aria-selected', 'true');
   });
 
-  await test.step('And I expand a table row in the prescriptions table corresponding to an active prescription', async () => {
-    const rowText = new RegExp(`Expand current row`);
-    await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
+  await test.step('When I expand an active prescription', async () => {
+    const rowText = new RegExp('Expand current row');
+    await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click({ timeout: 15000 });
     await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
   });
 
-  await test.step('Then I click the Pause button on the prescription tile', async () => {
+  await test.step('And I click the Pause button', async () => {
     await page.getByRole('button', { name: 'Pause' }).click();
     await expect(page.getByText(/pause prescription/i)).toBeVisible();
     await expect(page.getByText(/reason for pause/i)).toBeVisible();
   });
 
-  await test.step('And I select "Allergy" as the reason for pausing the prescription and then submit the form', async () => {
+  await test.step('And I select Allergy as the reason and submit the form', async () => {
     await page.getByRole('button', { name: 'Open', exact: true }).click();
     await page.getByText('Allergy', { exact: true }).click();
     await page.locator('form').getByRole('button', { name: 'Pause' }).click();

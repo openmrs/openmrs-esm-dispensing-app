@@ -9,6 +9,23 @@
   ],
   "overrides": [
     {
+      "files": ["**/*.test.tsx"],
+      "extends": ["plugin:testing-library/react"]
+    },
+    {
+      "files": ["e2e/**/*.spec.ts"],
+      "extends": ["plugin:playwright/recommended"],
+      "rules": {
+        "testing-library/prefer-screen-queries": "off"
+      }
+    },
+    {
+      "files": ["e2e/**/*.ts"],
+      "rules": {
+        "react-hooks/rules-of-hooks": "off"
+      }
+    },
+    {
       "files": ["e2e/**/*.ts"],
       "rules": {
         "react-hooks/rules-of-hooks": "off"
