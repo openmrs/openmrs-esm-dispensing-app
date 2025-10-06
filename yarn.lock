@@ -3171,8 +3171,8 @@ __metadata:
     "@testing-library/react": "npm:^13.4.0"
     "@testing-library/user-event": "npm:^14.5.2"
     "@types/jest": "npm:^28.1.4"
-    "@types/react": "npm:^18.0.14"
-    "@types/react-dom": "npm:^18.0.5"
+    "@types/react": "npm:^18.3.21"
+    "@types/react-dom": "npm:^18.3.0"
     "@types/react-router": "npm:^5.1.20"
     "@types/react-router-dom": "npm:^5.1.7"
     "@types/webpack-env": "npm:^1.16.0"
@@ -3196,8 +3196,8 @@ __metadata:
     lodash-es: "npm:^4.17.21"
     openmrs: "npm:next"
     prettier: "npm:^3.2.5"
-    react: "npm:^18.2.0"
-    react-dom: "npm:^18.2.0"
+    react: "npm:^18.3.1"
+    react-dom: "npm:^18.3.1"
     react-i18next: "npm:^11.7.0"
     react-router-dom: "npm:^6.3.0"
     react-to-print: "npm:^2.14.13"
@@ -6423,12 +6423,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18.0.0, @types/react-dom@npm:^18.0.5":
+"@types/react-dom@npm:^18.0.0":
   version: 18.0.6
   resolution: "@types/react-dom@npm:18.0.6"
   dependencies:
     "@types/react": "npm:*"
   checksum: 10/eccb09106d04f0a1139dea81f8103a1d47d9d96be9ad7bac7a0e9ffd7eb8bee5388a9af9471763110c38cbedab825eec6146aefd2b30f5b98f84572a6f81b7ca
+  languageName: node
+  linkType: hard
+
+"@types/react-dom@npm:^18.3.0":
+  version: 18.3.7
+  resolution: "@types/react-dom@npm:18.3.7"
+  peerDependencies:
+    "@types/react": ^18.0.0
+  checksum: 10/317569219366d487a3103ba1e5e47154e95a002915fdcf73a44162c48fe49c3a57fcf7f57fc6979e70d447112681e6b13c6c3c1df289db8b544df4aab2d318f3
   languageName: node
   linkType: hard
 
@@ -6453,7 +6462,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^18.0.14":
+"@types/react@npm:*":
   version: 18.0.17
   resolution: "@types/react@npm:18.0.17"
   dependencies:
@@ -6461,6 +6470,16 @@ __metadata:
     "@types/scheduler": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 10/20f50b187fedfb2b71f698fe58699db06c15bc10326772e5bfcd1f8dc6df2d8920eb1d4cc6cf007bf390b65b5d0f76daa532e618c8afa6ac5394adb8c5005218
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18.3.21":
+  version: 18.3.25
+  resolution: "@types/react@npm:18.3.25"
+  dependencies:
+    "@types/prop-types": "npm:*"
+    csstype: "npm:^3.0.2"
+  checksum: 10/1b806cc90207558bd96384f2a74e8a457c6211bd71b22d74ed7efb745e4e1b4fe7aea59eb906b8cf96571f9e0ab4fdb89e00395a082a361cfd7a8baf50bcb9c1
   languageName: node
   linkType: hard
 
@@ -15700,7 +15719,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.2.0, react-dom@npm:^18.3.1":
+"react-dom@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:
@@ -15849,7 +15868,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^18.2.0, react@npm:^18.3.1":
+"react@npm:^18.3.1":
   version: 18.3.1
   resolution: "react@npm:18.3.1"
   dependencies:
