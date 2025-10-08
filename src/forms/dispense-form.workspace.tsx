@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Checkbox, Form, FormLabel, InlineLoading } from '@carbon/react';
 import {
@@ -61,9 +61,6 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
 
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
-
-  // whether or not the form is valid and ready to submit
-  const [isValid, setIsValid] = useState(false);
 
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -175,8 +172,16 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     }
   };
 
-  const checkIsValid = () => {
-    if (
+  const updateMedicationDispense = useCallback((medicationDispenseUpdate: Partial<MedicationDispense>) => {
+    setMedicationDispensePayload((prevState) => ({
+      ...prevState,
+      ...medicationDispenseUpdate,
+    }));
+  }, []);
+
+  // whether or not the form is valid and ready to submit
+  const isValid = useMemo(() => {
+    return (
       medicationDispensePayload &&
       medicationDispensePayload.performer &&
       medicationDispensePayload.performer[0]?.actor.reference &&
@@ -190,18 +195,11 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
       (!medicationDispensePayload.substitution.wasSubstituted ||
         (medicationDispensePayload.substitution.reason[0]?.coding[0].code &&
           medicationDispensePayload.substitution.type?.coding[0].code))
-    ) {
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-    }
-  };
+    );
+  }, [medicationDispensePayload, quantityRemaining]);
 
   // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
-
-  // check is valid on any changes
-  useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining, inventoryItem]);
 
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
 
@@ -240,7 +238,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             <div>
               <MedicationDispenseReview
                 medicationDispense={medicationDispensePayload}
-                updateMedicationDispense={setMedicationDispensePayload}
+                updateMedicationDispense={updateMedicationDispense}
                 quantityRemaining={quantityRemaining}
                 quantityDispensed={quantityDispensed}
               />

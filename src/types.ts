@@ -451,7 +451,7 @@ export interface PrescriptionsTableRow {
 
 export interface Quantity {
   value: number;
-  unit: string;
+  unit?: string;
   code: string;
   system?: string;
 }

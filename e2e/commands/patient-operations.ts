@@ -105,5 +105,5 @@ export const getPatient = async (api: APIRequestContext, uuid: string): Promise<
 };
 
 export const deletePatient = async (api: APIRequestContext, uuid: string) => {
-  await api.delete(`patient/${uuid}`, { data: {} });
+  await api.delete(`patient/${uuid}`);
 };
