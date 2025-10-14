@@ -166,16 +166,18 @@ export function initiateMedicationDispenseBody(
               ],
         },
       ],
-      substitution: {
-        wasSubstituted: false,
-        reason: [
-          {
-            coding: [{ code: null }],
-          },
-        ],
-        type: { coding: [{ code: null }] },
-      },
+      substitution: blankSubstitution,
     };
   }
   return medicationDispense;
 }
+
+export const blankSubstitution = {
+  wasSubstituted: false,
+  reason: [
+    {
+      coding: [{ code: null }],
+    },
+  ],
+  type: { coding: [{ code: null }] },
+};

@@ -13,7 +13,7 @@ import {
 } from '@openmrs/esm-framework';
 import { saveMedicationDispense, useReasonForPauseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
-import { getUuidFromReference, revalidate } from '../utils';
+import { getUuidFromReference, markEncounterAsStale, revalidate } from '../utils';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import styles from './forms.scss';
@@ -71,6 +71,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
+      markEncounterAsStale(encounterUuid);
       saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.on_hold, abortController)
         .then((response) => {
           // only update request status when added a new dispense event, not updating

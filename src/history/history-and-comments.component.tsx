@@ -34,6 +34,7 @@ import {
   revalidate,
   sortMedicationDispensesByWhenHandedOver,
   computeTotalQuantityDispensed,
+  markEncounterAsStale,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 
@@ -125,7 +126,7 @@ const HistoryAndComments: React.FC<{
     } else if (medicationDispense.status === MedicationDispenseStatus.on_hold) {
       return t('editPauseRecord', 'Edit Pause Record');
     } else if (medicationDispense.status === MedicationDispenseStatus.declined) {
-      return t('editCloseeRecord', 'Edit Close Record');
+      return t('editCloseRecord', 'Edit Close Record');
     }
   };
 
@@ -222,6 +223,7 @@ const HistoryAndComments: React.FC<{
       config.dispenseBehavior.restrictTotalQuantityDispensed,
     );
 
+    markEncounterAsStale(encounterUuid);
     deleteMedicationDispense(medicationDispense.id)
       .then(() => {
         showSnackbar({

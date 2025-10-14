@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, FormLabel, InlineLoading } from '@carbon/react';
+import { Button, Checkbox, Form, FormLabel, InlineLoading } from '@carbon/react';
 import {
   type DefaultWorkspaceProps,
   ExtensionSlot,
@@ -14,11 +14,13 @@ import {
   MedicationDispenseStatus,
   type MedicationRequestBundle,
   type InventoryItem,
+  MedicationRequestFulfillerStatus,
 } from '../types';
 import {
   computeNewFulfillerStatusAfterDispenseEvent,
   getFulfillerStatus,
   getUuidFromReference,
+  markEncounterAsStale,
   revalidate,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
@@ -60,20 +62,28 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   // Keep track of medication dispense payload
   const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
 
-  // whether or not the form is valid and ready to submit
-  const [isValid, setIsValid] = useState(false);
-
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [shouldCompleteOrder, setShouldCompleteOrder] = useState(false);
 
   // Submit medication dispense form
   const handleSubmit = () => {
     if (!isSubmitting) {
       setIsSubmitting(true);
       const abortController = new AbortController();
+      markEncounterAsStale(encounterUuid);
       saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
         .then((response) => {
           if (response.ok) {
+            if (config.completeOrderWithThisDispense && shouldCompleteOrder) {
+              return updateMedicationRequestFulfillerStatus(
+                getUuidFromReference(
+                  medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
+                ),
+                MedicationRequestFulfillerStatus.completed,
+              ).then(() => response);
+            }
             const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
               medicationDispensePayload,
               medicationRequestBundle,
@@ -85,7 +95,7 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                   medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
                 ),
                 newFulfillerStatus,
-              );
+              ).then(() => response);
             }
           }
           return response;
@@ -119,7 +129,18 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
           return response;
         })
         .then(
-          ({ status }) => {
+          (response) => {
+            const { status } = response;
+            if (config.completeOrderWithThisDispense && shouldCompleteOrder && response?.data?.status === 'completed') {
+              showSnackbar({
+                title: t('prescriptionCompleted', 'Prescription completed'),
+                kind: 'success',
+                subtitle: t(
+                  'prescriptionCompletedSuccessfully',
+                  'Medication dispensed and prescription marked as completed',
+                ),
+              });
+            }
             if (status === 201 || status === 200) {
               revalidate(encounterUuid);
               showSnackbar({
@@ -127,10 +148,13 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                 subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
                 title: t(
                   mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
-                  mode === 'enter' ? 'Medication successfully dispensed.' : 'Dispense record successfully updated.',
+                  mode === 'enter'
+                    ? 'Medication successfully dispensed.'
+                    : 'Medication dispense record successfully updated.',
                 ),
               });
               closeWorkspaceWithSavedChanges();
+              setIsSubmitting(false);
             }
           },
           (error) => {
@@ -148,8 +172,16 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
     }
   };
 
-  const checkIsValid = () => {
-    if (
+  const updateMedicationDispense = useCallback((medicationDispenseUpdate: Partial<MedicationDispense>) => {
+    setMedicationDispensePayload((prevState) => ({
+      ...prevState,
+      ...medicationDispenseUpdate,
+    }));
+  }, []);
+
+  // whether or not the form is valid and ready to submit
+  const isValid = useMemo(() => {
+    return (
       medicationDispensePayload &&
       medicationDispensePayload.performer &&
       medicationDispensePayload.performer[0]?.actor.reference &&
@@ -163,18 +195,11 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
       (!medicationDispensePayload.substitution.wasSubstituted ||
         (medicationDispensePayload.substitution.reason[0]?.coding[0].code &&
           medicationDispensePayload.substitution.type?.coding[0].code))
-    ) {
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-    }
-  };
+    );
+  }, [medicationDispensePayload, quantityRemaining]);
 
   // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
-
-  // check is valid on any changes
-  useEffect(checkIsValid, [medicationDispensePayload, quantityRemaining, inventoryItem]);
 
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
 
@@ -213,10 +238,18 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
             <div>
               <MedicationDispenseReview
                 medicationDispense={medicationDispensePayload}
-                updateMedicationDispense={setMedicationDispensePayload}
+                updateMedicationDispense={updateMedicationDispense}
                 quantityRemaining={quantityRemaining}
                 quantityDispensed={quantityDispensed}
               />
+              {config.completeOrderWithThisDispense && mode === 'enter' && !medicationDispense?.id && (
+                <Checkbox
+                  id="complete-order-with-this-dispense"
+                  labelText={t('completeOrderWithThisDispense', 'Complete order with this dispense')}
+                  checked={shouldCompleteOrder}
+                  onChange={(_, { checked }) => setShouldCompleteOrder(checked)}
+                />
+              )}
               {config.enableStockDispense && (
                 <StockDispense
                   inventoryItem={inventoryItem}
