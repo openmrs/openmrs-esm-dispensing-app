@@ -5,10 +5,12 @@ import { useConfig } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
 import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';
+import FillPrescriptionButton from '../fill-prescription/fill-prescription-button.comonent';
 
 export default function DispensingDashboard() {
   const config = useConfig<PharmacyConfig>();
   const { t } = useTranslation();
+
   if (config.dispenseBehavior.restrictTotalQuantityDispensed && config.dispenseBehavior.allowModifyingPrescription) {
     return (
       <div className={`omrs-main-content`}>
@@ -26,6 +28,7 @@ export default function DispensingDashboard() {
       <div className={`omrs-main-content`}>
         <PharmacyHeader />
         {/* <DispensingTiles /> */}
+        <FillPrescriptionButton />
         <PrescriptionTabLists />
       </div>
     );
