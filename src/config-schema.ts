@@ -130,11 +130,6 @@ export const configSchema = {
     _description: 'Enable or disable the "Complete order with this dispense" checkbox on the dispense form.',
     _default: false,
   },
-  allowSelectingPrescribingClinician: {
-    _type: Type.Boolean,
-    _description:
-      'If true, allows user to select the prescribing provider when ordering medications from Fill Prescription form. (Otherwise, the prescribing provider always defaults to the current user.) The `prescriberProviderRoles` config in esm-patient-medications-app must be set for this to work properly.',
-  },
 };
 
 export interface PharmacyConfig {
@@ -181,5 +176,4 @@ export interface PharmacyConfig {
   completeOrderWithThisDispense: boolean;
   validateBatch: boolean;
   leftNavMode: 'normal' | 'collapsed' | 'hidden';
-  allowSelectingPrescribingClinician: boolean;
 }

@@ -37,7 +37,6 @@ const pharmacyConfig: PharmacyConfig = {
   completeOrderWithThisDispense: false,
   validateBatch: false,
   leftNavMode: 'collapsed',
-  allowSelectingPrescribingClinician: false,
 };
 
 describe('Location Resource tests', () => {
