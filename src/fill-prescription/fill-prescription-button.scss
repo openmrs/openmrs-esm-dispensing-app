@@ -1,0 +1,8 @@
+@use '@carbon/layout';
+
+.buttonContainer {
+  display: flex;
+  flex-direction: row-reverse;
+  background-color: #fff;
+  margin-inline-end: layout.$spacing-04;
+}
