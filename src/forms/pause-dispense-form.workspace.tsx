@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, ComboBox, Form, InlineLoading } from '@carbon/react';
 import {
-  type DefaultWorkspaceProps,
   ExtensionSlot,
   getCoreTranslation,
   ResponsiveWrapper,
   showSnackbar,
   useConfig,
-  useLayoutType,
   usePatient,
+  Workspace2,
+  type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
 import { saveMedicationDispense, useReasonForPauseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
@@ -18,24 +18,19 @@ import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFul
 import { type PharmacyConfig } from '../config-schema';
 import styles from './forms.scss';
 
-type PauseDispenseFormProps = DefaultWorkspaceProps & {
+type PauseDispenseFormProps = {
   medicationDispense: MedicationDispense;
   mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
 };
 
-const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
-  medicationDispense,
-  mode,
-  patientUuid,
-  encounterUuid,
+const PauseDispenseForm: React.FC<Workspace2DefinitionProps<PauseDispenseFormProps, {}, {}>> = ({
+  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid },
   closeWorkspace,
-  closeWorkspaceWithSavedChanges,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
-  const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
 
   // Keep track of medication dispense payload
@@ -96,7 +91,7 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
                 mode === 'enter' ? 'Medication dispense paused.' : 'Dispense record successfully updated.',
               ),
             });
-            closeWorkspaceWithSavedChanges();
+            closeWorkspace({ discardUnsavedChanges: true });
           }
         })
         .catch((error) => {
@@ -138,55 +133,62 @@ const PauseDispenseForm: React.FC<PauseDispenseFormProps> = ({
   }, [patient, patientUuid]);
 
   return (
-    <Form className={styles.formWrapper}>
-      <div>
-        {isLoading && (
-          <InlineLoading
-            className={styles.bannerLoading}
-            iconDescription="Loading"
-            description="Loading banner"
-            status="active"
-          />
-        )}
-        {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
-        <section className={styles.formGroup}>
-          <ResponsiveWrapper>
-            <ComboBox
-              id="reasonForPause"
-              items={reasonsForPause}
-              titleText={t('reasonForPause', 'Reason for pause')}
-              itemToString={(item) => item?.text}
-              initialSelectedItem={{
-                id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
-                text: medicationDispense.statusReasonCodeableConcept?.text,
-              }}
-              onChange={({ selectedItem }) => {
-                setMedicationDispensePayload({
-                  ...medicationDispensePayload,
-                  statusReasonCodeableConcept: {
-                    coding: [
-                      {
-                        code: selectedItem?.id,
-                      },
-                    ],
-                  },
-                });
-              }}
+    <Workspace2 title={t('pausePrescription', 'Pause prescription')}>
+      <Form className={styles.formWrapper}>
+        <div>
+          {isLoading && (
+            <InlineLoading
+              className={styles.bannerLoading}
+              iconDescription="Loading"
+              description="Loading banner"
+              status="active"
             />
-          </ResponsiveWrapper>
+          )}
+          {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
+          <section className={styles.formGroup}>
+            <ResponsiveWrapper>
+              <ComboBox
+                id="reasonForPause"
+                items={reasonsForPause}
+                titleText={t('reasonForPause', 'Reason for pause')}
+                itemToString={(item) => item?.text}
+                initialSelectedItem={{
+                  id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
+                  text: medicationDispense.statusReasonCodeableConcept?.text,
+                }}
+                onChange={({ selectedItem }) => {
+                  setMedicationDispensePayload({
+                    ...medicationDispensePayload,
+                    statusReasonCodeableConcept: {
+                      coding: [
+                        {
+                          code: selectedItem?.id,
+                        },
+                      ],
+                    },
+                  });
+                }}
+              />
+            </ResponsiveWrapper>
+          </section>
+        </div>
+        <section className={styles.buttonGroup}>
+          <Button
+            disabled={isSubmitting}
+            onClick={() => {
+              closeWorkspace();
+            }}
+            kind="secondary">
+            {getCoreTranslation('cancel', 'Cancel')}
+          </Button>
+          <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
+            {/* t('pause', 'Pause')
+            t('saveChanges', 'Save changes') */}
+            {t(mode === 'enter' ? 'pause' : 'saveChanges', mode === 'enter' ? 'Pause' : 'Save changes')}
+          </Button>
         </section>
-      </div>
-      <section className={styles.buttonGroup}>
-        <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
-          {getCoreTranslation('cancel', 'Cancel')}
-        </Button>
-        <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
-          {/* t('pause', 'Pause')
-          t('saveChanges', 'Save changes') */}
-          {t(mode === 'enter' ? 'pause' : 'saveChanges', mode === 'enter' ? 'Pause' : 'Save changes')}
-        </Button>
-      </section>
-    </Form>
+      </Form>
+    </Workspace2>
   );
 };
 

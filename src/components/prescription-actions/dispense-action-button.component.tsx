@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { launchWorkspace, type Session } from '@openmrs/esm-framework';
+import { launchWorkspace2, type Session } from '@openmrs/esm-framework';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
 import { type Provider, type MedicationRequestBundle } from '../../types';
 
@@ -40,7 +40,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   };
 
   const handleLaunchWorkspace = () => {
-    launchWorkspace('dispense-workspace', dispenseWorkspaceProps);
+    launchWorkspace2('dispense-workspace', dispenseWorkspaceProps);
   };
 
   if (!dispensable) {

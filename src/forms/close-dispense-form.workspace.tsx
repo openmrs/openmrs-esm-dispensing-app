@@ -8,8 +8,9 @@ import {
   ResponsiveWrapper,
   showSnackbar,
   useConfig,
-  useLayoutType,
   usePatient,
+  Workspace2,
+  type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
 import { saveMedicationDispense, useReasonForCloseValueSet } from '../medication-dispense/medication-dispense.resource';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
@@ -25,17 +26,12 @@ type CloseDispenseFormProps = DefaultWorkspaceProps & {
   encounterUuid: string;
 };
 
-const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
-  medicationDispense,
-  mode,
-  patientUuid,
-  encounterUuid,
+const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormProps, {}, {}>> = ({
+  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid },
   closeWorkspace,
-  closeWorkspaceWithSavedChanges,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
-  const isTablet = useLayoutType() === 'tablet';
   const { patient, isLoading } = usePatient(patientUuid);
 
   // Keep track of medication dispense payload
@@ -96,7 +92,7 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
                 mode === 'enter' ? 'Medication dispense closed.' : 'Dispense record successfully updated.',
               ),
             });
-            closeWorkspaceWithSavedChanges();
+            closeWorkspace({ discardUnsavedChanges: true });
           }
         })
         .catch((error) => {
@@ -138,53 +134,60 @@ const CloseDispenseForm: React.FC<CloseDispenseFormProps> = ({
   }, [patient, patientUuid]);
 
   return (
-    <Form className={styles.formWrapper}>
-      <div>
-        {isLoading && (
-          <InlineLoading
-            className={styles.bannerLoading}
-            iconDescription="Loading"
-            description="Loading banner"
-            status="active"
-          />
-        )}
-        {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
-        <section className={styles.formGroup}>
-          <ResponsiveWrapper>
-            <ComboBox
-              id="reasonForPause"
-              items={reasonsForClose}
-              titleText={t('reasonForClose', 'Reason for close')}
-              itemToString={(item) => item?.text}
-              initialSelectedItem={{
-                id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
-                text: medicationDispense.statusReasonCodeableConcept?.text,
-              }}
-              onChange={({ selectedItem }) => {
-                setMedicationDispensePayload({
-                  ...medicationDispensePayload,
-                  statusReasonCodeableConcept: {
-                    coding: [
-                      {
-                        code: selectedItem?.id,
-                      },
-                    ],
-                  },
-                });
-              }}
+    <Workspace2 title={t('closePrescription', 'Close prescription')}>
+      <Form className={styles.formWrapper}>
+        <div>
+          {isLoading && (
+            <InlineLoading
+              className={styles.bannerLoading}
+              iconDescription="Loading"
+              description="Loading banner"
+              status="active"
             />
-          </ResponsiveWrapper>
+          )}
+          {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
+          <section className={styles.formGroup}>
+            <ResponsiveWrapper>
+              <ComboBox
+                id="reasonForPause"
+                items={reasonsForClose}
+                titleText={t('reasonForClose', 'Reason for close')}
+                itemToString={(item) => item?.text}
+                initialSelectedItem={{
+                  id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
+                  text: medicationDispense.statusReasonCodeableConcept?.text,
+                }}
+                onChange={({ selectedItem }) => {
+                  setMedicationDispensePayload({
+                    ...medicationDispensePayload,
+                    statusReasonCodeableConcept: {
+                      coding: [
+                        {
+                          code: selectedItem?.id,
+                        },
+                      ],
+                    },
+                  });
+                }}
+              />
+            </ResponsiveWrapper>
+          </section>
+        </div>
+        <section className={styles.buttonGroup}>
+          <Button
+            disabled={isSubmitting}
+            onClick={() => {
+              closeWorkspace();
+            }}
+            kind="secondary">
+            {getCoreTranslation('cancel', 'Cancel')}
+          </Button>
+          <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
+            {t(mode === 'enter' ? 'close' : 'saveChanges', mode === 'enter' ? 'Close' : 'Save changes')}
+          </Button>
         </section>
-      </div>
-      <section className={styles.buttonGroup}>
-        <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
-          {getCoreTranslation('cancel', 'Cancel')}
-        </Button>
-        <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
-          {t(mode === 'enter' ? 'close' : 'saveChanges', mode === 'enter' ? 'Close' : 'Save changes')}
-        </Button>
-      </section>
-    </Form>
+      </Form>
+    </Workspace2>
   );
 };
 
