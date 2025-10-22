@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, ComboBox, Form, InlineLoading } from '@carbon/react';
 import {
-  type DefaultWorkspaceProps,
   ExtensionSlot,
   getCoreTranslation,
   ResponsiveWrapper,
@@ -19,15 +18,16 @@ import { type PharmacyConfig } from '../config-schema';
 import { getUuidFromReference, markEncounterAsStale, revalidate } from '../utils';
 import styles from './forms.scss';
 
-type CloseDispenseFormProps = DefaultWorkspaceProps & {
+type CloseDispenseFormProps = {
   medicationDispense: MedicationDispense;
   mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
+  customWorkspaceTitle?: string;
 };
 
 const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormProps, {}, {}>> = ({
-  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid },
+  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid, customWorkspaceTitle },
   closeWorkspace,
 }) => {
   const { t } = useTranslation();
@@ -134,7 +134,7 @@ const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormPro
   }, [patient, patientUuid]);
 
   return (
-    <Workspace2 title={t('closePrescription', 'Close prescription')}>
+    <Workspace2 title={customWorkspaceTitle ?? t('closePrescription', 'Close prescription')}>
       <Form className={styles.formWrapper}>
         <div>
           {isLoading && (

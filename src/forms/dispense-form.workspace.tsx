@@ -40,6 +40,7 @@ type DispenseFormProps = {
   encounterUuid: string;
   quantityRemaining: number;
   quantityDispensed: number;
+  customWorkspaceTitle?: string;
 };
 
 const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}>> = ({
@@ -51,6 +52,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
     encounterUuid,
     quantityRemaining,
     quantityDispensed,
+    customWorkspaceTitle,
   },
   closeWorkspace,
 }) => {
@@ -216,7 +218,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   }, [patient, patientUuid]);
 
   return (
-    <Workspace2 title={t('dispensePrescription', 'Dispense prescription')}>
+    <Workspace2 title={customWorkspaceTitle ?? t('dispensePrescription', 'Dispense prescription')}>
       <Form className={styles.formWrapper}>
         <div>
           {isLoading && (

@@ -23,10 +23,11 @@ type PauseDispenseFormProps = {
   mode: 'enter' | 'edit';
   patientUuid?: string;
   encounterUuid: string;
+  customWorkspaceTitle?: string;
 };
 
 const PauseDispenseForm: React.FC<Workspace2DefinitionProps<PauseDispenseFormProps, {}, {}>> = ({
-  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid },
+  workspaceProps: { medicationDispense, mode, patientUuid, encounterUuid, customWorkspaceTitle },
   closeWorkspace,
 }) => {
   const { t } = useTranslation();
@@ -133,7 +134,7 @@ const PauseDispenseForm: React.FC<Workspace2DefinitionProps<PauseDispenseFormPro
   }, [patient, patientUuid]);
 
   return (
-    <Workspace2 title={t('pausePrescription', 'Pause prescription')}>
+    <Workspace2 title={customWorkspaceTitle ?? t('pausePrescription', 'Pause prescription')}>
       <Form className={styles.formWrapper}>
         <div>
           {isLoading && (
