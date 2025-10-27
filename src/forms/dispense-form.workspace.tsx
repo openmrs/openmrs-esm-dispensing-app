@@ -41,6 +41,7 @@ type DispenseFormProps = {
   quantityRemaining: number;
   quantityDispensed: number;
   customWorkspaceTitle?: string;
+  onWorkspaceClosed?(): void;
 };
 
 const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}>> = ({
@@ -53,6 +54,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
     quantityRemaining,
     quantityDispensed,
     customWorkspaceTitle,
+    onWorkspaceClosed,
   },
   closeWorkspace,
 }) => {
@@ -159,6 +161,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
               });
               closeWorkspace({ discardUnsavedChanges: true });
               setIsSubmitting(false);
+              onWorkspaceClosed?.();
             }
           },
           (error) => {
@@ -271,6 +274,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
             disabled={isSubmitting}
             onClick={() => {
               closeWorkspace();
+              onWorkspaceClosed?.();
             }}
             kind="secondary">
             {getCoreTranslation('cancel', 'Cancel')}
