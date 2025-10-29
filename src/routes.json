@@ -110,7 +110,7 @@
     },
     {
       "name": "label-print-preview-modal",
-      "component": "printLabelPreviewModal"
+      "component": "labelPrintPreviewModal"
     },
     {
       "name": "delete-confirm-modal",

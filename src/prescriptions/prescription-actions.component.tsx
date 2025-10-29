@@ -15,7 +15,7 @@ const PrescriptionsActionsFooter: React.FC<PrescriptionsActionsFooterProps> = ({
       <div className={styles.actionCluster}>
         {/* Left buttons */}
         <PrescriptionPrintAction encounterUuid={encounterUuid} patientUuid={patientUuid} />
-        <LabelPrintAction encounterUuid={encounterUuid} patientUuid={patientUuid} />
+        <LabelPrintAction encounterUuid={encounterUuid} />
       </div>
 
       <div className={styles.actionCluster}>{/* Right buttons */}</div>

@@ -60,12 +60,12 @@ const LabelPrintPreviewModal: React.FC<LabelPrintPreviewModalProps> = ({ onClose
           <div className={styles.printoutSelectorRow}>
             <PrintableLabelSelector
               medicationRequests={medicationRequestBundles}
-              excludedPrescription={excludedPrescriptions}
+              excludedPrescriptions={excludedPrescriptions}
               onExcludedPrescriptionChange={setExcludedPrescriptions}
             />
             <div ref={componentRef}>
               <LabelPrintout
-                excludedPrescription={excludedPrescriptions}
+                excludedPrescriptions={excludedPrescriptions}
                 medicationRequests={medicationRequestBundles}
               />
             </div>

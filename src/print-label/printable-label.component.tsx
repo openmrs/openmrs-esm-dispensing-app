@@ -6,32 +6,36 @@ import { getDosageInstruction, getMedicationDisplay, getMedicationReferenceOrCod
 
 type PrintableLabelSelectorProps = {
   medicationRequests: Array<MedicationRequestBundle>;
-  excludedPrescription: Array<string>;
+  excludedPrescriptions: Array<string>;
   onExcludedPrescriptionChange: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 const PrintableLabelSelector: React.FC<PrintableLabelSelectorProps> = ({
   medicationRequests,
   onExcludedPrescriptionChange,
-  excludedPrescription,
+  excludedPrescriptions,
 }) => {
   const { t } = useTranslation();
 
   const handleChange = useCallback(
     (checked: boolean, medicationEventId: string) => {
       if (checked) {
-        onExcludedPrescriptionChange(excludedPrescription.filter((id) => id !== medicationEventId));
+        onExcludedPrescriptionChange(excludedPrescriptions.filter((id) => id !== medicationEventId));
       } else {
-        onExcludedPrescriptionChange([...excludedPrescription, medicationEventId]);
+        onExcludedPrescriptionChange([...excludedPrescriptions, medicationEventId]);
       }
     },
-    [onExcludedPrescriptionChange, excludedPrescription],
+    [onExcludedPrescriptionChange, excludedPrescriptions],
   );
 
   return (
     <div>
       <p>
-        <strong>{t('selectPrescriptions', 'Check prescriptions to print')}</strong>
+        <fieldset>
+          <legend>
+            <strong>{t('selectPrescriptionsForLabel', 'Check prescriptions to include on label')}</strong>
+          </legend>
+        </fieldset>
       </p>
       {medicationRequests?.map((request) => {
         const medicationEvent = request.request;
@@ -43,7 +47,7 @@ const PrintableLabelSelector: React.FC<PrintableLabelSelectorProps> = ({
               <Checkbox
                 id={medicationEvent.id}
                 labelText={getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}
-                checked={!excludedPrescription.includes(medicationEvent.id)}
+                checked={!excludedPrescriptions.includes(medicationEvent.id)}
                 onChange={(_, { checked }) => handleChange(checked, medicationEvent.id)}
               />
             )}

@@ -6,19 +6,17 @@ import { showModal } from '@openmrs/esm-framework';
 
 type LabelPrintActionProps = {
   encounterUuid: string;
-  patientUuid: string;
 };
 
-const LabelPrintAction: React.FC<LabelPrintActionProps> = ({ encounterUuid, patientUuid }) => {
+const LabelPrintAction: React.FC<LabelPrintActionProps> = ({ encounterUuid }) => {
   const { t } = useTranslation();
 
   const handleClick = useCallback(() => {
     const dispose = showModal('label-print-preview-modal', {
       onClose: () => dispose(),
       encounterUuid,
-      patientUuid,
     });
-  }, [encounterUuid, patientUuid]);
+  }, [encounterUuid]);
 
   return (
     <Button renderIcon={Printer} iconDescription={t('print', 'Print')} onClick={handleClick} kind="ghost">

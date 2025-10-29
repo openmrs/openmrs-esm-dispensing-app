@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Layer, StructuredListBody, StructuredListCell, StructuredListRow, StructuredListWrapper } from '@carbon/react';
-import { formatDate, parseDate, useSession } from '@openmrs/esm-framework';
+import { formatDate, parseDate } from '@openmrs/esm-framework';
 import { type DosageInstruction, type MedicationRequestBundle, type Quantity } from '../types';
 import {
   getDosageInstruction,
@@ -14,33 +14,19 @@ import {
 import styles from './print-label.scss';
 
 type LabelPrintoutProps = {
-  excludedPrescription: Array<string>;
+  excludedPrescriptions: Array<string>;
   medicationRequests: Array<MedicationRequestBundle>;
 };
 
-const LabelPrintout: React.FC<LabelPrintoutProps> = ({ excludedPrescription, medicationRequests }) => {
+const LabelPrintout: React.FC<LabelPrintoutProps> = ({ excludedPrescriptions, medicationRequests }) => {
   const { t } = useTranslation();
-  const {
-    sessionLocation: { display: facilityName },
-  } = useSession();
   const patient = medicationRequests[0]?.request?.subject;
 
   const extractPatientName = (display: string) => (display.includes('(') ? display.split('(')[0] : display);
 
-  const requesters = useMemo(() => {
-    const uniqueRequesters = new Set<string>();
-    medicationRequests
-      ?.filter((req) => !excludedPrescription.includes(req.request.id))
-      ?.forEach((request) => {
-        const display = request.request?.requester?.display;
-        if (display) uniqueRequesters.add(display);
-      });
-    return uniqueRequesters;
-  }, [medicationRequests, excludedPrescription]);
-
   const filteredRequests = useMemo(
-    () => medicationRequests?.filter((req) => !excludedPrescription.includes(req.request.id)) || [],
-    [medicationRequests, excludedPrescription],
+    () => medicationRequests?.filter((req) => !excludedPrescriptions.includes(req.request.id)) || [],
+    [medicationRequests, excludedPrescriptions],
   );
 
   return (

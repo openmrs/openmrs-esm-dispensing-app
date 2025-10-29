@@ -45,7 +45,7 @@ export const dispenseWorkspace = getAsyncLifecycle(() => import('./forms/dispens
 export const pauseDispenseWorkspace = getAsyncLifecycle(() => import('./forms/pause-dispense-form.workspace'), options);
 
 export const printPrescriptionPreviewModal = getSyncLifecycle(PrescriptionPrintPreviewModal, options);
-export const printLabelPreviewModal = getSyncLifecycle(LabelPrintPreviewModal, options);
+export const labelPrintPreviewModal = getSyncLifecycle(LabelPrintPreviewModal, options);
 export const deleteConfirmModal = getAsyncLifecycle(() => import('./history/delete-confirm.modal'), options);
 
 export const patientDiagnoses = getAsyncLifecycle(() => import('./diagnoses/diagnoses.component'), options);

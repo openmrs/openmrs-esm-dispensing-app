@@ -33,19 +33,6 @@
   font-weight: bold;
 }
 
-.facilityName {
-  color: colors.$black;
-  text-align: end;
-  padding: layout.$spacing-05;
-  @include type.type-style('label-01');
-}
-
-.prescriber {
-  color: colors.$black;
-  padding: layout.$spacing-05;
-  @include type.type-style('label-01');
-}
-
 .printoutSelectorRow {
   display: flex;
   flex-direction: row;
@@ -57,10 +44,6 @@
 .patientName {
   text-transform: capitalize;
   text-align: center;
-}
-
-.printPreviewContainer {
-  background-color: colors.$white;
 }
 
 .prescriptionInfo {
