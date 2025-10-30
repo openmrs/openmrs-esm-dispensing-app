@@ -47,7 +47,9 @@
   "editRecord": "编辑记录",
   "error": "错误",
   "errorLoadingInventoryItems": "提取库存时出错",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "已过期",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "根据地点过滤",
   "finalDiagnoses": "Final Diagnoses",
   "for": "为",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "表列表",
   "today": "今日",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "查看",
   "visitFinalDiagnoses": "Visit final diagnoses"

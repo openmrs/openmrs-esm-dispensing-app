@@ -47,7 +47,9 @@
   "editRecord": "Editar Registo",
   "error": "Erro",
   "errorLoadingInventoryItems": "Error fetching inventory items",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "Expirado",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "Filtrar por local",
   "finalDiagnoses": "Final Diagnoses",
   "for": "for",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "Lista de Guia",
   "today": "Hoje",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "Visualizar",
   "visitFinalDiagnoses": "Visit final diagnoses"

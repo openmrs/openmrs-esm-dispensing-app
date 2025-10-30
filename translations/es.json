@@ -47,7 +47,9 @@
   "editRecord": "Editar Registro",
   "error": "Error",
   "errorLoadingInventoryItems": "Se produjo un error al cargar los elementos del inventario",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "Expirado",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "Filtrar por ubicación",
   "finalDiagnoses": "Diagnóstico Definitivo",
   "for": "para",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "Lista de Pestañas",
   "today": "Hoy",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "Ver",
   "visitFinalDiagnoses": "Diagnóstico Definitivo de la consulta"

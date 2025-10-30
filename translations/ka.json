@@ -47,7 +47,9 @@
   "editRecord": "ჩანაწერის ჩასწორება",
   "error": "შეცდომა",
   "errorLoadingInventoryItems": "ინვენტარის ელემენტების გამოთხოვის შეცდომა",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "ვადაგასულია",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "გაფილტვრა მდებარეობით",
   "finalDiagnoses": "საბოლოო დიაგნოზები",
   "for": "ვისთვის",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "ჩანართების სია",
   "today": "დღეს",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "ნახვა",
   "visitFinalDiagnoses": "ვიზიტის საბოლოო დიაგნოზები"

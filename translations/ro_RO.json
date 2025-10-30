@@ -47,7 +47,9 @@
   "editRecord": "Editează înregistrarea",
   "error": "Eroare",
   "errorLoadingInventoryItems": "Eroare la preluarea elementelor din stoc",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "Expirat",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "Filtrează după locație",
   "finalDiagnoses": "Diagnostice finale",
   "for": "pentru",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "Listă taburi",
   "today": "Astăzi",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "Vezi",
   "visitFinalDiagnoses": "Diagnostice finale vizită"
