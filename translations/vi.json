@@ -47,7 +47,9 @@
   "editRecord": "Chỉnh sửa bản ghi",
   "error": "Lỗi",
   "errorLoadingInventoryItems": "Error fetching inventory items",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "Hết hạn",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "Lọc theo vị trí",
   "finalDiagnoses": "Final Diagnoses",
   "for": "for",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "Danh sách thẻ",
   "today": "Hôm nay",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "Xem",
   "visitFinalDiagnoses": "Visit final diagnoses"

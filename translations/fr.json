@@ -47,7 +47,9 @@
   "editRecord": "Modifier",
   "error": "Erreur",
   "errorLoadingInventoryItems": "Erreur d'obtention des articles en stock",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "Périmé",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "Filtrer par localisation",
   "finalDiagnoses": "Diagnostics définitifs",
   "for": "pour",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "Liste des onglets",
   "today": "Aujourd’hui",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "Aperçu",
   "visitFinalDiagnoses": "Diagnostics définitifs de la visite"

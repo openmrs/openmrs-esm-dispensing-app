@@ -47,7 +47,9 @@
   "editRecord": "Edit Record",
   "error": "Error",
   "errorLoadingInventoryItems": "Error fetching inventory items",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "Expired",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "Filter by location",
   "finalDiagnoses": "Final Diagnoses",
   "for": "for",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "Tab List",
   "today": "Today",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "View",
   "visitFinalDiagnoses": "Visit final diagnoses"

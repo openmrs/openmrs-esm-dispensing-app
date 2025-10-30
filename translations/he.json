@@ -47,7 +47,9 @@
   "editRecord": "עריכת רשומה",
   "error": "שגיאה",
   "errorLoadingInventoryItems": "Error fetching inventory items",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "פג תוקף",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "סינון לפי מקום",
   "finalDiagnoses": "Final Diagnoses",
   "for": "for",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "Tab List",
   "today": "היום",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "תצוגה",
   "visitFinalDiagnoses": "Visit final diagnoses"

@@ -47,7 +47,9 @@
   "editRecord": "Edit Rekaman",
   "error": "Kesalahan",
   "errorLoadingInventoryItems": "Gagal mengambil item inventaris",
+  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "Kadaluarsa",
+  "fillPrescription": "Fill prescription",
   "filterByLocation": "Filter berdasarkan lokasi",
   "finalDiagnoses": "Diagnosis Akhir",
   "for": "untuk",
@@ -112,6 +114,7 @@
   "success": "Success",
   "tabList": "Daftar Tab",
   "today": "Hari ini",
+  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "Lihat",
   "visitFinalDiagnoses": "Diagnosis akhir kunjungan"
