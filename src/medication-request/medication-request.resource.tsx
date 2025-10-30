@@ -135,40 +135,11 @@ export function usePrescriptionDetails(encounterUuid: string, refreshInterval = 
   );
 
   const { medicationRequestBundles, prescriptionDate } = useMemo(() => {
-    const medicationRequestBundles: Array<MedicationRequestBundle> = [];
-    let prescriptionDate: Date;
     if (data) {
-      const results = data?.data.entry;
-
-      const encounter = results
-        ?.filter((entry) => entry?.resource?.resourceType == 'Encounter')
-        .map((entry) => entry.resource as Encounter);
-
-      if (encounter) {
-        // by definition of the request (search by encounter) there should be one and only one encounter
-        prescriptionDate = parseDate(encounter[0]?.period.start);
-
-        const medicationRequests = results
-          ?.filter((entry) => entry?.resource?.resourceType == 'MedicationRequest')
-          .map((entry) => entry.resource as MedicationRequest);
-
-        const medicationDispenses = results
-          ?.filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
-          .map((entry) => entry.resource as MedicationDispense)
-          .sort(sortMedicationDispensesByWhenHandedOver);
-
-        medicationRequests.every((medicationRequest) =>
-          medicationRequestBundles.push({
-            request: medicationRequest,
-            dispenses: getAssociatedMedicationDispenses(medicationRequest, medicationDispenses).sort(
-              sortMedicationDispensesByWhenHandedOver,
-            ),
-          }),
-        );
-      }
+      return medicationRequestResponseToPrescriptionDetails(data.data.entry);
+    } else {
+      return { medicationRequestBundles: [], prescriptionDate: null };
     }
-
-    return { medicationRequestBundles, prescriptionDate };
   }, [data]);
 
   return {
@@ -176,6 +147,55 @@ export function usePrescriptionDetails(encounterUuid: string, refreshInterval = 
     prescriptionDate,
     ...rest,
   };
+}
+
+/**
+ * fetches prescription details of a given encounter directly via openmrsFetch (instead of useSWR)
+ * @param encounterUuid
+ * @returns
+ */
+export async function getPrescriptionDetails(encounterUuid: string) {
+  const result = await openmrsFetch<MedicationRequestResponse>(getPrescriptionDetailsEndpoint(encounterUuid));
+  const {
+    data: { entry },
+  } = result;
+  return medicationRequestResponseToPrescriptionDetails(entry);
+}
+
+function medicationRequestResponseToPrescriptionDetails(
+  results: { resource: MedicationRequest | MedicationDispense }[],
+) {
+  const medicationRequestBundles: Array<MedicationRequestBundle> = [];
+  let prescriptionDate: Date;
+
+  const encounter = results
+    ?.filter((entry) => entry?.resource?.resourceType == 'Encounter')
+    .map((entry) => entry.resource as Encounter);
+
+  if (encounter) {
+    // by definition of the request (search by encounter) there should be one and only one encounter
+    prescriptionDate = parseDate(encounter[0]?.period.start);
+
+    const medicationRequests = results
+      ?.filter((entry) => entry?.resource?.resourceType == 'MedicationRequest')
+      .map((entry) => entry.resource as MedicationRequest);
+
+    const medicationDispenses = results
+      ?.filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
+      .map((entry) => entry.resource as MedicationDispense)
+      .sort(sortMedicationDispensesByWhenHandedOver);
+
+    medicationRequests.every((medicationRequest) =>
+      medicationRequestBundles.push({
+        request: medicationRequest,
+        dispenses: getAssociatedMedicationDispenses(medicationRequest, medicationDispenses).sort(
+          sortMedicationDispensesByWhenHandedOver,
+        ),
+      }),
+    );
+  }
+
+  return { medicationRequestBundles, prescriptionDate };
 }
 
 export function usePatientAllergies(patientUuid: string, refreshInterval) {
