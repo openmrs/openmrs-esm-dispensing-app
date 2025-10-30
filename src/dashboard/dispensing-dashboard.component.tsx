@@ -5,7 +5,7 @@ import { useConfig } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import { PharmacyHeader } from '../pharmacy-header/pharmacy-header.component';
 import PrescriptionTabLists from '../prescriptions/prescription-tab-lists.component';
-import FillPrescriptionButton from '../fill-prescription/fill-prescription-button.comonent';
+import FillPrescriptionButton from '../fill-prescription/fill-prescription-button.component';
 
 export default function DispensingDashboard() {
   const config = useConfig<PharmacyConfig>();
