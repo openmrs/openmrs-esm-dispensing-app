@@ -235,12 +235,9 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
           {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
           <section className={styles.formGroup}>
             <FormLabel>
-              {t(
-                config.dispenseBehavior.allowModifyingPrescription ? 'drugHelpText' : 'drugHelpTextNoEdit',
-                config.dispenseBehavior.allowModifyingPrescription
-                  ? 'You may edit the formulation and quantity dispensed here'
-                  : 'You may edit quantity dispensed here',
-              )}
+              {config.dispenseBehavior.allowModifyingPrescription
+                ? t('drugHelpText', 'You may edit the formulation and quantity dispensed here')
+                : t('drugHelpTextNoEdit', 'You may edit quantity dispensed here')}
             </FormLabel>
             {medicationDispensePayload ? (
               <div>
