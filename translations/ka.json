@@ -40,6 +40,8 @@
   "dose": "დოზა",
   "doseUnit": "დოზის ერთეული",
   "drugDispensingUnit": "განაწილების ერთეული",
+  "drugHelpText": "You may edit the formulation and quantity dispensed here",
+  "drugHelpTextNoEdit": "You may edit quantity dispensed here",
   "drugs": "წამლები",
   "editCloseRecord": "Edit Close Record",
   "editDispenseRecord": "განაწილების ჩანაწერის ჩასწორება",

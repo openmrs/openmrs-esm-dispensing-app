@@ -40,6 +40,8 @@
   "dose": "Liều lượng",
   "doseUnit": "Đơn vị liều lượng",
   "drugDispensingUnit": "Đơn vị phân phối",
+  "drugHelpText": "You may edit the formulation and quantity dispensed here",
+  "drugHelpTextNoEdit": "You may edit quantity dispensed here",
   "drugs": "Thuốc",
   "editCloseRecord": "Edit Close Record",
   "editDispenseRecord": "Chỉnh sửa hồ sơ phân phối",
