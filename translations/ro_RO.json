@@ -40,6 +40,8 @@
   "dose": "Doză",
   "doseUnit": "Unitate doză",
   "drugDispensingUnit": "Unitate de distribuire",
+  "drugHelpText": "You may edit the formulation and quantity dispensed here",
+  "drugHelpTextNoEdit": "You may edit quantity dispensed here",
   "drugs": "Medicamente",
   "editCloseRecord": "Edit Close Record",
   "editDispenseRecord": "Editează înregistrarea de distribuire",

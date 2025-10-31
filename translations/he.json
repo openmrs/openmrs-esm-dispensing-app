@@ -40,6 +40,8 @@
   "dose": "מינון",
   "doseUnit": "יחידת מינון",
   "drugDispensingUnit": "יחידת ניפוק",
+  "drugHelpText": "You may edit the formulation and quantity dispensed here",
+  "drugHelpTextNoEdit": "You may edit quantity dispensed here",
   "drugs": "תרופות",
   "editCloseRecord": "Edit Close Record",
   "editDispenseRecord": "עריכת רשומת הנפקה",

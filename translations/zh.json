@@ -40,6 +40,8 @@
   "dose": "剂量",
   "doseUnit": "剂量单位",
   "drugDispensingUnit": "配药单位",
+  "drugHelpText": "You may edit the formulation and quantity dispensed here",
+  "drugHelpTextNoEdit": "You may edit quantity dispensed here",
   "drugs": "药物",
   "editCloseRecord": "Edit Close Record",
   "editDispenseRecord": "编辑配药记录",

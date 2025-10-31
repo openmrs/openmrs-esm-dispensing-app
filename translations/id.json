@@ -40,6 +40,8 @@
   "dose": "Dosis",
   "doseUnit": "Satuan dosis",
   "drugDispensingUnit": "Unit penyerahan obat",
+  "drugHelpText": "You may edit the formulation and quantity dispensed here",
+  "drugHelpTextNoEdit": "You may edit quantity dispensed here",
   "drugs": "Obat-obatan",
   "editCloseRecord": "Edit Close Record",
   "editDispenseRecord": "Edit Rekaman Penyerahan",
