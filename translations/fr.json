@@ -41,7 +41,7 @@
   "doseUnit": "Unité",
   "drugDispensingUnit": "Unité de dispensation",
   "drugHelpText": "You may edit the formulation and quantity dispensed here",
-  "drugHelpTextNoEdit": "You may edit quantity dispensed here",
+  "drugHelpTextNoEdit": "Vous pouvez modifier la quantité distribuée ici",
   "drugs": "Médicaments",
   "editCloseRecord": "Edit Close Record",
   "editDispenseRecord": "Modifier une dispensation",
