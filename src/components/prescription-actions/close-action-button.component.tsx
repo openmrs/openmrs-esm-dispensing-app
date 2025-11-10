@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { launchWorkspace, type Session } from '@openmrs/esm-framework';
+import { launchWorkspace2, type Session } from '@openmrs/esm-framework';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
 import { type Provider, type MedicationRequestBundle } from '../../types';
 
@@ -34,7 +34,7 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
   };
 
   const handleLaunchWorkspace = () => {
-    launchWorkspace('close-dispense-workspace', closeDispenseFormProps);
+    launchWorkspace2('close-dispense-workspace', closeDispenseFormProps);
   };
 
   if (!closeable) {

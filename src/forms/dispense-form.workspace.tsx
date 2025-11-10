@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Checkbox, Form, FormLabel, InlineLoading } from '@carbon/react';
 import {
-  type DefaultWorkspaceProps,
   ExtensionSlot,
   getCoreTranslation,
   showSnackbar,
   useConfig,
   usePatient,
+  Workspace2,
+  type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
 import {
   type MedicationDispense,
@@ -31,7 +32,7 @@ import MedicationDispenseReview from './medication-dispense-review.component';
 import StockDispense from './stock-dispense/stock-dispense.component';
 import styles from './forms.scss';
 
-type DispenseFormProps = DefaultWorkspaceProps & {
+type DispenseFormProps = {
   medicationDispense: MedicationDispense;
   medicationRequestBundle: MedicationRequestBundle;
   mode: 'enter' | 'edit';
@@ -39,18 +40,23 @@ type DispenseFormProps = DefaultWorkspaceProps & {
   encounterUuid: string;
   quantityRemaining: number;
   quantityDispensed: number;
+  customWorkspaceTitle?: string;
+  onWorkspaceClosed?(): void;
 };
 
-const DispenseForm: React.FC<DispenseFormProps> = ({
-  medicationDispense,
-  medicationRequestBundle,
-  mode,
-  patientUuid,
-  encounterUuid,
-  quantityRemaining,
-  quantityDispensed,
+const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}>> = ({
+  workspaceProps: {
+    medicationDispense,
+    medicationRequestBundle,
+    mode,
+    patientUuid,
+    encounterUuid,
+    quantityRemaining,
+    quantityDispensed,
+    customWorkspaceTitle,
+    onWorkspaceClosed,
+  },
   closeWorkspace,
-  closeWorkspaceWithSavedChanges,
 }) => {
   const { t } = useTranslation();
   const { patient, isLoading } = usePatient(patientUuid);
@@ -153,8 +159,9 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
                     : 'Medication dispense record successfully updated.',
                 ),
               });
-              closeWorkspaceWithSavedChanges();
+              closeWorkspace({ discardUnsavedChanges: true });
               setIsSubmitting(false);
+              onWorkspaceClosed?.();
             }
           },
           (error) => {
@@ -214,65 +221,70 @@ const DispenseForm: React.FC<DispenseFormProps> = ({
   }, [patient, patientUuid]);
 
   return (
-    <Form className={styles.formWrapper}>
-      <div>
-        {isLoading && (
-          <InlineLoading
-            className={styles.bannerLoading}
-            iconDescription="Loading"
-            description="Loading banner"
-            status="active"
-          />
-        )}
-        {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
-        <section className={styles.formGroup}>
-          <FormLabel>
-            {t(
-              config.dispenseBehavior.allowModifyingPrescription ? 'drugHelpText' : 'drugHelpTextNoEdit',
-              config.dispenseBehavior.allowModifyingPrescription
-                ? 'You may edit the formulation and quantity dispensed here'
-                : 'You may edit quantity dispensed here',
-            )}
-          </FormLabel>
-          {medicationDispensePayload ? (
-            <div>
-              <MedicationDispenseReview
-                medicationDispense={medicationDispensePayload}
-                updateMedicationDispense={updateMedicationDispense}
-                quantityRemaining={quantityRemaining}
-                quantityDispensed={quantityDispensed}
-              />
-              {config.completeOrderWithThisDispense && mode === 'enter' && !medicationDispense?.id && (
-                <Checkbox
-                  id="complete-order-with-this-dispense"
-                  labelText={t('completeOrderWithThisDispense', 'Complete order with this dispense')}
-                  checked={shouldCompleteOrder}
-                  onChange={(_, { checked }) => setShouldCompleteOrder(checked)}
-                />
-              )}
-              {config.enableStockDispense && (
-                <StockDispense
-                  inventoryItem={inventoryItem}
-                  medicationDispense={medicationDispense}
-                  updateInventoryItem={setInventoryItem}
-                />
-              )}
-            </div>
-          ) : null}
-        </section>
-      </div>
-      <section className={styles.buttonGroup}>
-        <Button disabled={isSubmitting} onClick={() => closeWorkspace()} kind="secondary">
-          {getCoreTranslation('cancel', 'Cancel')}
-        </Button>
-        <Button disabled={isButtonDisabled} onClick={handleSubmit}>
-          {t(
-            mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
-            mode === 'enter' ? 'Dispense prescription' : 'Save changes',
+    <Workspace2 title={customWorkspaceTitle ?? t('dispensePrescription', 'Dispense prescription')}>
+      <Form className={styles.formWrapper}>
+        <div>
+          {isLoading && (
+            <InlineLoading
+              className={styles.bannerLoading}
+              iconDescription="Loading"
+              description="Loading banner"
+              status="active"
+            />
           )}
-        </Button>
-      </section>
-    </Form>
+          {patient && <ExtensionSlot name="patient-header-slot" state={bannerState} />}
+          <section className={styles.formGroup}>
+            <FormLabel>
+              {config.dispenseBehavior.allowModifyingPrescription
+                ? t('drugHelpText', 'You may edit the formulation and quantity dispensed here')
+                : t('drugHelpTextNoEdit', 'You may edit quantity dispensed here')}
+            </FormLabel>
+            {medicationDispensePayload ? (
+              <div>
+                <MedicationDispenseReview
+                  medicationDispense={medicationDispensePayload}
+                  updateMedicationDispense={updateMedicationDispense}
+                  quantityRemaining={quantityRemaining}
+                  quantityDispensed={quantityDispensed}
+                />
+                {config.completeOrderWithThisDispense && mode === 'enter' && !medicationDispense?.id && (
+                  <Checkbox
+                    id="complete-order-with-this-dispense"
+                    labelText={t('completeOrderWithThisDispense', 'Complete order with this dispense')}
+                    checked={shouldCompleteOrder}
+                    onChange={(_, { checked }) => setShouldCompleteOrder(checked)}
+                  />
+                )}
+                {config.enableStockDispense && (
+                  <StockDispense
+                    inventoryItem={inventoryItem}
+                    medicationDispense={medicationDispense}
+                    updateInventoryItem={setInventoryItem}
+                  />
+                )}
+              </div>
+            ) : null}
+          </section>
+        </div>
+        <section className={styles.buttonGroup}>
+          <Button
+            disabled={isSubmitting}
+            onClick={() => {
+              closeWorkspace();
+              onWorkspaceClosed?.();
+            }}
+            kind="secondary">
+            {getCoreTranslation('cancel', 'Cancel')}
+          </Button>
+          <Button disabled={isButtonDisabled} onClick={handleSubmit}>
+            {t(
+              mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
+              mode === 'enter' ? 'Dispense prescription' : 'Save changes',
+            )}
+          </Button>
+        </section>
+      </Form>
+    </Workspace2>
   );
 };
 

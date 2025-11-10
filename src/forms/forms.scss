@@ -152,3 +152,18 @@
 .reviewContainer {
   margin: 0.8rem 0 0 0 !important;
 }
+
+// copied from .sectionHeader of drug-order-form.scss
+.prescriptionFormSectionHeader {
+  @include type.type-style('heading-01');
+  margin-bottom: layout.$spacing-05;
+}
+
+// copied from .field of drug-order-form.scss
+.prescriptionFormField {
+  margin-bottom: layout.$spacing-05;
+
+  :global(.cds--label) {
+    vertical-align: middle;
+  }
+}

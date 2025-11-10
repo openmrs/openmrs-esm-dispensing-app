@@ -3,7 +3,7 @@ import { DataTableSkeleton, OverflowMenu, OverflowMenuItem, Tag, Tile } from '@c
 import { useTranslation } from 'react-i18next';
 import {
   formatDatetime,
-  launchWorkspace,
+  launchWorkspace2,
   parseDate,
   type Session,
   showModal,
@@ -142,8 +142,8 @@ const HistoryAndComments: React.FC<{
         workspaceName: string;
         props: Record<string, unknown>;
       };
-      const workspaceTitle = getWorkspaceTitle(medicationDispense);
-      launchWorkspace(workspaceName, { workspaceTitle, ...props });
+      const customWorkspaceTitle = getWorkspaceTitle(medicationDispense);
+      launchWorkspace2(workspaceName, { customWorkspaceTitle, ...props });
     };
     const handleDeleteClick = ({ medicationDispense, medicationRequestBundle }) => {
       const dispose = showModal('delete-confirm-modal', {
