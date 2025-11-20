@@ -412,38 +412,38 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               required
             />
           </ResponsiveWrapper>
-
-          <ResponsiveWrapper>
-            <ComboBox
-              id="editRoute"
-              disabled={!userCanModify || !allowEditing}
-              items={drugRoutes}
-              initialSelectedItem={{
-                id: medicationDispense.dosageInstruction[0].route?.coding[0]?.code,
-                text: medicationDispense.dosageInstruction[0].route?.text,
-              }}
-              titleText={t('route', 'Route')}
-              itemToString={(item) => item?.text}
-              onChange={({ selectedItem }) => {
-                updateMedicationDispense({
-                  dosageInstruction: [
-                    {
-                      ...medicationDispense.dosageInstruction[0],
-                      route: {
-                        coding: [
-                          {
-                            code: selectedItem?.id,
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                });
-              }}
-              required
-            />
-          </ResponsiveWrapper>
         </div>
+
+        <ResponsiveWrapper>
+          <ComboBox
+            id="editRoute"
+            disabled={!userCanModify || !allowEditing}
+            items={drugRoutes}
+            initialSelectedItem={{
+              id: medicationDispense.dosageInstruction[0].route?.coding[0]?.code,
+              text: medicationDispense.dosageInstruction[0].route?.text,
+            }}
+            titleText={t('route', 'Route')}
+            itemToString={(item) => item?.text}
+            onChange={({ selectedItem }) => {
+              updateMedicationDispense({
+                dosageInstruction: [
+                  {
+                    ...medicationDispense.dosageInstruction[0],
+                    route: {
+                      coding: [
+                        {
+                          code: selectedItem?.id,
+                        },
+                      ],
+                    },
+                  },
+                ],
+              });
+            }}
+            required
+          />
+        </ResponsiveWrapper>
 
         <ResponsiveWrapper>
           <ComboBox
