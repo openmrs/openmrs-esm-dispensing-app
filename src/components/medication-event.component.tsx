@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { type DosageInstruction, type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
 import {
+  calculateIsFreeTextDosage,
   getDosageInstruction,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
@@ -17,6 +18,7 @@ const MedicationEvent: React.FC<{
 }> = ({ medicationEvent, status = null }) => {
   const { t } = useTranslation();
   const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
+  const isFreeTextDosage = calculateIsFreeTextDosage(dosageInstruction);
   const quantity: Quantity = getQuantity(medicationEvent);
   const refillsAllowed: number = getRefillsAllowed(medicationEvent);
 
@@ -27,7 +29,7 @@ const MedicationEvent: React.FC<{
         <strong>{getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}</strong>
       </p>
 
-      {dosageInstruction && (
+      {!isFreeTextDosage && (
         <p className={styles.bodyLong01}>
           <span className={styles.label01}>{t('dose', 'Dose').toUpperCase()}</span>{' '}
           <span className={styles.dosage}>

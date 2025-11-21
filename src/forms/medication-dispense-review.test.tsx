@@ -131,6 +131,8 @@ describe('Medication Dispense Review Component tests', () => {
       <MedicationDispenseReview
         medicationDispense={medicationDispense}
         updateMedicationDispense={mockUpdate}
+        isFreeTextDosage={false}
+        setIsFreeTextDosage={() => {}}
         quantityRemaining={30}
         quantityDispensed={30}
       />,

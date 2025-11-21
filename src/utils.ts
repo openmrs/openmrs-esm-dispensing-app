@@ -15,12 +15,7 @@ import {
   MedicationRequestStatus,
   type Quantity,
 } from './types';
-import {
-  createGlobalStore,
-  fhirBaseUrl,
-  parseDate,
-  useStore,
-} from '@openmrs/esm-framework';
+import { createGlobalStore, fhirBaseUrl, parseDate, useStore } from '@openmrs/esm-framework';
 import {
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
@@ -608,6 +603,15 @@ export function sortMedicationDispensesByWhenHandedOver(a: MedicationDispense, b
   } else {
     return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
   }
+}
+
+// we assume this is a free text dosage if none of the following are specified
+export function calculateIsFreeTextDosage(dosageInstruction: DosageInstruction) {
+  return (
+    (!dosageInstruction?.doseAndRate || !dosageInstruction?.doseAndRate[0]?.doseQuantity?.value) &&
+    !dosageInstruction?.timing?.code?.coding[0]?.code &&
+    !dosageInstruction?.route
+  );
 }
 
 const dispensingStore = createGlobalStore<DispensingStore>('dispensing-store', {
