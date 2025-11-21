@@ -24,18 +24,6 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
   return (
     <TabPanel>
       <div className={styles.searchContainer}>
-        <Search
-          closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
-          defaultValue={searchTerm}
-          placeholder={t('searchByPatientIdOrName', 'Search by patient ID or name')}
-          labelText={t('searchByPatientIdOrName', 'Search by patient ID or name')}
-          onChange={(e) => {
-            e.preventDefault();
-            setSearchTerm(e.target.value);
-          }}
-          size="md"
-          className={styles.patientSearch}
-        />
         {config.locationBehavior?.locationFilter?.enabled &&
           !isFilterLocationsLoading &&
           filterLocations?.length > 1 && (
@@ -51,6 +39,18 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
               className={styles.locationFilter}
             />
           )}
+        <Search
+          closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
+          defaultValue={searchTerm}
+          placeholder={t('searchByPatientIdOrName', 'Search by patient ID or name')}
+          labelText={t('searchByPatientIdOrName', 'Search by patient ID or name')}
+          onChange={(e) => {
+            e.preventDefault();
+            setSearchTerm(e.target.value);
+          }}
+          size="md"
+          className={styles.patientSearch}
+        />
       </div>
       <PrescriptionsTable
         loadData={isTabActive}
