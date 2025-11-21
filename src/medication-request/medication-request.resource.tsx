@@ -10,6 +10,7 @@ import {
   type Encounter,
   type MedicationRequestFulfillerStatus,
   type MedicationRequestBundle,
+  type SimpleLocation,
 } from '../types';
 import {
   getPrescriptionDetailsEndpoint,
@@ -30,7 +31,7 @@ export function usePrescriptionsTable(
   pageSize: number = 10,
   pageOffset: number = 0,
   patientSearchTerm: string = '',
-  location: string = '',
+  locations: SimpleLocation[] = [],
   status: string = '',
   medicationRequestExpirationPeriodInDays: number,
   refreshInterval: number,
@@ -43,9 +44,14 @@ export function usePrescriptionsTable(
             pageSize,
             dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString(),
             patientSearchTerm,
-            location,
+            locations?.map((location) => location.id).join(','),
           )
-        : getPrescriptionTableAllMedicationRequestsEndpoint(pageOffset, pageSize, patientSearchTerm, location)
+        : getPrescriptionTableAllMedicationRequestsEndpoint(
+            pageOffset,
+            pageSize,
+            patientSearchTerm,
+            locations?.map((location) => location.id).join(','),
+          )
       : null,
     openmrsFetch,
     { refreshInterval: refreshInterval },

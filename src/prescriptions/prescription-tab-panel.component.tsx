@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ComboBox, Search, TabPanel } from '@carbon/react';
+import { MultiSelect, Search, TabPanel } from '@carbon/react';
 import { useConfig, useDebounce } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import PrescriptionsTable from './prescriptions-table.component';
@@ -19,11 +19,26 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
   const { filterLocations, isLoading: isFilterLocationsLoading } = useLocationForFiltering(config);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  const [location, setLocation] = useState('');
+  const [locations, setLocations] = useState<SimpleLocation[]>([]);
 
   return (
     <TabPanel>
       <div className={styles.searchContainer}>
+        {config.locationBehavior?.locationFilter?.enabled &&
+          !isFilterLocationsLoading &&
+          filterLocations?.length > 1 && (
+            <MultiSelect
+              hideLabel
+              id="locationFilter"
+              label={t('filterByLocations', 'Filter by locations')}
+              items={isFilterLocationsLoading ? [] : filterLocations}
+              itemToString={(item: SimpleLocation) => item?.name}
+              onChange={({ selectedItems }) => {
+                setLocations(selectedItems);
+              }}
+              className={styles.locationFilter}
+            />
+          )}
         <Search
           closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
           defaultValue={searchTerm}
@@ -36,26 +51,12 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
           size="md"
           className={styles.patientSearch}
         />
-        {config.locationBehavior?.locationFilter?.enabled &&
-          !isFilterLocationsLoading &&
-          filterLocations?.length > 1 && (
-            <ComboBox
-              id="locationFilter"
-              placeholder={t('filterByLocation', 'Filter by location')}
-              items={isFilterLocationsLoading ? [] : filterLocations}
-              itemToString={(item: SimpleLocation) => item?.name}
-              onChange={({ selectedItem }) => {
-                setLocation(selectedItem?.id);
-              }}
-              className={styles.locationFilter}
-            />
-          )}
       </div>
       <PrescriptionsTable
         loadData={isTabActive}
         status={status}
         debouncedSearchTerm={debouncedSearchTerm}
-        location={location}
+        locations={locations}
       />
     </TabPanel>
   );

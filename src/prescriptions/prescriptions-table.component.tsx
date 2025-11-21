@@ -23,15 +23,21 @@ import PrescriptionExpanded from './prescription-expanded.component';
 import styles from './prescriptions.scss';
 import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
 import { type PharmacyConfig } from '../config-schema';
+import { type SimpleLocation } from '../types';
 
 interface PrescriptionsTableProps {
   loadData: boolean;
   debouncedSearchTerm: string;
-  location: string;
+  locations: SimpleLocation[];
   status: string;
 }
 
-const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({ loadData, debouncedSearchTerm, location, status }) => {
+const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
+  loadData,
+  debouncedSearchTerm,
+  locations,
+  status,
+}) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const [page, setPage] = useState(1);
@@ -42,7 +48,7 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({ loadData, debou
     pageSize,
     nextOffSet,
     debouncedSearchTerm,
-    location,
+    locations,
     status,
     config.medicationRequestExpirationPeriodInDays,
     config.refreshInterval,
