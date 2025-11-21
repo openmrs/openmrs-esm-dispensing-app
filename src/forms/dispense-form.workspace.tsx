@@ -18,7 +18,9 @@ import {
   MedicationRequestFulfillerStatus,
 } from '../types';
 import {
+  calculateIsFreeTextDosage,
   computeNewFulfillerStatusAfterDispenseEvent,
+  getDosageInstruction,
   getFulfillerStatus,
   getUuidFromReference,
   markEncounterAsStale,
@@ -72,6 +74,12 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [shouldCompleteOrder, setShouldCompleteOrder] = useState(false);
+
+  const calculateInitialIsFreeTextDosage = () => {
+    const dosageInstruction = getDosageInstruction(medicationDispense?.dosageInstruction);
+    return dosageInstruction && calculateIsFreeTextDosage(dosageInstruction);
+  };
+  const [isFreeTextDosage, setIsFreeTextDosage] = useState(calculateInitialIsFreeTextDosage);
 
   // Submit medication dispense form
   const handleSubmit = () => {
@@ -188,22 +196,33 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
 
   // whether or not the form is valid and ready to submit
   const isValid = useMemo(() => {
+    if (!medicationDispensePayload) {
+      return false;
+    }
+    const anyCodedDosage =
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value ||
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code ||
+      medicationDispensePayload.dosageInstruction[0]?.route?.coding[0]?.code ||
+      medicationDispensePayload.dosageInstruction[0]?.timing?.code?.coding[0].code;
+
+    const allCodedDosage =
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value &&
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
+      medicationDispensePayload.dosageInstruction[0]?.route?.coding[0]?.code &&
+      medicationDispensePayload.dosageInstruction[0]?.timing?.code?.coding[0].code;
+
     return (
-      medicationDispensePayload &&
       medicationDispensePayload.performer &&
       medicationDispensePayload.performer[0]?.actor.reference &&
       medicationDispensePayload.quantity?.value &&
       (!quantityRemaining || medicationDispensePayload?.quantity?.value <= quantityRemaining) &&
       medicationDispensePayload.quantity?.code &&
-      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value &&
-      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
-      medicationDispensePayload.dosageInstruction[0]?.route?.coding[0].code &&
-      medicationDispensePayload.dosageInstruction[0]?.timing?.code.coding[0].code &&
+      ((allCodedDosage && !isFreeTextDosage) || (!anyCodedDosage && isFreeTextDosage)) &&
       (!medicationDispensePayload.substitution.wasSubstituted ||
         (medicationDispensePayload.substitution.reason[0]?.coding[0].code &&
           medicationDispensePayload.substitution.type?.coding[0].code))
     );
-  }, [medicationDispensePayload, quantityRemaining]);
+  }, [isFreeTextDosage, medicationDispensePayload, quantityRemaining]);
 
   // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
@@ -244,6 +263,8 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                 <MedicationDispenseReview
                   medicationDispense={medicationDispensePayload}
                   updateMedicationDispense={updateMedicationDispense}
+                  isFreeTextDosage={isFreeTextDosage}
+                  setIsFreeTextDosage={setIsFreeTextDosage}
                   quantityRemaining={quantityRemaining}
                   quantityDispensed={quantityDispensed}
                 />
