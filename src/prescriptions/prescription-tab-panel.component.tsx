@@ -19,7 +19,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
   const { filterLocations, isLoading: isFilterLocationsLoading } = useLocationForFiltering(config);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  const [locations, setLocations] = useState([]);
+  const [locations, setLocations] = useState<SimpleLocation[]>([]);
 
   return (
     <TabPanel>
