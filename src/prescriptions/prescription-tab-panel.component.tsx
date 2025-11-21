@@ -41,7 +41,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
           filterLocations?.length > 1 && (
             <MultiSelect
               id="locationFilter"
-              label={t('filterByLocation', 'Filter by location')}
+              label={t('filterByLocations', 'Filter by locations')}
               items={isFilterLocationsLoading ? [] : filterLocations}
               itemToString={(item: SimpleLocation) => item?.name}
               onChange={({ selectedItems }) => {
