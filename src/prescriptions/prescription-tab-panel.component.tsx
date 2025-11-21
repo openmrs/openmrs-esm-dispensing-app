@@ -40,6 +40,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
           !isFilterLocationsLoading &&
           filterLocations?.length > 1 && (
             <MultiSelect
+              hideLabel
               id="locationFilter"
               label={t('filterByLocations', 'Filter by locations')}
               items={isFilterLocationsLoading ? [] : filterLocations}
