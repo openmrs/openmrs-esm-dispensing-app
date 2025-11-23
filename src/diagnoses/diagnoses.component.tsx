@@ -35,16 +35,22 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
       { header: t('status', 'Status'), key: 'certainty' },
     ];
   }, [t]);
-  if (isLoading) return <DataTableSkeleton />;
 
-  if (error) return <ErrorState headerTitle={title} error={error} />;
+  if (isLoading) {
+    return <DataTableSkeleton />;
+  }
 
-  if (!diagnoses?.length)
+  if (error) {
+    return <ErrorState headerTitle={title} error={error} />;
+  }
+
+  if (!diagnoses?.length) {
     return (
       <Layer className={styles.diagnosesContainer}>
         <EmptyState headerTitle={title} displayText={t('visitFinalDiagnoses', 'Visit final diagnoses')} />
       </Layer>
     );
+  }
 
   return (
     <Layer className={styles.diagnosesContainer}>
