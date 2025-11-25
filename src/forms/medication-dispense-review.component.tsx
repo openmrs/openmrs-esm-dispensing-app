@@ -395,6 +395,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                             ],
                           },
                         },
+                        text: '',
                       },
                     ],
                   });
@@ -404,10 +405,11 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                     dosageInstruction: [
                       {
                         ...medicationDispense.dosageInstruction[0],
-                        text: undefined,
+                        text: '',
                       },
                     ],
                   });
+                }
               }}
             />
           </ResponsiveWrapper>
