@@ -75,11 +75,10 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
 
   const [shouldCompleteOrder, setShouldCompleteOrder] = useState(false);
 
-  const calculateInitialIsFreeTextDosage = () => {
+  const [isFreeTextDosage, setIsFreeTextDosage] = useState(() => {
     const dosageInstruction = getDosageInstruction(medicationDispense?.dosageInstruction);
-    return dosageInstruction && calculateIsFreeTextDosage(dosageInstruction);
-  };
-  const [isFreeTextDosage, setIsFreeTextDosage] = useState(calculateInitialIsFreeTextDosage);
+    return dosageInstruction ? calculateIsFreeTextDosage(dosageInstruction) : false;
+  });
 
   // Submit medication dispense form
   const handleSubmit = () => {
