@@ -190,45 +190,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     }
   }, [initialDispenser, updateMedicationDispense]);
 
-  // clear out the dose, route and frequency if changed to free text dosage
-  useEffect(() => {
-    if (isFreeTextDosage) {
-      updateMedicationDispense({
-        dosageInstruction: [
-          {
-            ...medicationDispense.dosageInstruction[0],
-            doseAndRate: [
-              {
-                doseQuantity: {
-                  value: null,
-                  code: null,
-                },
-              },
-            ],
-            route: {
-              coding: [
-                {
-                  code: null,
-                },
-              ],
-            },
-            timing: {
-              ...medicationDispense.dosageInstruction[0].timing,
-              code: {
-                coding: [
-                  {
-                    code: null,
-                  },
-                ],
-              },
-            },
-          },
-        ],
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFreeTextDosage]);
-
   return (
     <div className={styles.medicationDispenseReviewContainer}>
       <Stack gap={5}>
@@ -396,13 +357,48 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         <div className={styles.dispenseDetailsContainer}>
           <ResponsiveWrapper>
             <Toggle
-              defaultToggled={isFreeTextDosage}
+              toggled={isFreeTextDosage}
               disabled={!userCanModify || !allowEditing}
               id="isFreeTextToggled"
               size={'sm'}
               labelText={t('freeTextDosage', 'Free text dosage')}
               onToggle={(value) => {
                 setIsFreeTextDosage(value);
+                // clear out the dose, route and frequency if changed to free text dosage
+                if (value) {
+                  updateMedicationDispense({
+                    dosageInstruction: [
+                      {
+                        ...medicationDispense.dosageInstruction[0],
+                        doseAndRate: [
+                          {
+                            doseQuantity: {
+                              value: null,
+                              code: null,
+                            },
+                          },
+                        ],
+                        route: {
+                          coding: [
+                            {
+                              code: null,
+                            },
+                          ],
+                        },
+                        timing: {
+                          ...medicationDispense.dosageInstruction[0].timing,
+                          code: {
+                            coding: [
+                              {
+                                code: null,
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                  });
+                }
               }}
             />
           </ResponsiveWrapper>
@@ -539,7 +535,11 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         )}
 
         <TextArea
-          labelText={isFreeTextDosage ? '' : t('patientInstructions', 'Patient instructions')}
+          labelText={
+            isFreeTextDosage
+              ? t('freeTextDosage', 'Free text dosage')
+              : t('patientInstructions', 'Patient instructions')
+          }
           value={medicationDispense.dosageInstruction[0].text}
           maxLength={65535}
           onChange={(e) => {

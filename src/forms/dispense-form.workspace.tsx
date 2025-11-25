@@ -217,7 +217,8 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
       medicationDispensePayload.quantity?.value &&
       (!quantityRemaining || medicationDispensePayload?.quantity?.value <= quantityRemaining) &&
       medicationDispensePayload.quantity?.code &&
-      ((allCodedDosage && !isFreeTextDosage) || (!anyCodedDosage && isFreeTextDosage)) &&
+      ((allCodedDosage && !isFreeTextDosage) ||
+        (!anyCodedDosage && isFreeTextDosage && medicationDispensePayload.dosageInstruction[0]?.text)) &&
       (!medicationDispensePayload.substitution.wasSubstituted ||
         (medicationDispensePayload.substitution.reason[0]?.coding[0].code &&
           medicationDispensePayload.substitution.type?.coding[0].code))
