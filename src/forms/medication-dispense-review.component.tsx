@@ -398,7 +398,16 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                       },
                     ],
                   });
-                }
+                } else {
+                  // clear out the text field if changed from free text to coded dosage
+                  updateMedicationDispense({
+                    dosageInstruction: [
+                      {
+                        ...medicationDispense.dosageInstruction[0],
+                        text: undefined,
+                      },
+                    ],
+                  });
               }}
             />
           </ResponsiveWrapper>
