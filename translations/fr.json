@@ -52,7 +52,7 @@
   "errorLoadingPrescriptionDetails": "Erreur lors du chargement des détails de la prescription",
   "expired": "Périmé",
   "fillPrescription": "Exécuter la prescription",
-  "filterByLocation": "Filtrer par localisation",
+  "filterByLocations": "Filter by locations",
   "finalDiagnoses": "Diagnostics définitifs",
   "for": "pour",
   "frequency": "Fréquence",

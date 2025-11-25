@@ -1,3 +1,4 @@
+import React, { useMemo, useState } from 'react';
 import {
   DataTable,
   DataTableSkeleton,
@@ -10,10 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@carbon/react';
+import { useTranslation } from 'react-i18next';
 import { ErrorState, usePagination } from '@openmrs/esm-framework';
 import { CardHeader, EmptyState } from '@openmrs/esm-patient-common-lib';
-import React, { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { pageSizesOptions, usePatientConditions } from './conditions.resource';
 import styles from './conditions.scss';
 
@@ -24,9 +24,9 @@ type PatientConditionsProps = {
 
 const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
-  const { conditions, error, isLoading, mutate } = usePatientConditions(patientUuid);
+  const { conditions, error, isLoading } = usePatientConditions(patientUuid);
   const [pageSize, setPageSize] = useState(3);
-  const { results, totalPages, currentPage, goTo } = usePagination(conditions, pageSize);
+  const { results, currentPage, goTo } = usePagination(conditions, pageSize);
   const headers = useMemo(() => {
     return [
       { header: t('conditions', 'Condition'), key: 'display' },
@@ -36,16 +36,21 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
 
   const title = t('activecondition', 'Active Condition');
 
-  if (isLoading) return <DataTableSkeleton />;
+  if (isLoading) {
+    return <DataTableSkeleton />;
+  }
 
-  if (error) return <ErrorState headerTitle={title} error={error} />;
+  if (error) {
+    return <ErrorState headerTitle={title} error={error} />;
+  }
 
-  if (!conditions?.length)
+  if (!conditions?.length) {
     return (
       <Layer className={styles.conditionContainer}>
         <EmptyState headerTitle={title} displayText={t('activeConditions', 'Active Condition')} />
       </Layer>
     );
+  }
 
   return (
     <Layer className={styles.conditionContainer}>

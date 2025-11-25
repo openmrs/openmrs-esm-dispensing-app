@@ -39,7 +39,7 @@ const PatientSearchTabPanel: React.FC = () => {
             loadData={true}
             status={'ACTIVE'}
             debouncedSearchTerm={submittedSearchTerm}
-            location={''}
+            locations={[]}
           />
         ) : (
           <div className={styles.searchForPatientPlaceholder}>

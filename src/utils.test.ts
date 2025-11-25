@@ -2468,6 +2468,12 @@ describe('Util Tests', () => {
         '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active&patientSearchTerm=bob&location=123abc',
       );
     });
+
+    test('should return endpoint with multiple comma-separated location parameters', () => {
+      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', 'bob', '123abc,456def')).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active&patientSearchTerm=bob&location=123abc,456def',
+      );
+    });
   });
 
   describe('test getPrescriptionTableAllMedicationRequestsEndpoint', () => {
@@ -2489,6 +2495,11 @@ describe('Util Tests', () => {
     test('should return endpoint with search term and location parameters', () => {
       expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, 'bob', '123abc')).toBe(
         '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&patientSearchTerm=bob&location=123abc',
+      );
+    });
+    test('should return endpoint with multiple comma-separated location parameters', () => {
+      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, 'bob', '123abc,456def')).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&patientSearchTerm=bob&location=123abc,456def',
       );
     });
   });
