@@ -9,7 +9,7 @@ export const startVisit = async (api: APIRequestContext, patientId: string): Pro
     data: {
       startDatetime: visitStartDatetime.format('YYYY-MM-DDTHH:mm:ss.SSSZZ'),
       patient: patientId,
-      location: process.env.E2E_LOGIN_DEFAULT_LOCATION_UUID,
+      location: process.env.E2E_DEFAULT_LOGIN_LOCATION_UUID,
       visitType: '7b0f5697-27e3-40c4-8bae-f4049abfb4ed',
       attributes: [],
     },
