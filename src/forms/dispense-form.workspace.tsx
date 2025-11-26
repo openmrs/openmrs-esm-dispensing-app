@@ -212,9 +212,9 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   useEffect(() => {
     // Only auto-default in 'enter' mode when creating a new dispense
     if (mode === 'enter' && medicationRequestBundle?.request?.dispenseRequest) {
-      const refillsRemaining = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed;
+      const numberOfRepeatsAllowed = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed;
       // Default to true if no refills remaining
-      if (refillsRemaining === 0 || refillsRemaining === null || refillsRemaining === undefined) {
+      if (numberOfRepeatsAllowed === 0 || numberOfRepeatsAllowed === null || numberOfRepeatsAllowed === undefined) {
         setShouldCompleteOrder(true);
       }
     }
