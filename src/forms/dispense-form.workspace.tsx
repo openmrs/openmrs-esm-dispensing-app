@@ -213,7 +213,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
     // Only auto-default in 'enter' mode when creating a new dispense
     if (mode === 'enter' && medicationRequestBundle?.request?.dispenseRequest) {
       const numberOfRepeatsAllowed = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed;
-      // Default to true if no refills remaining
+      // Default to true if order doesn't support refills
       if (numberOfRepeatsAllowed === 0 || numberOfRepeatsAllowed === null || numberOfRepeatsAllowed === undefined) {
         setShouldCompleteOrder(true);
       }
