@@ -1,5 +1,6 @@
 import {
   type Coding,
+  type DispenseRecord,
   type DosageInstruction,
   type Medication,
   type MedicationDispense,
@@ -18,7 +19,9 @@ import {
   computeNewFulfillerStatusAfterDispenseEvent,
   computePrescriptionStatus,
   computeQuantityRemaining,
+  computeQuantityRemainingWithWarning,
   computeTotalQuantityDispensed,
+  computeTotalQuantityDispensedWithWarning,
   computeTotalQuantityOrdered,
   getAssociatedMedicationDispenses,
   getAssociatedMedicationRequest,
@@ -39,6 +42,7 @@ import {
   getQuantityUnitsMatch,
   getRefillsAllowed,
   isMostRecentMedicationDispense,
+  validateDispenseQuantity,
 } from './utils';
 import dayjs from 'dayjs';
 
@@ -1514,6 +1518,438 @@ describe('Util Tests', () => {
     });*/
   });
 
+  describe('test computeTotalQuantityDispensedWithWarning', () => {
+    const medicationDispense1: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: {
+        value: 5,
+        unit: 'mg',
+        code: '123abc',
+      },
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    const medicationDispense2: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: {
+        value: 15,
+        unit: 'mg',
+        code: '123abc',
+      },
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    const medicationDispenseNoQuantity: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: undefined,
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    const medicationDispenseDifferentUnits: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: {
+        value: 1,
+        unit: 'kg',
+        code: '456ddef',
+      },
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    test('should return quantity 0 and no mismatch for null input', () => {
+      const result = computeTotalQuantityDispensedWithWarning(null);
+      expect(result.quantity).toBe(0);
+      expect(result.hasUnitMismatch).toBe(false);
+      expect(result.errorMessage).toBeUndefined();
+    });
+
+    test('should return quantity 0 and no mismatch for empty array', () => {
+      const result = computeTotalQuantityDispensedWithWarning([]);
+      expect(result.quantity).toBe(0);
+      expect(result.hasUnitMismatch).toBe(false);
+      expect(result.errorMessage).toBeUndefined();
+    });
+
+    test('should return quantity 0 and no mismatch if no dispense events have quantity', () => {
+      const result = computeTotalQuantityDispensedWithWarning([medicationDispenseNoQuantity]);
+      expect(result.quantity).toBe(0);
+      expect(result.hasUnitMismatch).toBe(false);
+      expect(result.errorMessage).toBeUndefined();
+    });
+
+    test('should return total quantity and no mismatch when units match', () => {
+      const result = computeTotalQuantityDispensedWithWarning([
+        medicationDispense1,
+        medicationDispenseNoQuantity,
+        medicationDispense2,
+      ]);
+      expect(result.quantity).toBe(20);
+      expect(result.hasUnitMismatch).toBe(false);
+      expect(result.errorMessage).toBeUndefined();
+    });
+
+    test('should return total quantity with hasUnitMismatch true when units differ', () => {
+      const result = computeTotalQuantityDispensedWithWarning([
+        medicationDispense1,
+        medicationDispenseNoQuantity,
+        medicationDispense2,
+        medicationDispenseDifferentUnits,
+      ]);
+      expect(result.quantity).toBe(21); // Still calculates the sum
+      expect(result.hasUnitMismatch).toBe(true);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.errorMessage).toContain("don't match");
+    });
+
+    test('should not throw when units mismatch (graceful handling)', () => {
+      expect(() =>
+        computeTotalQuantityDispensedWithWarning([
+          medicationDispense1,
+          medicationDispense2,
+          medicationDispenseDifferentUnits,
+        ]),
+      ).not.toThrow();
+    });
+  });
+
+  describe('test computeQuantityRemainingWithWarning', () => {
+    const medicationRequest: MedicationRequest = {
+      id: '1c1ad91e-8653-453a-9f59-8d5c36249aff',
+      dispenseRequest: {
+        numberOfRepeatsAllowed: undefined,
+        quantity: {
+          value: 30,
+          unit: 'mg',
+          code: '123abc',
+        },
+        validityPeriod: { start: '' },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: '', type: '' },
+      intent: '',
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      priority: '',
+      requester: {
+        display: '',
+        identifier: { value: '' },
+        reference: '',
+        type: '',
+      },
+      resourceType: 'MedicationRequest',
+      status: MedicationRequestStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      extension: [
+        {
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
+          valueCode: MedicationRequestFulfillerStatus.completed,
+        },
+      ],
+    };
+
+    const medicationDispense1: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      authorizingPrescription: [
+        {
+          reference: 'MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff',
+          type: 'MedicationRequest',
+        },
+      ],
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: {
+        value: 5,
+        unit: 'mg',
+        code: '123abc',
+      },
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    const medicationDispense2: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      authorizingPrescription: [
+        {
+          reference: 'MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff',
+          type: 'MedicationRequest',
+        },
+      ],
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: {
+        value: 10,
+        unit: 'mg',
+        code: '123abc',
+      },
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    const medicationDispenseDifferentUnits: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      authorizingPrescription: [
+        {
+          reference: 'MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff',
+          type: 'MedicationRequest',
+        },
+      ],
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: {
+        value: 5,
+        unit: 'kg',
+        code: '456def',
+      },
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    test('should return quantity 0 and no mismatch for null input', () => {
+      const result = computeQuantityRemainingWithWarning(null);
+      expect(result.quantity).toBe(0);
+      expect(result.hasUnitMismatch).toBe(false);
+      expect(result.errorMessage).toBeUndefined();
+    });
+
+    test('should return quantity remaining and no mismatch when units match', () => {
+      const result = computeQuantityRemainingWithWarning({
+        request: medicationRequest,
+        dispenses: [medicationDispense1, medicationDispense2],
+      });
+      expect(result.quantity).toBe(15);
+      expect(result.hasUnitMismatch).toBe(false);
+      expect(result.errorMessage).toBeUndefined();
+    });
+
+    test('should return full quantity ordered if no dispenses', () => {
+      const result = computeQuantityRemainingWithWarning({
+        request: medicationRequest,
+        dispenses: [],
+      });
+      expect(result.quantity).toBe(30);
+      expect(result.hasUnitMismatch).toBe(false);
+      expect(result.errorMessage).toBeUndefined();
+    });
+
+    test('should return quantity remaining with hasUnitMismatch when units differ', () => {
+      const result = computeQuantityRemainingWithWarning({
+        request: medicationRequest,
+        dispenses: [medicationDispense1, medicationDispenseDifferentUnits],
+      });
+      expect(result.quantity).toBe(20); // 30 - (5 + 5) = 20
+      expect(result.hasUnitMismatch).toBe(true);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.errorMessage).toContain("don't match");
+    });
+
+    test('should not throw when units mismatch (graceful handling)', () => {
+      expect(() =>
+        computeQuantityRemainingWithWarning({
+          request: medicationRequest,
+          dispenses: [medicationDispense1, medicationDispenseDifferentUnits],
+        }),
+      ).not.toThrow();
+    });
+  });
+
+  describe('test computeTotalQuantityDispensed backward compatibility', () => {
+    const medicationDispense1: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: {
+        value: 5,
+        unit: 'mg',
+        code: '123abc',
+      },
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    const medicationDispenseDifferentUnits: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: {
+        value: 10,
+        unit: 'kg',
+        code: '456def',
+      },
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    test('should not throw and return quantity even when units mismatch', () => {
+      // Previously this would throw, now it returns the sum
+      expect(() =>
+        computeTotalQuantityDispensed([medicationDispense1, medicationDispenseDifferentUnits]),
+      ).not.toThrow();
+      expect(computeTotalQuantityDispensed([medicationDispense1, medicationDispenseDifferentUnits])).toBe(15);
+    });
+  });
+
+  describe('test computeQuantityRemaining backward compatibility', () => {
+    const medicationRequest: MedicationRequest = {
+      id: '1c1ad91e-8653-453a-9f59-8d5c36249aff',
+      dispenseRequest: {
+        numberOfRepeatsAllowed: undefined,
+        quantity: {
+          value: 30,
+          unit: 'mg',
+          code: '123abc',
+        },
+        validityPeriod: { start: '' },
+      },
+      dosageInstruction: undefined,
+      encounter: { reference: '', type: '' },
+      intent: '',
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      priority: '',
+      requester: {
+        display: '',
+        identifier: { value: '' },
+        reference: '',
+        type: '',
+      },
+      resourceType: 'MedicationRequest',
+      status: MedicationRequestStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      extension: [
+        {
+          url: 'http://fhir.openmrs.org/ext/medicationrequest/fulfillerstatus',
+          valueCode: MedicationRequestFulfillerStatus.completed,
+        },
+      ],
+    };
+
+    const medicationDispenseDifferentUnits: MedicationDispense = {
+      dosageInstruction: undefined,
+      id: '',
+      authorizingPrescription: [
+        {
+          reference: 'MedicationRequest/1c1ad91e-8653-453a-9f59-8d5c36249aff',
+          type: 'MedicationRequest',
+        },
+      ],
+      location: { display: '', reference: '', type: '' },
+      medicationReference: { display: '', reference: '', type: '' },
+      meta: { lastUpdated: '' },
+      quantity: {
+        value: 10,
+        unit: 'kg',
+        code: '456def',
+      },
+      performer: undefined,
+      resourceType: 'MedicationDispense',
+      status: MedicationDispenseStatus.completed,
+      subject: { display: '', reference: '', type: '' },
+      substitution: { reason: [], type: undefined, wasSubstituted: false },
+      type: undefined,
+      whenHandedOver: '',
+      whenPrepared: '',
+    };
+
+    test('should not throw and return quantity even when units mismatch', () => {
+      // Previously this would throw, now it returns the computed quantity
+      expect(() =>
+        computeQuantityRemaining({
+          request: medicationRequest,
+          dispenses: [medicationDispenseDifferentUnits],
+        }),
+      ).not.toThrow();
+      expect(
+        computeQuantityRemaining({
+          request: medicationRequest,
+          dispenses: [medicationDispenseDifferentUnits],
+        }),
+      ).toBe(20); // 30 - 10 = 20
+    });
+  });
+
   describe('test computeTotalQuantityOrdered', () => {
     test('should calculate total quantity ordered when refills set', () => {
       const medicationRequest: MedicationRequest = {
@@ -2852,6 +3288,378 @@ describe('Util Tests', () => {
     });
     test('should return false if null', () => {
       expect(isMostRecentMedicationDispense(null, medicationDispenses)).toBe(false);
+    });
+  });
+
+  describe('test validateDispenseQuantity', () => {
+    describe('null and undefined input handling', () => {
+      test('should return invalid result for null input', () => {
+        const result = validateDispenseQuantity(null);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('No dispense records provided.');
+      });
+
+      test('should return invalid result for undefined input', () => {
+        const result = validateDispenseQuantity(undefined);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('No dispense records provided.');
+      });
+
+      test('should return invalid result for empty array', () => {
+        const result = validateDispenseQuantity([]);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('No dispense records provided.');
+      });
+    });
+
+    describe('same units handling', () => {
+      test('should return valid result with total quantity for same units', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: 5, unit: 'tablet' },
+          { quantity: 3, unit: 'tablet' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(18);
+        expect(result.warnings).toHaveLength(0);
+      });
+
+      test('should handle single record correctly', () => {
+        const records: DispenseRecord[] = [{ quantity: 15, unit: 'mg' }];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(15);
+        expect(result.warnings).toHaveLength(0);
+      });
+
+      test('should handle case-insensitive unit comparison', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'Tablet' },
+          { quantity: 5, unit: 'tablet' },
+          { quantity: 3, unit: 'TABLET' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(18);
+        expect(result.warnings).toHaveLength(0);
+      });
+    });
+
+    describe('different units handling', () => {
+      test('should return invalid result with warning for different units', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: 5, unit: 'mg' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('Different dispense units detected. Please review quantities.');
+      });
+
+      test('should detect multiple different units', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: 5, unit: 'mg' },
+          { quantity: 2, unit: 'ml' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('Different dispense units detected. Please review quantities.');
+      });
+    });
+
+    describe('zero quantities handling', () => {
+      test('should add warning for zero quantity records', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: 0, unit: 'tablet' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(10);
+        expect(result.warnings).toContain('One or more dispense records have a quantity of zero.');
+      });
+
+      test('should handle all zero quantities', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 0, unit: 'tablet' },
+          { quantity: 0, unit: 'tablet' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('One or more dispense records have a quantity of zero.');
+      });
+    });
+
+    describe('negative quantities handling', () => {
+      test('should return invalid result for negative quantities', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: -5, unit: 'tablet' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('Negative quantities are not allowed.');
+      });
+    });
+
+    describe('null/undefined quantity values', () => {
+      test('should handle records with null quantities', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: null, unit: 'tablet' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(10);
+        expect(result.warnings).toContain('Some dispense records have missing quantity values.');
+      });
+
+      test('should handle records with undefined quantities', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: undefined, unit: 'tablet' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(10);
+        expect(result.warnings).toContain('Some dispense records have missing quantity values.');
+      });
+
+      test('should return invalid when all quantities are null/undefined', () => {
+        const records: DispenseRecord[] = [
+          { quantity: null, unit: 'tablet' },
+          { quantity: undefined, unit: 'mg' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('No valid dispense quantities found.');
+      });
+    });
+
+    describe('null/undefined unit values', () => {
+      test('should handle records with null units', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: null },
+          { quantity: 5, unit: null },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(15);
+      });
+
+      test('should handle mixed records with some null units', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: 5, unit: null },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(15);
+      });
+    });
+
+    describe('edge cases', () => {
+      test('should handle decimal quantities', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 1.5, unit: 'ml' },
+          { quantity: 2.5, unit: 'ml' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(4);
+      });
+
+      test('should handle very large quantities', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 1000000, unit: 'tablet' },
+          { quantity: 500000, unit: 'tablet' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(1500000);
+      });
+
+      test('should handle records with empty string units as same unit', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: '' },
+          { quantity: 5, unit: '' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(15);
+      });
+    });
+
+    describe('single dispense handling', () => {
+      test('should pass validation for single dispense record', () => {
+        const records: DispenseRecord[] = [{ quantity: 30, unit: 'tablet' }];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(30);
+        expect(result.warnings).toHaveLength(0);
+      });
+
+      test('should pass for single dispense with zero quantity', () => {
+        const records: DispenseRecord[] = [{ quantity: 0, unit: 'tablet' }];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('One or more dispense records have a quantity of zero.');
+      });
+    });
+
+    describe('mixed units handling (tablets, boxes, strips)', () => {
+      test('should warn and prevent calculation for tablets vs boxes', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 30, unit: 'tablet' },
+          { quantity: 2, unit: 'box' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('Different dispense units detected. Please review quantities.');
+      });
+
+      test('should warn and prevent calculation for tablets vs strips', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: 3, unit: 'strip' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('Different dispense units detected. Please review quantities.');
+      });
+
+      test('should warn and prevent calculation for boxes vs strips', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 5, unit: 'box' },
+          { quantity: 10, unit: 'strip' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('Different dispense units detected. Please review quantities.');
+      });
+
+      test('should warn for mix of tablets, boxes, and strips', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 30, unit: 'tablet' },
+          { quantity: 2, unit: 'box' },
+          { quantity: 5, unit: 'strip' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('Different dispense units detected. Please review quantities.');
+      });
+
+      test('should allow same unit type even with different case', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 30, unit: 'Box' },
+          { quantity: 2, unit: 'box' },
+          { quantity: 5, unit: 'BOX' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(37);
+        expect(result.warnings).toHaveLength(0);
+      });
+    });
+
+    describe('graceful zero quantity handling', () => {
+      test('should handle multiple zero quantities gracefully', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 0, unit: 'tablet' },
+          { quantity: 0, unit: 'tablet' },
+          { quantity: 0, unit: 'tablet' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('One or more dispense records have a quantity of zero.');
+      });
+
+      test('should calculate correctly with mix of zero and non-zero quantities', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 10, unit: 'tablet' },
+          { quantity: 0, unit: 'tablet' },
+          { quantity: 20, unit: 'tablet' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(true);
+        expect(result.totalQuantity).toBe(30);
+        expect(result.warnings).toContain('One or more dispense records have a quantity of zero.');
+      });
+
+      test('should not crash with zero quantity and different units', () => {
+        const records: DispenseRecord[] = [
+          { quantity: 0, unit: 'tablet' },
+          { quantity: 0, unit: 'box' },
+        ];
+        const result = validateDispenseQuantity(records);
+        expect(result.isValid).toBe(false);
+        expect(result.totalQuantity).toBe(0);
+        expect(result.warnings).toContain('Different dispense units detected. Please review quantities.');
+      });
+    });
+
+    describe('validation should not crash (error handling)', () => {
+      test('should not throw exception for any valid input', () => {
+        const testCases = [
+          null,
+          undefined,
+          [],
+          [{ quantity: 10, unit: 'tablet' }],
+          [{ quantity: null, unit: null }],
+          [{ quantity: undefined, unit: undefined }],
+          [
+            { quantity: 10, unit: 'tablet' },
+            { quantity: 5, unit: 'mg' },
+          ],
+          [
+            { quantity: -5, unit: 'tablet' },
+            { quantity: 10, unit: 'tablet' },
+          ],
+        ];
+
+        testCases.forEach((testCase) => {
+          expect(() => validateDispenseQuantity(testCase)).not.toThrow();
+        });
+      });
+
+      test('should return consistent result structure for all inputs', () => {
+        const testCases = [
+          null,
+          undefined,
+          [],
+          [{ quantity: 10, unit: 'tablet' }],
+          [
+            { quantity: 10, unit: 'tablet' },
+            { quantity: 5, unit: 'mg' },
+          ],
+        ];
+
+        testCases.forEach((testCase) => {
+          const result = validateDispenseQuantity(testCase);
+          expect(result).toHaveProperty('isValid');
+          expect(result).toHaveProperty('totalQuantity');
+          expect(result).toHaveProperty('warnings');
+          expect(typeof result.isValid).toBe('boolean');
+          expect(typeof result.totalQuantity).toBe('number');
+          expect(Array.isArray(result.warnings)).toBe(true);
+        });
+      });
     });
   });
 });
