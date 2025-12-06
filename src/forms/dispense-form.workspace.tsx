@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Checkbox, Form, FormLabel, InlineLoading } from '@carbon/react';
+import { Button, Checkbox, Form, FormLabel, InlineLoading, InlineNotification } from '@carbon/react';
 import {
   ExtensionSlot,
   getCoreTranslation,
@@ -16,6 +16,8 @@ import {
   type MedicationRequestBundle,
   type InventoryItem,
   MedicationRequestFulfillerStatus,
+  type DispenseQuantityValidationResult,
+  type DispenseRecord,
 } from '../types';
 import {
   calculateIsFreeTextDosage,
@@ -25,6 +27,7 @@ import {
   getUuidFromReference,
   markEncounterAsStale,
   revalidate,
+  validateDispenseQuantity,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
@@ -32,6 +35,7 @@ import { saveMedicationDispense } from '../medication-dispense/medication-dispen
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 import MedicationDispenseReview from './medication-dispense-review.component';
 import StockDispense from './stock-dispense/stock-dispense.component';
+import { useDispenseUnitWarning } from '../hooks';
 import styles from './forms.scss';
 
 type DispenseFormProps = {
@@ -78,6 +82,23 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   const [isFreeTextDosage, setIsFreeTextDosage] = useState(() => {
     const dosageInstruction = getDosageInstruction(medicationDispense?.dosageInstruction);
     return dosageInstruction ? calculateIsFreeTextDosage(dosageInstruction) : false;
+  });
+
+  // Track unit mismatch validation warnings
+  const [unitValidationResult, setUnitValidationResult] = useState<DispenseQuantityValidationResult>({
+    isValid: true,
+    totalQuantity: 0,
+    warnings: [],
+  });
+
+  // Track if user has acknowledged unit mismatch warning
+  const [unitMismatchConfirmed, setUnitMismatchConfirmed] = useState(false);
+
+  // Use custom hook to warn about unit mismatches proactively
+  const dispenseUnitWarning = useDispenseUnitWarning({
+    previousDispenses: medicationRequestBundle?.dispenses,
+    currentUnitCode: medicationDispensePayload?.quantity?.code,
+    currentUnitDisplay: medicationDispensePayload?.quantity?.unit,
   });
 
   // Submit medication dispense form
@@ -227,7 +248,43 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
 
-  const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
+  // Validate dispense units when payload changes
+  useEffect(() => {
+    if (medicationDispensePayload && medicationRequestBundle?.dispenses) {
+      // Build dispense records array from existing dispenses and current payload
+      const existingDispenseRecords: DispenseRecord[] = medicationRequestBundle.dispenses.map((dispense) => ({
+        quantity: dispense.quantity?.value,
+        unit: dispense.quantity?.code,
+      }));
+
+      // Add current dispense payload (if it has quantity info)
+      const currentDispenseRecord: DispenseRecord = {
+        quantity: medicationDispensePayload.quantity?.value,
+        unit: medicationDispensePayload.quantity?.code,
+      };
+
+      const allDispenseRecords = [...existingDispenseRecords, currentDispenseRecord];
+      const validationResult = validateDispenseQuantity(allDispenseRecords);
+
+      setUnitValidationResult(validationResult);
+
+      // Clear confirmation if validation passes (units now match)
+      if (validationResult.isValid && validationResult.warnings.length === 0) {
+        setUnitMismatchConfirmed(false);
+      }
+    }
+  }, [medicationDispensePayload, medicationRequestBundle?.dispenses]);
+
+  // Check if there are unit mismatch warnings that need confirmation
+  const hasUnitMismatchWarning = unitValidationResult.warnings.some((warning) =>
+    warning.includes('Different dispense units detected'),
+  );
+
+  const isButtonDisabled =
+    (config.enableStockDispense ? !inventoryItem : false) ||
+    !isValid ||
+    isSubmitting ||
+    (hasUnitMismatchWarning && !unitMismatchConfirmed);
 
   const bannerState = useMemo(() => {
     if (patient) {
@@ -282,6 +339,23 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                     medicationDispense={medicationDispense}
                     updateInventoryItem={setInventoryItem}
                   />
+                )}
+                {hasUnitMismatchWarning && (
+                  <div className={styles.unitMismatchWarning}>
+                    <InlineNotification
+                      kind="warning"
+                      lowContrast
+                      title={t('unitMismatchWarning', 'Unit Mismatch Warning')}
+                      subtitle={unitValidationResult.warnings.join(' ')}
+                      hideCloseButton
+                    />
+                    <Checkbox
+                      id="confirm-unit-mismatch"
+                      labelText={t('confirmUnitMismatch', 'I understand the units differ and want to proceed')}
+                      checked={unitMismatchConfirmed}
+                      onChange={(_, { checked }) => setUnitMismatchConfirmed(checked)}
+                    />
+                  </div>
                 )}
               </div>
             ) : null}

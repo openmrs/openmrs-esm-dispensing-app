@@ -3,9 +3,9 @@ import { ExtensionSlot, useConfig, useSession } from '@openmrs/esm-framework';
 import { MedicationDispenseStatus, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
 import {
   computeMedicationRequestStatus,
-  computeQuantityRemaining,
+  computeQuantityRemainingWithWarning,
   getMostRecentMedicationDispenseStatus,
-  computeTotalQuantityDispensed,
+  computeTotalQuantityDispensedWithWarning,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 import { useProviders } from '../medication-dispense/medication-dispense.resource';
@@ -50,13 +50,18 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.declined;
 
   let quantityRemaining = null;
+  let hasUnitMismatch = false;
   if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
-    quantityRemaining = computeQuantityRemaining(medicationRequestBundle);
+    const remainingResult = computeQuantityRemainingWithWarning(medicationRequestBundle);
+    quantityRemaining = remainingResult.quantity;
+    hasUnitMismatch = remainingResult.hasUnitMismatch;
   }
 
   let quantityDispensed = 0;
   if (medicationRequestBundle.dispenses) {
-    quantityDispensed = computeTotalQuantityDispensed(medicationRequestBundle.dispenses);
+    const dispensedResult = computeTotalQuantityDispensedWithWarning(medicationRequestBundle.dispenses);
+    quantityDispensed = dispensedResult.quantity;
+    hasUnitMismatch = hasUnitMismatch || dispensedResult.hasUnitMismatch;
   }
 
   const prescriptionActionsState = {
@@ -65,6 +70,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     closeable,
     quantityRemaining,
     quantityDispensed,
+    hasUnitMismatch,
     patientUuid,
     encounterUuid,
     medicationRequestBundle,
