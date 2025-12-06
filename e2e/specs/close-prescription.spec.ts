@@ -50,9 +50,14 @@ test('Close prescription', async ({ page, patient }) => {
   });
 
   await test.step('And when I select Allergy as the reason for closing and submit the form', async () => {
-    await page.getByRole('button', { name: 'Open', exact: true }).click();
+    await page.waitForLoadState('networkidle');
+    const openDropdownButton = page.getByRole('button', { name: 'Open', exact: true });
+    await openDropdownButton.scrollIntoViewIfNeeded();
+    await openDropdownButton.click();
     await page.getByText('Allergy', { exact: true }).click();
-    await page.locator('form').getByRole('button', { name: 'Close' }).click();
+    const closeButton = page.locator('form').getByRole('button', { name: 'Close' });
+    await closeButton.scrollIntoViewIfNeeded();
+    await closeButton.click();
   });
 
   await test.step('Then I should see a success notification', async () => {
