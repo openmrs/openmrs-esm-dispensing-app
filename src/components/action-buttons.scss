@@ -1,15 +1,35 @@
 .actionBtns {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  display: flex;
-  gap: 0;
+  :global(.omrs-breakpoint-lt-tablet) & {
+    position: static;
+    flex-direction: column;
+    margin-bottom: 12px;
+    width: 100%;
+  }
+
+  :global(.omrs-breakpoint-lt-desktop) & {
+    position: static;
+    flex-direction: row;
+    margin-bottom: 12px;
+    justify-content: flex-end;
+  }
 }
 
 .extensionSlot {
   display: flex;
   flex-direction: row-reverse;
-  justify-content: space-between;
   height: 100%;
   position: relative;
+
+  :global(.omrs-breakpoint-lt-tablet) & {
+    flex-direction: column;
+    height: auto;
+    width: 100%;
+    gap: 4px;
+  }
+
+  :global(.omrs-breakpoint-lt-desktop) & {
+    flex-direction: row;
+    height: auto;
+    justify-content: flex-end;
+  }
 }
