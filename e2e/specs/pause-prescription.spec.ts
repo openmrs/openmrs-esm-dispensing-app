@@ -51,9 +51,14 @@ test('Pause prescription', async ({ page, patient }) => {
   });
 
   await test.step('And I select "Allergy" as the reason for pausing the prescription and then submit the form', async () => {
-    await page.getByRole('button', { name: 'Open', exact: true }).click();
+    await page.waitForLoadState('networkidle');
+    const openDropdownButton = page.getByRole('button', { name: 'Open', exact: true });
+    await openDropdownButton.scrollIntoViewIfNeeded();
+    await openDropdownButton.click();
     await page.getByText('Allergy', { exact: true }).click();
-    await page.locator('form').getByRole('button', { name: 'Pause' }).click();
+    const pauseButton = page.locator('form').getByRole('button', { name: 'Pause' });
+    await pauseButton.scrollIntoViewIfNeeded();
+    await pauseButton.click();
   });
 
   await test.step('Then I should see a success notification', async () => {

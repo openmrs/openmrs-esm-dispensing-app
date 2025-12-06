@@ -49,7 +49,10 @@ test('Dispense prescription', async ({ page, patient }) => {
   });
 
   await test.step('Then I submit the form by clicking the Dispense prescription button', async () => {
-    await page.getByRole('button', { name: 'Dispense prescription' }).click();
+    await page.waitForLoadState('networkidle');
+    const dispenseButton = page.getByRole('button', { name: 'Dispense prescription' });
+    await dispenseButton.scrollIntoViewIfNeeded();
+    await dispenseButton.click();
   });
 
   await test.step('Then I should see a success notification', async () => {
