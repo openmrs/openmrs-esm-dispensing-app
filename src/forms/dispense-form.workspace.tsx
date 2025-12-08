@@ -227,6 +227,18 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
 
+  // Auto-default "Complete Order With This Dispense" checkbox for orders with no refills
+  useEffect(() => {
+    // Only auto-default in 'enter' mode when creating a new dispense
+    if (mode === 'enter' && medicationRequestBundle?.request?.dispenseRequest) {
+      const numberOfRepeatsAllowed = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed;
+      // Default to true if order doesn't support refills
+      if (numberOfRepeatsAllowed === 0 || numberOfRepeatsAllowed === null || numberOfRepeatsAllowed === undefined) {
+        setShouldCompleteOrder(true);
+      }
+    }
+  }, [medicationRequestBundle, mode]);
+
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
 
   const bannerState = useMemo(() => {
