@@ -57,7 +57,25 @@ jest.mock('../utils', () => {
     ...actualUtils,
     markEncounterAsStale: jest.fn(),
     revalidate: jest.fn(),
-    // Override these to avoid createGlobalStore issues
+    validateDispenseQuantity: jest.fn((records) => {
+      // Simple validation: check if all units match
+      const units = records.map((r) => r.unit).filter((u) => u);
+      const uniqueUnits = new Set(units);
+
+      if (uniqueUnits.size > 1) {
+        return {
+          isValid: false,
+          totalQuantity: records.reduce((sum, r) => sum + (r.quantity || 0), 0),
+          warnings: ['Different dispense units detected. Please review quantities.'],
+        };
+      }
+
+      return {
+        isValid: true,
+        totalQuantity: records.reduce((sum, r) => sum + (r.quantity || 0), 0),
+        warnings: [],
+      };
+    }),
     useStaleEncounterUuids: jest.fn(() => ({ staleEncounterUuids: [] })),
   };
 });
@@ -103,7 +121,10 @@ const mockUseConfig = jest.mocked(useConfig);
 const mockUsePatient = jest.mocked(usePatient);
 const mockShowSnackbar = jest.mocked(showSnackbar);
 
-const createMockMedicationDispense = (unitCode = 'tablet', unitDisplay = 'Tablet'): MedicationDispense => ({
+const createMockMedicationDispense = (
+  unitCode = 'tablet',
+  unitDisplay = 'Tablet',
+): MedicationDispense => ({
   resourceType: 'MedicationDispense',
   status: MedicationDispenseStatus.completed,
   medicationReference: {
@@ -157,8 +178,8 @@ const createMockMedicationDispense = (unitCode = 'tablet', unitDisplay = 'Tablet
         {
           doseQuantity: {
             value: 1,
-            code: 'tablet',
-            unit: 'Tablet',
+            code: unitCode,
+            unit: unitDisplay,
           },
         },
       ],
@@ -170,7 +191,10 @@ const createMockMedicationDispense = (unitCode = 'tablet', unitDisplay = 'Tablet
   },
 });
 
-const createMockMedicationRequestBundle = (previousDispenses: MedicationDispense[] = []): MedicationRequestBundle => ({
+const createMockMedicationRequestBundle = (
+  previousDispenses: MedicationDispense[] = [],
+  numberOfRepeatsAllowed: number | null = 0,
+): MedicationRequestBundle => ({
   request: {
     resourceType: 'MedicationRequest',
     id: 'request-123',
@@ -221,7 +245,7 @@ const createMockMedicationRequestBundle = (previousDispenses: MedicationDispense
       },
     ],
     dispenseRequest: {
-      numberOfRepeatsAllowed: 0,
+      numberOfRepeatsAllowed,
       quantity: {
         value: 30,
         code: 'tablet',
@@ -269,7 +293,7 @@ const renderDispenseForm = (workspaceProps = defaultWorkspaceProps) => {
   };
 };
 
-describe('DispenseForm Component', () => {
+describe('DispenseForm Component - Unit Mismatch Validation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -280,32 +304,18 @@ describe('DispenseForm Component', () => {
       },
       enableStockDispense: false,
       completeOrderWithThisDispense: false,
-    });
+    } as any);
 
     mockUsePatient.mockReturnValue({
       patient: { id: 'patient-123', name: [{ given: ['Test'], family: 'Patient' }] },
       isLoading: false,
       error: null,
       patientUuid: 'patient-123',
-    });
+    } as any);
   });
 
   describe('Unit mismatch warning notification', () => {
-    it('should display warning notification when units mismatch with previous dispense', () => {
-      // Get the mocked hook - use the already mocked version from jest.mock
-      const hooks = jest.requireMock('../hooks');
-      const mockUseDispenseUnitWarning = hooks.useDispenseUnitWarning as jest.Mock;
-      mockUseDispenseUnitWarning.mockReturnValue({
-        shouldWarn: true,
-        previousUnit: 'tablet',
-        previousUnitDisplay: 'Tablet',
-        currentUnit: 'mg',
-        currentUnitDisplay: 'Milligram',
-        resetWarning: jest.fn(),
-        warningShown: true,
-      });
-
-      // Create previous dispense with different unit
+    it('should display warning notification when units mismatch with previous dispense', async () => {
       const previousDispense = createMockMedicationDispense('tablet', 'Tablet');
       const currentDispense = createMockMedicationDispense('mg', 'Milligram');
 
@@ -317,14 +327,16 @@ describe('DispenseForm Component', () => {
         medicationRequestBundle: bundle,
       });
 
-      // The warning should be tracked by the hook
-      expect(mockUseDispenseUnitWarning).toHaveBeenCalled();
+      // Wait for validation to complete and warning to appear
+      await waitFor(() => {
+        const warning = screen.queryByText('Unit Mismatch Warning');
+        expect(warning).toBeInTheDocument();
+      });
     });
   });
 
   describe('Button disabled state with warnings', () => {
     it('should disable dispense button when unit mismatch warning exists and not confirmed', async () => {
-      // Set up the validation to return a warning
       const previousDispense = createMockMedicationDispense('tablet', 'Tablet');
       const currentDispense = createMockMedicationDispense('mg', 'Milligram');
       const bundle = createMockMedicationRequestBundle([previousDispense]);
@@ -335,11 +347,9 @@ describe('DispenseForm Component', () => {
         medicationRequestBundle: bundle,
       });
 
-      // Wait for the component to render
       await waitFor(() => {
         const dispenseButton = screen.getByRole('button', { name: /dispense prescription/i });
-        // Button should exist
-        expect(dispenseButton).toBeInTheDocument();
+        expect(dispenseButton).toBeDisabled();
       });
     });
 
@@ -358,7 +368,6 @@ describe('DispenseForm Component', () => {
     it('should enable dispense button after user confirms unit mismatch', async () => {
       const user = userEvent.setup();
 
-      // Create a scenario with unit mismatch
       const previousDispense = createMockMedicationDispense('tablet', 'Tablet');
       const currentDispense = createMockMedicationDispense('mg', 'Milligram');
       const bundle = createMockMedicationRequestBundle([previousDispense]);
@@ -369,9 +378,22 @@ describe('DispenseForm Component', () => {
         medicationRequestBundle: bundle,
       });
 
-      // Wait for render
+      // Wait for warning to appear
       await waitFor(() => {
-        expect(screen.getByTestId('medication-dispense-review')).toBeInTheDocument();
+        expect(screen.getByText('Unit Mismatch Warning')).toBeInTheDocument();
+      });
+
+      // Find and click the confirmation checkbox
+      const confirmCheckbox = screen.getByRole('checkbox', {
+        name: /I understand the units differ and want to proceed/i,
+      });
+
+      await user.click(confirmCheckbox);
+
+      // Button should now be enabled
+      await waitFor(() => {
+        const dispenseButton = screen.getByRole('button', { name: /dispense prescription/i });
+        expect(dispenseButton).not.toBeDisabled();
       });
     });
   });
@@ -434,7 +456,7 @@ describe('DispenseForm Component', () => {
         },
         enableStockDispense: false,
         completeOrderWithThisDispense: false,
-      });
+      } as any);
 
       renderDispenseForm();
 
@@ -451,13 +473,124 @@ describe('DispenseForm Component', () => {
         },
         enableStockDispense: true,
         completeOrderWithThisDispense: false,
-      });
+      } as any);
 
       renderDispenseForm();
 
       await waitFor(() => {
         expect(screen.getByTestId('stock-dispense')).toBeInTheDocument();
       });
+    });
+  });
+});
+
+describe('DispenseForm - Complete Order Checkbox Auto-Default', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockUseConfig.mockReturnValue({
+      dispenseBehavior: {
+        allowModifyingPrescription: false,
+        restrictTotalQuantityDispensed: false,
+      },
+      completeOrderWithThisDispense: true,
+      enableStockDispense: false,
+    } as any);
+
+    mockUsePatient.mockReturnValue({
+      patient: { id: 'patient-123', name: [{ given: ['Test'], family: 'Patient' }] },
+      isLoading: false,
+      error: null,
+      patientUuid: 'patient-123',
+    } as any);
+  });
+
+  test('should default checkbox to true when numberOfRepeatsAllowed is 0', async () => {
+    const medicationDispense = createMockMedicationDispense();
+    const medicationRequestBundle = createMockMedicationRequestBundle([], 0);
+
+    renderDispenseForm({
+      ...defaultWorkspaceProps,
+      medicationDispense,
+      medicationRequestBundle,
+    });
+
+    await waitFor(() => {
+      const checkbox = screen.getByRole('checkbox', { name: /complete order with this dispense/i });
+      expect(checkbox).toBeChecked();
+    });
+  });
+
+  test('should default checkbox to true when numberOfRepeatsAllowed is null', async () => {
+    const medicationDispense = createMockMedicationDispense();
+    const medicationRequestBundle = createMockMedicationRequestBundle([], null);
+
+    renderDispenseForm({
+      ...defaultWorkspaceProps,
+      medicationDispense,
+      medicationRequestBundle,
+    });
+
+    await waitFor(() => {
+      const checkbox = screen.getByRole('checkbox', { name: /complete order with this dispense/i });
+      expect(checkbox).toBeChecked();
+    });
+  });
+
+  test('should default checkbox to false when numberOfRepeatsAllowed is greater than 0', async () => {
+    const medicationDispense = createMockMedicationDispense();
+    const medicationRequestBundle = createMockMedicationRequestBundle([], 2);
+
+    renderDispenseForm({
+      ...defaultWorkspaceProps,
+      medicationDispense,
+      medicationRequestBundle,
+    });
+
+    await waitFor(() => {
+      const checkbox = screen.getByRole('checkbox', { name: /complete order with this dispense/i });
+      expect(checkbox).not.toBeChecked();
+    });
+  });
+
+  test('should allow user to manually uncheck the checkbox even when auto-defaulted to true', async () => {
+    const user = userEvent.setup();
+    const medicationDispense = createMockMedicationDispense();
+    const medicationRequestBundle = createMockMedicationRequestBundle([], 0);
+
+    renderDispenseForm({
+      ...defaultWorkspaceProps,
+      medicationDispense,
+      medicationRequestBundle,
+    });
+
+    await waitFor(() => {
+      const checkbox = screen.getByRole('checkbox', { name: /complete order with this dispense/i });
+      expect(checkbox).toBeChecked();
+    });
+
+    const checkbox = screen.getByRole('checkbox', { name: /complete order with this dispense/i });
+    await user.click(checkbox);
+
+    expect(checkbox).not.toBeChecked();
+  });
+
+  test('should not auto-default checkbox in edit mode', async () => {
+    const medicationDispense = createMockMedicationDispense();
+    medicationDispense.id = 'existing-dispense-id'; // Existing dispense
+    const medicationRequestBundle = createMockMedicationRequestBundle([], 0);
+
+    renderDispenseForm({
+      ...defaultWorkspaceProps,
+      medicationDispense,
+      medicationRequestBundle,
+      mode: 'edit',
+    });
+
+    // In edit mode, the checkbox should not be rendered
+    await waitFor(() => {
+      const checkbox = screen.queryByRole('checkbox', { name: /complete order with this dispense/i });
+      expect(checkbox).not.toBeInTheDocument();
     });
   });
 });
@@ -473,17 +606,17 @@ describe('DispenseForm Unit Validation Integration', () => {
       },
       enableStockDispense: false,
       completeOrderWithThisDispense: false,
-    });
+    } as any);
 
     mockUsePatient.mockReturnValue({
       patient: { id: 'patient-123', name: [{ given: ['Test'], family: 'Patient' }] },
       isLoading: false,
       error: null,
       patientUuid: 'patient-123',
-    });
+    } as any);
   });
 
-  it('should call validateDispenseQuantity when form loads with previous dispenses', async () => {
+  it('should validate dispense quantity when form loads with previous dispenses', async () => {
     const previousDispense = createMockMedicationDispense('tablet', 'Tablet');
     const bundle = createMockMedicationRequestBundle([previousDispense]);
 
@@ -492,7 +625,6 @@ describe('DispenseForm Unit Validation Integration', () => {
       medicationRequestBundle: bundle,
     });
 
-    // The form should have rendered and validation should have been called
     await waitFor(() => {
       expect(screen.getByTestId('medication-dispense-review')).toBeInTheDocument();
     });

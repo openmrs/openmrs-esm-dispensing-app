@@ -77,6 +77,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Track whether to complete order with this dispense
   const [shouldCompleteOrder, setShouldCompleteOrder] = useState(false);
 
   const [isFreeTextDosage, setIsFreeTextDosage] = useState(() => {
@@ -248,6 +249,18 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
 
+  // Auto-default "Complete Order With This Dispense" checkbox for orders with no refills
+  useEffect(() => {
+    // Only auto-default in 'enter' mode when creating a new dispense
+    if (mode === 'enter' && medicationRequestBundle?.request?.dispenseRequest) {
+      const numberOfRepeatsAllowed = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed;
+      // Default to true if order doesn't support refills
+      if (numberOfRepeatsAllowed === 0 || numberOfRepeatsAllowed === null || numberOfRepeatsAllowed === undefined) {
+        setShouldCompleteOrder(true);
+      }
+    }
+  }, [medicationRequestBundle, mode]);
+
   // Validate dispense units when payload changes
   useEffect(() => {
     if (medicationDispensePayload && medicationRequestBundle?.dispenses) {
@@ -333,13 +346,6 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                     onChange={(_, { checked }) => setShouldCompleteOrder(checked)}
                   />
                 )}
-                {config.enableStockDispense && (
-                  <StockDispense
-                    inventoryItem={inventoryItem}
-                    medicationDispense={medicationDispense}
-                    updateInventoryItem={setInventoryItem}
-                  />
-                )}
                 {hasUnitMismatchWarning && (
                   <div className={styles.unitMismatchWarning}>
                     <InlineNotification
@@ -351,33 +357,41 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                     />
                     <Checkbox
                       id="confirm-unit-mismatch"
-                      labelText={t('confirmUnitMismatch', 'I understand the units differ and want to proceed')}
+                      labelText={t(
+                        'confirmUnitMismatch',
+                        'I understand the units differ and want to proceed',
+                      )}
                       checked={unitMismatchConfirmed}
                       onChange={(_, { checked }) => setUnitMismatchConfirmed(checked)}
                     />
                   </div>
                 )}
+                {config.enableStockDispense && (
+                  <StockDispense
+                    inventoryItem={inventoryItem}
+                    medicationDispense={medicationDispense}
+                    updateInventoryItem={setInventoryItem}
+                  />
+                )}
               </div>
             ) : null}
           </section>
         </div>
-        <section className={styles.buttonGroup}>
-          <Button
-            disabled={isSubmitting}
-            onClick={() => {
-              closeWorkspace();
-              onWorkspaceClosed?.();
-            }}
-            kind="secondary">
-            {getCoreTranslation('cancel', 'Cancel')}
+        <div className={styles.buttonGroup}>
+          <Button onClick={closeWorkspace} kind="secondary">
+            {t('cancel', 'Cancel')}
           </Button>
-          <Button disabled={isButtonDisabled} onClick={handleSubmit}>
-            {t(
-              mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
-              mode === 'enter' ? 'Dispense prescription' : 'Save changes',
+          <Button onClick={handleSubmit} disabled={isButtonDisabled} type="submit">
+            {isSubmitting ? (
+              <InlineLoading description={t('submitting', 'Submitting')} />
+            ) : (
+              t(
+                mode === 'enter' ? 'dispensePrescription' : 'updateDispense',
+                mode === 'enter' ? 'Dispense prescription' : 'Update dispense',
+              )
             )}
           </Button>
-        </section>
+        </div>
       </Form>
     </Workspace2>
   );
