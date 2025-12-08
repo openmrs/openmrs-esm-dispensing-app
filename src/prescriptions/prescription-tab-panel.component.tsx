@@ -24,7 +24,9 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
 
   // set any initially selected locations
   useEffect(() => {
-    setLocations(filterLocations?.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation) || []);
+    if (!isFilterLocationsLoading && sessionLocation?.uuid) {
+      setLocations(filterLocations?.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation) || []);
+    }
     // eslint-disable-next-line
   }, [isFilterLocationsLoading, sessionLocation]);
 
@@ -33,14 +35,13 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
       <div className={styles.searchContainer}>
         {config.locationBehavior?.locationFilter?.enabled &&
           !isFilterLocationsLoading &&
-          sessionLocation &&
           filterLocations?.length > 1 && (
             <MultiSelect
               hideLabel
               id="locationFilter"
               label={t('filterByLocations', 'Filter by locations')}
               initialSelectedItems={
-                isFilterLocationsLoading
+                isFilterLocationsLoading || !sessionLocation?.uuid
                   ? []
                   : filterLocations.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation)
               }
