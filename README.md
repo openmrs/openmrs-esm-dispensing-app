@@ -59,6 +59,7 @@ TODO: document all configuration options
 The Dispensing app allows users to filter orders in the order list by location. By default, when you open the dispensing app, no locations are selected.
 
 You can set certain locations as default filter locations for specific locations by setting the "Associated Pharmacy Location" attribute on a location.
+(You can also configure the attribute name in the config-schema)
 
 For example, if you have an "Inpatient Pharmacy" location, and want only orders from inpatient locations to show by default, you can set the "Associated Pharmacy Location" attribute on all inpatients to (the uuid for) the Inpatient Pharmacy location.
 

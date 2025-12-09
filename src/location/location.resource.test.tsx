@@ -23,7 +23,11 @@ const pharmacyConfig: PharmacyConfig = {
   dispenserProviderRoles: [],
   locationBehavior: {
     locationColumn: { enabled: false },
-    locationFilter: { enabled: false, tag: 'Login Location' },
+    locationFilter: {
+      enabled: false,
+      tag: 'Login Location',
+      associatedPharmacyLocationAttribute: 'Associated Pharmacy Location',
+    },
   },
   refreshInterval: 10000,
   medicationRequestExpirationPeriodInDays: 0,

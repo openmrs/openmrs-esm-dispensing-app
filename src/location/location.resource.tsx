@@ -2,7 +2,6 @@ import useSWR from 'swr';
 import { type FetchResponse, openmrsFetch, restBaseUrl } from '@openmrs/esm-framework';
 import { type SimpleLocation } from '../types';
 import { type PharmacyConfig } from '../config-schema';
-import { LOCATION_ATTRIBUTE_ASSOCIATED_PHARMACY_LOCATION } from '../constants';
 
 export function useLocationsForFiltering(config: PharmacyConfig) {
   const { data, error } = useSWR<FetchResponse, Error>(
@@ -16,8 +15,9 @@ export function useLocationsForFiltering(config: PharmacyConfig) {
       id: e.uuid,
       name: e.name,
       associatedPharmacyLocation:
-        e.attributes?.find((a) => a.attributeType.name === LOCATION_ATTRIBUTE_ASSOCIATED_PHARMACY_LOCATION)?.value
-          ?.uuid ?? null,
+        e.attributes?.find(
+          (a) => a.attributeType.name === config.locationBehavior.locationFilter.associatedPharmacyLocationAttribute,
+        )?.value?.uuid ?? null,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
