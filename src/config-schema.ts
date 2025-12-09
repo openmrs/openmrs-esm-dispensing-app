@@ -71,6 +71,11 @@ export const configSchema = {
         _description: 'Name of the location tag to use when fetching locations to populate filter',
         _default: 'Login Location',
       },
+      associatedPharmacyLocationAttribute: {
+        _type: Type.String,
+        _description: 'Name of the attribute used to associate locations with a pharmacy location',
+        _default: 'Associated Pharmacy Location',
+      },
     },
   },
   refreshInterval: {
@@ -157,6 +162,7 @@ export interface PharmacyConfig {
     locationFilter: {
       enabled: boolean;
       tag: string;
+      associatedPharmacyLocationAttribute: string;
     };
   };
   valueSets: {

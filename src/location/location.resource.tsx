@@ -1,19 +1,23 @@
 import useSWR from 'swr';
-import { fhirBaseUrl, openmrsFetch } from '@openmrs/esm-framework';
-import { type LocationResponse, type SimpleLocation } from '../types';
+import { type FetchResponse, openmrsFetch, restBaseUrl } from '@openmrs/esm-framework';
+import { type SimpleLocation } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 
-export function useLocationForFiltering(config: PharmacyConfig) {
-  const { data, error } = useSWR<{ data: LocationResponse }, Error>(
-    `${fhirBaseUrl}/Location?_tag=${encodeURIComponent(config.locationBehavior.locationFilter.tag)}&_count=100`,
+export function useLocationsForFiltering(config: PharmacyConfig) {
+  const { data, error } = useSWR<FetchResponse, Error>(
+    `${restBaseUrl}/location?tag=${encodeURIComponent(config.locationBehavior.locationFilter.tag)}&v=custom:(uuid,name,attributes:(attributeType:(name),value:(uuid))`,
     openmrsFetch,
   );
 
   // parse down to a simple representation of locations
-  const filterLocations: Array<SimpleLocation> = data?.data?.entry
+  const filterLocations: Array<SimpleLocation> = data?.data?.results
     ?.map((e) => ({
-      id: e.resource.id,
-      name: e.resource.name,
+      id: e.uuid,
+      name: e.name,
+      associatedPharmacyLocation:
+        e.attributes?.find(
+          (a) => a.attributeType.name === config.locationBehavior.locationFilter.associatedPharmacyLocationAttribute,
+        )?.value?.uuid ?? null,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
