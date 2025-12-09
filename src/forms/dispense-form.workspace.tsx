@@ -111,7 +111,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
       saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
         .then((response) => {
           if (response.ok) {
-            if (config.completeOrderWithThisDispense && shouldCompleteOrder) {
+            if (config.dispenseBehavior.completeOrderWithThisDispense && shouldCompleteOrder) {
               return updateMedicationRequestFulfillerStatus(
                 getUuidFromReference(
                   medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
@@ -166,7 +166,11 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
         .then(
           (response) => {
             const { status } = response;
-            if (config.completeOrderWithThisDispense && shouldCompleteOrder && response?.data?.status === 'completed') {
+            if (
+              config.dispenseBehavior.completeOrderWithThisDispense &&
+              shouldCompleteOrder &&
+              response?.data?.status === 'completed'
+            ) {
               showSnackbar({
                 title: t('prescriptionCompleted', 'Prescription completed'),
                 kind: 'success',
@@ -338,7 +342,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                   quantityRemaining={quantityRemaining}
                   quantityDispensed={quantityDispensed}
                 />
-                {config.completeOrderWithThisDispense && mode === 'enter' && !medicationDispense?.id && (
+                {config.dispenseBehavior.completeOrderWithThisDispense && mode === 'enter' && !medicationDispense?.id && (
                   <Checkbox
                     id="complete-order-with-this-dispense"
                     labelText={t('completeOrderWithThisDispense', 'Complete order with this dispense')}
