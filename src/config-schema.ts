@@ -34,6 +34,11 @@ export const configSchema = {
         'Enable/Disable restricting dispensing quantity greater than total quantity ordered. Marks prescription as complete when total quantity dispensed. If true, allowModifyingPrescription *must* be false, as this functionality relies solely on numeric quantity and assumes no change in formulation, dosage, unit, etc',
       _default: false,
     },
+    completeOrderWithThisDispense: {
+      _type: Type.Boolean,
+      _description: 'Enable or disable the "Complete order with this dispense" checkbox on the dispense form.',
+      _default: false,
+    },
   },
   dispenserProviderRoles: {
     _type: Type.Array,
@@ -125,11 +130,6 @@ export const configSchema = {
     _validators: [validators.oneOf(['normal', 'collapsed', 'hidden'])],
     _default: 'collapsed',
   },
-  completeOrderWithThisDispense: {
-    _type: Type.Boolean,
-    _description: 'Enable or disable the "Complete order with this dispense" checkbox on the dispense form.',
-    _default: false,
-  },
 };
 
 export interface PharmacyConfig {
@@ -146,6 +146,7 @@ export interface PharmacyConfig {
   dispenseBehavior: {
     allowModifyingPrescription: boolean;
     restrictTotalQuantityDispensed: boolean;
+    completeOrderWithThisDispense: boolean;
   };
   dispenserProviderRoles: [];
   medicationRequestExpirationPeriodInDays: number;
@@ -173,7 +174,6 @@ export interface PharmacyConfig {
     };
   };
   enableStockDispense: boolean;
-  completeOrderWithThisDispense: boolean;
   validateBatch: boolean;
   leftNavMode: 'normal' | 'collapsed' | 'hidden';
 }

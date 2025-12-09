@@ -192,8 +192,8 @@ beforeEach(() => {
     dispenseBehavior: {
       allowModifyingPrescription: false,
       restrictTotalQuantityDispensed: false,
+      completeOrderWithThisDispense: true,
     },
-    completeOrderWithThisDispense: true,
     enableStockDispense: false,
   });
   mockUsePatient.mockReturnValue({

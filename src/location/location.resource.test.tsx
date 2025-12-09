@@ -19,6 +19,7 @@ const pharmacyConfig: PharmacyConfig = {
   dispenseBehavior: {
     allowModifyingPrescription: false,
     restrictTotalQuantityDispensed: false,
+    completeOrderWithThisDispense: false,
   },
   dispenserProviderRoles: [],
   locationBehavior: {
@@ -34,7 +35,6 @@ const pharmacyConfig: PharmacyConfig = {
     substitutionType: { uuid: '' },
   },
   enableStockDispense: false,
-  completeOrderWithThisDispense: false,
   validateBatch: false,
   leftNavMode: 'collapsed',
 };
