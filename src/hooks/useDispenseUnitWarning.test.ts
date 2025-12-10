@@ -3,7 +3,6 @@ import { showNotification } from '@openmrs/esm-framework';
 import { useDispenseUnitWarning } from './useDispenseUnitWarning';
 import { type MedicationDispense, MedicationDispenseStatus } from '../types';
 
-// The framework mock is loaded via jest.config.js - use jest.mocked for type-safe mocking
 const mockShowNotification = jest.mocked(showNotification);
 
 describe('useDispenseUnitWarning', () => {
