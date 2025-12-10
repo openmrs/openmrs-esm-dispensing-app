@@ -301,9 +301,9 @@ describe('DispenseForm Component - Unit Mismatch Validation', () => {
       dispenseBehavior: {
         allowModifyingPrescription: false,
         restrictTotalQuantityDispensed: true,
-        completeOrderWithThisDispense: true,
       },
       enableStockDispense: false,
+      completeOrderWithThisDispense: true,
     } as any);
 
     mockUsePatient.mockReturnValue({

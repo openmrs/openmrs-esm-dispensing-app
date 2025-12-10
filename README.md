@@ -50,6 +50,19 @@ Note that following privileges need to be installed and assigned to roles:
 - `Task: dispensing.delete.dispense` - Allows user to delete an existing Medication Dispense
 - `Task: dispensing.delete.dispense.ifCreator` - Allows user to delete an existing Medication Dispense, *but only* if they created it originally
 
+## Optional Configuration
+
+TODO: document all configuration options
+
+### Default filter locations
+
+The Dispensing app allows users to filter orders in the order list by location. By default, when you open the dispensing app, no locations are selected.
+
+You can set certain locations as default filter locations for specific locations by setting the "Associated Pharmacy Location" attribute on a location.
+(You can also configure the attribute name in the config-schema)
+
+For example, if you have an "Inpatient Pharmacy" location, and want only orders from inpatient locations to show by default, you can set the "Associated Pharmacy Location" attribute on all inpatients to (the uuid for) the Inpatient Pharmacy location.
+
 ## Running this code
 
 First, install dependencies:

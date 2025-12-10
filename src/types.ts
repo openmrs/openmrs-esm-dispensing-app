@@ -178,17 +178,6 @@ export interface Extension {
   valueCode?: MedicationRequestFulfillerStatus; // add other possibilties once we start using other extensions
 }
 
-export interface LocationResponse {
-  resourceType: string;
-  id: string;
-  meta: {
-    lastUpdated: string;
-  };
-  type: string;
-  total: number;
-  entry: Array<any>; // TODO: type this out better?
-}
-
 export interface Medication {
   resourceType: string;
   id: string;
@@ -466,6 +455,7 @@ export interface Reference {
 export interface SimpleLocation {
   id: string;
   name: string;
+  associatedPharmacyLocation?: string;
 }
 
 export interface ValueSet {

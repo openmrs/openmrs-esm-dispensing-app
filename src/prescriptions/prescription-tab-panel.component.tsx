@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MultiSelect, Search, TabPanel } from '@carbon/react';
-import { useConfig, useDebounce } from '@openmrs/esm-framework';
+import { useConfig, useDebounce, useSession } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import PrescriptionsTable from './prescriptions-table.component';
 import styles from './prescriptions.scss';
-import { useLocationForFiltering } from '../location/location.resource';
+import { useLocationsForFiltering } from '../location/location.resource';
 import { type SimpleLocation } from '../types';
 
 interface PrescriptionTabPanelProps {
@@ -16,10 +16,19 @@ interface PrescriptionTabPanelProps {
 const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isTabActive }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
-  const { filterLocations, isLoading: isFilterLocationsLoading } = useLocationForFiltering(config);
+  const { sessionLocation } = useSession();
+  const { filterLocations, isLoading: isFilterLocationsLoading } = useLocationsForFiltering(config);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [locations, setLocations] = useState<SimpleLocation[]>([]);
+
+  // set any initially selected locations
+  useEffect(() => {
+    if (!isFilterLocationsLoading && sessionLocation?.uuid) {
+      setLocations(filterLocations?.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation) || []);
+    }
+    // eslint-disable-next-line
+  }, [isFilterLocationsLoading, sessionLocation]);
 
   return (
     <TabPanel>
@@ -31,6 +40,11 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
               hideLabel
               id="locationFilter"
               label={t('filterByLocations', 'Filter by locations')}
+              initialSelectedItems={
+                isFilterLocationsLoading || !sessionLocation?.uuid
+                  ? []
+                  : filterLocations.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation)
+              }
               items={isFilterLocationsLoading ? [] : filterLocations}
               itemToString={(item: SimpleLocation) => item?.name}
               onChange={({ selectedItems }) => {
