@@ -132,33 +132,6 @@ describe('useDispenseUnitWarning', () => {
         expect.objectContaining({
           kind: 'warning',
           title: 'Dispense Unit Mismatch',
-        }),
-      );
-    });
-
-    it('should show notification with warning kind when unit changes to different unit', () => {
-      const previousDispenses = [createMockDispense('tablet', 'Tablet')];
-
-      const { rerender } = renderHook(
-        ({ currentUnitCode, currentUnitDisplay }) =>
-          useDispenseUnitWarning({
-            previousDispenses,
-            currentUnitCode,
-            currentUnitDisplay,
-          }),
-        {
-          initialProps: { currentUnitCode: 'tablet', currentUnitDisplay: 'Tablet' },
-        },
-      );
-
-      // Change to different unit
-      rerender({ currentUnitCode: 'mg', currentUnitDisplay: 'Milligram' });
-
-      // Verify notification was shown with warning kind and proper title
-      expect(mockShowNotification).toHaveBeenCalledWith(
-        expect.objectContaining({
-          kind: 'warning',
-          title: expect.any(String),
           description: expect.any(String),
         }),
       );
