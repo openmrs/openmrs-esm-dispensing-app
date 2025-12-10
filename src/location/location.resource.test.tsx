@@ -1,4 +1,5 @@
 import useSWR from 'swr';
+import { renderHook } from '@testing-library/react';
 import { openmrsFetch } from '@openmrs/esm-framework';
 import { useLocationsForFiltering } from './location.resource';
 import { type PharmacyConfig } from '../config-schema';
@@ -50,7 +51,7 @@ describe('Location Resource tests', () => {
       data: { data: 'mockedLoginLocations' },
     }));
 
-    useLocationsForFiltering(pharmacyConfig);
+    renderHook(() => useLocationsForFiltering(pharmacyConfig));
     expect(useSWR).toHaveBeenCalledWith(
       '/ws/rest/v1/location?tag=Login%20Location&v=custom:(uuid,name,attributes:(attributeType:(name),value:(uuid))',
       openmrsFetch,
@@ -89,7 +90,8 @@ describe('Location Resource tests', () => {
 
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: queryResultsBundle } }));
-    const { filterLocations } = useLocationsForFiltering(pharmacyConfig);
+    const { result } = renderHook(() => useLocationsForFiltering(pharmacyConfig));
+    const { filterLocations } = result.current;
     expect(filterLocations.length).toBe(3);
     // should be sorted by name alphabetically
     expect(filterLocations[0].id).toBe('5981f962-6eec-453d-89ce-2f9ac48d096f');
