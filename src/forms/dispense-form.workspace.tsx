@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Button, Checkbox, Form, FormLabel, InlineLoading, InlineNotification } from '@carbon/react';
 import {
   ExtensionSlot,
-  getCoreTranslation,
   showSnackbar,
   useConfig,
   usePatient,
@@ -357,10 +356,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                     />
                     <Checkbox
                       id="confirm-unit-mismatch"
-                      labelText={t(
-                        'confirmUnitMismatch',
-                        'I understand the units differ and want to proceed',
-                      )}
+                      labelText={t('confirmUnitMismatch', 'I understand the units differ and want to proceed')}
                       checked={unitMismatchConfirmed}
                       onChange={(_, { checked }) => setUnitMismatchConfirmed(checked)}
                     />
@@ -378,7 +374,11 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
           </section>
         </div>
         <div className={styles.buttonGroup}>
-          <Button onClick={closeWorkspace} kind="secondary">
+          <Button
+            onClick={() => {
+              closeWorkspace();
+            }}
+            kind="secondary">
             {t('cancel', 'Cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isButtonDisabled} type="submit">

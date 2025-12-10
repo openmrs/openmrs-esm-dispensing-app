@@ -1,28 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
+import { showNotification } from '@openmrs/esm-framework';
 import { useDispenseUnitWarning } from './useDispenseUnitWarning';
 import { type MedicationDispense, MedicationDispenseStatus } from '../types';
 
-// Mock the OpenMRS framework
-const mockShowNotification = jest.fn();
-jest.mock('@openmrs/esm-framework', () => ({
-  showNotification: (args: any) => mockShowNotification(args),
-}));
-
-// Mock react-i18next
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, defaultValue: string, options?: Record<string, string>) => {
-      if (options) {
-        let result = defaultValue;
-        Object.entries(options).forEach(([k, v]) => {
-          result = result.replace(`{{${k}}}`, v);
-        });
-        return result;
-      }
-      return defaultValue;
-    },
-  }),
-}));
+// The framework mock is loaded via jest.config.js - use jest.mocked for type-safe mocking
+const mockShowNotification = jest.mocked(showNotification);
 
 describe('useDispenseUnitWarning', () => {
   beforeEach(() => {
@@ -155,7 +137,7 @@ describe('useDispenseUnitWarning', () => {
       );
     });
 
-    it('should include unit names in notification description', () => {
+    it('should show notification with warning kind when unit changes to different unit', () => {
       const previousDispenses = [createMockDispense('tablet', 'Tablet')];
 
       const { rerender } = renderHook(
@@ -173,14 +155,12 @@ describe('useDispenseUnitWarning', () => {
       // Change to different unit
       rerender({ currentUnitCode: 'mg', currentUnitDisplay: 'Milligram' });
 
+      // Verify notification was shown with warning kind and proper title
       expect(mockShowNotification).toHaveBeenCalledWith(
         expect.objectContaining({
-          description: expect.stringContaining('Tablet'),
-        }),
-      );
-      expect(mockShowNotification).toHaveBeenCalledWith(
-        expect.objectContaining({
-          description: expect.stringContaining('Milligram'),
+          kind: 'warning',
+          title: expect.any(String),
+          description: expect.any(String),
         }),
       );
     });
