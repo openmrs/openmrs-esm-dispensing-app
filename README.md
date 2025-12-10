@@ -63,6 +63,40 @@ You can set certain locations as default filter locations for specific locations
 
 For example, if you have an "Inpatient Pharmacy" location, and want only orders from inpatient locations to show by default, you can set the "Associated Pharmacy Location" attribute on all inpatients to (the uuid for) the Inpatient Pharmacy location.
 
+### Custom tabs in the prescriptions view
+
+The Dispensing app, by default displays two views of prescriptions: "Active" and "All"
+
+You can customize by adding custom tabs to the `customTabs` array in the config-schema.
+
+Custom tabs have the following properties:
+
+```
+export interface CustomTab {
+    title: string;
+    customPrescriptionsTableEndpoint: string;
+    associatedLocations: [
+      uuid: string
+    ];
+}
+```
+
+Where "title" is the string (or message code) to display as the title of the tab, "customPrescriptionsTableEndpoint" is the endpoint to fetch the prescriptions from, and "associatedLocations" is an array of location uuids that the tab should be displayed for.
+
+If "associatedLocations" is empty, the tab will be displayed for all locations.
+
+The "customPrescriptionsTableEndpoint" should be an endpoint that returns a FHIR "Bundle" of encounters and medications requests that matches the format provided by the "encountersWithMedicationRequests" query in the FHIR2 module.
+
+The following variable interpolations will be substituted if present in the endpoint:
+
+* fhirBaseUrl 
+* status
+* pageOffset
+* pageSize
+* date
+* patientSearchTerm
+* location
+
 ## Running this code
 
 First, install dependencies:

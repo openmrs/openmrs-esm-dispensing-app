@@ -41,6 +41,7 @@ const pharmacyConfig: PharmacyConfig = {
   completeOrderWithThisDispense: false,
   validateBatch: false,
   leftNavMode: 'collapsed',
+  customTabs: [],
 };
 
 describe('Location Resource tests', () => {
