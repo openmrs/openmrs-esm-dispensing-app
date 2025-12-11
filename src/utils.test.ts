@@ -33,8 +33,7 @@ import {
   getNextMostRecentMedicationDispenseStatus,
   getOpenMRSMedicineDrugName,
   getPrescriptionDetailsEndpoint,
-  getPrescriptionTableActiveMedicationRequestsEndpoint,
-  getPrescriptionTableAllMedicationRequestsEndpoint,
+  getPrescriptionTableEndpoint,
   getQuantity,
   getQuantityUnitsMatch,
   getRefillsAllowed,
@@ -2449,57 +2448,44 @@ describe('Util Tests', () => {
 
   describe('test getPrescriptionTableActiveMedicationRequestsEndpoint', () => {
     test('should return endpoint with date parameter', () => {
-      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', null, null)).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active',
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', null, null)).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE',
       );
     });
     test('should return endpoint with date and search term parameters', () => {
-      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', 'bob', null)).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active&patientSearchTerm=bob',
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', 'bob', null)).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&patientSearchTerm=bob',
       );
     });
     test('should return endpoint with date and location parameters', () => {
-      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', null, '123abc')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active&location=123abc',
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', null, '123abc')).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&location=123abc',
       );
     });
     test('should return endpoint with date, location, and search term parameters', () => {
-      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', 'bob', '123abc')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active&patientSearchTerm=bob&location=123abc',
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', 'bob', '123abc')).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&patientSearchTerm=bob&location=123abc',
       );
     });
 
     test('should return endpoint with multiple comma-separated location parameters', () => {
-      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', 'bob', '123abc,456def')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active&patientSearchTerm=bob&location=123abc,456def',
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', 'bob', '123abc,456def')).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&patientSearchTerm=bob&location=123abc,456def',
       );
     });
-  });
-
-  describe('test getPrescriptionTableAllMedicationRequestsEndpoint', () => {
-    test('should return endpoint', () => {
-      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, null, null)).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10',
-      );
-    });
-    test('should return endpoint with search term parameter', () => {
-      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, 'bob', null)).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&patientSearchTerm=bob',
-      );
-    });
-    test('should return endpoint with location parameter', () => {
-      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, null, '123abc')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&location=123abc',
-      );
-    });
-    test('should return endpoint with search term and location parameters', () => {
-      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, 'bob', '123abc')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&patientSearchTerm=bob&location=123abc',
-      );
-    });
-    test('should return endpoint with multiple comma-separated location parameters', () => {
-      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, 'bob', '123abc,456def')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&patientSearchTerm=bob&location=123abc,456def',
+    test('should return custom endpoint properly populated', () => {
+      expect(
+        getPrescriptionTableEndpoint(
+          '${fhirBaseUrl}/Encounter?_query=someCustomEndpoint&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=ACTIVE&patientSearchTerm=${patientSearchTerm}&location=${location}',
+          'ACTIVE',
+          1,
+          10,
+          '2020-01-01',
+          'bob',
+          '123abc,456def',
+        ),
+      ).toBe(
+        '/ws/fhir2/R4/Encounter?_query=someCustomEndpoint&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&patientSearchTerm=bob&location=123abc,456def',
       );
     });
   });

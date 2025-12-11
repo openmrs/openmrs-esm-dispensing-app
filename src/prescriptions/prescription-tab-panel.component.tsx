@@ -9,11 +9,16 @@ import { useLocationsForFiltering } from '../location/location.resource';
 import { type SimpleLocation } from '../types';
 
 interface PrescriptionTabPanelProps {
-  status: string;
   isTabActive: boolean;
+  status?: string;
+  customPrescriptionsTableEndpoint?: string;
 }
 
-const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isTabActive }) => {
+const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
+  status,
+  isTabActive,
+  customPrescriptionsTableEndpoint,
+}) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const { sessionLocation } = useSession();
@@ -68,6 +73,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
       <PrescriptionsTable
         loadData={isTabActive}
         status={status}
+        customPrescriptionsTableEndpoint={customPrescriptionsTableEndpoint}
         debouncedSearchTerm={debouncedSearchTerm}
         locations={locations}
       />
