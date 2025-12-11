@@ -476,12 +476,17 @@ export function getPrescriptionTableEndpoint(
   location: string,
 ): string {
   // use custom endpoint if provided, otherwise only include the "date" parameter when requesting "active" results
+
   const compiledUrl = template(
     customPrescriptionsTableEndpoint
       ? customPrescriptionsTableEndpoint
       : status === 'ACTIVE'
-        ? '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=${status}&patientSearchTerm=${patientSearchTerm}&location=${location}'
-        : '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&status=${status}&patientSearchTerm=${patientSearchTerm}&location=${location}',
+        ? '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=${status}' +
+          (patientSearchTerm ? '&patientSearchTerm=${patientSearchTerm}' : '') +
+          (location ? '&location=${location}' : '')
+        : '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&status=${status}' +
+          (patientSearchTerm ? '&patientSearchTerm=${patientSearchTerm}' : '') +
+          (location ? '&location=${location}' : ''),
   );
   return compiledUrl({
     fhirBaseUrl,
