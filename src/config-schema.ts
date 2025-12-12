@@ -1,4 +1,5 @@
 import { Type, validators } from '@openmrs/esm-framework';
+import { type CustomTab } from './types';
 
 export const configSchema = {
   appName: {
@@ -135,6 +136,11 @@ export const configSchema = {
     _description: 'Enable or disable the "Complete order with this dispense" checkbox on the dispense form.',
     _default: false,
   },
+  customTabs: {
+    _type: Type.Array,
+    _description: 'Custom tabs to be added to the prescription panel. See README for more details.',
+    _default: [],
+  },
 };
 
 export interface PharmacyConfig {
@@ -182,4 +188,5 @@ export interface PharmacyConfig {
   completeOrderWithThisDispense: boolean;
   validateBatch: boolean;
   leftNavMode: 'normal' | 'collapsed' | 'hidden';
+  customTabs: Array<CustomTab>;
 }

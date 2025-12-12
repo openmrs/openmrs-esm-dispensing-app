@@ -111,6 +111,12 @@ export interface CommonConfigProps {
   display: string;
 }
 
+export interface CustomTab {
+  title: string;
+  customPrescriptionsTableEndpoint: string;
+  associatedLocations: [uuid: string];
+}
+
 export interface DosageInstruction {
   text?: string;
   timing: {

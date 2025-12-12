@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import template from 'lodash/template';
 import { mutate } from 'swr';
 import {
   type Coding,
@@ -523,41 +524,38 @@ export function getPrescriptionDetailsEndpoint(encounterUuid: string): string {
   return `${fhirBaseUrl}/${PRESCRIPTION_DETAILS_ENDPOINT}?encounter=${encounterUuid}&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter`;
 }
 
-export function getPrescriptionTableActiveMedicationRequestsEndpoint(
+export function getPrescriptionTableEndpoint(
+  customPrescriptionsTableEndpoint: string,
+  status: string,
   pageOffset: number,
   pageSize: number,
   date: string,
   patientSearchTerm: string,
   location: string,
 ): string {
-  return appendSearchTermAndLocation(
-    `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=active`,
+  // use custom endpoint if provided, otherwise only include the "date" parameter when requesting "active" results
+
+  const compiledUrl = template(
+    customPrescriptionsTableEndpoint
+      ? customPrescriptionsTableEndpoint
+      : status === 'ACTIVE'
+        ? '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=${status}' +
+          (patientSearchTerm ? '&patientSearchTerm=${patientSearchTerm}' : '') +
+          (location ? '&location=${location}' : '')
+        : '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&status=${status}' +
+          (patientSearchTerm ? '&patientSearchTerm=${patientSearchTerm}' : '') +
+          (location ? '&location=${location}' : ''),
+  );
+  return compiledUrl({
+    fhirBaseUrl,
+    PRESCRIPTIONS_TABLE_ENDPOINT,
+    status,
+    pageOffset,
+    pageSize,
+    date,
     patientSearchTerm,
     location,
-  );
-}
-
-export function getPrescriptionTableAllMedicationRequestsEndpoint(
-  pageOffset: number,
-  pageSize: number,
-  patientSearchTerm: string,
-  location: string,
-): string {
-  return appendSearchTermAndLocation(
-    `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}`,
-    patientSearchTerm,
-    location,
-  );
-}
-
-function appendSearchTermAndLocation(url: string, patientSearchTerm: string, location: string): string {
-  if (patientSearchTerm) {
-    url = `${url}&patientSearchTerm=${patientSearchTerm}`;
-  }
-  if (location) {
-    url = `${url}&location=${location}`;
-  }
-  return url;
+  });
 }
 
 export function getQuantity(resource: MedicationRequest | MedicationDispense): Quantity {

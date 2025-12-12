@@ -29,7 +29,8 @@ interface PrescriptionsTableProps {
   loadData: boolean;
   debouncedSearchTerm: string;
   locations: SimpleLocation[];
-  status: string;
+  status?: string;
+  customPrescriptionsTableEndpoint?: string;
 }
 
 const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
@@ -37,6 +38,7 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
   debouncedSearchTerm,
   locations,
   status,
+  customPrescriptionsTableEndpoint,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
@@ -45,11 +47,12 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
   const nextOffSet = (page - 1) * pageSize;
   const { prescriptionsTableRows, error, isLoading, totalOrders } = usePrescriptionsTable(
     loadData,
+    customPrescriptionsTableEndpoint,
+    status,
     pageSize,
     nextOffSet,
     debouncedSearchTerm,
     locations,
-    status,
     config.medicationRequestExpirationPeriodInDays,
     config.refreshInterval,
   );

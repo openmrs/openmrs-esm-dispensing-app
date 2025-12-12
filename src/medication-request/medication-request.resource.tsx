@@ -16,8 +16,7 @@ import {
   getPrescriptionDetailsEndpoint,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
-  getPrescriptionTableActiveMedicationRequestsEndpoint,
-  getPrescriptionTableAllMedicationRequestsEndpoint,
+  getPrescriptionTableEndpoint,
   sortMedicationDispensesByWhenHandedOver,
   computePrescriptionStatusMessageCode,
   getAssociatedMedicationDispenses,
@@ -28,30 +27,26 @@ import { useMemo } from 'react';
 
 export function usePrescriptionsTable(
   loadData: boolean,
+  customPrescriptionsTableEndpoint: string = '',
+  status: string = '',
   pageSize: number = 10,
   pageOffset: number = 0,
   patientSearchTerm: string = '',
   locations: SimpleLocation[] = [],
-  status: string = '',
   medicationRequestExpirationPeriodInDays: number,
   refreshInterval: number,
 ) {
   const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
     loadData
-      ? status === 'ACTIVE'
-        ? getPrescriptionTableActiveMedicationRequestsEndpoint(
-            pageOffset,
-            pageSize,
-            dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString(),
-            patientSearchTerm,
-            locations?.map((location) => location.id).join(','),
-          )
-        : getPrescriptionTableAllMedicationRequestsEndpoint(
-            pageOffset,
-            pageSize,
-            patientSearchTerm,
-            locations?.map((location) => location.id).join(','),
-          )
+      ? getPrescriptionTableEndpoint(
+          customPrescriptionsTableEndpoint,
+          status,
+          pageOffset,
+          pageSize,
+          dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString(),
+          patientSearchTerm,
+          locations?.map((location) => location.id).join(','),
+        )
       : null,
     openmrsFetch,
     { refreshInterval: refreshInterval },
