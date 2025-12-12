@@ -528,3 +528,27 @@ export interface DispensingStore {
    */
   staleEncounterUuids: string[];
 }
+
+/**
+ * Represents a single dispense record with quantity and unit information.
+ * Used for validating dispense quantities across multiple dispense events.
+ */
+export interface DispenseRecord {
+  /** The quantity value being dispensed */
+  quantity: number | null | undefined;
+  /** The unit code for the quantity (e.g., 'mg', 'tablet') */
+  unit: string | null | undefined;
+}
+
+/**
+ * Result object returned by the dispense quantity validation function.
+ * Contains validation status, calculated total, and any warning messages.
+ */
+export interface DispenseQuantityValidationResult {
+  /** Whether the dispense records are valid for processing */
+  isValid: boolean;
+  /** The total quantity calculated (only when all units match) */
+  totalQuantity: number;
+  /** Array of warning messages for the user */
+  warnings: string[];
+}

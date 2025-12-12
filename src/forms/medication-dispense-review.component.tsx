@@ -342,10 +342,11 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               }}
               onChange={({ selectedItem }) => {
                 updateMedicationDispense({
-                  // note that we specifically recreate doseQuantity to overwrite any unit or system properties that may have been set
+                  // note that we specifically recreate quantity to overwrite any unit or system properties that may have been set
                   quantity: {
                     value: medicationDispense.quantity.value,
                     code: selectedItem?.id,
+                    unit: selectedItem?.text,
                   },
                 });
               }}
