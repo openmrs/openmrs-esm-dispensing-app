@@ -167,20 +167,3 @@
     vertical-align: middle;
   }
 }
-
-// Unit mismatch warning section
-.unitMismatchWarning {
-  margin-top: layout.$spacing-05;
-  padding: layout.$spacing-03;
-  background-color: colors.$yellow-10;
-  border-radius: layout.$spacing-02;
-
-  :global(.cds--inline-notification) {
-    margin-bottom: layout.$spacing-03;
-    max-width: 100%;
-  }
-
-  :global(.cds--checkbox-wrapper) {
-    margin-top: layout.$spacing-03;
-  }
-}

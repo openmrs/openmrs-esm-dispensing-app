@@ -3,8 +3,6 @@ import template from 'lodash/template';
 import { mutate } from 'swr';
 import {
   type Coding,
-  type DispenseQuantityValidationResult,
-  type DispenseRecord,
   type DispensingStore,
   type DosageInstruction,
   type Medication,
@@ -272,93 +270,37 @@ export function computePrescriptionStatusMessageCode(
   return null;
 }
 
-/**
- * Result object for computeQuantityRemaining when units don't match
- */
-export interface QuantityRemainingResult {
-  quantity: number | null;
-  hasUnitMismatch: boolean;
-  errorMessage?: string;
-}
-
-/**
- * Calculate the remaining quantity for a medication request.
- * Returns a result object with quantity and mismatch information instead of throwing.
- * @param medicationRequestBundle
- */
-export function computeQuantityRemainingWithWarning(medicationRequestBundle): QuantityRemainingResult {
-  if (!medicationRequestBundle) {
-    return { quantity: 0, hasUnitMismatch: false };
-  }
-
-  const allItems = [medicationRequestBundle.request, ...medicationRequestBundle.dispenses];
-  const unitsMatch = getQuantityUnitsMatch(allItems);
-
-  const totalOrdered = computeTotalQuantityOrdered(medicationRequestBundle.request);
-  const dispensedResult = computeTotalQuantityDispensedWithWarning(medicationRequestBundle.dispenses);
-
-  return {
-    quantity: totalOrdered - dispensedResult.quantity,
-    hasUnitMismatch: !unitsMatch || dispensedResult.hasUnitMismatch,
-    errorMessage: unitsMatch && !dispensedResult.hasUnitMismatch ? undefined : unitsDontMatchErrorMessage,
-  };
-}
-
-/**
- * Calculate the remaining quantity for a medication request.
- * @param medicationRequestBundle
- * @deprecated Use computeQuantityRemainingWithWarning for graceful error handling
- */
 export function computeQuantityRemaining(medicationRequestBundle): number {
-  const result = computeQuantityRemainingWithWarning(medicationRequestBundle);
-  // Return quantity even if units don't match - the caller should use the WithWarning version
-  // to get information about unit mismatch
-  return result.quantity;
-}
+  if (medicationRequestBundle) {
+    // hard protect against quantity type mistmatch
+    if (!getQuantityUnitsMatch([medicationRequestBundle.request, ...medicationRequestBundle.dispenses])) {
+      throw new Error(unitsDontMatchErrorMessage);
+    }
 
-/**
- * Result object for computeTotalQuantityDispensed when units don't match
- */
-export interface QuantityDispensedResult {
-  quantity: number;
-  hasUnitMismatch: boolean;
-  errorMessage?: string;
-}
-
-/**
- * Given a set of medication dispenses, calculate the total quantity dispensed.
- * Returns a result object with quantity and mismatch information instead of throwing.
- * @param medicationDispenses
- */
-export function computeTotalQuantityDispensedWithWarning(
-  medicationDispenses: Array<MedicationDispense>,
-): QuantityDispensedResult {
-  if (!medicationDispenses || medicationDispenses.length === 0) {
-    return { quantity: 0, hasUnitMismatch: false };
+    return (
+      computeTotalQuantityOrdered(medicationRequestBundle.request) -
+      computeTotalQuantityDispensed(medicationRequestBundle.dispenses)
+    );
   }
-
-  const unitsMatch = getQuantityUnitsMatch(medicationDispenses);
-  const quantity = medicationDispenses
-    .map((medicationDispense) => (medicationDispense.quantity?.value ? medicationDispense.quantity?.value : 0))
-    .reduce((acc, currentValue) => acc + currentValue, 0);
-
-  return {
-    quantity,
-    hasUnitMismatch: !unitsMatch,
-    errorMessage: unitsMatch ? undefined : unitsDontMatchErrorMessage,
-  };
+  return 0;
 }
 
 /**
  * Given a set of medication dispenses, calculate the total quantity dispensed
  * @param medicationDispenses
- * @deprecated Use computeTotalQuantityDispensedWithWarning for graceful error handling
  */
 export function computeTotalQuantityDispensed(medicationDispenses: Array<MedicationDispense>): number {
-  const result = computeTotalQuantityDispensedWithWarning(medicationDispenses);
-  // Return quantity even if units don't match - the caller should use the WithWarning version
-  // to get information about unit mismatch
-  return result.quantity;
+  if (medicationDispenses) {
+    if (!getQuantityUnitsMatch(medicationDispenses)) {
+      throw new Error(unitsDontMatchErrorMessage);
+    }
+    const quantity = medicationDispenses
+      .map((medicationDispense) => (medicationDispense.quantity?.value ? medicationDispense.quantity?.value : 0))
+      .reduce((acc, currentValue) => acc + currentValue, 0);
+    return quantity;
+  } else {
+    return 0;
+  }
 }
 
 /**
@@ -684,154 +626,6 @@ export function calculateIsFreeTextDosage(dosageInstruction: DosageInstruction) 
     !dosageInstruction?.timing?.code?.coding[0]?.code &&
     !dosageInstruction?.route
   );
-}
-
-/**
- * Validates an array of dispense records with quantities and units, returning a validation result
- * with total quantity calculation and warning messages.
- *
- * This function handles multiple dispense units gracefully by returning warnings instead of
- * throwing exceptions, preventing application crashes when different units are detected.
- *
- * @param dispenseRecords - An array of dispense records containing quantity and unit information
- * @returns {DispenseQuantityValidationResult} An object containing:
- *   - isValid: boolean indicating if the records are valid for processing
- *   - totalQuantity: the sum of all quantities (only calculated when units match)
- *   - warnings: array of warning messages for the user
- *
- * @example
- * // Same units - valid case
- * const records = [
- *   { quantity: 10, unit: 'tablet' },
- *   { quantity: 5, unit: 'tablet' }
- * ];
- * const result = validateDispenseQuantity(records);
- * // { isValid: true, totalQuantity: 15, warnings: [] }
- *
- * @example
- * // Different units - invalid with warning
- * const records = [
- *   { quantity: 10, unit: 'tablet' },
- *   { quantity: 5, unit: 'mg' }
- * ];
- * const result = validateDispenseQuantity(records);
- * // { isValid: false, totalQuantity: 0, warnings: ['Different dispense units detected. Please review quantities.'] }
- */
-export function validateDispenseQuantity(
-  dispenseRecords: Array<DispenseRecord> | null | undefined,
-): DispenseQuantityValidationResult {
-  // Handle null or undefined input
-  if (!dispenseRecords) {
-    return {
-      isValid: false,
-      totalQuantity: 0,
-      warnings: ['No dispense records provided.'],
-    };
-  }
-
-  // Handle empty array
-  if (dispenseRecords.length === 0) {
-    return {
-      isValid: false,
-      totalQuantity: 0,
-      warnings: ['No dispense records provided.'],
-    };
-  }
-
-  // Filter out records with null/undefined quantities or units for unit comparison
-  const validRecords = dispenseRecords.filter(
-    (record) => record.quantity !== null && record.quantity !== undefined && record.unit,
-  );
-
-  // Check for records with missing quantity or unit values
-  const recordsWithMissingData = dispenseRecords.filter(
-    (record) =>
-      (record.quantity === null || record.quantity === undefined) && record.unit !== null && record.unit !== undefined,
-  );
-
-  const warnings: string[] = [];
-
-  // Add warning for records with missing quantity values
-  if (recordsWithMissingData.length > 0) {
-    warnings.push('Some dispense records have missing quantity values.');
-  }
-
-  // If no valid records with both quantity and unit, check if we have any quantities at all
-  if (validRecords.length === 0) {
-    const recordsWithQuantityOnly = dispenseRecords.filter(
-      (record) => record.quantity !== null && record.quantity !== undefined,
-    );
-
-    if (recordsWithQuantityOnly.length === 0) {
-      return {
-        isValid: false,
-        totalQuantity: 0,
-        warnings: ['No valid dispense quantities found.'],
-      };
-    }
-
-    // Calculate total for records with quantities but no units
-    const totalQuantity = recordsWithQuantityOnly.reduce((sum, record) => {
-      const qty = typeof record.quantity === 'number' ? record.quantity : 0;
-      return sum + qty;
-    }, 0);
-
-    return {
-      isValid: true,
-      totalQuantity,
-      warnings: warnings.length > 0 ? warnings : [],
-    };
-  }
-
-  // Extract unique units (case-insensitive comparison for safety)
-  const uniqueUnits = [...new Set(validRecords.map((record) => record.unit?.toLowerCase()))];
-
-  // Check if units match
-  if (uniqueUnits.length > 1) {
-    return {
-      isValid: false,
-      totalQuantity: 0,
-      warnings: ['Different dispense units detected. Please review quantities.'],
-    };
-  }
-
-  // Calculate total quantity (including records without units but with valid quantities)
-  const totalQuantity = dispenseRecords.reduce((sum, record) => {
-    // Handle zero quantities as valid
-    if (record.quantity === null || record.quantity === undefined) {
-      return sum;
-    }
-    const qty = typeof record.quantity === 'number' ? record.quantity : 0;
-    return sum + qty;
-  }, 0);
-
-  // Check for zero quantities
-  const hasZeroQuantities = dispenseRecords.some(
-    (record) => record.quantity !== null && record.quantity !== undefined && record.quantity === 0,
-  );
-
-  if (hasZeroQuantities) {
-    warnings.push('One or more dispense records have a quantity of zero.');
-  }
-
-  // Check for negative quantities
-  const hasNegativeQuantities = dispenseRecords.some(
-    (record) => record.quantity !== null && record.quantity !== undefined && record.quantity < 0,
-  );
-
-  if (hasNegativeQuantities) {
-    return {
-      isValid: false,
-      totalQuantity: 0,
-      warnings: ['Negative quantities are not allowed.'],
-    };
-  }
-
-  return {
-    isValid: true,
-    totalQuantity,
-    warnings,
-  };
 }
 
 const dispensingStore = createGlobalStore<DispensingStore>('dispensing-store', {
