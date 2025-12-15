@@ -36,10 +36,12 @@ const unitsDontMatchErrorMessage =
  *
  * @param medicationRequestBundle
  * @param restrictTotalQuantityDispensed
+ * @param isDeleteOfCompletedDispense was this a delete event?
  */
 export function computeFulfillerStatus(
   medicationRequestBundle: MedicationRequestBundle,
   restrictTotalQuantityDispensed: boolean,
+  isDeleteOfCompletedDispense: boolean = false,
 ): MedicationRequestFulfillerStatus {
   if (restrictTotalQuantityDispensed && computeQuantityRemaining(medicationRequestBundle) <= 0) {
     // if we set to restrict total quantity dispenses and quantity remaining less than 0, set status to completed
@@ -49,12 +51,24 @@ export function computeFulfillerStatus(
   // otherwise, set based on most recent dispense status as follows
   const mostRecentMedicationDispenseStatus = getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
 
+  // if the most recent dispense was declined, set the fulfiller status to declined
   if (mostRecentMedicationDispenseStatus === MedicationDispenseStatus.declined) {
     return MedicationRequestFulfillerStatus.declined;
   }
 
+  // if the most recent dispense was on hold, set the fulfiller status to on hold
   if (mostRecentMedicationDispenseStatus === MedicationDispenseStatus.on_hold) {
     return MedicationRequestFulfillerStatus.on_hold;
+  }
+
+  // a little more complicated logic for the "completed" status:
+  // if we are in 'restrictTotalQuantityDispense' mode, skip, just clear out the "completed" since our calculation above did not flag it as completed
+  // otherwise, if the most recent dispense was completed, set the fulfiller status to completed *if* the current request status is completed *and* this is not a delete of completed dispense
+  // the idea here is that entering/editing a dispense event without providing further info should not change the status of the overall order, but a delete of completed dispense should always remove any completed status on the overall order
+  if (!restrictTotalQuantityDispensed && mostRecentMedicationDispenseStatus === MedicationDispenseStatus.completed) {
+    return medicationRequestBundle.request.status === MedicationRequestStatus.completed && !isDeleteOfCompletedDispense
+      ? MedicationRequestFulfillerStatus.completed
+      : null;
   }
 
   return null;
@@ -161,6 +175,7 @@ export function computeNewFulfillerStatusAfterDispenseEvent(
       dispenses: dispenses,
     },
     restrictTotalQuantityDispensed,
+    false,
   );
 }
 
@@ -183,6 +198,7 @@ export function computeNewFulfillerStatusAfterDelete(
       dispenses: medicationRequestBundle.dispenses.filter((dispense) => dispense.id !== deletedMedicationDispense.id),
     },
     restrictTotalQuantityDispensed,
+    deletedMedicationDispense.status === MedicationDispenseStatus.completed,
   );
 }
 
