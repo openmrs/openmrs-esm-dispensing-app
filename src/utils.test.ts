@@ -1000,7 +1000,7 @@ describe('Util Tests', () => {
       ).toBe(MedicationRequestFulfillerStatus.completed);
     });
 
-    test('when editing existing dispense should return fulfiller status completed if medication requeet status is completed and restrict total quantity dispensed is set false', () => {
+    test('when editing existing dispense should return fulfiller status completed if medication request status is completed and restrict total quantity dispensed is set false', () => {
       medicationRequest.status = MedicationRequestStatus.completed;
       existingMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
       existingMedicationDispense.status = MedicationDispenseStatus.completed;
