@@ -128,3 +128,5 @@ If you are unable to commit and push using Intellij, you may need to update the 
 For more information, please see the [OpenMRS Frontend Developer Documentation](https://openmrs.atlassian.net/wiki/x/sQubAQ).
 
 In particular, the [Setup](https://openmrs.atlassian.net/wiki/x/sQubAQ) section can help you get started developing microfrontends in general.
+
+
