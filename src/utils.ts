@@ -34,7 +34,7 @@ const unitsDontMatchErrorMessage =
  *
  * @param medicationRequestBundle
  * @param restrictTotalQuantityDispensed
- * @param isDeleteOfCompletedDispense was this a delete event?
+ * @param isDeleteOfCompletedDispense was this a delete event of a completed dispense?
  */
 export function computeFulfillerStatus(
   medicationRequestBundle: MedicationRequestBundle,
