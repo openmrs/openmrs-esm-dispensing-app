@@ -733,7 +733,7 @@ describe('Util Tests', () => {
       test('should return current fulfiller status if not most recent medication dispense and deleted dispense does not have status of completed', () => {
         const medicationRequestBundle: MedicationRequestBundle = {
           request: medicationRequest,
-          dispenses: [medicationDispenseDeclined, medicationDispenseCompleteMostRecent],
+          dispenses: [medicationDispenseDeclined, medicationDispenseOnHold, medicationDispenseCompleteMostRecent],
         };
 
         expect(computeNewFulfillerStatusAfterDelete(medicationDispenseOnHold, medicationRequestBundle, false)).toBe(
