@@ -733,13 +733,23 @@ describe('Util Tests', () => {
       test('should return current fulfiller status if not most recent medication dispense and deleted dispense does not have status of completed', () => {
         const medicationRequestBundle: MedicationRequestBundle = {
           request: medicationRequest,
-          dispenses: [medicationDispenseDeclined, medicationDispenseOnHold],
+          dispenses: [medicationDispenseDeclined, medicationDispenseOnHold, medicationDispenseCompleteMostRecent],
         };
 
         expect(computeNewFulfillerStatusAfterDelete(medicationDispenseOnHold, medicationRequestBundle, false)).toBe(
-          MedicationRequestFulfillerStatus.declined,
+          MedicationRequestFulfillerStatus.completed,
         );
       });
+    test('should return null if deleting a dispense with status completed', () => {
+      const medicationRequestBundle: MedicationRequestBundle = {
+        request: medicationRequest,
+        dispenses: [medicationDispenseCompleteMostRecent],
+      };
+
+      expect(
+        computeNewFulfillerStatusAfterDelete(medicationDispenseCompleteOldest, medicationRequestBundle, false),
+      ).toBe(null);
+    });
   });
 
   describe('test computeNewFulfillerStatusAfterDispenseEvent', () => {
@@ -988,6 +998,48 @@ describe('Util Tests', () => {
           true,
         ),
       ).toBe(MedicationRequestFulfillerStatus.completed);
+    });
+
+    test('when editing existing dispense should return fulfiller status completed if medication request status is completed and restrict total quantity dispensed is set false', () => {
+      medicationRequest.status = MedicationRequestStatus.completed;
+      existingMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
+      existingMedicationDispense.status = MedicationDispenseStatus.completed;
+      existingMedicationDispense.quantity.value = 20;
+      const editedExistingMedicationDispense = {
+        ...existingMedicationDispense,
+      };
+      editedExistingMedicationDispense.quantity.value = 30;
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          editedExistingMedicationDispense,
+          {
+            request: medicationRequest,
+            dispenses: [existingMedicationDispense],
+          },
+          false,
+        ),
+      ).toBe(MedicationRequestFulfillerStatus.completed);
+    });
+
+    test('when editing existing dispense should return fulfiller status null if medication request status is *NOT* completed and restrict total quantity dispensed is set false', () => {
+      medicationRequest.status = MedicationRequestStatus.active;
+      existingMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
+      existingMedicationDispense.status = MedicationDispenseStatus.completed;
+      existingMedicationDispense.quantity.value = 20;
+      const editedExistingMedicationDispense = {
+        ...existingMedicationDispense,
+      };
+      editedExistingMedicationDispense.quantity.value = 30;
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          editedExistingMedicationDispense,
+          {
+            request: medicationRequest,
+            dispenses: [existingMedicationDispense],
+          },
+          false,
+        ),
+      ).toBe(null);
     });
   });
 
