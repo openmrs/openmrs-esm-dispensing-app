@@ -224,24 +224,25 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                       ...medicationDispense.quantity,
                       value: 0,
                     },
-                  });
-                  !isFreeTextDosage &&
-                    updateMedicationDispense({
-                      dosageInstruction: [
-                        {
-                          ...medicationDispense.dosageInstruction[0],
-                          doseAndRate: [
+                    ...(isFreeTextDosage
+                      ? {}
+                      : {
+                          dosageInstruction: [
                             {
-                              ...medicationDispense.dosageInstruction[0].doseAndRate[0],
-                              doseQuantity: {
-                                ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
-                                value: 0,
-                              },
+                              ...medicationDispense.dosageInstruction[0],
+                              doseAndRate: [
+                                {
+                                  ...medicationDispense.dosageInstruction[0].doseAndRate[0],
+                                  doseQuantity: {
+                                    ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
+                                    value: 0,
+                                  },
+                                },
+                              ],
                             },
                           ],
-                        },
-                      ],
-                    });
+                        }),
+                  });
                 }
                 setIsEditingFormulation(false);
               }}
