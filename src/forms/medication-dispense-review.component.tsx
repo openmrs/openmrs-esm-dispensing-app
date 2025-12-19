@@ -213,13 +213,36 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               label={t('medicationFormulation', 'Medication Formulation')}
               onChange={({ selectedItem }) => {
                 const typedItem = selectedItem as Medication;
-                updateMedicationDispense({
-                  medicationCodeableConcept: undefined,
-                  medicationReference: {
-                    reference: 'Medication/' + typedItem?.id,
-                    display: getOpenMRSMedicineDrugName(typedItem),
-                  },
-                });
+                if ('Medication/' + typedItem.id !== medicationDispense.medicationReference.reference) {
+                  updateMedicationDispense({
+                    medicationCodeableConcept: undefined,
+                    medicationReference: {
+                      reference: 'Medication/' + typedItem?.id,
+                      display: getOpenMRSMedicineDrugName(typedItem),
+                    },
+                    quantity: {
+                      ...medicationDispense.quantity,
+                      value: 0,
+                    },
+                  });
+                  !isFreeTextDosage &&
+                    updateMedicationDispense({
+                      dosageInstruction: [
+                        {
+                          ...medicationDispense.dosageInstruction[0],
+                          doseAndRate: [
+                            {
+                              ...medicationDispense.dosageInstruction[0].doseAndRate[0],
+                              doseQuantity: {
+                                ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
+                                value: 0,
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    });
+                }
                 setIsEditingFormulation(false);
               }}
             />
