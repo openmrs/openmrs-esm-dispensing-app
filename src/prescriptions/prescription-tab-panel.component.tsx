@@ -32,7 +32,8 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
     if (!isFilterLocationsLoading && sessionLocation?.uuid) {
       setLocations(filterLocations?.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation) || []);
     }
-  }, [isFilterLocationsLoading, sessionLocation, filterLocations]);
+    // eslint-disable-next-line
+  }, [isFilterLocationsLoading, sessionLocation]);
 
   return (
     <TabPanel>
