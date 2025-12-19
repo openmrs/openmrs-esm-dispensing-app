@@ -26,7 +26,7 @@ export const configSchema = {
     allowModifyingPrescription: {
       _type: Type.Boolean,
       _description:
-        'Enable/Disable editing the prescription. If Disabled, Quantity will be he only editable field on prescription form. Note that thins means that quantity units will need to be mandatory and set correctly on the prescription.',
+        'Enable/Disable editing the prescription. If Disabled, Quantity will be he only editable field on prescription form. Note that this means that quantity units will need to be mandatory and set correctly on the prescription.',
       _default: true,
     },
     restrictTotalQuantityDispensed: {
