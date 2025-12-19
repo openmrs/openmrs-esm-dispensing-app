@@ -32,6 +32,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
     if (!isFilterLocationsLoading && sessionLocation?.uuid) {
       setLocations(filterLocations?.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation) || []);
     }
+    // TODO figure out why including filterLocations is causing filter to reload when expanding a patient record
     // eslint-disable-next-line
   }, [isFilterLocationsLoading, sessionLocation]);
 
