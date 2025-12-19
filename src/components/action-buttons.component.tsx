@@ -55,7 +55,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   }
 
   let quantityDispensed = 0;
-  if (medicationRequestBundle.dispenses) {
+  if (config.dispenseBehavior.restrictTotalQuantityDispensed && medicationRequestBundle.dispenses) {
     quantityDispensed = computeTotalQuantityDispensed(medicationRequestBundle.dispenses);
   }
 

@@ -45,7 +45,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   // reason for substitution question
   const [substitutionReasons, setSubstitutionReasons] = useState([]);
   //quantity prescribed
-  const [quantityPrescribed, setQuantityPrescribed] = useState(medicationDispense.quantity.value);
+  const [quantityPrescribed] = useState(medicationDispense.quantity.value);
   const [userCanModify, setUserCanModify] = useState(false);
 
   const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
@@ -291,21 +291,21 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             </ResponsiveWrapper>
           </div>
         )}
-        <ResponsiveWrapper>
-          <div>
-            <p className={styles.quantitySummary}>
-              {t('quantityPrescribed', 'Quantity Prescribed')}: {quantityPrescribed}
-            </p>
-            <p className={styles.quantitySummary}>
-              {t('quantityDispensed', 'Quantity Dispensed')}: {quantityDispensed}
-            </p>
-            {config.dispenseBehavior.restrictTotalQuantityDispensed ? (
+        {config.dispenseBehavior.restrictTotalQuantityDispensed ? (
+          <ResponsiveWrapper>
+            <div>
+              <p className={styles.quantitySummary}>
+                {t('quantityPrescribed', 'Quantity Prescribed')}: {quantityPrescribed}
+              </p>
+              <p className={styles.quantitySummary}>
+                {t('quantityDispensed', 'Quantity Dispensed')}: {quantityDispensed}
+              </p>
               <p className={styles.quantitySummary}>
                 {t('quantityRemaining', 'Quantity Remaining to Dispense')}: {quantityRemaining}
               </p>
-            ) : null}
-          </div>
-        </ResponsiveWrapper>
+            </div>
+          </ResponsiveWrapper>
+        ) : null}
 
         <div className={styles.dispenseDetailsContainer}>
           <NumberInput
