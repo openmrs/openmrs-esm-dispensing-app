@@ -79,15 +79,14 @@ const HistoryAndComments: React.FC<{
     if (medicationDispense.status === MedicationDispenseStatus.completed) {
       // note that since this is an edit, quantity remaining needs to include quantity that is part of this dispense
       let quantityRemaining = null;
+      let quantityDispensed = null;
       if (config.dispenseBehavior.restrictTotalQuantityDispensed) {
         quantityRemaining =
           computeQuantityRemaining(medicationRequestBundle) +
           (medicationDispense?.quantity ? medicationDispense.quantity.value : 0);
-      }
-
-      let quantityDispensed = 0;
-      if (medicationRequestBundle.dispenses) {
-        quantityDispensed = computeTotalQuantityDispensed(medicationRequestBundle.dispenses);
+        if (medicationRequestBundle.dispenses) {
+          quantityDispensed = computeTotalQuantityDispensed(medicationRequestBundle.dispenses);
+        }
       }
 
       const dispenseFormProps = {
