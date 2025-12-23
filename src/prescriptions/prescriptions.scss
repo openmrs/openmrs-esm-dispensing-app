@@ -36,6 +36,18 @@
 
   :global(.cds--tab--list) button {
     max-width: 12rem !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+
+    @media (max-width: 1024px) and (min-width: 768px) {
+      max-width: none !important;
+      flex: 1 1 auto !important;
+      min-width: 8rem !important;
+      padding: layout.$spacing-03 layout.$spacing-04 !important;
+      line-height: 1.2 !important;
+      height: auto !important;
+      min-height: 3rem !important;
+    }
   }
 }
 
