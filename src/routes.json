@@ -70,30 +70,46 @@
     {
       "name": "close-dispense-workspace",
       "component": "closeDispenseWorkspace",
-      "window": "close-dispense-window"
+      "window": "dispensing-window"
     },
     {
       "name": "pause-dispense-workspace",
       "component": "pauseDispenseWorkspace",
-      "window": "pause-dispense-window"
+      "window": "dispensing-window"
     },
     {
       "name": "dispense-workspace",
       "component": "dispenseWorkspace",
-      "window": "dispense-workspace-window"
+      "window": "dispensing-window"
+    },
+    {
+      "name": "dispensing-patient-search-workspace",
+      "component": "@openmrs/esm-patient-search-app#patientSearchWorkspace2",
+      "window": "fill-prescription-window"
+    },
+    {
+      "name": "dispensing-start-visit-workspace",
+      "component": "@openmrs/esm-patient-chart-app#exportedVisitForm",
+      "window": "fill-prescription-window"
+    },
+    {
+      "name": "dispensing-order-basket-workspace",
+      "component": "@openmrs/esm-patient-orders-app#exportedOrderBasketWorkspace",
+      "window": "fill-prescription-window"
+    },
+    {
+      "name": "dispensing-order-basket-add-drug-order-workspace",
+      "component": "@openmrs/esm-patient-medications-app#exportedAddDrugOrderWorkspace",
+      "window": "fill-prescription-window"
     }
   ],
   "workspaceWindows2": [
     {
-      "name": "close-dispense-window",
+      "name": "dispensing-window",
       "group": "dispensing-group"
     },
     {
-      "name": "pause-dispense-window",
-      "group": "dispensing-group"
-    },
-    {
-      "name": "dispense-workspace-window",
+      "name": "fill-prescription-window",
       "group": "dispensing-group"
     }
   ],
@@ -112,6 +128,10 @@
       "name": "delete-confirm-modal",
       "component": "deleteConfirmModal"
 
+    },
+    {
+      "name": "on-prescription-filled-modal",
+      "component": "onPrescriptionFilledModal"
     }
   ]
 }
