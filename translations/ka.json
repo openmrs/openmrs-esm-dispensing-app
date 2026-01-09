@@ -49,9 +49,9 @@
   "editRecord": "ჩანაწერის ჩასწორება",
   "error": "შეცდომა",
   "errorLoadingInventoryItems": "ინვენტარის ელემენტების გამოთხოვის შეცდომა",
-  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "ვადაგასულია",
   "fillPrescription": "Fill prescription",
+  "fillPrescriptionForPatient": "Fill prescription for patient",
   "filterByLocations": "Filter by locations",
   "finalDiagnoses": "საბოლოო დიაგნოზები",
   "for": "ვისთვის",
@@ -117,8 +117,9 @@
   "success": "Success",
   "tabList": "ჩანართების სია",
   "today": "დღეს",
-  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "ნახვა",
-  "visitFinalDiagnoses": "ვიზიტის საბოლოო დიაგნოზები"
+  "visitFinalDiagnoses": "ვიზიტის საბოლოო დიაგნოზები",
+  "visitRequired": "Visit required",
+  "visitRequiredForPatientToFillPrescription": "Visit required for patient to fill prescription"
 }

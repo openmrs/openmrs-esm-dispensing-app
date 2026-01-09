@@ -49,9 +49,9 @@
   "editRecord": "编辑记录",
   "error": "错误",
   "errorLoadingInventoryItems": "提取库存时出错",
-  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "已过期",
   "fillPrescription": "Fill prescription",
+  "fillPrescriptionForPatient": "Fill prescription for patient",
   "filterByLocations": "Filter by locations",
   "finalDiagnoses": "确诊",
   "for": "为",
@@ -117,8 +117,9 @@
   "success": "成功",
   "tabList": "表列表",
   "today": "今日",
-  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "更新状态失败",
   "view": "查看",
-  "visitFinalDiagnoses": "就诊最终诊断"
+  "visitFinalDiagnoses": "就诊最终诊断",
+  "visitRequired": "Visit required",
+  "visitRequiredForPatientToFillPrescription": "Visit required for patient to fill prescription"
 }

@@ -49,9 +49,9 @@
   "editRecord": "Editar registro",
   "error": "Erro",
   "errorLoadingInventoryItems": "Erro ao buscar itens de inventário",
-  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "Expirado",
   "fillPrescription": "Fill prescription",
+  "fillPrescriptionForPatient": "Fill prescription for patient",
   "filterByLocations": "Filter by locations",
   "finalDiagnoses": "Final Diagnoses",
   "for": "para",
@@ -117,8 +117,9 @@
   "success": "Success",
   "tabList": "Lista de guias",
   "today": "Hoje",
-  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "Exibir",
-  "visitFinalDiagnoses": "Visit final diagnoses"
+  "visitFinalDiagnoses": "Visit final diagnoses",
+  "visitRequired": "Visit required",
+  "visitRequiredForPatientToFillPrescription": "Visit required for patient to fill prescription"
 }
