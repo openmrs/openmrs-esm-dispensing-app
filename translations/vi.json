@@ -49,9 +49,9 @@
   "editRecord": "Chỉnh sửa bản ghi",
   "error": "Lỗi",
   "errorLoadingInventoryItems": "Error fetching inventory items",
-  "errorLoadingPrescriptionDetails": "Error loading prescription details",
   "expired": "Hết hạn",
   "fillPrescription": "Fill prescription",
+  "fillPrescriptionForPatient": "Fill prescription for patient",
   "filterByLocations": "Filter by locations",
   "finalDiagnoses": "Final Diagnoses",
   "for": "for",
@@ -117,8 +117,9 @@
   "success": "Success",
   "tabList": "Danh sách thẻ",
   "today": "Hôm nay",
-  "tryRefreshingThePage": "Try refreshing the page.",
   "updateStatusFailed": "Update Status Failed",
   "view": "Xem",
-  "visitFinalDiagnoses": "Visit final diagnoses"
+  "visitFinalDiagnoses": "Visit final diagnoses",
+  "visitRequired": "Visit required",
+  "visitRequiredForPatientToFillPrescription": "Visit required for patient to fill prescription"
 }

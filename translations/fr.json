@@ -49,9 +49,9 @@
   "editRecord": "Modifier",
   "error": "Erreur",
   "errorLoadingInventoryItems": "Erreur d'obtention des articles en stock",
-  "errorLoadingPrescriptionDetails": "Erreur lors du chargement des détails de la prescription",
   "expired": "Périmé",
   "fillPrescription": "Exécuter la prescription",
+  "fillPrescriptionForPatient": "Fill prescription for patient",
   "filterByLocations": "Filter by locations",
   "finalDiagnoses": "Diagnostics définitifs",
   "for": "pour",
@@ -117,8 +117,9 @@
   "success": "Succès",
   "tabList": "Liste des onglets",
   "today": "Aujourd’hui",
-  "tryRefreshingThePage": "Essayez de rafraîchir la page.",
   "updateStatusFailed": "Échec de mise à jour du statut",
   "view": "Aperçu",
-  "visitFinalDiagnoses": "Diagnostics définitifs de la visite"
+  "visitFinalDiagnoses": "Diagnostics définitifs de la visite",
+  "visitRequired": "Visit required",
+  "visitRequiredForPatientToFillPrescription": "Visit required for patient to fill prescription"
 }

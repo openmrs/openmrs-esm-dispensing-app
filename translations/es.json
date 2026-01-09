@@ -49,9 +49,9 @@
   "editRecord": "Editar Registro",
   "error": "Error",
   "errorLoadingInventoryItems": "Se produjo un error al cargar los elementos del inventario",
-  "errorLoadingPrescriptionDetails": "Error al cargar los detalles de la prescripción",
   "expired": "Expirado",
   "fillPrescription": "Rellenar receta",
+  "fillPrescriptionForPatient": "Fill prescription for patient",
   "filterByLocations": "Filtrar por ubicaciones",
   "finalDiagnoses": "Diagnóstico Definitivo",
   "for": "para",
@@ -117,8 +117,9 @@
   "success": "Éxito",
   "tabList": "Lista de Pestañas",
   "today": "Hoy",
-  "tryRefreshingThePage": "Pruebe a recargar la página",
   "updateStatusFailed": "Falló Actualizar Estado",
   "view": "Ver",
-  "visitFinalDiagnoses": "Diagnóstico Definitivo de la consulta"
+  "visitFinalDiagnoses": "Diagnóstico Definitivo de la consulta",
+  "visitRequired": "Visit required",
+  "visitRequiredForPatientToFillPrescription": "Visit required for patient to fill prescription"
 }
