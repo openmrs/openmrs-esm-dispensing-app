@@ -29,6 +29,8 @@
   }
 
   .requestTile {
+    display: flex;
+    justify-content: space-between;
     width: 100%;
     margin: layout.$spacing-01 0 layout.$spacing-03;
     padding: 0 layout.$spacing-03 0 layout.$spacing-03;
