@@ -2,10 +2,14 @@ import React from 'react';
 import { Button, ModalBody, ModalFooter, ModalHeader, Tile } from '@carbon/react';
 import { Trans, useTranslation } from 'react-i18next';
 import { getPatientName, showSnackbar, useConfig, useSession } from '@openmrs/esm-framework';
-import { usePrescriptionDetails } from '../medication-request/medication-request.resource';
+import {
+  updateMedicationRequestFulfillerStatus,
+  usePrescriptionDetails,
+} from '../medication-request/medication-request.resource';
 import {
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
+  getUuidFromReference,
   markEncounterAsStale,
   revalidate,
 } from '../utils';
@@ -16,7 +20,7 @@ import {
 } from '../medication-dispense/medication-dispense.resource';
 import { type PharmacyConfig } from '../config-schema';
 import MedicationEvent from '../components/medication-event.component';
-import { MedicationDispenseStatus } from '../types';
+import { MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import styles from './on-prescription-filled.scss';
 
 interface OnPrescriptionFilledModalProps {
@@ -45,7 +49,7 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
   const { medicationRequestBundles } = usePrescriptionDetails(encounterUuid);
   const { t } = useTranslation();
 
-  const onConfirm = () => {
+  const onConfirm = async () => {
     markEncounterAsStale(encounterUuid);
     for (const medicationRequestBundle of medicationRequestBundles) {
       const medicationDispensePayload = initiateMedicationDispenseBody(
@@ -57,7 +61,21 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
       const medicationDisplay = getMedicationDisplay(
         getMedicationReferenceOrCodeableConcept(medicationRequestBundle.request),
       );
-      saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed)
+
+      await saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed)
+        .then((response) => {
+          const hasNoRefills = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed == 0;
+          if (response.ok && hasNoRefills) {
+            return updateMedicationRequestFulfillerStatus(
+              getUuidFromReference(
+                medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
+              ),
+              MedicationRequestFulfillerStatus.completed,
+            ).then(() => response);
+          } else {
+            return response;
+          }
+        })
         .then(() => {
           showSnackbar({
             title: t('stockDispensed', 'Stock dispensed'),
@@ -88,8 +106,8 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
       <ModalBody>
         <p className={styles.modalDescription}>
           <Trans i18nKey="confirmRemovePatientFromQueue">
-            Would you like to mark prescriptions ordered for <strong>{{ patientName } as any}</strong> as dispensed and
-            completed?
+            Would you like to mark prescriptions ordered for <strong>{{ patientName } as any}</strong> as dispensed?
+            Orders with no refills will be marked as completed.
           </Trans>
         </p>
         {medicationRequestBundles.map((bundle) => (
@@ -102,7 +120,12 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
         <Button kind="secondary" onClick={close}>
           {t('cancel', 'Cancel')}
         </Button>
-        <Button onClick={onConfirm}>{t('dispenseAllPrescriptions', 'Dispense all prescriptions')}</Button>
+        <Button
+          onClick={() => {
+            onConfirm();
+          }}>
+          {t('dispenseAllPrescriptions', 'Dispense all prescriptions')}
+        </Button>
       </ModalFooter>
     </>
   );
