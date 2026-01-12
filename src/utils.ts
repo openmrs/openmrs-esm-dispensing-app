@@ -270,7 +270,7 @@ export function computePrescriptionStatusMessageCode(
   return null;
 }
 
-export function computeQuantityRemaining(medicationRequestBundle): number {
+export function computeQuantityRemaining(medicationRequestBundle: MedicationRequestBundle): number {
   if (medicationRequestBundle) {
     // hard protect against quantity type mistmatch
     if (!getQuantityUnitsMatch([medicationRequestBundle.request, ...medicationRequestBundle.dispenses])) {
