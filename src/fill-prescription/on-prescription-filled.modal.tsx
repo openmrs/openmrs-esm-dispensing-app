@@ -7,7 +7,6 @@ import {
   usePrescriptionDetails,
 } from '../medication-request/medication-request.resource';
 import {
-  computeQuantityRemaining,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
   getUuidFromReference,
@@ -65,12 +64,8 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
 
       await saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed)
         .then((response) => {
-          // quantityRemaining should only be > 0 if there are refills.
-          const quantityRemaining = computeQuantityRemaining({
-            ...medicationRequestBundle,
-            dispenses: [response.data],
-          });
-          if (response.ok && quantityRemaining == 0) {
+          const hasNoRefills = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed == 0;
+          if (response.ok && hasNoRefills) {
             return updateMedicationRequestFulfillerStatus(
               getUuidFromReference(
                 medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
