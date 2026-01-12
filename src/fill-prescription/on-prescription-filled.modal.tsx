@@ -105,7 +105,7 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
       <ModalHeader>{t('dispenseAllPrescriptions', 'Dispense prescriptions')}</ModalHeader>
       <ModalBody>
         <p className={styles.modalDescription}>
-          <Trans i18nKey="confirmRemovePatientFromQueue">
+          <Trans i18nKey="dispenseAllPrescriptionsConfirmation">
             Would you like to mark prescriptions ordered for <strong>{{ patientName } as any}</strong> as dispensed?
             Orders with no refills will be marked as completed.
           </Trans>

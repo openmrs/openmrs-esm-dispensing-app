@@ -66,7 +66,7 @@ const FillPrescriptionButton: React.FC<{}> = () => {
         },
       },
       {
-        startVisitWorkspaceName: 'ward-app-start-visit-workspace',
+        startVisitWorkspaceName: 'dispensing-start-visit-workspace',
       },
     );
   };
