@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, ModalBody, ModalFooter, ModalHeader, Tile } from '@carbon/react';
+import { Button, ModalBody, ModalFooter, ModalHeader } from '@carbon/react';
 import { Trans, useTranslation } from 'react-i18next';
 import { getPatientName, showSnackbar, useConfig, useSession } from '@openmrs/esm-framework';
 import {
@@ -111,9 +111,7 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
           </Trans>
         </p>
         {medicationRequestBundles.map((bundle) => (
-          <Tile className={styles.prescriptionTile}>
-            <MedicationEvent key={bundle.request.id} medicationEvent={bundle.request} />
-          </Tile>
+          <MedicationEvent key={bundle.request.id} medicationEvent={bundle.request} />
         ))}
       </ModalBody>
       <ModalFooter>

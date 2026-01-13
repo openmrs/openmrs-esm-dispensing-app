@@ -94,7 +94,10 @@ const PrescriptionDetails: React.FC<{
       {medicationRequestBundles &&
         medicationRequestBundles.map((bundle) => {
           return (
-            <Tile className={styles.prescriptionTile}>
+            <MedicationEvent
+              key={bundle.request.id}
+              medicationEvent={bundle.request}
+              status={generateStatusTag(bundle.request)}>
               <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
                 <ActionButtons
                   patientUuid={patientUuid}
@@ -103,12 +106,7 @@ const PrescriptionDetails: React.FC<{
                   disabled={staleEncounterUuids.includes(encounterUuid)}
                 />
               </UserHasAccess>
-              <MedicationEvent
-                key={bundle.request.id}
-                medicationEvent={bundle.request}
-                status={generateStatusTag(bundle.request)}
-              />
-            </Tile>
+            </MedicationEvent>
           );
         })}
       <PrescriptionsActionsFooter encounterUuid={encounterUuid} patientUuid={patientUuid} />
