@@ -12,6 +12,11 @@
   border-left: layout.$spacing-03 solid var(--brand-03);
   color: $text-02;
   margin-bottom: layout.$spacing-05 !important;
+  position: relative;
+
+  @media (max-width: 1024px) and (min-width: 768px) {
+    padding-bottom: layout.$spacing-09;
+  }
 }
 
 .prescriptionContainer {
@@ -19,6 +24,10 @@
   flex-direction: column;
   max-width: 80%;
   margin-bottom: layout.$spacing-05;
+
+  @media (max-width: 1024px) and (min-width: 768px) {
+    max-width: 100%;
+  }
 
   &:global(.cds--tile) {
     min-height: 3rem !important;

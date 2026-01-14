@@ -11,14 +11,28 @@
   display: flex;
   flex-direction: row;
 
+  @media (max-width: 1024px) and (min-width: 768px) {
+    flex-direction: column;
+  }
+
   :global(.cds--tabs) {
     margin: layout.$spacing-05 0;
     width: 20%;
     max-height: 8rem !important;
+
+    @media (max-width: 1024px) and (min-width: 768px) {
+      width: 100% !important;
+      max-height: none !important;
+    }
   }
 
   :global(.cds--tab--list) {
     flex-direction: column !important;
+
+    @media (max-width: 1024px) and (min-width: 768px) {
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+    }
   }
 
   :global(.cds--tab-content) {
@@ -46,9 +60,34 @@
 
   > ul > li button {
     width: 12rem !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    text-overflow: unset !important;
+
+    @media (max-width: 1024px) and (min-width: 768px) {
+      width: 100% !important;
+      min-width: 10rem !important;
+      max-width: 16rem !important;
+      padding: layout.$spacing-03 layout.$spacing-04 !important;
+      line-height: 1.2 !important;
+      height: auto !important;
+      min-height: 3rem !important;
+    }
   }
 
   :global(.cds--tabs__nav-link) {
     max-width: 12rem !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow: visible !important;
+
+    @media (max-width: 1024px) and (min-width: 768px) {
+      max-width: 16rem !important;
+      width: 100% !important;
+      padding: layout.$spacing-03 layout.$spacing-04 !important;
+      line-height: 1.2 !important;
+      height: auto !important;
+      min-height: 3rem !important;
+    }
   }
 }
