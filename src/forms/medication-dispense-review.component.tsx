@@ -193,62 +193,64 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   return (
     <div className={styles.medicationDispenseReviewContainer}>
       <Stack gap={5}>
-        {!isEditingFormulation ? (
-          <MedicationCard
-            medication={getMedicationReferenceOrCodeableConcept(medicationDispense)}
-            editAction={userCanModify && allowEditing ? () => setIsEditingFormulation(true) : null}
-          />
-        ) : (
-          <ResponsiveWrapper>
-            <Dropdown
-              id="medicationFormulation"
-              items={medicationFormulations}
-              itemToString={(item: Medication) => getOpenMRSMedicineDrugName(item)}
-              initialSelectedItem={{
-                ...medicationFormulations?.find(
-                  (formulation) => formulation.id === medicationDispense.medicationReference?.reference.split('/')[1],
-                ),
-              }}
-              titleText={t('medicationFormulation', 'Medication Formulation')}
-              label={t('medicationFormulation', 'Medication Formulation')}
-              onChange={({ selectedItem }) => {
-                const typedItem = selectedItem as Medication;
-                if ('Medication/' + typedItem.id !== medicationDispense.medicationReference.reference) {
-                  updateMedicationDispense({
-                    medicationCodeableConcept: undefined,
-                    medicationReference: {
-                      reference: 'Medication/' + typedItem?.id,
-                      display: getOpenMRSMedicineDrugName(typedItem),
-                    },
-                    quantity: {
-                      ...medicationDispense.quantity,
-                      value: 0,
-                    },
-                    ...(isFreeTextDosage
-                      ? {}
-                      : {
-                          dosageInstruction: [
-                            {
-                              ...medicationDispense.dosageInstruction[0],
-                              doseAndRate: [
-                                {
-                                  ...medicationDispense.dosageInstruction[0].doseAndRate[0],
-                                  doseQuantity: {
-                                    ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
-                                    value: 0,
-                                  },
-                                },
-                              ],
-                            },
-                          ],
-                        }),
-                  });
-                }
-                setIsEditingFormulation(false);
-              }}
+        <div className={styles.medicationCardContainer}>
+          {!isEditingFormulation ? (
+            <MedicationCard
+              medication={getMedicationReferenceOrCodeableConcept(medicationDispense)}
+              editAction={userCanModify && allowEditing ? () => setIsEditingFormulation(true) : null}
             />
-          </ResponsiveWrapper>
-        )}
+          ) : (
+            <ResponsiveWrapper>
+              <Dropdown
+                id="medicationFormulation"
+                items={medicationFormulations}
+                itemToString={(item: Medication) => getOpenMRSMedicineDrugName(item)}
+                initialSelectedItem={{
+                  ...medicationFormulations?.find(
+                    (formulation) => formulation.id === medicationDispense.medicationReference?.reference.split('/')[1],
+                  ),
+                }}
+                titleText={t('medicationFormulation', 'Medication Formulation')}
+                label={t('medicationFormulation', 'Medication Formulation')}
+                onChange={({ selectedItem }) => {
+                  const typedItem = selectedItem as Medication;
+                  if ('Medication/' + typedItem.id !== medicationDispense.medicationReference.reference) {
+                    updateMedicationDispense({
+                      medicationCodeableConcept: undefined,
+                      medicationReference: {
+                        reference: 'Medication/' + typedItem?.id,
+                        display: getOpenMRSMedicineDrugName(typedItem),
+                      },
+                      quantity: {
+                        ...medicationDispense.quantity,
+                        value: 0,
+                      },
+                      ...(isFreeTextDosage
+                        ? {}
+                        : {
+                            dosageInstruction: [
+                              {
+                                ...medicationDispense.dosageInstruction[0],
+                                doseAndRate: [
+                                  {
+                                    ...medicationDispense.dosageInstruction[0].doseAndRate[0],
+                                    doseQuantity: {
+                                      ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
+                                      value: 0,
+                                    },
+                                  },
+                                ],
+                              },
+                            ],
+                          }),
+                    });
+                  }
+                  setIsEditingFormulation(false);
+                }}
+              />
+            </ResponsiveWrapper>
+          )}
+        </div>
 
         {isSubstitution && (
           <div className={styles.dispenseDetailsContainer}>
