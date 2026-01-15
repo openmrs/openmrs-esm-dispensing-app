@@ -5,6 +5,9 @@ import { type MedicationReferenceOrCodeableConcept } from '../types';
 import { getMedicationDisplay } from '../utils';
 import styles from './medication-card.scss';
 
+/**
+ * This component shows up in the dispensing form to display the medication to be dispensed
+ */
 const MedicationCard: React.FC<{
   medication: MedicationReferenceOrCodeableConcept;
   editAction?: Function;
