@@ -51,4 +51,9 @@
   :global(.cds--tabs__nav-link) {
     max-width: 12rem !important;
   }
+  :global(.omrs-breakpoint-lt-desktop) & {
+    :global(.cds--tabs) {
+      width: 50%;
+    }
+  }
 }
