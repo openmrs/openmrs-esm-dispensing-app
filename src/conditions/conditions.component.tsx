@@ -12,8 +12,7 @@ import {
   TableRow,
 } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { ErrorState, usePagination } from '@openmrs/esm-framework';
-import { CardHeader, EmptyState } from '@openmrs/esm-patient-common-lib';
+import { CardHeader, EmptyCard, ErrorState, usePagination } from '@openmrs/esm-framework';
 import { pageSizesOptions, usePatientConditions } from './conditions.resource';
 import styles from './conditions.scss';
 
@@ -47,7 +46,7 @@ const PatientConditions: React.FC<PatientConditionsProps> = ({ encounterUuid, pa
   if (!conditions?.length) {
     return (
       <Layer className={styles.conditionContainer}>
-        <EmptyState headerTitle={title} displayText={t('activeConditions', 'Active Condition')} />
+        <EmptyCard headerTitle={title} displayText={t('activeConditions', 'Active Condition')} />
       </Layer>
     );
   }

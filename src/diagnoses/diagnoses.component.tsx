@@ -12,8 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@carbon/react';
-import { ErrorState, usePagination } from '@openmrs/esm-framework';
-import { CardHeader, EmptyState } from '@openmrs/esm-patient-common-lib';
+import { CardHeader, ErrorState, EmptyCard, usePagination } from '@openmrs/esm-framework';
 import { usePatientDiagnosis } from './diagnoses.resource';
 import styles from './diagnoses.scss';
 
@@ -47,7 +46,7 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
   if (!diagnoses?.length) {
     return (
       <Layer className={styles.diagnosesContainer}>
-        <EmptyState headerTitle={title} displayText={t('visitFinalDiagnoses', 'Visit final diagnoses')} />
+        <EmptyCard headerTitle={title} displayText={t('visitFinalDiagnoses', 'Visit final diagnoses')} />
       </Layer>
     );
   }
