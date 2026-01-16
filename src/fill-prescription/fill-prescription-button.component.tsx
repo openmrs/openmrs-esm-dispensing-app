@@ -3,18 +3,18 @@ import { Button } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import {
   AddIcon,
-  type FetchResponse,
   launchWorkspace2,
   openmrsFetch,
   restBaseUrl,
   showModal,
   showSnackbar,
   useLayoutType,
+  type FetchResponse,
+  type Order,
   type Visit,
   type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
 import styles from './fill-prescription-button.scss';
-import { type Order } from '@openmrs/esm-patient-common-lib';
 
 const FillPrescriptionButton: React.FC<{}> = () => {
   const isTablet = useLayoutType() === 'tablet';

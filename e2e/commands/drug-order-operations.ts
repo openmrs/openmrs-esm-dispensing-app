@@ -1,5 +1,5 @@
 import { type APIRequestContext, expect } from '@playwright/test';
-import { type Order } from '@openmrs/esm-patient-common-lib';
+import { type Order } from '@openmrs/esm-framework';
 import { type Encounter } from './types';
 
 export const generateRandomDrugOrder = async (
