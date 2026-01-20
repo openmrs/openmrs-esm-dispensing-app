@@ -24,17 +24,8 @@
 }
 
 .formGroup {
-  display: flex;
   margin-bottom: layout.$spacing-02;
   padding: layout.$spacing-05;
-}
-
-:global(.omrs-breakpoint-lt-desktop) .formGroup > span {
-  flex: 1;
-}
-
-:global(.omrs-breakpoint-lt-desktop) .formGroup > div {
-  flex: 3;
 }
 
 .bannerLoading {
@@ -72,14 +63,6 @@
   > div {
     margin-bottom: layout.$spacing-05;
   }
-}
-
-:global(.omrs-breakpoint-lt-desktop) .formGroup {
-  flex-direction: row;
-}
-
-:global(.omrs-breakpoint-gt-tablet) .formGroup {
-  flex-direction: column;
 }
 
 .buttonGroup {
