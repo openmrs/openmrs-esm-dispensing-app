@@ -20,6 +20,7 @@ const mockWorkspaceProps = {
   isRootWorkspace: true,
   promptBeforeClosing: jest.fn(),
   setTitle: jest.fn(),
+  showActionMenu: true,
 };
 
 // Mock the child components
