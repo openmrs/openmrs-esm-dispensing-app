@@ -164,18 +164,28 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
     setUserCanModify(session?.user && userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user));
   }, [session]);
 
-  const initialDispenser = useMemo(() => {
-    return medicationDispense?.performer?.[0]?.actor?.reference
-      ? providers?.find((provider) => provider.uuid === medicationDispense.performer[0].actor.reference.split('/')[1])
-      : session?.currentProvider?.uuid
-        ? {
+  const providersPlusCurrentUser = useMemo(() => {
+    const currentUserInProviderList = providers.some((provider) => provider.uuid === session?.currentProvider?.uuid);
+    return currentUserInProviderList
+      ? providers
+      : [
+          ...providers,
+          {
             uuid: session.currentProvider.uuid,
             person: {
               display: session?.user?.person?.display ?? '',
             },
-          }
-        : undefined;
-  }, [medicationDispense?.performer, providers, session?.currentProvider?.uuid, session?.user?.person?.display]);
+          },
+        ];
+  }, [providers, session]);
+
+  const initialDispenser = useMemo(() => {
+    return medicationDispense?.performer?.[0]?.actor?.reference
+      ? providersPlusCurrentUser?.find(
+          (provider) => provider.uuid === medicationDispense.performer[0].actor.reference.split('/')[1],
+        )
+      : undefined;
+  }, [medicationDispense?.performer, providersPlusCurrentUser]);
   useEffect(() => {
     if (initialDispenser?.uuid) {
       updateMedicationDispense({
@@ -607,23 +617,24 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           }}
           value={dayjs(medicationDispense.whenHandedOver).toDate()}></OpenmrsDatePicker>
 
-        {providers && (
+        {providersPlusCurrentUser && (
           <ResponsiveWrapper>
             <ComboBox
               id="dispenser"
               initialSelectedItem={initialDispenser}
               onChange={({ selectedItem }) => {
+                const dispenserUuid = selectedItem ? selectedItem.uuid : session.currentProvider.uuid;
                 updateMedicationDispense({
                   performer: [
                     {
                       actor: {
-                        reference: `Practitioner/${selectedItem?.uuid}`,
+                        reference: `Practitioner/${dispenserUuid}`,
                       },
                     },
                   ],
                 });
               }}
-              items={providers}
+              items={providersPlusCurrentUser}
               itemToString={(item) => item?.person?.display}
               required
               titleText={t('dispensedBy', 'Dispensed by')}
