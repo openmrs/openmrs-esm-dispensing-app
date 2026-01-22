@@ -115,12 +115,7 @@ export function initiateMedicationDispenseBody(
     performer: [
       {
         actor: {
-          reference:
-            session?.currentProvider &&
-            providers &&
-            providers.some((provider) => provider.uuid == session.currentProvider.uuid)
-              ? `Practitioner/${session.currentProvider.uuid}`
-              : '',
+          reference: session?.currentProvider ? `Practitioner/${session.currentProvider.uuid}` : '',
         },
       },
     ],
