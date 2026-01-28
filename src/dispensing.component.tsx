@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import {
   ExtensionSlot,
   isDesktop,
@@ -9,7 +10,6 @@ import {
 } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from './config-schema';
 import styles from './dispensing.scss';
-import classNames from 'classnames';
 
 export default function Dispensing() {
   const { leftNavMode } = useConfig<PharmacyConfig>();

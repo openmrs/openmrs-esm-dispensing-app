@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import {
   type Coding,
   type DosageInstruction,
@@ -12,6 +13,7 @@ import {
   MedicationRequestStatus,
 } from './types';
 import {
+  calculateIsFreeTextDosage,
   computeMedicationRequestCombinedStatus,
   computeMedicationRequestStatus,
   computeNewFulfillerStatusAfterDelete,
@@ -39,7 +41,6 @@ import {
   getRefillsAllowed,
   isMostRecentMedicationDispense,
 } from './utils';
-import dayjs from 'dayjs';
 
 describe('Util Tests', () => {
   describe('test computeMedicationRequestCombinedStatus', () => {
@@ -2890,6 +2891,57 @@ describe('Util Tests', () => {
     });
     test('should return false if null', () => {
       expect(isMostRecentMedicationDispense(null, medicationDispenses)).toBe(false);
+    });
+  });
+
+  describe('test calculateIsFreeTextDosage', () => {
+    test('should return true when dosageInstruction is null', () => {
+      expect(calculateIsFreeTextDosage(null)).toBe(true);
+    });
+
+    test('should return true when dosageInstruction has no structured data', () => {
+      const dosageInstruction = {
+        text: 'Take as directed',
+      } as DosageInstruction;
+      expect(calculateIsFreeTextDosage(dosageInstruction)).toBe(true);
+    });
+
+    test('should return false when dosageInstruction has doseAndRate with value', () => {
+      const dosageInstruction = {
+        doseAndRate: [
+          {
+            doseQuantity: {
+              value: 5.0,
+              unit: 'mg',
+              code: 'mg',
+            },
+          },
+        ],
+        timing: {
+          code: {
+            coding: [{ code: '123', display: 'Once daily' }],
+          },
+        },
+        route: {
+          coding: [{ code: '456', display: 'Oral' }],
+          text: 'Oral',
+        },
+        asNeededBoolean: false,
+      } as DosageInstruction;
+      expect(calculateIsFreeTextDosage(dosageInstruction)).toBe(false);
+    });
+
+    test('should return true when doseAndRate exists but has no value', () => {
+      const dosageInstruction = {
+        doseAndRate: [
+          {
+            doseQuantity: {
+              unit: 'mg',
+            },
+          },
+        ],
+      } as DosageInstruction;
+      expect(calculateIsFreeTextDosage(dosageInstruction)).toBe(true);
     });
   });
 });

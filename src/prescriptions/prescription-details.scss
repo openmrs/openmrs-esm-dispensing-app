@@ -61,3 +61,27 @@ svg.allergiesIcon {
   fill: #f1c21b;
   vertical-align: middle;
 }
+
+.allergiesCount {
+  font-weight: bold;
+}
+
+.prescribedHeader {
+  padding-top: layout.$spacing-03;
+  padding-bottom: layout.$spacing-03;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: $danger;
+}
+
+.emptyState {
+  @include type.type-style('body-01');
+  color: $text-02;
+  margin: layout.$spacing-05 0;
+}
+
+.skeletonTile {
+  width: 100%;
+}
