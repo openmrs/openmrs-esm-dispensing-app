@@ -620,7 +620,7 @@ export function sortMedicationDispensesByWhenHandedOver(a: MedicationDispense, b
 }
 
 // we assume this is a free text dosage if none of the following are specified
-export function calculateIsFreeTextDosage(dosageInstruction: DosageInstruction) {
+export function calculateIsFreeTextDosage(dosageInstruction: DosageInstruction | null) {
   return (
     (!dosageInstruction?.doseAndRate || !dosageInstruction?.doseAndRate[0]?.doseQuantity?.value) &&
     !dosageInstruction?.timing?.code?.coding[0]?.code &&

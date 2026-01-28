@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
+import dayjs from 'dayjs';
 import useSWR from 'swr';
 import { fhirBaseUrl, openmrsFetch, parseDate } from '@openmrs/esm-framework';
+import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 import {
   type AllergyIntoleranceResponse,
   type EncounterResponse,
@@ -21,9 +24,6 @@ import {
   computePrescriptionStatusMessageCode,
   getAssociatedMedicationDispenses,
 } from '../utils';
-import dayjs from 'dayjs';
-import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
-import { useMemo } from 'react';
 
 export function usePrescriptionsTable(
   loadData: boolean,
@@ -200,24 +200,19 @@ function medicationRequestResponseToPrescriptionDetails(
 }
 
 export function usePatientAllergies(patientUuid: string, refreshInterval) {
-  const { data, error } = useSWR<{ data: AllergyIntoleranceResponse }, Error>(
+  const { data, error, isLoading } = useSWR<{ data: AllergyIntoleranceResponse }, Error>(
     `${fhirBaseUrl}/AllergyIntolerance?patient=${patientUuid}`,
     openmrsFetch,
     { refreshInterval: refreshInterval },
   );
 
-  const allergies = [];
-  if (data) {
-    const entries = data?.data.entry;
-    entries?.map((allergy) => {
-      return allergies.push(allergy.resource);
-    });
-  }
+  const allergies = data?.data.entry?.map((allergy) => allergy.resource) ?? [];
 
   return {
     allergies,
     totalAllergies: data?.data.total,
     error,
+    isLoading,
   };
 }
 

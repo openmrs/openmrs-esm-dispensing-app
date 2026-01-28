@@ -188,7 +188,6 @@ const createMockMedicationRequestBundle = (numberOfRepeatsAllowed: number | null
 });
 
 beforeEach(() => {
-  jest.clearAllMocks();
   mockUseConfig.mockReturnValue({
     dispenseBehavior: {
       allowModifyingPrescription: false,
