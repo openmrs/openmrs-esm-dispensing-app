@@ -4,6 +4,28 @@
 
 .diagnosesContainer {
   background-color: colors.$white-0;
-  border: 1px solid colors.$gray-20;
   margin-bottom: layout.$spacing-05;
+
+  :global(.cds--tile) {
+    min-height: unset !important;
+    padding: layout.$spacing-05 !important;
+  }
+}
+
+.table {
+  table-layout: fixed;
+  width: 100%;
+
+  td {
+    padding-left: 2rem !important;
+  }
+}
+
+.diagnosisColumn {
+  width: 70%;
+}
+
+.statusColumn {
+  width: 30%;
+  text-align: left;
 }

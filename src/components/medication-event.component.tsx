@@ -1,8 +1,9 @@
 import React, { type ReactNode } from 'react';
+import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { Tile } from '@carbon/react';
 import { isDesktop, useLayoutType } from '@openmrs/esm-framework';
-import { type DosageInstruction, type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
+import { type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
 import {
   calculateIsFreeTextDosage,
   getDosageInstruction,
@@ -12,7 +13,6 @@ import {
   getRefillsAllowed,
 } from '../utils';
 import styles from './medication-event.scss';
-import classNames from 'classnames';
 
 /**
  * Renders a prescription request of a prescript event (ex: ordered, dispensed)
@@ -24,7 +24,7 @@ const MedicationEvent: React.FC<{
   isDispenseEvent?: boolean;
 }> = ({ medicationEvent, status = null, children, isDispenseEvent }) => {
   const { t } = useTranslation();
-  const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
+  const dosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
   const isFreeTextDosage = calculateIsFreeTextDosage(dosageInstruction);
   const quantity: Quantity = getQuantity(medicationEvent);
   const refillsAllowed: number = getRefillsAllowed(medicationEvent);
@@ -40,6 +40,7 @@ const MedicationEvent: React.FC<{
       <div>
         <p className={styles.medicationName}>
           {status}
+          {status && ' '}
           <strong>{getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}</strong>
         </p>
 
@@ -47,22 +48,23 @@ const MedicationEvent: React.FC<{
           <p className={styles.bodyLong01}>
             <span className={styles.label01}>{t('dose', 'Dose').toUpperCase()}</span>{' '}
             <span className={styles.dosage}>
-              {dosageInstruction.doseAndRate &&
-                dosageInstruction?.doseAndRate.map((doseAndRate, index) => {
+              {dosageInstruction?.doseAndRate &&
+                dosageInstruction.doseAndRate.map((doseAndRate, index) => {
                   return (
                     <span key={index}>
                       {doseAndRate?.doseQuantity?.value} {doseAndRate?.doseQuantity?.unit}
                     </span>
                   );
                 })}
-            </span>{' '}
-            &mdash; {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}{' '}
-            {dosageInstruction?.timing?.repeat?.duration
-              ? 'for ' +
-                dosageInstruction?.timing?.repeat?.duration +
-                ' ' +
-                dosageInstruction?.timing?.repeat?.durationUnit
-              : ' '}
+            </span>
+            {dosageInstruction?.route?.text && <> &mdash; {dosageInstruction.route.text}</>}
+            {dosageInstruction?.timing?.code?.text && <> &mdash; {dosageInstruction.timing.code.text}</>}
+            {dosageInstruction?.timing?.repeat?.duration && (
+              <>
+                {' '}
+                for {dosageInstruction.timing.repeat.duration} {dosageInstruction.timing.repeat.durationUnit}
+              </>
+            )}
           </p>
         )}
 
