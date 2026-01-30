@@ -1,6 +1,6 @@
-![Node.js CI](https://github.com/openmrs/openmrs-esm-dispensing-app/workflows/Node.js%20CI/badge.svg)
-
 # OpenMRS ESM Dispensing App
+
+![Node.js CI](https://github.com/openmrs/openmrs-esm-dispensing-app/workflows/Node.js%20CI/badge.svg)
 
 This repository is for the OpenMRS Dispensing App. For more information, please see the
 [OpenMRS Frontend Developer Documentation](https://openmrs.atlassian.net/wiki/x/sQubAQ).
@@ -52,8 +52,6 @@ Note that following privileges need to be installed and assigned to roles:
 
 ## Optional Configuration
 
-TODO: document all configuration options
-
 ### Default filter locations
 
 The Dispensing app allows users to filter orders in the order list by location. By default, when you open the dispensing app, no locations are selected.
@@ -71,13 +69,11 @@ You can customize by adding custom tabs to the `customTabs` array in the config-
 
 Custom tabs have the following properties:
 
-```
+```ts
 export interface CustomTab {
     title: string;
     customPrescriptionsTableEndpoint: string;
-    associatedLocations: [
-      uuid: string
-    ];
+    associatedLocations: string[];
 }
 ```
 
@@ -89,13 +85,13 @@ The "customPrescriptionsTableEndpoint" should be an endpoint that returns a FHIR
 
 The following variable interpolations will be substituted if present in the endpoint:
 
-* fhirBaseUrl 
-* status
-* pageOffset
-* pageSize
-* date
-* patientSearchTerm
-* location
+- fhirBaseUrl
+- status
+- pageOffset
+- pageSize
+- date
+- patientSearchTerm
+- location
 
 ## Running this code
 
@@ -126,7 +122,3 @@ If you are unable to commit and push using Intellij, you may need to update the 
 ## Contributing
 
 For more information, please see the [OpenMRS Frontend Developer Documentation](https://openmrs.atlassian.net/wiki/x/sQubAQ).
-
-In particular, the [Setup](https://openmrs.atlassian.net/wiki/x/sQubAQ) section can help you get started developing microfrontends in general.
-
-
