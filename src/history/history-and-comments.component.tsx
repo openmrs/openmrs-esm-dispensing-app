@@ -91,7 +91,7 @@ const HistoryAndComments: React.FC<{
           {sortedDispenses.map((dispense) => (
             <div key={dispense.id}>
               <h5 className={styles.historyHeader}>
-                {dispense.performer && dispense.performer[0]?.actor?.display} {generateDispenseVerbiage(dispense)} -{' '}
+                {dispense.performer && dispense.performer[0]?.actor?.display} {generateDispenseVerbiage(dispense)} —{' '}
                 {formatDatetime(parseDate(dispense.whenHandedOver))}
               </h5>
               <MedicationEvent
@@ -113,7 +113,7 @@ const HistoryAndComments: React.FC<{
           {requests.map((request) => (
             <div key={request.id}>
               <h5 className={styles.historyHeader}>
-                {request.requester.display} {t('orderedMedication', 'ordered medication')} -{' '}
+                {request.requester.display} {t('orderedMedication', 'ordered medication')} —{' '}
                 {formatDatetime(prescriptionDate)}
               </h5>
               <MedicationEvent medicationEvent={request} status={<Tag type="green">{t('ordered', 'Ordered')}</Tag>} />

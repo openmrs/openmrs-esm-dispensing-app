@@ -27,7 +27,7 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
   const pageSizesOptions = useMemo(() => [3, 5, 10, 20, 50, 100], []);
   const { results, totalPages, currentPage, goTo } = usePagination(diagnoses, pageSize);
   const { t } = useTranslation();
-  const title = t('finalDiagnoses', 'Final diagnoses');
+  const title = t('diagnoses', 'Diagnoses');
   const headers = useMemo(
     () => [
       { header: t('diagnosis', 'Diagnosis'), key: 'text' },
@@ -58,7 +58,7 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
   if (!diagnoses?.length) {
     return (
       <Layer className={styles.diagnosesContainer}>
-        <EmptyCard headerTitle={title} displayText={t('finalDiagnosesEmpty', 'final diagnoses')} />
+        <EmptyCard headerTitle={title} displayText={t('diagnosesEmpty', 'diagnoses')} />
       </Layer>
     );
   }

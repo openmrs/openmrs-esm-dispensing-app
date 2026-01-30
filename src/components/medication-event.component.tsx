@@ -1,9 +1,9 @@
 import React, { type ReactNode } from 'react';
 import classNames from 'classnames';
-import { Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
+import { Tile } from '@carbon/react';
 import { isDesktop, useLayoutType } from '@openmrs/esm-framework';
-import { type DosageInstruction, type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
+import { type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
 import {
   calculateIsFreeTextDosage,
   getDosageInstruction,
@@ -24,7 +24,7 @@ const MedicationEvent: React.FC<{
   isDispenseEvent?: boolean;
 }> = ({ medicationEvent, status = null, children, isDispenseEvent }) => {
   const { t } = useTranslation();
-  const dosageInstruction: DosageInstruction | null = getDosageInstruction(medicationEvent.dosageInstruction);
+  const dosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
   const isFreeTextDosage = calculateIsFreeTextDosage(dosageInstruction);
   const quantity: Quantity = getQuantity(medicationEvent);
   const refillsAllowed: number = getRefillsAllowed(medicationEvent);
