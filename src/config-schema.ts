@@ -2,6 +2,11 @@ import { Type, validators } from '@openmrs/esm-framework';
 import { type CustomTab } from './types';
 
 export const configSchema = {
+  drugOrderTypeUUID: {
+    _type: Type.UUID,
+    _description: "UUID for the 'Drug' order type to fetch medications",
+    _default: '131168f4-15f5-102d-96e4-000c29c2a5d7',
+  },
   appName: {
     _type: Type.String,
     _default: 'Pharmacy',
@@ -144,6 +149,7 @@ export const configSchema = {
 };
 
 export interface PharmacyConfig {
+  drugOrderTypeUUID: string;
   appName: string;
   actionButtons: {
     pauseButton: {
