@@ -1,6 +1,6 @@
-![Node.js CI](https://github.com/openmrs/openmrs-esm-dispensing-app/workflows/Node.js%20CI/badge.svg)
-
 # OpenMRS ESM Dispensing App
+
+![Node.js CI](https://github.com/openmrs/openmrs-esm-dispensing-app/workflows/Node.js%20CI/badge.svg)
 
 This repository is for the OpenMRS Dispensing App. For more information, please see the
 [OpenMRS Frontend Developer Documentation](https://openmrs.atlassian.net/wiki/x/sQubAQ).
@@ -50,6 +50,49 @@ Note that following privileges need to be installed and assigned to roles:
 - `Task: dispensing.delete.dispense` - Allows user to delete an existing Medication Dispense
 - `Task: dispensing.delete.dispense.ifCreator` - Allows user to delete an existing Medication Dispense, *but only* if they created it originally
 
+## Optional Configuration
+
+### Default filter locations
+
+The Dispensing app allows users to filter orders in the order list by location. By default, when you open the dispensing app, no locations are selected.
+
+You can set certain locations as default filter locations for specific locations by setting the "Associated Pharmacy Location" attribute on a location.
+(You can also configure the attribute name in the config-schema)
+
+For example, if you have an "Inpatient Pharmacy" location, and want only orders from inpatient locations to show by default, you can set the "Associated Pharmacy Location" attribute on all inpatients to (the uuid for) the Inpatient Pharmacy location.
+
+### Custom tabs in the prescriptions view
+
+The Dispensing app, by default displays two views of prescriptions: "Active" and "All"
+
+You can customize by adding custom tabs to the `customTabs` array in the config-schema.
+
+Custom tabs have the following properties:
+
+```ts
+export interface CustomTab {
+    title: string;
+    customPrescriptionsTableEndpoint: string;
+    associatedLocations: string[];
+}
+```
+
+Where "title" is the string (or message code) to display as the title of the tab, "customPrescriptionsTableEndpoint" is the endpoint to fetch the prescriptions from, and "associatedLocations" is an array of location uuids that the tab should be displayed for.
+
+If "associatedLocations" is empty, the tab will be displayed for all locations.
+
+The "customPrescriptionsTableEndpoint" should be an endpoint that returns a FHIR "Bundle" of encounters and medications requests that matches the format provided by the "encountersWithMedicationRequests" query in the FHIR2 module.
+
+The following variable interpolations will be substituted if present in the endpoint:
+
+- fhirBaseUrl
+- status
+- pageOffset
+- pageSize
+- date
+- patientSearchTerm
+- location
+
 ## Running this code
 
 First, install dependencies:
@@ -79,5 +122,3 @@ If you are unable to commit and push using Intellij, you may need to update the 
 ## Contributing
 
 For more information, please see the [OpenMRS Frontend Developer Documentation](https://openmrs.atlassian.net/wiki/x/sQubAQ).
-
-In particular, the [Setup](https://openmrs.atlassian.net/wiki/x/sQubAQ) section can help you get started developing microfrontends in general.

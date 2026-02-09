@@ -14,7 +14,7 @@ import {
 export function saveMedicationDispense(
   medicationDispense: MedicationDispense,
   medicationDispenseStatus: MedicationDispenseStatus,
-  abortController: AbortController,
+  abortController?: AbortController,
 ) {
   // if we have an id, this is an update, otherwise it's a create
   const url = medicationDispense.id
@@ -30,7 +30,7 @@ export function saveMedicationDispense(
 
   return openmrsFetch(url, {
     method: method,
-    signal: abortController.signal,
+    signal: abortController?.signal,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -115,12 +115,7 @@ export function initiateMedicationDispenseBody(
     performer: [
       {
         actor: {
-          reference:
-            session?.currentProvider &&
-            providers &&
-            providers.some((provider) => provider.uuid == session.currentProvider.uuid)
-              ? `Practitioner/${session.currentProvider.uuid}`
-              : '',
+          reference: session?.currentProvider ? `Practitioner/${session.currentProvider.uuid}` : '',
         },
       },
     ],

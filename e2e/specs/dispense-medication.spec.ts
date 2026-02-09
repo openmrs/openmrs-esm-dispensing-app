@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { type Visit } from '@openmrs/esm-framework';
+import { type Order, type Visit } from '@openmrs/esm-framework';
 import {
   generateRandomDrugOrder,
   deleteDrugOrder,
@@ -10,7 +10,6 @@ import {
   endVisit,
 } from '../commands';
 import { type Encounter, type Provider } from '../commands/types';
-import { type Order } from '@openmrs/esm-patient-common-lib';
 import { test } from '../core';
 import { DispensingPage } from '../pages';
 
@@ -49,7 +48,10 @@ test('Dispense prescription', async ({ page, patient }) => {
   });
 
   await test.step('Then I submit the form by clicking the Dispense prescription button', async () => {
-    await page.getByRole('button', { name: 'Dispense prescription' }).click();
+    await page.waitForLoadState('networkidle');
+    const dispenseButton = page.getByRole('button', { name: 'Dispense prescription' });
+    await dispenseButton.scrollIntoViewIfNeeded();
+    await dispenseButton.click();
   });
 
   await test.step('Then I should see a success notification', async () => {

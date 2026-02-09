@@ -62,7 +62,7 @@ export interface Condition {
   status?: 'active' | 'inactive';
   display: string;
   patient: string;
-  onsetDateTime: string;
+  onsetDateTime: string | null;
   recordedDate: string;
   recorder: string;
 }
@@ -76,12 +76,12 @@ export const usePatientConditions = (patientUuid: string) => {
       if (entry?.resourceType === 'Condition') {
         const condition: Condition = {
           id: entry.id,
-          display: entry?.code?.text,
+          display: entry?.code?.text ?? entry?.code?.coding?.[0]?.display,
           patient: entry?.subject?.display,
           recordedDate: entry?.recordedDate,
           recorder: entry?.recorder?.display,
           status: entry?.clinicalStatus?.coding[0]?.code as 'active' | 'inactive',
-          onsetDateTime: formatDate(parseDate(entry.onsetDateTime)),
+          onsetDateTime: entry.onsetDateTime ? formatDate(parseDate(entry.onsetDateTime)) : null,
         };
         prev.push(condition);
       }

@@ -28,28 +28,6 @@
     width: 8rem !important;
   }
 
-  .requestTile {
-    width: 100%;
-    margin: layout.$spacing-01 0 layout.$spacing-03;
-    padding: 0 layout.$spacing-03 0 layout.$spacing-03;
-    background-color: #fff;
-    border-left: layout.$spacing-03 solid var(--brand-03);
-    color: $text-02;
-    margin-bottom: layout.$spacing-05 !important;
-  }
-
-  .dispenseTile {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin: layout.$spacing-01 0 layout.$spacing-03;
-    padding: 0 0 0 layout.$spacing-03;
-    background-color: #fff;
-    border-left: layout.$spacing-03 solid red;
-    color: $text-02;
-    margin-bottom: layout.$spacing-05 !important;
-  }
-
   .medicationEventActionMenu {
     float: right;
   }
@@ -57,4 +35,20 @@
 
 .menuitem {
   max-width: none;
+}
+
+.historyHeader {
+  padding-top: layout.$spacing-03;
+  padding-bottom: layout.$spacing-03;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: $danger;
+}
+
+.emptyState {
+  @include type.type-style('body-01');
+  color: $text-02;
+  margin: layout.$spacing-05 0;
 }

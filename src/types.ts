@@ -111,6 +111,12 @@ export interface CommonConfigProps {
   display: string;
 }
 
+export interface CustomTab {
+  title: string;
+  customPrescriptionsTableEndpoint: string;
+  associatedLocations: [uuid: string];
+}
+
 export interface DosageInstruction {
   text?: string;
   timing: {
@@ -176,17 +182,6 @@ export interface Extension {
   url: string;
   valueDateTime?: string;
   valueCode?: MedicationRequestFulfillerStatus; // add other possibilties once we start using other extensions
-}
-
-export interface LocationResponse {
-  resourceType: string;
-  id: string;
-  meta: {
-    lastUpdated: string;
-  };
-  type: string;
-  total: number;
-  entry: Array<any>; // TODO: type this out better?
 }
 
 export interface Medication {
@@ -466,6 +461,7 @@ export interface Reference {
 export interface SimpleLocation {
   id: string;
   name: string;
+  associatedPharmacyLocation?: string;
 }
 
 export interface ValueSet {

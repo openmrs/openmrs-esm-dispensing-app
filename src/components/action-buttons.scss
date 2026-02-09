@@ -1,9 +1,10 @@
 .actionBtns {
-  position: absolute;
-  bottom: 0;
-  right: 0;
   display: flex;
   gap: 0;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin-top: auto;
+  align-self: flex-end;
 }
 
 .extensionSlot {

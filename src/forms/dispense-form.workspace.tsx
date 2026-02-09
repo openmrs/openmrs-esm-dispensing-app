@@ -18,7 +18,9 @@ import {
   MedicationRequestFulfillerStatus,
 } from '../types';
 import {
+  calculateIsFreeTextDosage,
   computeNewFulfillerStatusAfterDispenseEvent,
+  getDosageInstruction,
   getFulfillerStatus,
   getUuidFromReference,
   markEncounterAsStale,
@@ -72,6 +74,11 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [shouldCompleteOrder, setShouldCompleteOrder] = useState(false);
+
+  const [isFreeTextDosage, setIsFreeTextDosage] = useState(() => {
+    const dosageInstruction = getDosageInstruction(medicationDispense?.dosageInstruction);
+    return dosageInstruction ? calculateIsFreeTextDosage(dosageInstruction) : false;
+  });
 
   // Submit medication dispense form
   const handleSubmit = () => {
@@ -188,25 +195,49 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
 
   // whether or not the form is valid and ready to submit
   const isValid = useMemo(() => {
+    if (!medicationDispensePayload) {
+      return false;
+    }
+    const anyCodedDosage =
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value ||
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code ||
+      medicationDispensePayload.dosageInstruction[0]?.route?.coding[0]?.code ||
+      medicationDispensePayload.dosageInstruction[0]?.timing?.code?.coding[0].code;
+
+    const allCodedDosage =
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value &&
+      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
+      medicationDispensePayload.dosageInstruction[0]?.route?.coding[0]?.code &&
+      medicationDispensePayload.dosageInstruction[0]?.timing?.code?.coding[0].code;
+
     return (
-      medicationDispensePayload &&
       medicationDispensePayload.performer &&
       medicationDispensePayload.performer[0]?.actor.reference &&
       medicationDispensePayload.quantity?.value &&
       (!quantityRemaining || medicationDispensePayload?.quantity?.value <= quantityRemaining) &&
       medicationDispensePayload.quantity?.code &&
-      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.value &&
-      medicationDispensePayload.dosageInstruction[0]?.doseAndRate[0]?.doseQuantity?.code &&
-      medicationDispensePayload.dosageInstruction[0]?.route?.coding[0].code &&
-      medicationDispensePayload.dosageInstruction[0]?.timing?.code.coding[0].code &&
+      ((allCodedDosage && !isFreeTextDosage) ||
+        (!anyCodedDosage && isFreeTextDosage && medicationDispensePayload.dosageInstruction[0]?.text)) &&
       (!medicationDispensePayload.substitution.wasSubstituted ||
         (medicationDispensePayload.substitution.reason[0]?.coding[0].code &&
           medicationDispensePayload.substitution.type?.coding[0].code))
     );
-  }, [medicationDispensePayload, quantityRemaining]);
+  }, [isFreeTextDosage, medicationDispensePayload, quantityRemaining]);
 
   // initialize the internal dispense payload with the dispenses passed in as props
   useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
+
+  // Auto-default "Complete Order With This Dispense" checkbox for orders with no refills
+  useEffect(() => {
+    // Only auto-default in 'enter' mode when creating a new dispense
+    if (mode === 'enter' && medicationRequestBundle?.request?.dispenseRequest) {
+      const numberOfRepeatsAllowed = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed;
+      // Default to true if order doesn't support refills
+      if (numberOfRepeatsAllowed === 0 || numberOfRepeatsAllowed === null || numberOfRepeatsAllowed === undefined) {
+        setShouldCompleteOrder(true);
+      }
+    }
+  }, [medicationRequestBundle, mode]);
 
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
 
@@ -244,6 +275,8 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
                 <MedicationDispenseReview
                   medicationDispense={medicationDispensePayload}
                   updateMedicationDispense={updateMedicationDispense}
+                  isFreeTextDosage={isFreeTextDosage}
+                  setIsFreeTextDosage={setIsFreeTextDosage}
                   quantityRemaining={quantityRemaining}
                   quantityDispensed={quantityDispensed}
                 />

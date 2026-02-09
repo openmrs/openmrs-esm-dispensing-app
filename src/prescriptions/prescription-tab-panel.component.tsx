@@ -1,29 +1,61 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ComboBox, Search, TabPanel } from '@carbon/react';
-import { useConfig, useDebounce } from '@openmrs/esm-framework';
+import { MultiSelect, Search, TabPanel } from '@carbon/react';
+import { useConfig, useDebounce, useSession } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import PrescriptionsTable from './prescriptions-table.component';
 import styles from './prescriptions.scss';
-import { useLocationForFiltering } from '../location/location.resource';
+import { useLocations } from '../location/location.resource';
 import { type SimpleLocation } from '../types';
 
 interface PrescriptionTabPanelProps {
-  status: string;
   isTabActive: boolean;
+  status?: string;
+  customPrescriptionsTableEndpoint?: string;
 }
 
-const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isTabActive }) => {
+const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
+  status,
+  isTabActive,
+  customPrescriptionsTableEndpoint,
+}) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
-  const { filterLocations, isLoading: isFilterLocationsLoading } = useLocationForFiltering(config);
+  const isInitialized = useRef(false);
+  const { sessionLocation } = useSession();
+  const { locations, isLoading: isFilterLocationsLoading } = useLocations(config);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  const [location, setLocation] = useState('');
+  const [filterLocations, setFilterLocations] = useState<SimpleLocation[]>([]);
+
+  // set any initially selected locations
+  useEffect(() => {
+    if (!isInitialized.current && !isFilterLocationsLoading && sessionLocation?.uuid) {
+      setFilterLocations(locations?.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation) || []);
+      isInitialized.current = true; // we only want to run when the component is first mounted so we don't override user changes
+    }
+  }, [isFilterLocationsLoading, sessionLocation, locations]);
 
   return (
     <TabPanel>
       <div className={styles.searchContainer}>
+        {config.locationBehavior?.locationFilter?.enabled &&
+          !isFilterLocationsLoading &&
+          isInitialized.current &&
+          locations?.length > 1 && (
+            <MultiSelect
+              hideLabel
+              id="locationFilter"
+              label={t('filterByLocations', 'Filter by locations')}
+              initialSelectedItems={filterLocations}
+              items={locations}
+              itemToString={(item: SimpleLocation) => item?.name}
+              onChange={({ selectedItems }) => {
+                setFilterLocations(selectedItems);
+              }}
+              className={styles.locationFilter}
+            />
+          )}
         <Search
           closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
           defaultValue={searchTerm}
@@ -36,26 +68,13 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ status, isT
           size="md"
           className={styles.patientSearch}
         />
-        {config.locationBehavior?.locationFilter?.enabled &&
-          !isFilterLocationsLoading &&
-          filterLocations?.length > 1 && (
-            <ComboBox
-              id="locationFilter"
-              placeholder={t('filterByLocation', 'Filter by location')}
-              items={isFilterLocationsLoading ? [] : filterLocations}
-              itemToString={(item: SimpleLocation) => item?.name}
-              onChange={({ selectedItem }) => {
-                setLocation(selectedItem?.id);
-              }}
-              className={styles.locationFilter}
-            />
-          )}
       </div>
       <PrescriptionsTable
         loadData={isTabActive}
         status={status}
+        customPrescriptionsTableEndpoint={customPrescriptionsTableEndpoint}
         debouncedSearchTerm={debouncedSearchTerm}
-        location={location}
+        locations={filterLocations}
       />
     </TabPanel>
   );

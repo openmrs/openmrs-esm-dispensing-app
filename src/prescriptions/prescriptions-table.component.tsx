@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import {
   DataTable,
   DataTableSkeleton,
@@ -15,23 +16,30 @@ import {
   TableRow,
   Tile,
 } from '@carbon/react';
-import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
-import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
+import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import { type PharmacyConfig } from '../config-schema';
+import { type SimpleLocation } from '../types';
 import PatientInfoCell from '../patient/patient-info-cell.component';
 import PrescriptionExpanded from './prescription-expanded.component';
 import styles from './prescriptions.scss';
-import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
-import { type PharmacyConfig } from '../config-schema';
 
 interface PrescriptionsTableProps {
   loadData: boolean;
   debouncedSearchTerm: string;
-  location: string;
-  status: string;
+  locations: SimpleLocation[];
+  status?: string;
+  customPrescriptionsTableEndpoint?: string;
 }
 
-const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({ loadData, debouncedSearchTerm, location, status }) => {
+const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
+  loadData,
+  debouncedSearchTerm,
+  locations,
+  status,
+  customPrescriptionsTableEndpoint,
+}) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const [page, setPage] = useState(1);
@@ -39,11 +47,12 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({ loadData, debou
   const nextOffSet = (page - 1) * pageSize;
   const { prescriptionsTableRows, error, isLoading, totalOrders } = usePrescriptionsTable(
     loadData,
+    customPrescriptionsTableEndpoint,
+    status,
     pageSize,
     nextOffSet,
     debouncedSearchTerm,
-    location,
-    status,
+    locations,
     config.medicationRequestExpirationPeriodInDays,
     config.refreshInterval,
   );
@@ -78,7 +87,18 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({ loadData, debou
   return (
     <div className={styles.patientListTableContainer}>
       {isLoading && <DataTableSkeleton role="progressbar" />}
-      {error && <p>Error</p>}
+      {error && (
+        <div className={styles.filterEmptyState}>
+          <Layer>
+            <Tile className={styles.filterEmptyStateTile}>
+              <p className={styles.filterEmptyStateContent}>
+                {t('errorLoadingPrescriptions', 'Error loading prescriptions')}
+              </p>
+              <p className={styles.filterEmptyStateHelper}>{error?.message}</p>
+            </Tile>
+          </Layer>
+        </div>
+      )}
       {prescriptionsTableRows && (
         <>
           <DataTable rows={prescriptionsTableRows} headers={columns} isSortable>
@@ -113,14 +133,15 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({ loadData, debou
                         </TableExpandRow>
                         {row.isExpanded ? (
                           <TableExpandedRow colSpan={headers.length + 1}>
-                            <PrescriptionExpanded
-                              encounterUuid={row.id}
-                              patientUuid={row.cells.find((cell) => cell.id.endsWith('patient')).value.uuid}
-                              status={row.cells.find((cell) => cell.id.endsWith('status')).value}
-                            />
+                            {row.cells.find((cell) => cell.id.endsWith('patient'))?.value?.uuid && (
+                              <PrescriptionExpanded
+                                encounterUuid={row.id}
+                                patientUuid={row.cells.find((cell) => cell.id.endsWith('patient')).value.uuid}
+                              />
+                            )}
                           </TableExpandedRow>
                         ) : (
-                          <TableExpandedRow className={styles.hiddenRow} colSpan={headers.length + 2} />
+                          <TableExpandedRow className={styles.hiddenRow} colSpan={headers.length + 1} />
                         )}
                       </React.Fragment>
                     ))}
@@ -142,15 +163,19 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({ loadData, debou
             </div>
           )}
           {prescriptionsTableRows?.length > 0 && (
-            <div style={{ width: '100%' }}>
+            <div className={styles.paginationContainer}>
               <Pagination
                 page={page}
                 pageSize={pageSize}
                 pageSizes={[10, 20, 30, 40, 50, 100]}
                 totalItems={totalOrders}
-                onChange={({ page, pageSize }) => {
-                  setPage(page);
-                  setPageSize(pageSize);
+                onChange={({ page: newPage, pageSize: newPageSize }) => {
+                  if (newPageSize !== pageSize) {
+                    setPage(1);
+                  } else {
+                    setPage(newPage);
+                  }
+                  setPageSize(newPageSize);
                 }}
               />
             </div>

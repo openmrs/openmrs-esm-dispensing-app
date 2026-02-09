@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import template from 'lodash/template';
 import { mutate } from 'swr';
 import {
   type Coding,
@@ -15,12 +16,7 @@ import {
   MedicationRequestStatus,
   type Quantity,
 } from './types';
-import {
-  createGlobalStore,
-  fhirBaseUrl,
-  parseDate,
-  useStore,
-} from '@openmrs/esm-framework';
+import { createGlobalStore, fhirBaseUrl, parseDate, useStore } from '@openmrs/esm-framework';
 import {
   OPENMRS_FHIR_EXT_DISPENSE_RECORDED,
   OPENMRS_FHIR_EXT_MEDICINE,
@@ -38,10 +34,12 @@ const unitsDontMatchErrorMessage =
  *
  * @param medicationRequestBundle
  * @param restrictTotalQuantityDispensed
+ * @param isDeleteOfCompletedDispense was this a delete event of a completed dispense?
  */
 export function computeFulfillerStatus(
   medicationRequestBundle: MedicationRequestBundle,
   restrictTotalQuantityDispensed: boolean,
+  isDeleteOfCompletedDispense: boolean = false,
 ): MedicationRequestFulfillerStatus {
   if (restrictTotalQuantityDispensed && computeQuantityRemaining(medicationRequestBundle) <= 0) {
     // if we set to restrict total quantity dispenses and quantity remaining less than 0, set status to completed
@@ -51,12 +49,24 @@ export function computeFulfillerStatus(
   // otherwise, set based on most recent dispense status as follows
   const mostRecentMedicationDispenseStatus = getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
 
+  // if the most recent dispense was declined, set the fulfiller status to declined
   if (mostRecentMedicationDispenseStatus === MedicationDispenseStatus.declined) {
     return MedicationRequestFulfillerStatus.declined;
   }
 
+  // if the most recent dispense was on hold, set the fulfiller status to on hold
   if (mostRecentMedicationDispenseStatus === MedicationDispenseStatus.on_hold) {
     return MedicationRequestFulfillerStatus.on_hold;
+  }
+
+  // a little more complicated logic for the "completed" status:
+  // if we are in 'restrictTotalQuantityDispense' mode, skip, just clear out the "completed" since our calculation above did not flag it as completed
+  // otherwise, if the most recent dispense was completed, set the fulfiller status to completed *if* the current request status is completed *and* this is not a delete of completed dispense
+  // the idea here is that entering/editing a dispense event without providing further info should not change the status of the overall order, but a delete of completed dispense should always remove any completed status on the overall order
+  if (!restrictTotalQuantityDispensed && mostRecentMedicationDispenseStatus === MedicationDispenseStatus.completed) {
+    return medicationRequestBundle.request.status === MedicationRequestStatus.completed && !isDeleteOfCompletedDispense
+      ? MedicationRequestFulfillerStatus.completed
+      : null;
   }
 
   return null;
@@ -163,6 +173,7 @@ export function computeNewFulfillerStatusAfterDispenseEvent(
       dispenses: dispenses,
     },
     restrictTotalQuantityDispensed,
+    false,
   );
 }
 
@@ -185,6 +196,7 @@ export function computeNewFulfillerStatusAfterDelete(
       dispenses: medicationRequestBundle.dispenses.filter((dispense) => dispense.id !== deletedMedicationDispense.id),
     },
     restrictTotalQuantityDispensed,
+    deletedMedicationDispense.status === MedicationDispenseStatus.completed,
   );
 }
 
@@ -258,7 +270,7 @@ export function computePrescriptionStatusMessageCode(
   return null;
 }
 
-export function computeQuantityRemaining(medicationRequestBundle): number {
+export function computeQuantityRemaining(medicationRequestBundle: MedicationRequestBundle): number {
   if (medicationRequestBundle) {
     // hard protect against quantity type mistmatch
     if (!getQuantityUnitsMatch([medicationRequestBundle.request, ...medicationRequestBundle.dispenses])) {
@@ -470,41 +482,38 @@ export function getPrescriptionDetailsEndpoint(encounterUuid: string): string {
   return `${fhirBaseUrl}/${PRESCRIPTION_DETAILS_ENDPOINT}?encounter=${encounterUuid}&_revinclude=MedicationDispense:prescription&_include=MedicationRequest:encounter`;
 }
 
-export function getPrescriptionTableActiveMedicationRequestsEndpoint(
+export function getPrescriptionTableEndpoint(
+  customPrescriptionsTableEndpoint: string,
+  status: string,
   pageOffset: number,
   pageSize: number,
   date: string,
   patientSearchTerm: string,
   location: string,
 ): string {
-  return appendSearchTermAndLocation(
-    `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=active`,
+  // use custom endpoint if provided, otherwise only include the "date" parameter when requesting "active" results
+
+  const compiledUrl = template(
+    customPrescriptionsTableEndpoint
+      ? customPrescriptionsTableEndpoint
+      : status === 'ACTIVE'
+        ? '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=${status}' +
+          (patientSearchTerm ? '&patientSearchTerm=${patientSearchTerm}' : '') +
+          (location ? '&location=${location}' : '')
+        : '${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}&status=${status}' +
+          (patientSearchTerm ? '&patientSearchTerm=${patientSearchTerm}' : '') +
+          (location ? '&location=${location}' : ''),
+  );
+  return compiledUrl({
+    fhirBaseUrl,
+    PRESCRIPTIONS_TABLE_ENDPOINT,
+    status,
+    pageOffset,
+    pageSize,
+    date,
     patientSearchTerm,
     location,
-  );
-}
-
-export function getPrescriptionTableAllMedicationRequestsEndpoint(
-  pageOffset: number,
-  pageSize: number,
-  patientSearchTerm: string,
-  location: string,
-): string {
-  return appendSearchTermAndLocation(
-    `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_getpagesoffset=${pageOffset}&_count=${pageSize}`,
-    patientSearchTerm,
-    location,
-  );
-}
-
-function appendSearchTermAndLocation(url: string, patientSearchTerm: string, location: string): string {
-  if (patientSearchTerm) {
-    url = `${url}&patientSearchTerm=${patientSearchTerm}`;
-  }
-  if (location) {
-    url = `${url}&location=${location}`;
-  }
-  return url;
+  });
 }
 
 export function getQuantity(resource: MedicationRequest | MedicationDispense): Quantity {
@@ -608,6 +617,15 @@ export function sortMedicationDispensesByWhenHandedOver(a: MedicationDispense, b
   } else {
     return a.id.localeCompare(b.id); // just to enforce a standard order if two dates are equals
   }
+}
+
+// we assume this is a free text dosage if none of the following are specified
+export function calculateIsFreeTextDosage(dosageInstruction: DosageInstruction | null) {
+  return (
+    (!dosageInstruction?.doseAndRate || !dosageInstruction?.doseAndRate[0]?.doseQuantity?.value) &&
+    !dosageInstruction?.timing?.code?.coding[0]?.code &&
+    !dosageInstruction?.route
+  );
 }
 
 const dispensingStore = createGlobalStore<DispensingStore>('dispensing-store', {

@@ -1,15 +1,15 @@
-import { DataTableSkeleton, Tag, Tile } from '@carbon/react';
+import React from 'react';
+import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
-import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
-import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay, useStaleEncounterUuids } from '../utils';
+import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
+import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
+import { type PharmacyConfig } from '../config-schema';
+import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import ActionButtons from '../components/action-buttons.component';
 import MedicationEvent from '../components/medication-event.component';
-import { type PharmacyConfig } from '../config-schema';
-import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
-import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
-import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
-import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay, useStaleEncounterUuids } from '../utils';
 import PrescriptionsActionsFooter from './prescription-actions.component';
 import styles from './prescription-details.scss';
 
@@ -19,18 +19,16 @@ const PrescriptionDetails: React.FC<{
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
-  const [isAllergiesLoading, setAllergiesLoadingStatus] = useState(true);
-  const { allergies, totalAllergies } = usePatientAllergies(patientUuid, config.refreshInterval);
+  const {
+    allergies,
+    totalAllergies,
+    isLoading: isLoadingAllergies,
+    error: allergiesError,
+  } = usePatientAllergies(patientUuid, config.refreshInterval);
   const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
   const { staleEncounterUuids } = useStaleEncounterUuids();
 
-  useEffect(() => {
-    if (typeof totalAllergies == 'number') {
-      setAllergiesLoadingStatus(false);
-    }
-  }, [totalAllergies]);
-
-  const generateStatusTag: Function = (medicationRequest: MedicationRequest) => {
+  const generateStatusTag = (medicationRequest: MedicationRequest): React.ReactNode => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
       medicationRequest,
       config.medicationRequestExpirationPeriodInDays,
@@ -58,23 +56,45 @@ const PrescriptionDetails: React.FC<{
     return null;
   };
 
-  const displayAllergies: Function = (allergies: Array<AllergyIntolerance>) => {
-    // TODO: Use the `text` property for non-coded allergies
-    return allergies.map((allergy) => getConceptCodingDisplay(allergy.code.coding)).join(', ');
+  const displayAllergies = (allergies: Array<AllergyIntolerance>): string => {
+    const fallbackLabel = t('unknownAllergy', 'Unknown allergy');
+    return allergies
+      .map((allergy) => {
+        // Prefer code.text as it contains the human-readable allergen name
+        // (especially important for "Other" type allergies where coding display is generic)
+        if (allergy.code?.text) {
+          return allergy.code.text;
+        }
+        if (allergy.code?.coding?.length) {
+          return getConceptCodingDisplay(allergy.code.coding) ?? allergy.code.coding[0]?.display;
+        }
+        return fallbackLabel;
+      })
+      .filter(Boolean)
+      .join(', ');
   };
 
   return (
     <div className={styles.prescriptionContainer}>
-      {isAllergiesLoading && <DataTableSkeleton role="progressbar" />}
-      {!isAllergiesLoading && (
+      {isLoadingAllergies && (
+        <Tile className={styles.skeletonTile}>
+          <SkeletonText />
+        </Tile>
+      )}
+      {!isLoadingAllergies && (
         <Tile className={styles.allergiesTile}>
           <div className={styles.allergiesContent}>
             <div>
               <WarningFilled size={24} className={styles.allergiesIcon} />
               <p>
-                {totalAllergies > 0 && (
+                {allergiesError && (
+                  <span className={styles.error}>
+                    {t('errorLoadingAllergies', 'Error loading allergies')}: {allergiesError.message}
+                  </span>
+                )}
+                {!allergiesError && totalAllergies > 0 && (
                   <span>
-                    <span style={{ fontWeight: 'bold' }}>
+                    <span className={styles.allergiesCount}>
                       {t('allergiesCount', '{{ count }} allergies', {
                         count: totalAllergies,
                       })}
@@ -82,19 +102,33 @@ const PrescriptionDetails: React.FC<{
                     {displayAllergies(allergies)}
                   </span>
                 )}
-                {totalAllergies === 0 && t('noAllergyDetailsFound', 'No allergy details found')}
+                {!allergiesError &&
+                  typeof totalAllergies === 'number' &&
+                  totalAllergies === 0 &&
+                  t('noAllergyDetailsFound', 'No allergy details found')}
               </p>
             </div>
           </div>
         </Tile>
       )}
-      <h5 style={{ paddingTop: '8px', paddingBottom: '8px', fontSize: '0.9rem' }}>{t('prescribed', 'Prescribed')}</h5>
-      {isLoading && <DataTableSkeleton role="progressbar" />}
-      {error && <p>{t('error', 'Error')}</p>}
+      <h5 className={styles.prescribedHeader}>{t('prescribed', 'Prescribed')}</h5>
+      {isLoading && (
+        <Tile className={styles.skeletonTile}>
+          <SkeletonText paragraph lineCount={2} />
+        </Tile>
+      )}
+      {error && (
+        <p className={styles.error}>
+          {t('errorLoadingPrescriptionDetails', 'Error loading prescription details')}: {error.message}
+        </p>
+      )}
       {medicationRequestBundles &&
-        medicationRequestBundles.map((bundle) => {
-          return (
-            <Tile className={styles.prescriptionTile}>
+        (medicationRequestBundles.length > 0 ? (
+          medicationRequestBundles.map((bundle) => (
+            <MedicationEvent
+              key={bundle.request.id}
+              medicationEvent={bundle.request}
+              status={generateStatusTag(bundle.request)}>
               <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
                 <ActionButtons
                   patientUuid={patientUuid}
@@ -103,15 +137,14 @@ const PrescriptionDetails: React.FC<{
                   disabled={staleEncounterUuids.includes(encounterUuid)}
                 />
               </UserHasAccess>
-              <MedicationEvent
-                key={bundle.request.id}
-                medicationEvent={bundle.request}
-                status={generateStatusTag(bundle.request)}
-              />
-            </Tile>
-          );
-        })}
-      <PrescriptionsActionsFooter encounterUuid={encounterUuid} patientUuid={patientUuid} />
+            </MedicationEvent>
+          ))
+        ) : (
+          <p className={styles.emptyState}>{t('noPrescriptionsFound', 'No prescriptions found')}</p>
+        ))}
+      {medicationRequestBundles?.length > 0 && (
+        <PrescriptionsActionsFooter encounterUuid={encounterUuid} patientUuid={patientUuid} />
+      )}
     </div>
   );
 };

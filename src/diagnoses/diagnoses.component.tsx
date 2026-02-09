@@ -14,8 +14,7 @@ import {
   Tile,
   Tag,
 } from '@carbon/react';
-import { ErrorState, usePagination, useConfig, UserHasAccess } from '@openmrs/esm-framework';
-import { CardHeader, EmptyState } from '@openmrs/esm-patient-common-lib';
+import { CardHeader, EmptyCard, ErrorState, usePagination } from '@openmrs/esm-framework';
 import { usePatientDiagnosis } from './diagnoses.resource';
 import { usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import ActionButtons from '../components/action-buttons.component';
@@ -121,21 +120,23 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
 
       <DataTable useZebraStyles rows={results} headers={headers}>
         {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
-          <Table {...getTableProps()}>
+          <Table {...getTableProps()} className={styles.table}>
             <TableHead>
               <TableRow>
-                {headers.map((header, i) => (
-                  <TableHeader {...getHeaderProps({ header })} key={i}>
+                {headers.map((header) => (
+                  <TableHeader {...getHeaderProps({ header })} key={header.key} className={getColumnClass(header.key)}>
                     {header.header}
                   </TableHeader>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row, i) => (
-                <TableRow {...getRowProps({ row })} key={i}>
+              {rows.map((row) => (
+                <TableRow {...getRowProps({ row })} key={row.id}>
                   {row.cells.map((cell) => (
-                    <TableCell key={cell.id}>{cell.value}</TableCell>
+                    <TableCell key={cell.id} className={getColumnClass(cell.info.header)}>
+                      {cell.value}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))}

@@ -1,88 +1,74 @@
 import React from 'react';
 import { Button } from '@carbon/react';
+import { useTranslation } from 'react-i18next';
 import {
   AddIcon,
-  launchWorkspace,
   launchWorkspace2,
+  openmrsFetch,
+  restBaseUrl,
+  showModal,
   showSnackbar,
-  useConfig,
   useLayoutType,
-  useSession,
+  type FetchResponse,
+  type Order,
+  type Visit,
+  type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
-import { useTranslation } from 'react-i18next';
 import styles from './fill-prescription-button.scss';
-import { getPrescriptionDetails } from '../medication-request/medication-request.resource';
-import { initiateMedicationDispenseBody, useProviders } from '../medication-dispense/medication-dispense.resource';
-import { computeQuantityRemaining } from '../utils';
-import { type PharmacyConfig } from '../config-schema';
 
 const FillPrescriptionButton: React.FC<{}> = () => {
   const isTablet = useLayoutType() === 'tablet';
   const responsiveSize = isTablet ? 'lg' : 'md';
   const { t } = useTranslation();
-  const { dispenseBehavior, dispenserProviderRoles } = useConfig<PharmacyConfig>();
-  const session = useSession();
-  const providers = useProviders(dispenserProviderRoles);
-
-  const onAfterSaveFillPrescriptionForm = (patient: fhir.Patient, encounterUuid: string) => {
-    const fillDispensingForm = (props) => {
-      return new Promise((resolve) => {
-        const onWorkspaceClosed = resolve;
-        launchWorkspace2('dispense-workspace', { ...props, onWorkspaceClosed });
-      });
-    };
-
-    getPrescriptionDetails(encounterUuid)
-      .then(async (prescriptionDetails) => {
-        const { medicationRequestBundles } = prescriptionDetails;
-        for (const medicationRequestBundle of medicationRequestBundles) {
-          let quantityRemaining = null;
-          if (dispenseBehavior.restrictTotalQuantityDispensed) {
-            quantityRemaining = computeQuantityRemaining(medicationRequestBundle);
-          }
-
-          const quantityDispensed = 0;
-          const dispenseFormProps = {
-            patientUuid: patient.id,
-            encounterUuid,
-            medicationDispense: initiateMedicationDispenseBody(
-              medicationRequestBundle.request,
-              session,
-              providers,
-              true,
-            ),
-            medicationRequestBundle,
-            quantityRemaining,
-            quantityDispensed,
-            mode: 'enter',
-          };
-
-          await fillDispensingForm(dispenseFormProps);
-        }
-      })
-      .catch(() => {
-        showSnackbar({
-          isLowContrast: true,
-          kind: 'error',
-          title: t('errorLoadingPrescriptionDetails', 'Error loading prescription details'),
-          subtitle: t('tryRefreshingThePage', 'Try refreshing the page.'),
-        });
-      });
-  };
-
-  // See PatientSearchWorkspaceProps in patient-search-app
-  const workspaceProps = {
-    initialQuery: '',
-    nonNavigationSelectPatientAction: (_: string, patient: fhir.Patient) => {
-      launchWorkspace('fill-prescription-form', {
-        patient,
-        onAfterSave: onAfterSaveFillPrescriptionForm,
-      });
-    },
-  };
 
   const launchSearchWorkspace = () => {
-    launchWorkspace('patient-search-workspace', workspaceProps);
+    launchWorkspace2(
+      'dispensing-patient-search-workspace',
+      {
+        workspaceTitle: t('fillPrescriptionForPatient', 'Fill prescription for patient'),
+        onPatientSelected(
+          patientUuid: string,
+          patient: fhir.Patient,
+          launchChildWorkspace: Workspace2DefinitionProps['launchChildWorkspace'],
+          closeWorkspace: Workspace2DefinitionProps['closeWorkspace'],
+        ) {
+          getActiveVisitsForPatient(patientUuid).then(async (response) => {
+            const activeVisit = response.data.results?.[0];
+            if (activeVisit) {
+              await closeWorkspace();
+              launchWorkspace2(
+                'dispensing-order-basket-workspace',
+                {},
+                {
+                  patientUuid: patientUuid,
+                  patient: patient,
+                  visitContext: activeVisit,
+                  drugOrderWorkspaceName: 'dispensing-order-basket-add-drug-order-workspace',
+                  onOrderBasketSubmitted: (encounterUuid: string, _: Array<Order>) => {
+                    showModal('on-prescription-filled-modal', {
+                      patient,
+                      encounterUuid,
+                    });
+                  },
+                },
+              );
+            } else {
+              showSnackbar({
+                title: t('visitRequired', 'Visit required'),
+                subtitle: t(
+                  'visitRequiredForPatientToFillPrescription',
+                  'Visit required for patient to fill prescription',
+                ),
+                kind: 'error',
+              });
+            }
+          });
+        },
+      },
+      {
+        startVisitWorkspaceName: 'dispensing-start-visit-workspace',
+      },
+    );
   };
 
   return (
@@ -97,5 +83,21 @@ const FillPrescriptionButton: React.FC<{}> = () => {
     </div>
   );
 };
+
+function getActiveVisitsForPatient(
+  patientUuid: string,
+  abortController?: AbortController,
+  v?: string,
+): Promise<FetchResponse<{ results: Array<Visit> }>> {
+  const custom = v ?? `default`;
+
+  return openmrsFetch(`${restBaseUrl}/visit?patient=${patientUuid}&v=${custom}&includeInactive=false`, {
+    signal: abortController?.signal,
+    method: 'GET',
+    headers: {
+      'Content-type': 'application/json',
+    },
+  });
+}
 
 export default FillPrescriptionButton;
