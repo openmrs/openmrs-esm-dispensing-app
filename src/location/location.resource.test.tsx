@@ -42,7 +42,6 @@ const pharmacyConfig: PharmacyConfig = {
   completeOrderWithThisDispense: false,
   validateBatch: false,
   leftNavMode: 'collapsed',
-  checkDuplicateDispense: false,
   enableDuplicateDispenseCheck: false,
   customTabs: [],
 };
