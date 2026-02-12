@@ -7,8 +7,7 @@ export const OPENMRS_FHIR_PREFIX = 'http://fhir.openmrs.org';
 export const OPENMRS_FHIR_EXT_PREFIX = OPENMRS_FHIR_PREFIX + '/ext';
 export const OPENMRS_FHIR_EXT_MEDICINE = OPENMRS_FHIR_EXT_PREFIX + '/medicine';
 export const OPENMRS_FHIR_EXT_DISPENSE_RECORDED = OPENMRS_FHIR_EXT_PREFIX + '/medicationdispense/recorded';
-export const OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS =
-  OPENMRS_FHIR_EXT_PREFIX + '/medicationrequest/fullfillerstatus';
+export const OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS = OPENMRS_FHIR_EXT_PREFIX + '/medicationrequest/fulfillerstatus';
 
 export const PRIVILEGE_CREATE_DISPENSE = 'Task: dispensing.create.dispense';
 export const PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS = 'Task: dispensing.create.dispense.allowSubstitutions';

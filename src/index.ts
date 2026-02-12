@@ -7,7 +7,6 @@ import DispensingDashboardComponent from './dashboard/dispensing-dashboard.compo
 import DispensingLinkComponent from './dispensing-link.component';
 import DispensingLinkHomepageComponent from './dashboard/dispensing-dashboard-link.component';
 import PauseActionButton from './components/prescription-actions/pause-action-button.component';
-import PrescriptionPrintPreviewModal from './print-prescription/prescription-print-preview.modal';
 
 export const importTranslation = require.context('../translations', false, /.json$/, 'lazy');
 
@@ -49,6 +48,16 @@ export const duplicatePrescriptionModal = getAsyncLifecycle(
   () => import('./forms/duplicate-prescription.modal'),
   options,
 );
+export const printPrescriptionPreviewModal = getAsyncLifecycle(
+  () => import('./print-prescription/prescription-print-preview.modal'),
+  options,
+);
+export const deleteConfirmModal = getAsyncLifecycle(() => import('./history/delete-confirm.modal'), options);
 
 export const patientDiagnoses = getAsyncLifecycle(() => import('./diagnoses/diagnoses.component'), options);
 export const patientConditions = getAsyncLifecycle(() => import('./conditions/conditions.component'), options);
+
+export const onPrescriptionFilledModal = getAsyncLifecycle(
+  () => import('./fill-prescription/on-prescription-filled.modal'),
+  options,
+);

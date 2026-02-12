@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
+import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { type DosageInstruction, type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
+import { Tile } from '@carbon/react';
+import { isDesktop, useLayoutType } from '@openmrs/esm-framework';
+import { type MedicationDispense, type MedicationRequest, type Quantity } from '../types';
 import {
+  calculateIsFreeTextDosage,
   getDosageInstruction,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
@@ -10,66 +14,82 @@ import {
 } from '../utils';
 import styles from './medication-event.scss';
 
-// can render MedicationRequest or MedicationDispense
+/**
+ * Renders a prescription request of a prescript event (ex: ordered, dispensed)
+ */
 const MedicationEvent: React.FC<{
   medicationEvent: MedicationRequest | MedicationDispense;
-  status?;
-}> = ({ medicationEvent, status = null }) => {
+  status?: ReactNode;
+  children?: ReactNode;
+  isDispenseEvent?: boolean;
+}> = ({ medicationEvent, status = null, children, isDispenseEvent }) => {
   const { t } = useTranslation();
-  const dosageInstruction: DosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
+  const dosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
+  const isFreeTextDosage = calculateIsFreeTextDosage(dosageInstruction);
   const quantity: Quantity = getQuantity(medicationEvent);
   const refillsAllowed: number = getRefillsAllowed(medicationEvent);
+  const isTablet = !isDesktop(useLayoutType());
 
   return (
-    <div>
-      <p className={styles.medicationName}>
-        {status}
-        <strong>{getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}</strong>
-      </p>
-
-      {dosageInstruction && (
-        <p className={styles.bodyLong01}>
-          <span className={styles.label01}>{t('dose', 'Dose').toUpperCase()}</span>{' '}
-          <span className={styles.dosage}>
-            {dosageInstruction.doseAndRate &&
-              dosageInstruction?.doseAndRate.map((doseAndRate, index) => {
-                return (
-                  <span key={index}>
-                    {doseAndRate?.doseQuantity?.value} {doseAndRate?.doseQuantity?.unit}
-                  </span>
-                );
-              })}
-          </span>{' '}
-          &mdash; {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}{' '}
-          {dosageInstruction?.timing?.repeat?.duration
-            ? 'for ' +
-              dosageInstruction?.timing?.repeat?.duration +
-              ' ' +
-              dosageInstruction?.timing?.repeat?.durationUnit
-            : ' '}
+    <Tile
+      className={classNames({
+        [styles.medicationEventTile]: true,
+        [styles.dispenseEvent]: isDispenseEvent,
+        [styles.isTablet]: isTablet,
+      })}>
+      <div>
+        <p className={styles.medicationName}>
+          {status}
+          {status && ' '}
+          <strong>{getMedicationDisplay(getMedicationReferenceOrCodeableConcept(medicationEvent))}</strong>
         </p>
-      )}
 
-      {quantity && (
-        <p className={styles.bodyLong01}>
-          <span className={styles.label01}>{t('quantity', 'Quantity').toUpperCase()}</span>{' '}
-          <span className={styles.quantity}>
-            {quantity.value} {quantity.unit}
-          </span>
-        </p>
-      )}
+        {!isFreeTextDosage && (
+          <p className={styles.bodyLong01}>
+            <span className={styles.label01}>{t('dose', 'Dose').toUpperCase()}</span>{' '}
+            <span className={styles.dosage}>
+              {dosageInstruction?.doseAndRate &&
+                dosageInstruction.doseAndRate.map((doseAndRate, index) => {
+                  return (
+                    <span key={index}>
+                      {doseAndRate?.doseQuantity?.value} {doseAndRate?.doseQuantity?.unit}
+                    </span>
+                  );
+                })}
+            </span>
+            {dosageInstruction?.route?.text && <> &mdash; {dosageInstruction.route.text}</>}
+            {dosageInstruction?.timing?.code?.text && <> &mdash; {dosageInstruction.timing.code.text}</>}
+            {dosageInstruction?.timing?.repeat?.duration && (
+              <>
+                {' '}
+                for {dosageInstruction.timing.repeat.duration} {dosageInstruction.timing.repeat.durationUnit}
+              </>
+            )}
+          </p>
+        )}
 
-      {(refillsAllowed || refillsAllowed === 0) && (
-        <p className={styles.bodyLong01}>
-          <span className={styles.label01}>{t('refills', 'Refills').toUpperCase()}</span>{' '}
-          <span className={styles.refills}>{refillsAllowed}</span>
-        </p>
-      )}
-      {dosageInstruction?.text && <p className={styles.bodyLong01}>{dosageInstruction.text}</p>}
-      {dosageInstruction?.additionalInstruction?.length > 0 && (
-        <p className={styles.bodyLong01}>{dosageInstruction?.additionalInstruction[0].text}</p>
-      )}
-    </div>
+        {quantity && (
+          <p className={styles.bodyLong01}>
+            <span className={styles.label01}>{t('quantity', 'Quantity').toUpperCase()}</span>{' '}
+            <span className={styles.quantity}>
+              {quantity.value} {quantity.unit}
+            </span>
+          </p>
+        )}
+
+        {(refillsAllowed || refillsAllowed === 0) && (
+          <p className={styles.bodyLong01}>
+            <span className={styles.label01}>{t('refills', 'Refills').toUpperCase()}</span>{' '}
+            <span className={styles.refills}>{refillsAllowed}</span>
+          </p>
+        )}
+        {dosageInstruction?.text && <p className={styles.bodyLong01}>{dosageInstruction.text}</p>}
+        {dosageInstruction?.additionalInstruction?.length > 0 && (
+          <p className={styles.bodyLong01}>{dosageInstruction?.additionalInstruction[0].text}</p>
+        )}
+      </div>
+      {children}
+    </Tile>
   );
 };
 

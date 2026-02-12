@@ -2,7 +2,7 @@
   "$schema": "https://json.openmrs.org/routes.schema.json",
   "backendDependencies": {
     "fhir2": ">=1.2",
-    "webservices.rest": "^2.2.0"
+    "webservices.rest": ">=2.2.0"
   },
   "pages": [
     {
@@ -66,25 +66,57 @@
       "component": "closeActionButton"
     }
   ],
-  "workspaces": [
+  "workspaces2": [
     {
       "name": "close-dispense-workspace",
       "component": "closeDispenseWorkspace",
-      "type": "dispense",
-      "title": "Close prescription"
+      "window": "dispensing-window"
     },
     {
       "name": "pause-dispense-workspace",
       "component": "pauseDispenseWorkspace",
-      "type": "dispense",
-      "title": "Pause prescription"
+      "window": "dispensing-window"
     },
     {
       "name": "dispense-workspace",
       "component": "dispenseWorkspace",
-      "type": "dispense",
-      "title": "Dispense prescription",
-      "width": "wider"
+      "window": "dispensing-window"
+    },
+    {
+      "name": "dispensing-patient-search-workspace",
+      "component": "@openmrs/esm-patient-search-app#patientSearchWorkspace2",
+      "window": "fill-prescription-window"
+    },
+    {
+      "name": "dispensing-start-visit-workspace",
+      "component": "@openmrs/esm-patient-chart-app#exportedVisitForm",
+      "window": "fill-prescription-window"
+    },
+    {
+      "name": "dispensing-order-basket-workspace",
+      "component": "@openmrs/esm-patient-orders-app#exportedOrderBasketWorkspace",
+      "window": "fill-prescription-window"
+    },
+    {
+      "name": "dispensing-order-basket-add-drug-order-workspace",
+      "component": "@openmrs/esm-patient-medications-app#exportedAddDrugOrderWorkspace",
+      "window": "fill-prescription-window"
+    }
+  ],
+  "workspaceWindows2": [
+    {
+      "name": "dispensing-window",
+      "group": "dispensing-group"
+    },
+    {
+      "name": "fill-prescription-window",
+      "group": "dispensing-group"
+    }
+  ],
+  "workspaceGroups2": [
+    {
+      "name": "dispensing-group",
+      "overlay": true
     }
   ],
   "modals": [
@@ -99,6 +131,11 @@
     {
       "name": "duplicate-prescription-modal",
       "component": "duplicatePrescriptionModal"
+
+    },
+    {
+      "name": "on-prescription-filled-modal",
+      "component": "onPrescriptionFilledModal"
     }
   ]
 }

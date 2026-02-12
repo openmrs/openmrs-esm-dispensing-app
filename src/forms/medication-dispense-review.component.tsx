@@ -1,19 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { ComboBox, Dropdown, NumberInput, Stack, TextArea } from '@carbon/react';
-import {
-  OpenmrsDatePicker,
-  useLayoutType,
-  useConfig,
-  useSession,
-  userHasAccess,
-  ResponsiveWrapper,
-} from '@openmrs/esm-framework';
+import { ComboBox, Dropdown, NumberInput, Stack, TextArea, Toggle } from '@carbon/react';
+import { OpenmrsDatePicker, useConfig, useSession, userHasAccess, ResponsiveWrapper } from '@openmrs/esm-framework';
 import { getConceptCodingUuid, getMedicationReferenceOrCodeableConcept, getOpenMRSMedicineDrugName } from '../utils';
 import { useMedicationCodeableConcept, useMedicationFormulations } from '../medication/medication.resource';
 import { useMedicationRequest, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import {
+  blankSubstitution,
   useOrderConfig,
   useProviders,
   useSubstitutionReasonValueSet,
@@ -27,7 +21,9 @@ import styles from '../components/medication-dispense-review.scss';
 
 interface MedicationDispenseReviewProps {
   medicationDispense: MedicationDispense;
-  updateMedicationDispense: Function;
+  updateMedicationDispense(updates: Partial<MedicationDispense>);
+  isFreeTextDosage: boolean;
+  setIsFreeTextDosage: (isFreeTextDosage: boolean) => void;
   quantityRemaining: number;
   quantityDispensed: number;
 }
@@ -35,6 +31,8 @@ interface MedicationDispenseReviewProps {
 const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   medicationDispense,
   updateMedicationDispense,
+  isFreeTextDosage,
+  setIsFreeTextDosage,
   quantityRemaining,
   quantityDispensed,
 }) => {
@@ -42,24 +40,13 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const [isEditingFormulation, setIsEditingFormulation] = useState(false);
-  const [isSubstitution, setIsSubstitution] = useState(false);
-  // Dosing Unit eg Tablets
-  const [drugDosingUnits, setDrugDosingUnits] = useState([]);
-  // Dispensing Unit eg Tablets
-  const [drugDispensingUnits, setDrugDispensingUnits] = useState([]);
-  // Route eg Oral
-  const [drugRoutes, setDrugRoutes] = useState([]);
-  // Frequency eg Twice daily
-  const [orderFrequencies, setOrderFrequencies] = useState([]);
   // type of substitution question
   const [substitutionTypes, setSubstitutionTypes] = useState([]);
   // reason for substitution question
   const [substitutionReasons, setSubstitutionReasons] = useState([]);
   //quantity prescribed
-  const [quantityPrescribed, setQuantityPrescribed] = useState(medicationDispense.quantity.value);
+  const [quantityPrescribed] = useState(medicationDispense.quantity.value);
   const [userCanModify, setUserCanModify] = useState(false);
-
-  const isTablet = useLayoutType() === 'tablet';
 
   const allowEditing = config.dispenseBehavior.allowModifyingPrescription;
 
@@ -81,41 +68,21 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   // we fetch this just to get the prescription date
   const { prescriptionDate } = usePrescriptionDetails(medicationRequest ? medicationRequest.encounter.reference : null);
 
-  useEffect(() => {
+  const { drugRoutes, drugDosingUnits, drugDispensingUnits, orderFrequencies } = useMemo(() => {
     if (orderConfigObject) {
-      // sync drug route options order config
-      const availableRoutes = drugRoutes.map((x) => x.id);
-      const otherRouteOptions = [];
-      orderConfigObject.drugRoutes.forEach(
-        (x) => availableRoutes.includes(x.uuid) || otherRouteOptions.push({ id: x.uuid, text: x.display }),
-      );
-      setDrugRoutes([...drugRoutes, ...otherRouteOptions]);
-
-      // sync dosage.unit options with what's defined in the order config
-      const availableDosingUnits = drugDosingUnits.map((x) => x.id);
-      const otherDosingUnits = [];
-      orderConfigObject.drugDosingUnits.forEach(
-        (x) => availableDosingUnits.includes(x.uuid) || otherDosingUnits.push({ id: x.uuid, text: x.display }),
-      );
-      setDrugDosingUnits([...drugDosingUnits, ...otherDosingUnits]);
-
-      // sync dispensing unit options with what's defined in the order config
-      const availableDispensingUnits = drugDispensingUnits.map((x) => x.id);
-      const otherDispensingUnits = [];
-      orderConfigObject.drugDispensingUnits.forEach(
-        (x) => availableDispensingUnits.includes(x.uuid) || otherDispensingUnits.push({ id: x.uuid, text: x.display }),
-      );
-      setDrugDispensingUnits([...drugDispensingUnits, ...otherDispensingUnits]);
-
-      // sync order frequency options with order config
-      const availableFrequencies = orderFrequencies.map((x) => x.id);
-      const otherFrequencyOptions = [];
-      orderConfigObject.orderFrequencies.forEach(
-        (x) => availableFrequencies.includes(x.uuid) || otherFrequencyOptions.push({ id: x.uuid, text: x.display }),
-      );
-      setOrderFrequencies([...orderFrequencies, ...otherFrequencyOptions]);
+      // Dosing Unit eg Tablets
+      const drugRoutes = orderConfigObject.drugRoutes.map((x) => ({ id: x.uuid, text: x.display }));
+      // Dispensing Unit eg Tablets
+      const drugDosingUnits = orderConfigObject.drugDosingUnits.map((x) => ({ id: x.uuid, text: x.display }));
+      // Route eg Oral
+      const drugDispensingUnits = orderConfigObject.drugDispensingUnits.map((x) => ({ id: x.uuid, text: x.display }));
+      // Frequency eg Twice daily
+      const orderFrequencies = orderConfigObject.orderFrequencies.map((x) => ({ id: x.uuid, text: x.display }));
+      return { drugRoutes, drugDosingUnits, drugDispensingUnits, orderFrequencies };
+    } else {
+      return { drugRoutes: [], drugDosingUnits: [], drugDispensingUnits: [], orderFrequencies: [] };
     }
-  }, [drugDispensingUnits, drugDosingUnits, drugRoutes, orderConfigObject, orderFrequencies]);
+  }, [orderConfigObject]);
 
   useEffect(() => {
     const substitutionTypeOptions = [];
@@ -173,58 +140,55 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   );
 
   // check to see if the current dispense would be a substitution, and update accordingly
+  const isSubstitution =
+    medicationRequest?.medicationReference?.reference &&
+    medicationDispense?.medicationReference?.reference &&
+    medicationRequest.medicationReference.reference != medicationDispense.medicationReference.reference;
+
+  const { substitution } = medicationDispense;
   useEffect(() => {
-    if (
-      medicationRequest?.medicationReference?.reference &&
-      medicationDispense?.medicationReference?.reference &&
-      medicationRequest.medicationReference.reference != medicationDispense.medicationReference.reference
-    ) {
-      setIsSubstitution(true);
-      updateMedicationDispense({
-        ...medicationDispense,
-        substitution: {
-          ...medicationDispense.substitution,
-          wasSubstituted: true,
-        },
-      });
+    if (isSubstitution) {
+      // make sure that the value substitution.wasSubstituted exists and is truthy
+      if (!substitution.wasSubstituted) {
+        const newSubstitution = { ...substitution, wasSubstituted: true };
+        updateMedicationDispense({ substitution: newSubstitution });
+      }
     } else {
-      setIsSubstitution(false);
-      updateMedicationDispense({
-        ...medicationDispense,
-        substitution: {
-          wasSubstituted: false,
-          reason: [
-            {
-              coding: [{ code: null }],
-            },
-          ],
-          type: { coding: [{ code: null }] },
-        },
-      });
+      if (substitution != blankSubstitution) {
+        updateMedicationDispense({ substitution: blankSubstitution });
+      }
     }
-  }, [medicationDispense, medicationRequest, updateMedicationDispense]);
+  }, [isSubstitution, substitution, updateMedicationDispense]);
 
   useEffect(() => {
     setUserCanModify(session?.user && userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user));
   }, [session]);
 
-  const initialDispenser = useMemo(() => {
-    return medicationDispense?.performer?.[0]?.actor?.reference
-      ? providers?.find((provider) => provider.uuid === medicationDispense.performer[0].actor.reference.split('/')[1])
-      : session?.currentProvider?.uuid
-        ? {
+  const providersPlusCurrentUser = useMemo(() => {
+    const currentUserInProviderList = providers.some((provider) => provider.uuid === session?.currentProvider?.uuid);
+    return currentUserInProviderList
+      ? providers
+      : [
+          ...providers,
+          {
             uuid: session.currentProvider.uuid,
             person: {
               display: session?.user?.person?.display ?? '',
             },
-          }
-        : undefined;
-  }, [medicationDispense?.performer, providers, session?.currentProvider?.uuid, session?.user?.person?.display]);
+          },
+        ];
+  }, [providers, session]);
 
+  const initialDispenser = useMemo(() => {
+    return medicationDispense?.performer?.[0]?.actor?.reference
+      ? providersPlusCurrentUser?.find(
+          (provider) => provider.uuid === medicationDispense.performer[0].actor.reference.split('/')[1],
+        )
+      : undefined;
+  }, [medicationDispense?.performer, providersPlusCurrentUser]);
   useEffect(() => {
     if (initialDispenser?.uuid) {
       updateMedicationDispense({
-        ...medicationDispense,
         performer: [
           {
             actor: {
@@ -234,44 +198,69 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         ],
       });
     }
-  }, [initialDispenser, medicationDispense, updateMedicationDispense]);
+  }, [initialDispenser, updateMedicationDispense]);
 
   return (
     <div className={styles.medicationDispenseReviewContainer}>
       <Stack gap={5}>
-        {!isEditingFormulation ? (
-          <MedicationCard
-            medication={getMedicationReferenceOrCodeableConcept(medicationDispense)}
-            editAction={userCanModify && allowEditing ? () => setIsEditingFormulation(true) : null}
-          />
-        ) : (
-          <ResponsiveWrapper>
-            <Dropdown
-              id="medicationFormulation"
-              items={medicationFormulations}
-              itemToString={(item: Medication) => getOpenMRSMedicineDrugName(item)}
-              initialSelectedItem={{
-                ...medicationFormulations?.find(
-                  (formulation) => formulation.id === medicationDispense.medicationReference?.reference.split('/')[1],
-                ),
-              }}
-              titleText={t('medicationFormulation', 'Medication Formulation')}
-              label={t('medicationFormulation', 'Medication Formulation')}
-              onChange={({ selectedItem }) => {
-                const typedItem = selectedItem as Medication;
-                updateMedicationDispense({
-                  ...medicationDispense,
-                  medicationCodeableConcept: undefined,
-                  medicationReference: {
-                    reference: 'Medication/' + typedItem?.id,
-                    display: getOpenMRSMedicineDrugName(typedItem),
-                  },
-                });
-                setIsEditingFormulation(false);
-              }}
+        <div className={styles.medicationCardContainer}>
+          {!isEditingFormulation ? (
+            <MedicationCard
+              medication={getMedicationReferenceOrCodeableConcept(medicationDispense)}
+              editAction={userCanModify && allowEditing ? () => setIsEditingFormulation(true) : null}
             />
-          </ResponsiveWrapper>
-        )}
+          ) : (
+            <ResponsiveWrapper>
+              <Dropdown
+                id="medicationFormulation"
+                items={medicationFormulations}
+                itemToString={(item: Medication) => getOpenMRSMedicineDrugName(item)}
+                initialSelectedItem={{
+                  ...medicationFormulations?.find(
+                    (formulation) => formulation.id === medicationDispense.medicationReference?.reference.split('/')[1],
+                  ),
+                }}
+                titleText={t('medicationFormulation', 'Medication Formulation')}
+                label={t('medicationFormulation', 'Medication Formulation')}
+                onChange={({ selectedItem }) => {
+                  const typedItem = selectedItem as Medication;
+                  if ('Medication/' + typedItem.id !== medicationDispense.medicationReference.reference) {
+                    updateMedicationDispense({
+                      medicationCodeableConcept: undefined,
+                      medicationReference: {
+                        reference: 'Medication/' + typedItem?.id,
+                        display: getOpenMRSMedicineDrugName(typedItem),
+                      },
+                      quantity: {
+                        ...medicationDispense.quantity,
+                        value: 0,
+                      },
+                      ...(isFreeTextDosage
+                        ? {}
+                        : {
+                            dosageInstruction: [
+                              {
+                                ...medicationDispense.dosageInstruction[0],
+                                doseAndRate: [
+                                  {
+                                    ...medicationDispense.dosageInstruction[0].doseAndRate[0],
+                                    doseQuantity: {
+                                      ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
+                                      value: 0,
+                                    },
+                                  },
+                                ],
+                              },
+                            ],
+                          }),
+                    });
+                  }
+                  setIsEditingFormulation(false);
+                }}
+              />
+            </ResponsiveWrapper>
+          )}
+        </div>
 
         {isSubstitution && (
           <div className={styles.dispenseDetailsContainer}>
@@ -288,7 +277,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                 }}
                 onChange={({ selectedItem }) => {
                   updateMedicationDispense({
-                    ...medicationDispense,
                     substitution: {
                       ...medicationDispense.substitution,
                       type: {
@@ -321,7 +309,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                 }}
                 onChange={({ selectedItem }) => {
                   updateMedicationDispense({
-                    ...medicationDispense,
                     substitution: {
                       ...medicationDispense.substitution,
                       reason: [
@@ -340,26 +327,26 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             </ResponsiveWrapper>
           </div>
         )}
-        <ResponsiveWrapper>
-          <div>
-            <p className={styles.quantitySummary}>
-              {t('quantityPrescribed', 'Quantity Prescribed')}:{quantityPrescribed}
-            </p>
-            <p className={styles.quantitySummary}>
-              {t('quantityDispensed', 'Quantity Dispensed')}: {quantityDispensed}
-            </p>
-            {config.dispenseBehavior.restrictTotalQuantityDispensed ? (
+        {config.dispenseBehavior.restrictTotalQuantityDispensed ? (
+          <ResponsiveWrapper>
+            <div>
               <p className={styles.quantitySummary}>
-                {t('quantityRemaining', 'Quantity Remaining to Dispense')}:{quantityRemaining}
+                {t('quantityPrescribed', 'Quantity Prescribed')}: {quantityPrescribed}
               </p>
-            ) : null}
-          </div>
-        </ResponsiveWrapper>
+              <p className={styles.quantitySummary}>
+                {t('quantityDispensed', 'Quantity Dispensed')}: {quantityDispensed}
+              </p>
+              <p className={styles.quantitySummary}>
+                {t('quantityRemaining', 'Quantity Remaining to Dispense')}: {quantityRemaining}
+              </p>
+            </div>
+          </ResponsiveWrapper>
+        ) : null}
 
         <div className={styles.dispenseDetailsContainer}>
           <NumberInput
             allowEmpty={true}
-            value={0}
+            value={medicationDispense.quantity.value}
             disabled={!userCanModify}
             hideSteppers={true}
             id="quantity"
@@ -371,10 +358,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             max={config.dispenseBehavior.restrictTotalQuantityDispensed ? quantityRemaining : undefined}
             onChange={(event, state) => {
               updateMedicationDispense({
-                ...medicationDispense,
                 quantity: {
                   ...medicationDispense.quantity,
-                  value: state.value ? parseFloat(state.value.toString()) : '',
+                  value: state.value ? parseFloat(state.value.toString()) : 0,
                 },
               });
             }}
@@ -392,8 +378,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
               }}
               onChange={({ selectedItem }) => {
                 updateMedicationDispense({
-                  ...medicationDispense,
-                  // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
+                  // note that we specifically recreate doseQuantity to overwrite any unit or system properties that may have been set
                   quantity: {
                     value: medicationDispense.quantity.value,
                     code: selectedItem?.id,
@@ -406,145 +391,206 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         </div>
 
         <div className={styles.dispenseDetailsContainer}>
-          <NumberInput
-            allowEmpty={false}
-            disabled={!userCanModify || !allowEditing}
-            hideSteppers={true}
-            id="dosingQuanity"
-            invalidText={t('numberIsNotValid', 'Number is not valid')}
-            min={0}
-            label={t('dose', 'Dose')}
-            value={medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.value}
-            onChange={(event, state) => {
-              updateMedicationDispense({
-                ...medicationDispense,
-                dosageInstruction: [
-                  {
-                    ...medicationDispense.dosageInstruction[0],
-                    doseAndRate: [
+          <ResponsiveWrapper>
+            <Toggle
+              toggled={isFreeTextDosage}
+              disabled={!userCanModify || !allowEditing}
+              id="isFreeTextToggled"
+              size={'sm'}
+              labelText={t('freeTextDosage', 'Free text dosage')}
+              onToggle={(value) => {
+                setIsFreeTextDosage(value);
+                // clear out the dose, route and frequency if changed to free text dosage
+                if (value) {
+                  updateMedicationDispense({
+                    dosageInstruction: [
                       {
-                        ...medicationDispense.dosageInstruction[0].doseAndRate[0],
-                        doseQuantity: {
-                          ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
-                          value: state.value ? parseFloat(state.value.toString()) : '',
-                        },
-                      },
-                    ],
-                  },
-                ],
-              });
-            }}
-          />
-
-          <ResponsiveWrapper>
-            <ComboBox
-              id="dosingUnits"
-              disabled={!userCanModify || !allowEditing}
-              items={drugDosingUnits}
-              titleText={t('doseUnit', 'Dose unit')}
-              itemToString={(item) => item?.text}
-              initialSelectedItem={{
-                id: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.code,
-                text: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.unit,
-              }}
-              onChange={({ selectedItem }) => {
-                updateMedicationDispense({
-                  ...medicationDispense,
-                  dosageInstruction: [
-                    {
-                      ...medicationDispense.dosageInstruction[0],
-                      doseAndRate: [
-                        {
-                          doseQuantity: {
-                            // note that we specifically recreate doesQuantity to overwrite any unit or system properties that may have been set
-                            value: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.value,
-                            code: selectedItem?.id,
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                });
-              }}
-              required
-            />
-          </ResponsiveWrapper>
-
-          <ResponsiveWrapper>
-            <ComboBox
-              id="editRoute"
-              disabled={!userCanModify || !allowEditing}
-              items={drugRoutes}
-              initialSelectedItem={{
-                id: medicationDispense.dosageInstruction[0].route?.coding[0]?.code,
-                text: medicationDispense.dosageInstruction[0].route?.text,
-              }}
-              titleText={t('route', 'Route')}
-              itemToString={(item) => item?.text}
-              onChange={({ selectedItem }) => {
-                updateMedicationDispense({
-                  ...medicationDispense,
-                  dosageInstruction: [
-                    {
-                      ...medicationDispense.dosageInstruction[0],
-                      route: {
-                        coding: [
+                        ...medicationDispense.dosageInstruction[0],
+                        doseAndRate: [
                           {
-                            code: selectedItem?.id,
+                            doseQuantity: {
+                              value: null,
+                              code: null,
+                            },
                           },
                         ],
+                        route: {
+                          coding: [
+                            {
+                              code: null,
+                            },
+                          ],
+                        },
+                        timing: {
+                          ...medicationDispense.dosageInstruction[0].timing,
+                          code: {
+                            coding: [
+                              {
+                                code: null,
+                              },
+                            ],
+                          },
+                        },
+                        text: '',
                       },
-                    },
-                  ],
-                });
+                    ],
+                  });
+                } else {
+                  // clear out the text field if changed from free text to coded dosage
+                  updateMedicationDispense({
+                    dosageInstruction: [
+                      {
+                        ...medicationDispense.dosageInstruction[0],
+                        text: '',
+                      },
+                    ],
+                  });
+                }
               }}
-              required
             />
           </ResponsiveWrapper>
         </div>
 
-        <ResponsiveWrapper>
-          <ComboBox
-            id="frequency"
-            disabled={!userCanModify || !allowEditing}
-            items={orderFrequencies}
-            initialSelectedItem={{
-              id: medicationDispense.dosageInstruction[0].timing?.code?.coding[0]?.code,
-              text: medicationDispense.dosageInstruction[0].timing?.code?.text,
-            }}
-            titleText={t('frequency', 'Frequency')}
-            itemToString={(item) => item?.text}
-            onChange={({ selectedItem }) => {
-              updateMedicationDispense({
-                ...medicationDispense,
-                dosageInstruction: [
-                  {
-                    ...medicationDispense.dosageInstruction[0],
-                    timing: {
-                      ...medicationDispense.dosageInstruction[0].timing,
-                      code: {
-                        coding: [
+        {!isFreeTextDosage && (
+          <>
+            <div className={styles.dispenseDetailsContainer}>
+              <NumberInput
+                allowEmpty={false}
+                disabled={!userCanModify || !allowEditing}
+                hideSteppers={true}
+                id="dosingQuantity"
+                invalidText={t('numberIsNotValid', 'Number is not valid')}
+                min={0}
+                label={t('dose', 'Dose')}
+                value={medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.value}
+                onChange={(event, state) => {
+                  updateMedicationDispense({
+                    dosageInstruction: [
+                      {
+                        ...medicationDispense.dosageInstruction[0],
+                        doseAndRate: [
                           {
-                            code: selectedItem?.id,
+                            ...medicationDispense.dosageInstruction[0].doseAndRate[0],
+                            doseQuantity: {
+                              ...medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity,
+                              value: state.value ? parseFloat(state.value.toString()) : 0,
+                            },
                           },
                         ],
                       },
-                    },
-                  },
-                ],
-              });
-            }}
-            required
-          />
-        </ResponsiveWrapper>
+                    ],
+                  });
+                }}
+              />
+              <ResponsiveWrapper>
+                <ComboBox
+                  id="dosingUnits"
+                  disabled={!userCanModify || !allowEditing}
+                  items={drugDosingUnits}
+                  titleText={t('doseUnit', 'Dose unit')}
+                  itemToString={(item) => item?.text}
+                  initialSelectedItem={{
+                    id: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.code,
+                    text: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.unit,
+                  }}
+                  onChange={({ selectedItem }) => {
+                    updateMedicationDispense({
+                      dosageInstruction: [
+                        {
+                          ...medicationDispense.dosageInstruction[0],
+                          doseAndRate: [
+                            {
+                              doseQuantity: {
+                                // note that we specifically recreate doseQuantity to overwrite any unit or system properties that may have been set
+                                value: medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity?.value,
+                                code: selectedItem?.id,
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    });
+                  }}
+                  required
+                />
+              </ResponsiveWrapper>
+            </div>
+            <ResponsiveWrapper>
+              <ComboBox
+                id="editRoute"
+                disabled={!userCanModify || !allowEditing}
+                items={drugRoutes}
+                initialSelectedItem={{
+                  id: medicationDispense.dosageInstruction[0].route?.coding[0]?.code,
+                  text: medicationDispense.dosageInstruction[0].route?.text,
+                }}
+                titleText={t('route', 'Route')}
+                itemToString={(item) => item?.text}
+                onChange={({ selectedItem }) => {
+                  updateMedicationDispense({
+                    dosageInstruction: [
+                      {
+                        ...medicationDispense.dosageInstruction[0],
+                        route: {
+                          coding: [
+                            {
+                              code: selectedItem?.id,
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  });
+                }}
+                required
+              />
+            </ResponsiveWrapper>
+            <ResponsiveWrapper>
+              <ComboBox
+                id="frequency"
+                disabled={!userCanModify || !allowEditing}
+                items={orderFrequencies}
+                initialSelectedItem={{
+                  id: medicationDispense.dosageInstruction[0].timing?.code?.coding[0]?.code,
+                  text: medicationDispense.dosageInstruction[0].timing?.code?.text,
+                }}
+                titleText={t('frequency', 'Frequency')}
+                itemToString={(item) => item?.text}
+                onChange={({ selectedItem }) => {
+                  updateMedicationDispense({
+                    dosageInstruction: [
+                      {
+                        ...medicationDispense.dosageInstruction[0],
+                        timing: {
+                          ...medicationDispense.dosageInstruction[0].timing,
+                          code: {
+                            coding: [
+                              {
+                                code: selectedItem?.id,
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                  });
+                }}
+                required
+              />
+            </ResponsiveWrapper>
+          </>
+        )}
 
         <TextArea
-          labelText={t('patientInstructions', 'Patient instructions')}
+          labelText={
+            isFreeTextDosage
+              ? t('freeTextDosage', 'Free text dosage')
+              : t('patientInstructions', 'Patient instructions')
+          }
           value={medicationDispense.dosageInstruction[0].text}
           maxLength={65535}
           onChange={(e) => {
             updateMedicationDispense({
-              ...medicationDispense,
               dosageInstruction: [
                 {
                   ...medicationDispense.dosageInstruction[0],
@@ -564,7 +610,6 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
             const currentDate = medicationDispense.whenHandedOver ? dayjs(medicationDispense.whenHandedOver) : null;
             const selectedDate = dayjs(input);
             updateMedicationDispense({
-              ...medicationDispense,
               whenHandedOver: currentDate?.isSame(selectedDate, 'day')
                 ? currentDate.toISOString()
                 : selectedDate.toISOString(), // to preserve any time component, only update if the day actually changes
@@ -572,24 +617,24 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
           }}
           value={dayjs(medicationDispense.whenHandedOver).toDate()}></OpenmrsDatePicker>
 
-        {providers && (
+        {providersPlusCurrentUser && (
           <ResponsiveWrapper>
             <ComboBox
               id="dispenser"
               initialSelectedItem={initialDispenser}
               onChange={({ selectedItem }) => {
+                const dispenserUuid = selectedItem ? selectedItem.uuid : session.currentProvider.uuid;
                 updateMedicationDispense({
-                  ...medicationDispense,
                   performer: [
                     {
                       actor: {
-                        reference: `Practitioner/${selectedItem?.uuid}`,
+                        reference: `Practitioner/${dispenserUuid}`,
                       },
                     },
                   ],
                 });
               }}
-              items={providers}
+              items={providersPlusCurrentUser}
               itemToString={(item) => item?.person?.display}
               required
               titleText={t('dispensedBy', 'Dispensed by')}

@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
+import dayjs from 'dayjs';
 import useSWR from 'swr';
 import { fhirBaseUrl, openmrsFetch, parseDate } from '@openmrs/esm-framework';
+import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 import {
   type AllergyIntoleranceResponse,
   type EncounterResponse,
@@ -10,39 +13,41 @@ import {
   type Encounter,
   type MedicationRequestFulfillerStatus,
   type MedicationRequestBundle,
+  type SimpleLocation,
 } from '../types';
 import {
   getPrescriptionDetailsEndpoint,
   getMedicationDisplay,
   getMedicationReferenceOrCodeableConcept,
-  getPrescriptionTableActiveMedicationRequestsEndpoint,
-  getPrescriptionTableAllMedicationRequestsEndpoint,
+  getPrescriptionTableEndpoint,
   sortMedicationDispensesByWhenHandedOver,
   computePrescriptionStatusMessageCode,
   getAssociatedMedicationDispenses,
 } from '../utils';
-import dayjs from 'dayjs';
-import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 
 export function usePrescriptionsTable(
+  loadData: boolean,
+  customPrescriptionsTableEndpoint: string = '',
+  status: string = '',
   pageSize: number = 10,
   pageOffset: number = 0,
   patientSearchTerm: string = '',
-  location: string = '',
-  status: string = '',
+  locations: SimpleLocation[] = [],
   medicationRequestExpirationPeriodInDays: number,
   refreshInterval: number,
 ) {
   const { data, error } = useSWR<{ data: EncounterResponse }, Error>(
-    status === 'ACTIVE'
-      ? getPrescriptionTableActiveMedicationRequestsEndpoint(
+    loadData
+      ? getPrescriptionTableEndpoint(
+          customPrescriptionsTableEndpoint,
+          status,
           pageOffset,
           pageSize,
           dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString(),
           patientSearchTerm,
-          location,
+          locations?.map((location) => location.id).join(','),
         )
-      : getPrescriptionTableAllMedicationRequestsEndpoint(pageOffset, pageSize, patientSearchTerm, location),
+      : null,
     openmrsFetch,
     { refreshInterval: refreshInterval },
   );
@@ -124,76 +129,90 @@ function buildPrescriptionsTableRow(
 }
 
 export function usePrescriptionDetails(encounterUuid: string, refreshInterval = null) {
-  const medicationRequestBundles: Array<MedicationRequestBundle> = [];
-  let prescriptionDate: Date;
-  let isLoading = true;
-
-  const { data, error } = useSWR<{ data: MedicationRequestResponse }, Error>(
+  const { data, ...rest } = useSWR<{ data: MedicationRequestResponse }, Error>(
     getPrescriptionDetailsEndpoint(encounterUuid),
     openmrsFetch,
     { refreshInterval: refreshInterval },
   );
 
-  if (data) {
-    const results = data?.data.entry;
-
-    const encounter = results
-      ?.filter((entry) => entry?.resource?.resourceType == 'Encounter')
-      .map((entry) => entry.resource as Encounter);
-
-    if (encounter) {
-      // by definition of the request (search by encounter) there should be one and only one encounter
-      prescriptionDate = parseDate(encounter[0]?.period.start);
-
-      const medicationRequests = results
-        ?.filter((entry) => entry?.resource?.resourceType == 'MedicationRequest')
-        .map((entry) => entry.resource as MedicationRequest);
-
-      const medicationDispenses = results
-        ?.filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
-        .map((entry) => entry.resource as MedicationDispense)
-        .sort(sortMedicationDispensesByWhenHandedOver);
-
-      medicationRequests.every((medicationRequest) =>
-        medicationRequestBundles.push({
-          request: medicationRequest,
-          dispenses: getAssociatedMedicationDispenses(medicationRequest, medicationDispenses).sort(
-            sortMedicationDispensesByWhenHandedOver,
-          ),
-        }),
-      );
+  const { medicationRequestBundles, prescriptionDate } = useMemo(() => {
+    if (data) {
+      return medicationRequestResponseToPrescriptionDetails(data.data.entry);
+    } else {
+      return { medicationRequestBundles: [], prescriptionDate: null };
     }
-  }
-
-  isLoading = (!medicationRequestBundles || medicationRequestBundles.length == 0) && !error;
+  }, [data]);
 
   return {
     medicationRequestBundles,
     prescriptionDate,
-    error,
-    isLoading,
+    ...rest,
   };
 }
 
+/**
+ * fetches prescription details of a given encounter directly via openmrsFetch (instead of useSWR)
+ * @param encounterUuid
+ * @returns
+ */
+export async function getPrescriptionDetails(encounterUuid: string) {
+  const result = await openmrsFetch<MedicationRequestResponse>(getPrescriptionDetailsEndpoint(encounterUuid));
+  const {
+    data: { entry },
+  } = result;
+  return medicationRequestResponseToPrescriptionDetails(entry);
+}
+
+function medicationRequestResponseToPrescriptionDetails(
+  results: { resource: MedicationRequest | MedicationDispense }[],
+) {
+  const medicationRequestBundles: Array<MedicationRequestBundle> = [];
+  let prescriptionDate: Date;
+
+  const encounter = results
+    ?.filter((entry) => entry?.resource?.resourceType == 'Encounter')
+    .map((entry) => entry.resource as Encounter);
+
+  if (encounter) {
+    // by definition of the request (search by encounter) there should be one and only one encounter
+    prescriptionDate = parseDate(encounter[0]?.period.start);
+
+    const medicationRequests = results
+      ?.filter((entry) => entry?.resource?.resourceType == 'MedicationRequest')
+      .map((entry) => entry.resource as MedicationRequest);
+
+    const medicationDispenses = results
+      ?.filter((entry) => entry?.resource?.resourceType == 'MedicationDispense')
+      .map((entry) => entry.resource as MedicationDispense)
+      .sort(sortMedicationDispensesByWhenHandedOver);
+
+    medicationRequests.every((medicationRequest) =>
+      medicationRequestBundles.push({
+        request: medicationRequest,
+        dispenses: getAssociatedMedicationDispenses(medicationRequest, medicationDispenses).sort(
+          sortMedicationDispensesByWhenHandedOver,
+        ),
+      }),
+    );
+  }
+
+  return { medicationRequestBundles, prescriptionDate };
+}
+
 export function usePatientAllergies(patientUuid: string, refreshInterval) {
-  const { data, error } = useSWR<{ data: AllergyIntoleranceResponse }, Error>(
+  const { data, error, isLoading } = useSWR<{ data: AllergyIntoleranceResponse }, Error>(
     `${fhirBaseUrl}/AllergyIntolerance?patient=${patientUuid}`,
     openmrsFetch,
     { refreshInterval: refreshInterval },
   );
 
-  const allergies = [];
-  if (data) {
-    const entries = data?.data.entry;
-    entries?.map((allergy) => {
-      return allergies.push(allergy.resource);
-    });
-  }
+  const allergies = data?.data.entry?.map((allergy) => allergy.resource) ?? [];
 
   return {
     allergies,
     totalAllergies: data?.data.total,
     error,
+    isLoading,
   };
 }
 

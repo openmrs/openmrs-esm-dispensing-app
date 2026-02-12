@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { launchWorkspace, type Session } from '@openmrs/esm-framework';
+import { launchWorkspace2, type Session } from '@openmrs/esm-framework';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
 import { type Provider, type MedicationRequestBundle } from '../../types';
 
@@ -12,6 +12,7 @@ type PauseActionButtonProps = {
   session: Session;
   providers: Array<Provider>;
   pauseable: boolean;
+  disabled: boolean;
 };
 
 const PauseActionButton: React.FC<PauseActionButtonProps> = ({
@@ -21,6 +22,7 @@ const PauseActionButton: React.FC<PauseActionButtonProps> = ({
   session,
   providers,
   pauseable,
+  disabled,
 }) => {
   const { t } = useTranslation();
   const pauseWorkspaceProps = {
@@ -31,14 +33,14 @@ const PauseActionButton: React.FC<PauseActionButtonProps> = ({
   };
 
   const handleLaunchWorkspace = () => {
-    launchWorkspace('pause-dispense-workspace', pauseWorkspaceProps);
+    launchWorkspace2('pause-dispense-workspace', pauseWorkspaceProps);
   };
 
   if (!pauseable) {
     return null;
   }
   return (
-    <Button kind="secondary" onClick={handleLaunchWorkspace}>
+    <Button kind="secondary" onClick={handleLaunchWorkspace} disabled={disabled}>
       {t('pause', 'Pause')}
     </Button>
   );

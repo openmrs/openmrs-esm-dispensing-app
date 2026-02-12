@@ -1,165 +1,81 @@
-import {
-  DataTable,
-  DataTableSkeleton,
-  Layer,
-  Pagination,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableExpandedRow,
-  TableExpandHeader,
-  TableExpandRow,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TabPanel,
-  Tile,
-} from '@carbon/react';
-import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MultiSelect, Search, TabPanel } from '@carbon/react';
+import { useConfig, useDebounce, useSession } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
-import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
-import PatientInfoCell from '../patient/patient-info-cell.component';
-import PrescriptionExpanded from './prescription-expanded.component';
+import PrescriptionsTable from './prescriptions-table.component';
 import styles from './prescriptions.scss';
+import { useLocations } from '../location/location.resource';
+import { type SimpleLocation } from '../types';
 
 interface PrescriptionTabPanelProps {
-  searchTerm: string;
-  location: string;
-  status: string;
+  isTabActive: boolean;
+  status?: string;
+  customPrescriptionsTableEndpoint?: string;
 }
 
-const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({ searchTerm, location, status }) => {
+const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
+  status,
+  isTabActive,
+  customPrescriptionsTableEndpoint,
+}) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [nextOffSet, setNextOffSet] = useState(0);
-  const { prescriptionsTableRows, error, isLoading, totalOrders } = usePrescriptionsTable(
-    pageSize,
-    nextOffSet,
-    searchTerm,
-    location,
-    status,
-    config.medicationRequestExpirationPeriodInDays,
-    config.refreshInterval,
-  );
+  const isInitialized = useRef(false);
+  const { sessionLocation } = useSession();
+  const { locations, isLoading: isFilterLocationsLoading } = useLocations(config);
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [filterLocations, setFilterLocations] = useState<SimpleLocation[]>([]);
 
-  // dynamic status keys we need to maintain
-  // t('active', 'Active')
-  // t('paused', 'Paused')
-  // t('closed', 'Closed')
-  // t('completed', 'Completed')
-  // t('expired', 'Expired')
-  // t('cancelled', 'Cancelled')
-
-  let columns = [
-    { header: t('created', 'Created'), key: 'created' },
-    { header: t('patientName', 'Patient name'), key: 'patient' },
-    { header: t('prescriber', 'Prescriber'), key: 'prescriber' },
-    { header: t('drugs', 'Drugs'), key: 'drugs' },
-    { header: t('lastDispenser', 'Last dispenser'), key: 'lastDispenser' },
-    { header: t('status', 'Status'), key: 'status' },
-  ];
-
-  // add the locations column, if enabled
-  if (config.locationBehavior?.locationColumn?.enabled) {
-    columns = [...columns.slice(0, 3), { header: t('location', 'Location'), key: 'location' }, ...columns.slice(3)];
-  }
-
-  // reset back to page 1 whenever search term changes
+  // set any initially selected locations
   useEffect(() => {
-    setPage(1);
-    setNextOffSet(0);
-  }, [searchTerm]);
+    if (!isInitialized.current && !isFilterLocationsLoading && sessionLocation?.uuid) {
+      setFilterLocations(locations?.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation) || []);
+      isInitialized.current = true; // we only want to run when the component is first mounted so we don't override user changes
+    }
+  }, [isFilterLocationsLoading, sessionLocation, locations]);
 
   return (
     <TabPanel>
-      <div className={styles.patientListTableContainer}>
-        {isLoading && <DataTableSkeleton role="progressbar" />}
-        {error && <p>Error</p>}
-        {prescriptionsTableRows && (
-          <>
-            <DataTable rows={prescriptionsTableRows} headers={columns} isSortable>
-              {({ rows, headers, getExpandHeaderProps, getHeaderProps, getRowProps, getTableProps }) => (
-                <TableContainer>
-                  <Table {...getTableProps()} useZebraStyles>
-                    <TableHead>
-                      <TableRow>
-                        <TableExpandHeader {...getExpandHeaderProps()} />
-                        {headers.map((header) => (
-                          <TableHeader {...getHeaderProps({ header })}>{header.header}</TableHeader>
-                        ))}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {rows.map((row) => (
-                        <React.Fragment key={row.id}>
-                          <TableExpandRow {...getRowProps({ row })}>
-                            {row.cells.map((cell) => (
-                              <TableCell key={cell.id}>
-                                {cell.id.endsWith('created') ? (
-                                  formatDatetime(parseDate(cell.value))
-                                ) : cell.id.endsWith('patient') ? (
-                                  <PatientInfoCell patient={cell.value} />
-                                ) : cell.id.endsWith('status') ? (
-                                  t(cell.value)
-                                ) : (
-                                  cell.value
-                                )}
-                              </TableCell>
-                            ))}
-                          </TableExpandRow>
-                          {row.isExpanded ? (
-                            <TableExpandedRow colSpan={headers.length + 1}>
-                              <PrescriptionExpanded
-                                encounterUuid={row.id}
-                                patientUuid={row.cells.find((cell) => cell.id.endsWith('patient')).value.uuid}
-                                status={row.cells.find((cell) => cell.id.endsWith('status')).value}
-                              />
-                            </TableExpandedRow>
-                          ) : (
-                            <TableExpandedRow className={styles.hiddenRow} colSpan={headers.length + 2} />
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </DataTable>
-            {prescriptionsTableRows?.length === 0 && (
-              <div className={styles.filterEmptyState}>
-                <Layer>
-                  <Tile className={styles.filterEmptyStateTile}>
-                    <p className={styles.filterEmptyStateContent}>
-                      {t('noPrescriptionsToDisplay', 'No prescriptions to display')}
-                    </p>
-                    <p className={styles.filterEmptyStateHelper}>{t('checkFilters', 'Check the filters above')}</p>
-                  </Tile>
-                </Layer>
-              </div>
-            )}
-            {prescriptionsTableRows?.length > 0 && (
-              <div style={{ width: '100%' }}>
-                <Pagination
-                  page={page}
-                  pageSize={pageSize}
-                  pageSizes={[10, 20, 30, 40, 50, 100]}
-                  totalItems={totalOrders}
-                  onChange={({ page, pageSize }) => {
-                    setPage(page);
-                    setNextOffSet((page - 1) * pageSize);
-                    setPageSize(pageSize);
-                  }}
-                />
-              </div>
-            )}
-          </>
-        )}
+      <div className={styles.searchContainer}>
+        {config.locationBehavior?.locationFilter?.enabled &&
+          !isFilterLocationsLoading &&
+          isInitialized.current &&
+          locations?.length > 1 && (
+            <MultiSelect
+              hideLabel
+              id="locationFilter"
+              label={t('filterByLocations', 'Filter by locations')}
+              initialSelectedItems={filterLocations}
+              items={locations}
+              itemToString={(item: SimpleLocation) => item?.name}
+              onChange={({ selectedItems }) => {
+                setFilterLocations(selectedItems);
+              }}
+              className={styles.locationFilter}
+            />
+          )}
+        <Search
+          closeButtonLabelText={t('clearSearchInput', 'Clear search input')}
+          defaultValue={searchTerm}
+          placeholder={t('searchByPatientIdOrName', 'Search by patient ID or name')}
+          labelText={t('searchByPatientIdOrName', 'Search by patient ID or name')}
+          onChange={(e) => {
+            e.preventDefault();
+            setSearchTerm(e.target.value);
+          }}
+          size="md"
+          className={styles.patientSearch}
+        />
       </div>
+      <PrescriptionsTable
+        loadData={isTabActive}
+        status={status}
+        customPrescriptionsTableEndpoint={customPrescriptionsTableEndpoint}
+        debouncedSearchTerm={debouncedSearchTerm}
+        locations={filterLocations}
+      />
     </TabPanel>
   );
 };
