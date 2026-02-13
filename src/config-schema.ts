@@ -72,6 +72,16 @@ export const configSchema = {
         _description: 'Name of the attribute used to associate locations with a pharmacy location',
         _default: 'Associated Pharmacy Location',
       },
+      useAssociatedPharmacyLocations: {
+        _type: Type.Boolean,
+        _description: 'Show medication requests from all associated pharmacy locations of the current location',
+        _default: false,
+      },
+      useCurrentLocation: {
+        _type: Type.Boolean,
+        _description: 'Show medication requests from current location',
+        _default: false,
+      },
     },
   },
   refreshInterval: {
@@ -168,6 +178,8 @@ export interface PharmacyConfig {
       enabled: boolean;
       tag: string;
       associatedPharmacyLocationAttribute: string;
+      useAssociatedPharmacyLocations: boolean;
+      useCurrentLocation: boolean;
     };
   };
   valueSets: {
