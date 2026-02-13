@@ -47,6 +47,7 @@ export const printPrescriptionPreviewModal = getAsyncLifecycle(
   options,
 );
 export const deleteConfirmModal = getAsyncLifecycle(() => import('./history/delete-confirm.modal'), options);
+export const duplicateDispenseModal = getAsyncLifecycle(() => import('./forms/duplicate-dispense.modal'), options);
 
 export const patientDiagnoses = getAsyncLifecycle(() => import('./diagnoses/diagnoses.component'), options);
 export const patientConditions = getAsyncLifecycle(() => import('./conditions/conditions.component'), options);
