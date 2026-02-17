@@ -116,7 +116,7 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
       </ModalBody>
       <ModalFooter>
         <Button kind="secondary" onClick={close}>
-          {t('cancel', 'Cancel')}
+          {t('createOrderWithoutDispensing', 'Create order without dispensing')}
         </Button>
         <Button
           onClick={() => {
