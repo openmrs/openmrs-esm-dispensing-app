@@ -48,54 +48,61 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
   const providers = useProviders(dispenserProviderRoles);
   const { medicationRequestBundles } = usePrescriptionDetails(encounterUuid);
   const { t } = useTranslation();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const onConfirm = async () => {
+    setIsSubmitting(true);
     markEncounterAsStale(encounterUuid);
-    for (const medicationRequestBundle of medicationRequestBundles) {
-      const medicationDispensePayload = initiateMedicationDispenseBody(
-        medicationRequestBundle.request,
-        session,
-        providers,
-        true,
-      );
-      const medicationDisplay = getMedicationDisplay(
-        getMedicationReferenceOrCodeableConcept(medicationRequestBundle.request),
-      );
+    try {
+      for (const medicationRequestBundle of medicationRequestBundles) {
+        const medicationDispensePayload = initiateMedicationDispenseBody(
+          medicationRequestBundle.request,
+          session,
+          providers,
+          true,
+        );
+        const medicationDisplay = getMedicationDisplay(
+          getMedicationReferenceOrCodeableConcept(medicationRequestBundle.request),
+        );
 
-      await saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed)
-        .then((response) => {
-          const hasNoRefills = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed == 0;
-          if (response.ok && hasNoRefills) {
-            return updateMedicationRequestFulfillerStatus(
-              getUuidFromReference(
-                medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
-              ),
-              MedicationRequestFulfillerStatus.completed,
-            ).then(() => response);
-          } else {
-            return response;
-          }
-        })
-        .then(() => {
-          showSnackbar({
-            title: t('stockDispensed', 'Stock dispensed'),
-            subtitle: medicationDisplay,
-            isLowContrast: false,
+        await saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed)
+          .then((response) => {
+            const hasNoRefills = medicationRequestBundle.request.dispenseRequest.numberOfRepeatsAllowed == 0;
+            if (response.ok && hasNoRefills) {
+              return updateMedicationRequestFulfillerStatus(
+                getUuidFromReference(
+                  medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
+                ),
+                MedicationRequestFulfillerStatus.completed,
+              ).then(() => response);
+            } else {
+              return response;
+            }
+          })
+          .then(() => {
+            showSnackbar({
+              title: t('stockDispensed', 'Stock dispensed'),
+              subtitle: medicationDisplay,
+              isLowContrast: false,
+            });
+          })
+          .catch((error) => {
+            showSnackbar({
+              title: t('errorDispensingMedication', 'Error dispensing medication'),
+              kind: 'error',
+              subtitle: t('errorDispensingMedicationMessage', '{{medication}}: {{error}}', {
+                medication: medicationDisplay,
+                error: error?.message,
+              }),
+            });
           });
-        })
-        .catch((error) => {
-          showSnackbar({
-            title: t('errorDispensingMedication', 'Error dispensing medication'),
-            kind: 'error',
-            subtitle: t('errorDispensingMedicationMessage', '{{medication}}: {{error}}', {
-              medication: medicationDisplay,
-              error: error?.message,
-            }),
-          });
-        });
+      }
+
+      close();
+    } finally {
+      revalidate(encounterUuid);
+      setIsSubmitting(false);
     }
-    close();
-    revalidate(encounterUuid);
   };
 
   const patientName = getPatientName(patient);
@@ -119,6 +126,7 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
           {t('createOrderWithoutDispensing', 'Create order without dispensing')}
         </Button>
         <Button
+          disabled={isSubmitting}
           onClick={() => {
             onConfirm();
           }}>
