@@ -1,6 +1,6 @@
 {
   "name": "@openmrs/esm-dispensing-app",
-  "version": "1.9.1",
+  "version": "1.10.0",
   "license": "MPL-2.0",
   "description": "Medication dispensing application",
   "browser": "dist/openmrs-esm-dispensing-app.js",
@@ -49,7 +49,7 @@
     "react-to-print": "^2.14.13"
   },
   "peerDependencies": {
-    "@openmrs/esm-framework": "*",
+    "@openmrs/esm-framework": "9.x",
     "dayjs": "1.x",
     "react": "18.x",
     "react-dom": "18.x",
