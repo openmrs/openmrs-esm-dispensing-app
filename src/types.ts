@@ -121,6 +121,12 @@ export interface DosageInstruction {
   text?: string;
   timing: {
     repeat?: {
+      boundsDuration?: {
+        value?: number;
+        unit?: string;
+        system?: string;
+        code?: string;
+      };
       duration: number;
       durationUnit: string;
     };
