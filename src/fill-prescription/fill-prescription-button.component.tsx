@@ -8,6 +8,7 @@ import {
   restBaseUrl,
   showModal,
   showSnackbar,
+  useConfig,
   useLayoutType,
   type FetchResponse,
   type Order,
@@ -15,11 +16,13 @@ import {
   type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
 import styles from './fill-prescription-button.scss';
+import { type PharmacyConfig } from '../config-schema';
 
 const FillPrescriptionButton: React.FC<{}> = () => {
   const isTablet = useLayoutType() === 'tablet';
   const responsiveSize = isTablet ? 'lg' : 'md';
   const { t } = useTranslation();
+  const { drugOrderTypeUUID } = useConfig<PharmacyConfig>();
 
   const launchSearchWorkspace = () => {
     launchWorkspace2(
@@ -44,6 +47,7 @@ const FillPrescriptionButton: React.FC<{}> = () => {
                   patient: patient,
                   visitContext: activeVisit,
                   drugOrderWorkspaceName: 'dispensing-order-basket-add-drug-order-workspace',
+                  visibleOrderPanels: [drugOrderTypeUUID],
                   onOrderBasketSubmitted: (encounterUuid: string, _: Array<Order>) => {
                     showModal('on-prescription-filled-modal', {
                       patient,
