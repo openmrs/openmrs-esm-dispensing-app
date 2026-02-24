@@ -127,7 +127,10 @@
     {
       "name": "delete-confirm-modal",
       "component": "deleteConfirmModal"
-
+    },
+    {
+      "name": "duplicate-dispense-modal",
+      "component": "duplicateDispenseModal"
     },
     {
       "name": "on-prescription-filled-modal",

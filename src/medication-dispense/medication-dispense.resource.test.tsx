@@ -152,6 +152,7 @@ describe('Medication Dispense Resource tests', () => {
             repeat: {
               duration: 30.0,
               durationUnit: 'd',
+              boundsDuration: undefined,
             },
             code: {
               coding: [
