@@ -9,7 +9,7 @@ export const configSchema = {
   enableDuplicateDispenseCheck: {
     _type: Type.Boolean,
     _description: 'Enable/Disable the duplicate dispense check feature',
-    _default: false,
+    _default: true,
   },
   duplicateCheckWindowDays: {
     _type: Type.Number,
@@ -154,7 +154,7 @@ export const configSchema = {
 };
 
 export interface PharmacyConfig {
-  enableDuplicateDispenseCheck: boolean;
+  enableDuplicateDispenseCheck: true;
   duplicateCheckWindowDays: number;
   appName: string;
   actionButtons: {

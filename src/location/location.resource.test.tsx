@@ -41,7 +41,7 @@ const pharmacyConfig: PharmacyConfig = {
   enableStockDispense: false,
   completeOrderWithThisDispense: false,
   validateBatch: false,
-  enableDuplicateDispenseCheck: false,
+  enableDuplicateDispenseCheck: true,
   leftNavMode: 'collapsed',
   customTabs: [],
   duplicateCheckWindowDays: 0,
