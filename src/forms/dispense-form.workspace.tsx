@@ -121,9 +121,12 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
     const dispose = showModal('duplicate-dispense-modal', {
       onClose: () => dispose(),
       medicationName: medicationDispensePayload?.medicationCodeableConcept?.text || '',
-      onConfirm: () => {
-        handleSubmit();
-      },
+      previousDispense: medicationDispensePayload,
+      previousSchedule: medicationDispensePayload.dosageInstruction?.[0]?.timing?.code?.text,
+      previousQuantity: medicationDispensePayload.quantity?.value,
+      previousQuantityUnit: medicationDispensePayload.quantity?.code,
+      previousPerformer: medicationDispensePayload.performer?.[0]?.actor?.display,
+      onConfirm: () => handleSubmit(),
     });
   };
 
