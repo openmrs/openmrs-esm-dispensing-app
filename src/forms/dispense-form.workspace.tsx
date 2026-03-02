@@ -82,11 +82,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   });
 
   const isDuplicateDispense = (dispense: MedicationDispense): boolean => {
-    if (!medicationRequestBundle?.dispenses || !Array.isArray(medicationRequestBundle.dispenses)) {
-      return false;
-    }
-
-    const dispenses = medicationRequestBundle.dispenses;
+    const dispenses = medicationRequestBundle?.dispenses ?? [];
     const duplicateCheckWindowDays = config.duplicateCheckWindowDays;
     const getDispenseDate = (d: MedicationDispense) => d.whenHandedOver ?? d.whenPrepared;
     const getDuration = (d: MedicationDispense) => d.dosageInstruction?.[0]?.timing?.repeat?.boundsDuration?.value;

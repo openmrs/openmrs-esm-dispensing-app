@@ -154,7 +154,7 @@ export const configSchema = {
 };
 
 export interface PharmacyConfig {
-  enableDuplicateDispenseCheck: true;
+  enableDuplicateDispenseCheck: boolean;
   duplicateCheckWindowDays: number;
   appName: string;
   actionButtons: {

@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Button, ModalHeader, ModalBody, ModalFooter, InlineLoading, Tile, Tag } from '@carbon/react';
 import type { MedicationDispense } from '../types';
 import MedicationEvent from '../components/medication-event.component';
+import styles from './duplicate-dispense-modal.scss';
 
 interface DuplicateDispenseModalProps {
   onClose: () => void;
-  onConfirm: () => void | Promise<void>;
+  onConfirm: () => Promise<void>;
   title?: string;
   message?: string;
   medicationName?: string;
@@ -51,42 +52,66 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
   const modalTitle = title ?? t('duplicatePrescriptionTitle', 'Potential duplicate dispense detected');
   const modalMessage =
     message ??
-    t(
-      'duplicatePrescriptionMessage',
-      'This dispense appears to match a previous record for the same prescription (medication, dose, quantity, and schedule).',
-    );
+    (previousDispense
+      ? t(
+          'duplicatePrescriptionMessage',
+          'This dispense appears to match a previous record for the same prescription: {{medication}}, {{dose}}, {{quantity}}, {{schedule}}.',
+          {
+            medication: medicationName ?? previousDispense.medicationCodeableConcept?.text ?? '',
+            dose: previousDispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value
+              ? `${previousDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.value} ${
+                  previousDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.code ?? ''
+                }`
+              : '',
+            quantity:
+              previousDispense.quantity?.value !== undefined
+                ? `${previousDispense.quantity.value}${
+                    previousDispense.quantity.code ? ` ${previousDispense.quantity.code}` : ''
+                  }`
+                : '',
+            schedule: previousDispense.dosageInstruction?.[0]?.timing?.code?.text ?? previousSchedule ?? '',
+          },
+        )
+      : t('duplicatePrescriptionMessageNoPrevious', 'This dispense appears to match a previous record.'));
 
   return (
     <>
       <ModalHeader title={modalTitle} closeModal={onClose} />
+
       <ModalBody>
         <p>{modalMessage}</p>
 
         {medicationName && (
-          <p>
-            {t('medication', 'Medication')}: <strong>{medicationName}</strong>
-          </p>
+          <div className={styles.headerRow}>
+            <span>{t('medication', 'Medication')}:</span>
+            <span className={styles.medicationName}>{medicationName}</span>
+          </div>
         )}
 
         {previousDispense ? (
-          <Tile>
-            <div style={{ marginBottom: '0.5rem' }}>
+          <Tile className={styles.previousDispenseTile}>
+            <div className={styles.headerRow}>
               <Tag type="gray" size="sm">
                 {t('dispensed', 'Dispensed')}
               </Tag>
+              <span className={styles.medicationName}>{medicationName}</span>
             </div>
 
-            <div style={{ fontSize: '0.875rem', color: '#6f6f6f', marginBottom: '0.5rem' }}>
+            <div className={styles.metaRow}>
               {previousPerformer && (
                 <span>
                   {t('performedBy', 'Performed by')}: <strong>{previousPerformer}</strong>
                 </span>
               )}
-              {previousPerformer && previousDispenseDate && <span style={{ margin: '0 0.25rem' }}>•</span>}
+
+              {previousPerformer && previousDispenseDate && <span className={styles.metaDivider}>•</span>}
+
               {previousDispenseDate && <span>{new Date(previousDispenseDate).toLocaleDateString()}</span>}
             </div>
 
-            <MedicationEvent medicationEvent={previousDispense} />
+            <div className={styles.tileContent}>
+              <MedicationEvent medicationEvent={previousDispense} />
+            </div>
           </Tile>
         ) : (
           <>
