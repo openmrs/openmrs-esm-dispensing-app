@@ -72,7 +72,7 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
     }
   }, [onConfirm, onClose, t]);
 
-  const modalTitle = title ?? t('duplicatePrescriptionTitle');
+  const modalTitle = title ?? t('duplicatePrescriptionTitle', 'Potential duplicate dispense detected');
 
   const modalMessage = message ?? (!previousDispense ? t('duplicatePrescriptionMessageNoPrevious') : '');
 
@@ -149,7 +149,12 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
           </>
         )}
 
-        <p>{t('duplicateDispenseConfirmationPrompt')}</p>
+        <p>
+          {t(
+            'duplicateDispenseConfirmationPrompt',
+            'Do you want to proceed with dispensing? Proceeding will create another dispense record.',
+          )}
+        </p>
 
         {error && <p className={styles.error}>{error}</p>}
       </ModalBody>
