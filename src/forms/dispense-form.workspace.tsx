@@ -26,6 +26,7 @@ import {
   getUuidFromReference,
   markEncounterAsStale,
   revalidate,
+  sortMedicationDispensesByWhenHandedOver,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
@@ -117,15 +118,37 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
       });
   };
 
+  const getPreviousDispense = (): MedicationDispense | undefined => {
+    const dispenses = medicationRequestBundle?.dispenses ?? [];
+    if (!dispenses || dispenses.length === 0) return undefined;
+    const sorted = [...dispenses].sort(sortMedicationDispensesByWhenHandedOver);
+    if (medicationDispense?.id) {
+      const idx = sorted.findIndex((d) => d.id === medicationDispense.id);
+      if (idx >= 0 && idx + 1 < sorted.length) {
+        return sorted[idx + 1];
+      }
+      return undefined;
+    }
+    return sorted[0];
+  };
+
   const handleDuplicateMedication = () => {
+    const previousDispense = getPreviousDispense();
     const dispose = showModal('duplicate-dispense-modal', {
       onClose: () => dispose(),
       medicationName: medicationDispensePayload?.medicationCodeableConcept?.text || '',
-      previousDispense: medicationDispensePayload,
-      previousSchedule: medicationDispensePayload.dosageInstruction?.[0]?.timing?.code?.text,
-      previousQuantity: medicationDispensePayload.quantity?.value,
-      previousQuantityUnit: medicationDispensePayload.quantity?.code,
-      previousPerformer: medicationDispensePayload.performer?.[0]?.actor?.display,
+      previousDispense: previousDispense,
+      previousDispenseDate: previousDispense?.whenHandedOver ?? previousDispense?.whenPrepared ?? undefined,
+      previousSchedule:
+        previousDispense?.dosageInstruction?.[0]?.timing?.code?.text ??
+        medicationDispensePayload?.dosageInstruction?.[0]?.timing?.code?.text,
+      previousQuantity: previousDispense?.quantity?.value ?? medicationDispensePayload?.quantity?.value,
+      previousQuantityUnit:
+        previousDispense?.quantity?.unit ??
+        previousDispense?.quantity?.code ??
+        medicationDispensePayload?.quantity?.code,
+      previousPerformer:
+        previousDispense?.performer?.[0]?.actor?.display ?? medicationDispensePayload?.performer?.[0]?.actor?.display,
       onConfirm: () => handleSubmit(),
     });
   };

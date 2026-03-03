@@ -4,6 +4,7 @@ import { Button, ModalHeader, ModalBody, ModalFooter, InlineLoading, Tile, Tag }
 import type { MedicationDispense } from '../types';
 import MedicationEvent from '../components/medication-event.component';
 import styles from './duplicate-dispense-modal.scss';
+import { getCoreTranslation, parseDate, formatDatetime } from '@openmrs/esm-framework';
 
 interface DuplicateDispenseModalProps {
   onClose: () => void;
@@ -44,15 +45,25 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
       isMountedRef.current = false;
     };
   }, []);
-
   const formatDateSafe = (dateString?: string) => {
     if (!dateString) return '';
-    const d = new Date(dateString);
-    if (Number.isNaN(d.getTime())) {
-      // fall back to raw string if it's not a valid date; alternatively return ''
-      return dateString;
+    try {
+      const parsed = parseDate(dateString);
+      if (!parsed || Number.isNaN(parsed.getTime())) {
+        const d = new Date(dateString);
+        if (Number.isNaN(d.getTime())) {
+          return dateString;
+        }
+        return d.toLocaleString();
+      }
+      return formatDatetime(parsed);
+    } catch {
+      const d = new Date(dateString);
+      if (Number.isNaN(d.getTime())) {
+        return dateString;
+      }
+      return d.toLocaleString();
     }
-    return d.toLocaleDateString();
   };
 
   const handleConfirm = useCallback(async () => {
@@ -62,9 +73,8 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
       await onConfirm();
       onClose();
     } catch (err) {
-      // Log for debugging and show user-friendly message
       console.error('Error during dispensing:', err);
-      setError(t('duplicateDispenseError'));
+      setError(t('duplicateDispenseError', 'Error dispensing medication'));
     } finally {
       if (isMountedRef.current) {
         setIsProcessing(false);
@@ -74,7 +84,9 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
 
   const modalTitle = title ?? t('duplicatePrescriptionTitle', 'Potential duplicate dispense detected');
 
-  const modalMessage = message ?? (!previousDispense ? t('duplicatePrescriptionMessageNoPrevious') : '');
+  const modalMessage =
+    message ??
+    (!previousDispense ? t('duplicatePrescriptionMessageNoPrevious', 'A previous dispense could not be found.') : '');
 
   return (
     <>
@@ -85,7 +97,7 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
 
         {medicationName && !previousDispense && (
           <div className={styles.headerRow}>
-            <span>{t('medication')}</span>
+            <span>{t('medication', 'Medication')}</span>
             <span className={styles.medicationName}>{medicationName}</span>
           </div>
         )}
@@ -94,7 +106,7 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
           <Tile className={styles.previousDispenseTile}>
             <div className={styles.headerRow}>
               <Tag type="gray" size="sm">
-                {t('dispensed')}
+                {t('dispensed', 'Dispensed')}
               </Tag>
               {medicationName && <span className={styles.medicationName}>{medicationName}</span>}
             </div>
@@ -102,7 +114,7 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
             <div className={styles.metaRow}>
               {previousPerformer && (
                 <span>
-                  {t('performedBy')}: <strong>{previousPerformer}</strong>
+                  {t('performedBy', 'Performed by')}: <strong>{previousPerformer}</strong>
                 </span>
               )}
 
@@ -119,8 +131,8 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
           <>
             {previousDispenseDate && previousQuantity !== undefined && (
               <p>
-                {t('previousDispenseDetails')} <strong>{formatDateSafe(previousDispenseDate)}</strong>{' '}
-                {t('withQuantity')}{' '}
+                {t('previousDispenseDetails', 'Previous dispense on')}{' '}
+                <strong>{formatDateSafe(previousDispenseDate)}</strong> {t('withQuantity', 'with quantity')}{' '}
                 <strong>
                   {previousQuantity}
                   {previousQuantityUnit ? ` ${previousQuantityUnit}` : ''}
@@ -129,21 +141,15 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
               </p>
             )}
 
-            {previousPerformer && (
-              <p>
-                {t('performedBy')}: <strong>{previousPerformer}</strong>
-              </p>
-            )}
-
             {previousRoute && (
               <p>
-                {t('route')}: <strong>{previousRoute}</strong>
+                {t('route', 'Route')}: <strong>{previousRoute}</strong>
               </p>
             )}
 
             {previousSchedule && (
               <p>
-                {t('schedule')}: <strong>{previousSchedule}</strong>
+                {t('schedule', 'Schedule')}: <strong>{previousSchedule}</strong>
               </p>
             )}
           </>
@@ -161,11 +167,20 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
 
       <ModalFooter>
         <Button kind="secondary" onClick={onClose} disabled={isProcessing}>
-          {t('cancel')}
+          {getCoreTranslation('cancel', 'Cancel')}
         </Button>
 
-        <Button kind="danger" onClick={() => void handleConfirm()} disabled={isProcessing} aria-disabled={isProcessing}>
-          {isProcessing ? <InlineLoading description={t('dispensing')} /> : t('proceedAnyway')}
+        <Button
+          kind="danger"
+          onClick={() => void handleConfirm()}
+          disabled={isProcessing}
+          aria-disabled={isProcessing}
+          aria-busy={isProcessing}>
+          {isProcessing ? (
+            <InlineLoading description={t('dispensing', 'Dispensing')} />
+          ) : (
+            t('proceedAnyway', 'Proceed Anyway')
+          )}
         </Button>
       </ModalFooter>
     </>
