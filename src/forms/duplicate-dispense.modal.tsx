@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, ModalHeader, ModalBody, ModalFooter, InlineLoading, Tile, Tag } from '@carbon/react';
 import type { MedicationDispense } from '../types';
@@ -36,54 +36,56 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const formatDateSafe = (dateString?: string) => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    if (Number.isNaN(d.getTime())) {
+      // fall back to raw string if it's not a valid date; alternatively return ''
+      return dateString;
+    }
+    return d.toLocaleDateString();
+  };
 
   const handleConfirm = useCallback(async () => {
+    setError(null);
     setIsProcessing(true);
     try {
       await onConfirm();
       onClose();
-    } catch (error) {
-      console.error('Error during dispensing:', error);
+    } catch (err) {
+      // Log for debugging and show user-friendly message
+      console.error('Error during dispensing:', err);
+      setError(t('duplicateDispenseError'));
     } finally {
-      setIsProcessing(false);
+      if (isMountedRef.current) {
+        setIsProcessing(false);
+      }
     }
-  }, [onConfirm, onClose]);
+  }, [onConfirm, onClose, t]);
 
-  const modalTitle = title ?? t('duplicatePrescriptionTitle', 'Potential duplicate dispense detected');
-  const modalMessage =
-    message ??
-    (previousDispense
-      ? t(
-          'duplicatePrescriptionMessage',
-          'This dispense appears to match a previous record for the same prescription: {{medication}}, {{dose}}, {{quantity}}, {{schedule}}.',
-          {
-            medication: medicationName ?? previousDispense.medicationCodeableConcept?.text ?? '',
-            dose: previousDispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value
-              ? `${previousDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.value} ${
-                  previousDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.code ?? ''
-                }`
-              : '',
-            quantity:
-              previousDispense.quantity?.value !== undefined
-                ? `${previousDispense.quantity.value}${
-                    previousDispense.quantity.code ? ` ${previousDispense.quantity.code}` : ''
-                  }`
-                : '',
-            schedule: previousDispense.dosageInstruction?.[0]?.timing?.code?.text ?? previousSchedule ?? '',
-          },
-        )
-      : t('duplicatePrescriptionMessageNoPrevious', 'This dispense appears to match a previous record.'));
+  const modalTitle = title ?? t('duplicatePrescriptionTitle');
+
+  const modalMessage = message ?? (!previousDispense ? t('duplicatePrescriptionMessageNoPrevious') : '');
 
   return (
     <>
       <ModalHeader title={modalTitle} closeModal={onClose} />
 
       <ModalBody>
-        <p>{modalMessage}</p>
+        {!previousDispense && modalMessage && <p>{modalMessage}</p>}
 
-        {medicationName && (
+        {medicationName && !previousDispense && (
           <div className={styles.headerRow}>
-            <span>{t('medication', 'Medication')}:</span>
+            <span>{t('medication')}</span>
             <span className={styles.medicationName}>{medicationName}</span>
           </div>
         )}
@@ -92,21 +94,21 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
           <Tile className={styles.previousDispenseTile}>
             <div className={styles.headerRow}>
               <Tag type="gray" size="sm">
-                {t('dispensed', 'Dispensed')}
+                {t('dispensed')}
               </Tag>
-              <span className={styles.medicationName}>{medicationName}</span>
+              {medicationName && <span className={styles.medicationName}>{medicationName}</span>}
             </div>
 
             <div className={styles.metaRow}>
               {previousPerformer && (
                 <span>
-                  {t('performedBy', 'Performed by')}: <strong>{previousPerformer}</strong>
+                  {t('performedBy')}: <strong>{previousPerformer}</strong>
                 </span>
               )}
 
               {previousPerformer && previousDispenseDate && <span className={styles.metaDivider}>•</span>}
 
-              {previousDispenseDate && <span>{new Date(previousDispenseDate).toLocaleDateString()}</span>}
+              {previousDispenseDate && <span>{formatDateSafe(previousDispenseDate)}</span>}
             </div>
 
             <div className={styles.tileContent}>
@@ -117,9 +119,8 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
           <>
             {previousDispenseDate && previousQuantity !== undefined && (
               <p>
-                {t('previousDispenseDetails', 'Previous dispense on')}{' '}
-                <strong>{new Date(previousDispenseDate).toLocaleDateString()}</strong>{' '}
-                {t('withQuantity', 'with quantity')}{' '}
+                {t('previousDispenseDetails')} <strong>{formatDateSafe(previousDispenseDate)}</strong>{' '}
+                {t('withQuantity')}{' '}
                 <strong>
                   {previousQuantity}
                   {previousQuantityUnit ? ` ${previousQuantityUnit}` : ''}
@@ -130,43 +131,36 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
 
             {previousPerformer && (
               <p>
-                {t('performedBy', 'Performed by')}: <strong>{previousPerformer}</strong>
+                {t('performedBy')}: <strong>{previousPerformer}</strong>
               </p>
             )}
 
             {previousRoute && (
               <p>
-                {t('route', 'Route')}: <strong>{previousRoute}</strong>
+                {t('route')}: <strong>{previousRoute}</strong>
               </p>
             )}
 
             {previousSchedule && (
               <p>
-                {t('schedule', 'Schedule')}: <strong>{previousSchedule}</strong>
+                {t('schedule')}: <strong>{previousSchedule}</strong>
               </p>
             )}
           </>
         )}
 
-        <p>
-          {t(
-            'duplicateDispenseConfirmationPrompt',
-            'Do you want to proceed with dispensing? Proceeding will create another dispense record.',
-          )}
-        </p>
+        <p>{t('duplicateDispenseConfirmationPrompt')}</p>
+
+        {error && <p className={styles.error}>{error}</p>}
       </ModalBody>
 
       <ModalFooter>
         <Button kind="secondary" onClick={onClose} disabled={isProcessing}>
-          {t('cancel', 'Cancel')}
+          {t('cancel')}
         </Button>
 
-        <Button kind="danger" onClick={() => void handleConfirm()} disabled={isProcessing}>
-          {isProcessing ? (
-            <InlineLoading description={t('dispensing', 'Dispensing')} />
-          ) : (
-            t('proceedAnyway', 'Proceed anyway')
-          )}
+        <Button kind="danger" onClick={() => void handleConfirm()} disabled={isProcessing} aria-disabled={isProcessing}>
+          {isProcessing ? <InlineLoading description={t('dispensing')} /> : t('proceedAnyway')}
         </Button>
       </ModalFooter>
     </>
