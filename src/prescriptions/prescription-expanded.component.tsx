@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExtensionSlot, type PatientUuid } from '@openmrs/esm-framework';
+import { getAssignedExtensions, ExtensionSlot, type PatientUuid } from '@openmrs/esm-framework';
 import { Tab, Tabs, TabList, TabPanels, TabPanel } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import HistoryAndComments from '../history/history-and-comments.component';
@@ -16,16 +16,19 @@ const PrescriptionExpanded: React.FC<{
   patientUuid: PatientUuid;
 }> = ({ encounterUuid, patientUuid }) => {
   const { t } = useTranslation();
+  const conditionsAndDiagnosisExtensions = getAssignedExtensions('dispensing-condition-and-diagnoses');
 
   const tabs: TabItem[] = [
     {
       name: t('prescriptionDetails', 'Prescription details'),
       component: <PrescriptionDetails encounterUuid={encounterUuid} patientUuid={patientUuid} />,
     },
-    {
-      name: t('conditionsAndDiagnoses', 'Conditions and diagnoses'),
-      component: <ExtensionSlot name="dispensing-condition-and-diagnoses" state={{ patientUuid, encounterUuid }} />,
-    },
+    conditionsAndDiagnosisExtensions && conditionsAndDiagnosisExtensions.length > 0
+      ? {
+          name: t('conditionsAndDiagnoses', 'Conditions and diagnoses'),
+          component: <ExtensionSlot name="dispensing-condition-and-diagnoses" state={{ patientUuid, encounterUuid }} />,
+        }
+      : null,
     {
       name: t('historyComments', 'History and comments'),
       component: <HistoryAndComments encounterUuid={encounterUuid} patientUuid={patientUuid} />,
@@ -37,12 +40,12 @@ const PrescriptionExpanded: React.FC<{
       <div className={styles.verticalTabs}>
         <Tabs>
           <TabList aria-label={t('tabList', 'Tab List')}>
-            {tabs.map((tab: TabItem, index: number) => (
+            {tabs.filter(Boolean).map((tab: TabItem, index: number) => (
               <Tab key={index}>{tab.name}</Tab>
             ))}
           </TabList>
           <TabPanels>
-            {tabs.map((tab: TabItem, index) => (
+            {tabs.filter(Boolean).map((tab: TabItem, index) => (
               <TabPanel key={index}>{tab.component}</TabPanel>
             ))}
           </TabPanels>
