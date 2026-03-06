@@ -14,7 +14,7 @@ import {
   Tile,
   Tag,
 } from '@carbon/react';
-import { CardHeader, EmptyCard, ErrorState, usePagination } from '@openmrs/esm-framework';
+import { CardHeader, ErrorState, usePagination, useConfig, UserHasAccess } from '@openmrs/esm-framework';
 import { usePatientDiagnosis } from './diagnoses.resource';
 import { usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import ActionButtons from '../components/action-buttons.component';
@@ -22,6 +22,7 @@ import MedicationEvent from '../components/medication-event.component';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
 import { computeMedicationRequestCombinedStatus } from '../utils';
 import { MedicationRequestCombinedStatus } from '../types';
+import type { MedicationRequest } from '../types';
 import type { PharmacyConfig } from '../config-schema';
 import styles from './diagnoses.scss';
 
@@ -49,7 +50,7 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
   const config = useConfig<PharmacyConfig>();
   const { medicationRequestBundles } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
 
-  const generateStatusTag = (medicationRequest) => {
+  const generateStatusTag = (medicationRequest: MedicationRequest): React.ReactNode => {
     const combinedStatus = computeMedicationRequestCombinedStatus(
       medicationRequest,
       config.medicationRequestExpirationPeriodInDays,
@@ -78,6 +79,18 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
     return null;
   };
 
+  // restore the column helper the DataTable markup expects
+  const getColumnClass = (key: string) => {
+    switch (key) {
+      case 'text':
+        return styles.diagnosisColumn ?? '';
+      case 'certainty':
+        return styles.statusColumn ?? '';
+      default:
+        return '';
+    }
+  };
+
   if (isLoading) return <DataTableSkeleton />;
   if (error) return <ErrorState headerTitle={title} error={error} />;
   if (!diagnoses?.length) {
@@ -91,6 +104,7 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
                   patientUuid={patientUuid}
                   encounterUuid={encounterUuid}
                   medicationRequestBundle={bundle}
+                  disabled={false}
                 />
               </UserHasAccess>
               <MedicationEvent medicationEvent={bundle.request} status={generateStatusTag(bundle.request)} />
@@ -108,7 +122,12 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
         medicationRequestBundles.map((bundle) => (
           <Tile key={bundle.request.id} className={styles.prescriptionTile}>
             <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
-              <ActionButtons patientUuid={patientUuid} encounterUuid={encounterUuid} medicationRequestBundle={bundle} />
+              <ActionButtons
+                patientUuid={patientUuid}
+                encounterUuid={encounterUuid}
+                medicationRequestBundle={bundle}
+                disabled={false}
+              />
             </UserHasAccess>
             <MedicationEvent medicationEvent={bundle.request} status={generateStatusTag(bundle.request)} />
           </Tile>
