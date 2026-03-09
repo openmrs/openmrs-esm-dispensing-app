@@ -61,7 +61,8 @@ test('View active prescriptions', async ({ page, patient }) => {
       .getByLabel('Expand current row')
       .nth(0)
       .click();
-    await expect(page.getByLabel('Prescription details', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Prescribed' })).toBeVisible();
+    await expect(page.getByText('Aspirin 81mg')).toBeVisible();
   });
 });
 
