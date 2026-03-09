@@ -21,6 +21,13 @@ export const configSchema = {
         _default: true,
       },
     },
+    printPrescriptionsButton: {
+      enabled: {
+        _type: Type.Boolean,
+        _description: 'Enabled/Disable including a Print Prescriptions button in the prescriptions action bar',
+        _default: true,
+      },
+    },
   },
   dispenseBehavior: {
     allowModifyingPrescription: {
@@ -160,6 +167,9 @@ export interface PharmacyConfig {
       enabled: boolean;
     };
     closeButton: {
+      enabled: boolean;
+    };
+    printPrescriptionsButton: {
       enabled: boolean;
     };
   };

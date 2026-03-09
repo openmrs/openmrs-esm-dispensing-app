@@ -16,6 +16,9 @@ const pharmacyConfig: PharmacyConfig = {
     closeButton: {
       enabled: true,
     },
+    printPrescriptionsButton: {
+      enabled: true,
+    },
   },
   dispenseBehavior: {
     allowModifyingPrescription: false,
