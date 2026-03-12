@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { launchWorkspace, type Session } from '@openmrs/esm-framework';
+import { launchWorkspace2, type Session } from '@openmrs/esm-framework';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
 import { type Provider, type MedicationRequestBundle } from '../../types';
 
@@ -14,6 +14,7 @@ type DispenseActionButtonProps = {
   dispensable: boolean;
   quantityRemaining: number;
   quantityDispensed: number;
+  disabled: boolean;
 };
 
 const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
@@ -25,6 +26,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   dispensable,
   quantityRemaining,
   quantityDispensed,
+  disabled,
 }) => {
   const { t } = useTranslation();
   const dispenseWorkspaceProps = {
@@ -38,7 +40,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   };
 
   const handleLaunchWorkspace = () => {
-    launchWorkspace('dispense-workspace', dispenseWorkspaceProps);
+    launchWorkspace2('dispense-workspace', dispenseWorkspaceProps);
   };
 
   if (!dispensable) {
@@ -46,7 +48,7 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   }
 
   return (
-    <Button kind="primary" onClick={handleLaunchWorkspace}>
+    <Button kind="primary" onClick={handleLaunchWorkspace} disabled={disabled}>
       {t('dispense', 'Dispense')}
     </Button>
   );

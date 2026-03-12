@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { launchWorkspace, type Session } from '@openmrs/esm-framework';
+import { launchWorkspace2, type Session } from '@openmrs/esm-framework';
 import { initiateMedicationDispenseBody } from '../../medication-dispense/medication-dispense.resource';
 import { type Provider, type MedicationRequestBundle } from '../../types';
 
@@ -12,6 +12,7 @@ type CloseActionButtonProps = {
   session: Session;
   providers: Array<Provider>;
   closeable: boolean;
+  disabled: boolean;
 };
 
 const CloseActionButton: React.FC<CloseActionButtonProps> = ({
@@ -21,6 +22,7 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
   session,
   providers,
   closeable,
+  disabled,
 }) => {
   const { t } = useTranslation();
 
@@ -32,14 +34,14 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
   };
 
   const handleLaunchWorkspace = () => {
-    launchWorkspace('close-dispense-workspace', closeDispenseFormProps);
+    launchWorkspace2('close-dispense-workspace', closeDispenseFormProps);
   };
 
   if (!closeable) {
     return null;
   }
   return (
-    <Button kind="danger" onClick={handleLaunchWorkspace}>
+    <Button kind="danger" onClick={handleLaunchWorkspace} disabled={disabled}>
       {t('close', 'Close')}
     </Button>
   );

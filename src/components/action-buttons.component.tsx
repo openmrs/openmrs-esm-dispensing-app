@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { ExtensionSlot, useConfig, useSession } from '@openmrs/esm-framework';
 import { MedicationDispenseStatus, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
 import {
@@ -16,10 +15,15 @@ interface ActionButtonsProps {
   medicationRequestBundle: MedicationRequestBundle;
   patientUuid: string;
   encounterUuid: string;
+  disabled: boolean;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, patientUuid, encounterUuid }) => {
-  const { t } = useTranslation();
+const ActionButtons: React.FC<ActionButtonsProps> = ({
+  medicationRequestBundle,
+  patientUuid,
+  encounterUuid,
+  disabled,
+}) => {
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
   const providers = useProviders(config.dispenserProviderRoles);
@@ -51,7 +55,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
   }
 
   let quantityDispensed = 0;
-  if (medicationRequestBundle.dispenses) {
+  if (config.dispenseBehavior.restrictTotalQuantityDispensed && medicationRequestBundle.dispenses) {
     quantityDispensed = computeTotalQuantityDispensed(medicationRequestBundle.dispenses);
   }
 
@@ -66,6 +70,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ medicationRequestBundle, 
     medicationRequestBundle,
     session,
     providers,
+    disabled,
   };
 
   return (

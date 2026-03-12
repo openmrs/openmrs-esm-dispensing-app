@@ -16,6 +16,12 @@
     margin-top: layout.$spacing-04;
     padding: 0 layout.$spacing-04;
   }
+  display: flex;
+  gap: 0;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin-top: auto;
+  align-self: flex-end;
 }
 
 .extensionSlot {

@@ -12,8 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@carbon/react';
-import { ErrorState, usePagination } from '@openmrs/esm-framework';
-import { CardHeader, EmptyState } from '@openmrs/esm-patient-common-lib';
+import { CardHeader, EmptyCard, ErrorState, usePagination } from '@openmrs/esm-framework';
 import { usePatientDiagnosis } from './diagnoses.resource';
 import styles from './diagnoses.scss';
 
@@ -28,23 +27,41 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
   const pageSizesOptions = useMemo(() => [3, 5, 10, 20, 50, 100], []);
   const { results, totalPages, currentPage, goTo } = usePagination(diagnoses, pageSize);
   const { t } = useTranslation();
-  const title = t('finalDiagnoses', 'Final Diagnoses');
-  const headers = useMemo(() => {
-    return [
+  const title = t('diagnoses', 'Diagnoses');
+  const headers = useMemo(
+    () => [
       { header: t('diagnosis', 'Diagnosis'), key: 'text' },
       { header: t('status', 'Status'), key: 'certainty' },
-    ];
-  }, [t]);
-  if (isLoading) return <DataTableSkeleton />;
+    ],
+    [t],
+  );
 
-  if (error) return <ErrorState headerTitle={title} error={error} />;
+  const getColumnClass = (key: string) => {
+    switch (key) {
+      case 'text':
+        return styles.diagnosisColumn;
+      case 'certainty':
+        return styles.statusColumn;
+      default:
+        return '';
+    }
+  };
 
-  if (!diagnoses?.length)
+  if (isLoading) {
+    return <DataTableSkeleton />;
+  }
+
+  if (error) {
+    return <ErrorState headerTitle={title} error={error} />;
+  }
+
+  if (!diagnoses?.length) {
     return (
       <Layer className={styles.diagnosesContainer}>
-        <EmptyState headerTitle={title} displayText={t('visitFinalDiagnoses', 'Visit final diagnoses')} />
+        <EmptyCard headerTitle={title} displayText={t('diagnosesEmpty', 'diagnoses')} />
       </Layer>
     );
+  }
 
   return (
     <Layer className={styles.diagnosesContainer}>
@@ -53,21 +70,23 @@ const PatientDiagnoses: React.FC<PatientDiagnosesProps> = ({ encounterUuid, pati
       </CardHeader>
       <DataTable useZebraStyles rows={results} headers={headers}>
         {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
-          <Table {...getTableProps()}>
+          <Table {...getTableProps()} className={styles.table}>
             <TableHead>
               <TableRow>
-                {headers.map((header, i) => (
-                  <TableHeader {...getHeaderProps({ header })} key={i}>
+                {headers.map((header) => (
+                  <TableHeader {...getHeaderProps({ header })} key={header.key} className={getColumnClass(header.key)}>
                     {header.header}
                   </TableHeader>
                 ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row, i) => (
-                <TableRow {...getRowProps({ row })} key={i}>
+              {rows.map((row) => (
+                <TableRow {...getRowProps({ row })} key={row.id}>
                   {row.cells.map((cell) => (
-                    <TableCell key={cell.id}>{cell.value}</TableCell>
+                    <TableCell key={cell.id} className={getColumnClass(cell.info.header)}>
+                      {cell.value}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))}

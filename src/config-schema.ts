@@ -1,4 +1,5 @@
 import { Type, validators } from '@openmrs/esm-framework';
+import { type CustomTab } from './types';
 
 export const configSchema = {
   appName: {
@@ -20,12 +21,19 @@ export const configSchema = {
         _default: true,
       },
     },
+    printPrescriptionsButton: {
+      enabled: {
+        _type: Type.Boolean,
+        _description: 'Enabled/Disable including a Print Prescriptions button in the prescriptions action bar',
+        _default: true,
+      },
+    },
   },
   dispenseBehavior: {
     allowModifyingPrescription: {
       _type: Type.Boolean,
       _description:
-        'Enable/Disable editing the prescription. If Disabled, Quantity will be he only editable field on prescription form. Note that thins means that quantity units will need to be mandatory and set correctly on the prescription.',
+        'Enable/Disable editing the prescription. If Disabled, Quantity will be he only editable field on prescription form. Note that this means that quantity units will need to be mandatory and set correctly on the prescription.',
       _default: true,
     },
     restrictTotalQuantityDispensed: {
@@ -65,6 +73,11 @@ export const configSchema = {
         _type: Type.String,
         _description: 'Name of the location tag to use when fetching locations to populate filter',
         _default: 'Login Location',
+      },
+      associatedPharmacyLocationAttribute: {
+        _type: Type.String,
+        _description: 'Name of the attribute used to associate locations with a pharmacy location',
+        _default: 'Associated Pharmacy Location',
       },
     },
   },
@@ -130,6 +143,11 @@ export const configSchema = {
     _description: 'Enable or disable the "Complete order with this dispense" checkbox on the dispense form.',
     _default: false,
   },
+  customTabs: {
+    _type: Type.Array,
+    _description: 'Custom tabs to be added to the prescription panel. See README for more details.',
+    _default: [],
+  },
 };
 
 export interface PharmacyConfig {
@@ -139,6 +157,9 @@ export interface PharmacyConfig {
       enabled: boolean;
     };
     closeButton: {
+      enabled: boolean;
+    };
+    printPrescriptionsButton: {
       enabled: boolean;
     };
   };
@@ -156,6 +177,7 @@ export interface PharmacyConfig {
     locationFilter: {
       enabled: boolean;
       tag: string;
+      associatedPharmacyLocationAttribute: string;
     };
   };
   valueSets: {
@@ -176,4 +198,5 @@ export interface PharmacyConfig {
   completeOrderWithThisDispense: boolean;
   validateBatch: boolean;
   leftNavMode: 'normal' | 'collapsed' | 'hidden';
+  customTabs: Array<CustomTab>;
 }

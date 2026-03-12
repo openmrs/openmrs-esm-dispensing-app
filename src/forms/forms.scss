@@ -24,17 +24,8 @@
 }
 
 .formGroup {
-  display: flex;
   margin-bottom: layout.$spacing-02;
   padding: layout.$spacing-05;
-}
-
-:global(.omrs-breakpoint-lt-desktop) .formGroup > span {
-  flex: 1;
-}
-
-:global(.omrs-breakpoint-lt-desktop) .formGroup > div {
-  flex: 3;
 }
 
 .bannerLoading {
@@ -72,14 +63,6 @@
   > div {
     margin-bottom: layout.$spacing-05;
   }
-}
-
-:global(.omrs-breakpoint-lt-desktop) .formGroup {
-  flex-direction: row;
-}
-
-:global(.omrs-breakpoint-gt-tablet) .formGroup {
-  flex-direction: column;
 }
 
 .buttonGroup {
@@ -151,4 +134,19 @@
 
 .reviewContainer {
   margin: 0.8rem 0 0 0 !important;
+}
+
+// copied from .sectionHeader of drug-order-form.scss
+.prescriptionFormSectionHeader {
+  @include type.type-style('heading-01');
+  margin-bottom: layout.$spacing-05;
+}
+
+// copied from .field of drug-order-form.scss
+.prescriptionFormField {
+  margin-bottom: layout.$spacing-05;
+
+  :global(.cds--label) {
+    vertical-align: middle;
+  }
 }

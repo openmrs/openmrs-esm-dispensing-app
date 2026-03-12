@@ -23,5 +23,5 @@ export const api: WorkerFixture<APIRequestContext, PlaywrightWorkerArgs> = async
     },
   });
 
-  await use(ctx);
+  use(ctx);
 };

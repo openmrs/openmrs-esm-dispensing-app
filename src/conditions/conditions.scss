@@ -4,6 +4,23 @@
 
 .conditionContainer {
   background-color: colors.$white-0;
-  border: 1px solid colors.$gray-20;
   margin-bottom: layout.$spacing-05;
+}
+
+.table {
+  table-layout: fixed;
+  width: 100%;
+
+  td {
+    padding-left: 2rem !important;
+  }
+}
+
+.conditionColumn {
+  width: 70%;
+}
+
+.onsetDateColumn {
+  width: 30%;
+  text-align: left;
 }

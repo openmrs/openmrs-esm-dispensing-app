@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import {
   type Coding,
   type DosageInstruction,
@@ -12,6 +13,7 @@ import {
   MedicationRequestStatus,
 } from './types';
 import {
+  calculateIsFreeTextDosage,
   computeMedicationRequestCombinedStatus,
   computeMedicationRequestStatus,
   computeNewFulfillerStatusAfterDelete,
@@ -33,14 +35,12 @@ import {
   getNextMostRecentMedicationDispenseStatus,
   getOpenMRSMedicineDrugName,
   getPrescriptionDetailsEndpoint,
-  getPrescriptionTableActiveMedicationRequestsEndpoint,
-  getPrescriptionTableAllMedicationRequestsEndpoint,
+  getPrescriptionTableEndpoint,
   getQuantity,
   getQuantityUnitsMatch,
   getRefillsAllowed,
   isMostRecentMedicationDispense,
 } from './utils';
-import dayjs from 'dayjs';
 
 describe('Util Tests', () => {
   describe('test computeMedicationRequestCombinedStatus', () => {
@@ -734,13 +734,23 @@ describe('Util Tests', () => {
       test('should return current fulfiller status if not most recent medication dispense and deleted dispense does not have status of completed', () => {
         const medicationRequestBundle: MedicationRequestBundle = {
           request: medicationRequest,
-          dispenses: [medicationDispenseDeclined, medicationDispenseOnHold],
+          dispenses: [medicationDispenseDeclined, medicationDispenseOnHold, medicationDispenseCompleteMostRecent],
         };
 
         expect(computeNewFulfillerStatusAfterDelete(medicationDispenseOnHold, medicationRequestBundle, false)).toBe(
-          MedicationRequestFulfillerStatus.declined,
+          MedicationRequestFulfillerStatus.completed,
         );
       });
+    test('should return null if deleting a dispense with status completed', () => {
+      const medicationRequestBundle: MedicationRequestBundle = {
+        request: medicationRequest,
+        dispenses: [medicationDispenseCompleteMostRecent],
+      };
+
+      expect(
+        computeNewFulfillerStatusAfterDelete(medicationDispenseCompleteOldest, medicationRequestBundle, false),
+      ).toBe(null);
+    });
   });
 
   describe('test computeNewFulfillerStatusAfterDispenseEvent', () => {
@@ -989,6 +999,48 @@ describe('Util Tests', () => {
           true,
         ),
       ).toBe(MedicationRequestFulfillerStatus.completed);
+    });
+
+    test('when editing existing dispense should return fulfiller status completed if medication request status is completed and restrict total quantity dispensed is set false', () => {
+      medicationRequest.status = MedicationRequestStatus.completed;
+      existingMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
+      existingMedicationDispense.status = MedicationDispenseStatus.completed;
+      existingMedicationDispense.quantity.value = 20;
+      const editedExistingMedicationDispense = {
+        ...existingMedicationDispense,
+      };
+      editedExistingMedicationDispense.quantity.value = 30;
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          editedExistingMedicationDispense,
+          {
+            request: medicationRequest,
+            dispenses: [existingMedicationDispense],
+          },
+          false,
+        ),
+      ).toBe(MedicationRequestFulfillerStatus.completed);
+    });
+
+    test('when editing existing dispense should return fulfiller status null if medication request status is *NOT* completed and restrict total quantity dispensed is set false', () => {
+      medicationRequest.status = MedicationRequestStatus.active;
+      existingMedicationDispense.extension[0].valueDateTime = '2023-01-03T14:00:00-05:00';
+      existingMedicationDispense.status = MedicationDispenseStatus.completed;
+      existingMedicationDispense.quantity.value = 20;
+      const editedExistingMedicationDispense = {
+        ...existingMedicationDispense,
+      };
+      editedExistingMedicationDispense.quantity.value = 30;
+      expect(
+        computeNewFulfillerStatusAfterDispenseEvent(
+          editedExistingMedicationDispense,
+          {
+            request: medicationRequest,
+            dispenses: [existingMedicationDispense],
+          },
+          false,
+        ),
+      ).toBe(null);
     });
   });
 
@@ -2449,46 +2501,44 @@ describe('Util Tests', () => {
 
   describe('test getPrescriptionTableActiveMedicationRequestsEndpoint', () => {
     test('should return endpoint with date parameter', () => {
-      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', null, null)).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active',
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', null, null)).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE',
       );
     });
     test('should return endpoint with date and search term parameters', () => {
-      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', 'bob', null)).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active&patientSearchTerm=bob',
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', 'bob', null)).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&patientSearchTerm=bob',
       );
     });
     test('should return endpoint with date and location parameters', () => {
-      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', null, '123abc')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active&location=123abc',
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', null, '123abc')).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&location=123abc',
       );
     });
     test('should return endpoint with date, location, and search term parameters', () => {
-      expect(getPrescriptionTableActiveMedicationRequestsEndpoint(1, 10, '2020-01-01', 'bob', '123abc')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=active&patientSearchTerm=bob&location=123abc',
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', 'bob', '123abc')).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&patientSearchTerm=bob&location=123abc',
       );
     });
-  });
 
-  describe('test getPrescriptionTableAllMedicationRequestsEndpoint', () => {
-    test('should return endpoint', () => {
-      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, null, null)).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10',
+    test('should return endpoint with multiple comma-separated location parameters', () => {
+      expect(getPrescriptionTableEndpoint('', 'ACTIVE', 1, 10, '2020-01-01', 'bob', '123abc,456def')).toBe(
+        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&patientSearchTerm=bob&location=123abc,456def',
       );
     });
-    test('should return endpoint with search term parameter', () => {
-      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, 'bob', null)).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&patientSearchTerm=bob',
-      );
-    });
-    test('should return endpoint with location parameter', () => {
-      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, null, '123abc')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&location=123abc',
-      );
-    });
-    test('should return endpoint with search term and location parameters', () => {
-      expect(getPrescriptionTableAllMedicationRequestsEndpoint(1, 10, 'bob', '123abc')).toBe(
-        '/ws/fhir2/R4/Encounter?_query=encountersWithMedicationRequests&_getpagesoffset=1&_count=10&patientSearchTerm=bob&location=123abc',
+    test('should return custom endpoint properly populated', () => {
+      expect(
+        getPrescriptionTableEndpoint(
+          '${fhirBaseUrl}/Encounter?_query=someCustomEndpoint&_getpagesoffset=${pageOffset}&_count=${pageSize}&date=ge${date}&status=ACTIVE&patientSearchTerm=${patientSearchTerm}&location=${location}',
+          'ACTIVE',
+          1,
+          10,
+          '2020-01-01',
+          'bob',
+          '123abc,456def',
+        ),
+      ).toBe(
+        '/ws/fhir2/R4/Encounter?_query=someCustomEndpoint&_getpagesoffset=1&_count=10&date=ge2020-01-01&status=ACTIVE&patientSearchTerm=bob&location=123abc,456def',
       );
     });
   });
@@ -2841,6 +2891,57 @@ describe('Util Tests', () => {
     });
     test('should return false if null', () => {
       expect(isMostRecentMedicationDispense(null, medicationDispenses)).toBe(false);
+    });
+  });
+
+  describe('test calculateIsFreeTextDosage', () => {
+    test('should return true when dosageInstruction is null', () => {
+      expect(calculateIsFreeTextDosage(null)).toBe(true);
+    });
+
+    test('should return true when dosageInstruction has no structured data', () => {
+      const dosageInstruction = {
+        text: 'Take as directed',
+      } as DosageInstruction;
+      expect(calculateIsFreeTextDosage(dosageInstruction)).toBe(true);
+    });
+
+    test('should return false when dosageInstruction has doseAndRate with value', () => {
+      const dosageInstruction = {
+        doseAndRate: [
+          {
+            doseQuantity: {
+              value: 5.0,
+              unit: 'mg',
+              code: 'mg',
+            },
+          },
+        ],
+        timing: {
+          code: {
+            coding: [{ code: '123', display: 'Once daily' }],
+          },
+        },
+        route: {
+          coding: [{ code: '456', display: 'Oral' }],
+          text: 'Oral',
+        },
+        asNeededBoolean: false,
+      } as DosageInstruction;
+      expect(calculateIsFreeTextDosage(dosageInstruction)).toBe(false);
+    });
+
+    test('should return true when doseAndRate exists but has no value', () => {
+      const dosageInstruction = {
+        doseAndRate: [
+          {
+            doseQuantity: {
+              unit: 'mg',
+            },
+          },
+        ],
+      } as DosageInstruction;
+      expect(calculateIsFreeTextDosage(dosageInstruction)).toBe(true);
     });
   });
 });
