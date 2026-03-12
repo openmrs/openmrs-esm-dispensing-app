@@ -4,6 +4,7 @@ import { Button, Checkbox, Form, FormLabel, InlineLoading } from '@carbon/react'
 import {
   ExtensionSlot,
   getCoreTranslation,
+  showModal,
   showSnackbar,
   useConfig,
   usePatient,
@@ -25,6 +26,7 @@ import {
   getUuidFromReference,
   markEncounterAsStale,
   revalidate,
+  sortMedicationDispensesByWhenHandedOver,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
@@ -79,6 +81,77 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
     const dosageInstruction = getDosageInstruction(medicationDispense?.dosageInstruction);
     return dosageInstruction ? calculateIsFreeTextDosage(dosageInstruction) : false;
   });
+
+  const isDuplicateDispense = (dispense: MedicationDispense): boolean => {
+    const dispenses = medicationRequestBundle?.dispenses ?? [];
+    const duplicateCheckWindowDays = config.duplicateCheckWindowDays;
+    const getDispenseDate = (d: MedicationDispense) => d.whenHandedOver ?? d.whenPrepared;
+    const getDuration = (d: MedicationDispense) => d.dosageInstruction?.[0]?.timing?.repeat?.boundsDuration?.value;
+    const windowMs = duplicateCheckWindowDays * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    return dispenses
+      .filter((d) => d.status === MedicationDispenseStatus.completed)
+      .filter((d) => {
+        const date = getDispenseDate(d);
+        if (!date) return false;
+        const dispenseTime = new Date(date).getTime();
+        return now - dispenseTime <= windowMs;
+      })
+      .some((existingDispense) => {
+        if (mode === 'edit' && existingDispense.id && dispense.id && existingDispense.id === dispense.id) {
+          return false;
+        }
+        const sameMedication =
+          existingDispense.medicationCodeableConcept?.coding?.[0]?.code ===
+          dispense.medicationCodeableConcept?.coding?.[0]?.code;
+        const sameQuantity =
+          existingDispense.quantity?.value === dispense.quantity?.value &&
+          existingDispense.quantity?.code === dispense.quantity?.code;
+        const sameDose =
+          existingDispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value ===
+            dispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value &&
+          existingDispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.code ===
+            dispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.code;
+        const sameDuration = getDuration(existingDispense) === getDuration(dispense);
+        return sameMedication && sameQuantity && sameDose && sameDuration;
+      });
+  };
+
+  const getPreviousDispense = (): MedicationDispense | undefined => {
+    const dispenses = medicationRequestBundle?.dispenses ?? [];
+    if (!dispenses || dispenses.length === 0) return undefined;
+    const sorted = [...dispenses].sort(sortMedicationDispensesByWhenHandedOver);
+    if (medicationDispense?.id) {
+      const idx = sorted.findIndex((d) => d.id === medicationDispense.id);
+      if (idx >= 0 && idx + 1 < sorted.length) {
+        return sorted[idx + 1];
+      }
+      return undefined;
+    }
+    return sorted[0];
+  };
+
+  const handleDuplicateMedication = () => {
+    const previousDispense = getPreviousDispense();
+    const dispose = showModal('duplicate-dispense-modal', {
+      onClose: () => dispose(),
+      medicationName: medicationDispensePayload?.medicationCodeableConcept?.text || '',
+      previousDispense: previousDispense,
+      previousDispenseDate: previousDispense?.whenHandedOver ?? previousDispense?.whenPrepared ?? undefined,
+      previousSchedule:
+        previousDispense?.dosageInstruction?.[0]?.timing?.code?.text ??
+        medicationDispensePayload?.dosageInstruction?.[0]?.timing?.code?.text,
+      previousQuantity: previousDispense?.quantity?.value ?? medicationDispensePayload?.quantity?.value,
+      previousQuantityUnit:
+        previousDispense?.quantity?.unit ??
+        previousDispense?.quantity?.code ??
+        medicationDispensePayload?.quantity?.code,
+      previousPerformer:
+        previousDispense?.performer?.[0]?.actor?.display ?? medicationDispensePayload?.performer?.[0]?.actor?.display,
+      onConfirm: () => handleSubmit(),
+    });
+  };
 
   // Submit medication dispense form
   const handleSubmit = () => {
@@ -241,6 +314,18 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
 
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
 
+  const handleSubmitOrDuplicateCheck = () => {
+    if (
+      config.enableDuplicateDispenseCheck &&
+      medicationDispensePayload &&
+      isDuplicateDispense(medicationDispensePayload)
+    ) {
+      handleDuplicateMedication();
+    } else {
+      handleSubmit();
+    }
+  };
+
   const bannerState = useMemo(() => {
     if (patient) {
       return {
@@ -309,7 +394,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
             kind="secondary">
             {getCoreTranslation('cancel', 'Cancel')}
           </Button>
-          <Button disabled={isButtonDisabled} onClick={handleSubmit}>
+          <Button disabled={isButtonDisabled} onClick={handleSubmitOrDuplicateCheck}>
             {t(
               mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
               mode === 'enter' ? 'Dispense prescription' : 'Save changes',
