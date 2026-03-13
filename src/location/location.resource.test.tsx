@@ -8,6 +8,7 @@ jest.mocked(openmrsFetch);
 jest.mock('swr');
 
 const pharmacyConfig: PharmacyConfig = {
+  drugOrderTypeUUID: '',
   appName: '',
   actionButtons: {
     pauseButton: {
