@@ -2360,8 +2360,6 @@ __metadata:
     swr: "npm:^2.2.5"
     turbo: "npm:^2.5.2"
     typescript: "npm:^5.0.0"
-    webpack: "npm:^5.99.9"
-    webpack-cli: "npm:^6.0.1"
   peerDependencies:
     "@openmrs/esm-framework": 9.x
     dayjs: 1.x
@@ -17014,7 +17012,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-cli@npm:6.0.1, webpack-cli@npm:^6.0.1":
+"webpack-cli@npm:6.0.1":
   version: 6.0.1
   resolution: "webpack-cli@npm:6.0.1"
   dependencies:
@@ -17189,7 +17187,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.105.3, webpack@npm:^5.99.9":
+"webpack@npm:5.105.3":
   version: 5.105.3
   resolution: "webpack@npm:5.105.3"
   dependencies:
