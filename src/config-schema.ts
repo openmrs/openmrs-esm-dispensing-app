@@ -14,7 +14,7 @@ export const configSchema = {
   duplicateCheckWindowDays: {
     _type: Type.Number,
     _description: 'Number of days to look back when checking for duplicate dispenses',
-    _default: 30,
+    _default: 7,
   },
   actionButtons: {
     pauseButton: {
