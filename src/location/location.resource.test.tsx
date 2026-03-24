@@ -23,6 +23,7 @@ const pharmacyConfig: PharmacyConfig = {
   dispenseBehavior: {
     allowModifyingPrescription: false,
     restrictTotalQuantityDispensed: false,
+    endActiveVisitOnCompletingOrder: false,
   },
   dispenserProviderRoles: [],
   locationBehavior: {
