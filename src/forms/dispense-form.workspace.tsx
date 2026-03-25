@@ -26,7 +26,6 @@ import {
   getUuidFromReference,
   markEncounterAsStale,
   revalidate,
-  sortMedicationDispensesByWhenHandedOver,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 import { createStockDispenseRequestPayload, sendStockDispenseRequest } from './stock-dispense/stock.resource';
@@ -82,11 +81,10 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
     return dosageInstruction ? calculateIsFreeTextDosage(dosageInstruction) : false;
   });
 
-  const isDuplicateDispense = (dispense: MedicationDispense): boolean => {
+  const getDuplicateDispense = (dispense: MedicationDispense): MedicationDispense => {
     const dispenses = medicationRequestBundle?.dispenses ?? [];
     const duplicateCheckWindowDays = config.duplicateCheckWindowDays;
     const getDispenseDate = (d: MedicationDispense) => d.whenHandedOver ?? d.whenPrepared;
-    const getRepeat = (d: MedicationDispense) => d.dosageInstruction?.[0]?.timing?.repeat;
     const windowMs = duplicateCheckWindowDays * 24 * 60 * 60 * 1000;
     const now = Date.now();
 
@@ -98,7 +96,8 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
         const dispenseTime = new Date(date).getTime();
         return now - dispenseTime <= windowMs;
       })
-      .some((existingDispense) => {
+      .sort((a, b) => new Date(getDispenseDate(b)).getTime() - new Date(getDispenseDate(a)).getTime())
+      .find((existingDispense) => {
         if (mode === 'edit' && existingDispense.id && dispense.id && existingDispense.id === dispense.id) {
           return false;
         }
@@ -113,29 +112,11 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
             dispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value &&
           existingDispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.code ===
             dispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.code;
-        const sameDuration =
-          getRepeat(existingDispense)?.duration === getRepeat(dispense)?.duration &&
-          getRepeat(existingDispense)?.durationUnit === getRepeat(dispense)?.durationUnit;
-        return sameMedication && sameQuantity && sameDose && sameDuration;
+        return sameMedication && sameQuantity && sameDose;
       });
   };
 
-  const getPreviousDispense = (): MedicationDispense | undefined => {
-    const dispenses = medicationRequestBundle?.dispenses ?? [];
-    if (!dispenses || dispenses.length === 0) return undefined;
-    const sorted = [...dispenses].sort(sortMedicationDispensesByWhenHandedOver);
-    if (medicationDispense?.id) {
-      const idx = sorted.findIndex((d) => d.id === medicationDispense.id);
-      if (idx >= 0 && idx + 1 < sorted.length) {
-        return sorted[idx + 1];
-      }
-      return undefined;
-    }
-    return sorted[0];
-  };
-
-  const handleDuplicateMedication = () => {
-    const previousDispense = getPreviousDispense();
+  const handleDuplicateMedication = (previousDispense: MedicationDispense) => {
     const dispose = showModal('duplicate-dispense-modal', {
       onClose: () => dispose(),
       medicationName: medicationDispensePayload?.medicationCodeableConcept?.text || '',
@@ -318,12 +299,9 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
 
   const handleSubmitOrDuplicateCheck = () => {
-    if (
-      config.enableDuplicateDispenseCheck &&
-      medicationDispensePayload &&
-      isDuplicateDispense(medicationDispensePayload)
-    ) {
-      handleDuplicateMedication();
+    const duplicateDispense = medicationDispensePayload ? getDuplicateDispense(medicationDispensePayload) : null;
+    if (config.enableDuplicateDispenseCheck && duplicateDispense) {
+      handleDuplicateMedication(duplicateDispense);
     } else {
       handleSubmit();
     }
