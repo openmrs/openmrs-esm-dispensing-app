@@ -299,8 +299,8 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
 
   const handleSubmitOrDuplicateCheck = () => {
-    const duplicateDispense = getDuplicateDispense(medicationDispensePayload);
-    if (config.enableDuplicateDispenseCheck && medicationDispensePayload && duplicateDispense) {
+    const duplicateDispense = medicationDispensePayload ? getDuplicateDispense(medicationDispensePayload) : null;
+    if (config.enableDuplicateDispenseCheck && duplicateDispense) {
       handleDuplicateMedication(duplicateDispense);
     } else {
       handleSubmit();
