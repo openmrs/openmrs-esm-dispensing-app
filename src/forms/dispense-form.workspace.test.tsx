@@ -1,14 +1,29 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useConfig, usePatient } from '@openmrs/esm-framework';
+import { showModal, useConfig, usePatient } from '@openmrs/esm-framework';
 import { type MedicationDispense, type MedicationRequestBundle, MedicationDispenseStatus } from '../types';
 import DispenseForm from './dispense-form.workspace';
+import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
+import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 
 const mockUseConfig = jest.mocked(useConfig);
 const mockUsePatient = jest.mocked(usePatient);
+const mockShowModal = jest.mocked(showModal);
 const mockCloseWorkspace = jest.fn();
 const mockLaunchChildWorkspace = jest.fn();
+const mockSaveMedicationDispense = jest.mocked(saveMedicationDispense);
+const mockUpdateMedicationRequestFulfillerStatus = jest.mocked(updateMedicationRequestFulfillerStatus);
+
+jest.mock('../medication-dispense/medication-dispense.resource', () => ({
+  __esModule: true,
+  saveMedicationDispense: jest.fn(),
+}));
+
+jest.mock('../medication-request/medication-request.resource', () => ({
+  __esModule: true,
+  updateMedicationRequestFulfillerStatus: jest.fn(),
+}));
 
 // Mock workspace props required by Workspace2DefinitionProps
 const mockWorkspaceProps = {
@@ -52,6 +67,14 @@ const mockPatient = {
 const createMockMedicationDispense = (): MedicationDispense => ({
   resourceType: 'MedicationDispense',
   status: MedicationDispenseStatus.completed,
+  medicationCodeableConcept: {
+    text: 'Test Medication',
+    coding: [
+      {
+        code: 'medication-code',
+      },
+    ],
+  },
   medicationReference: {
     reference: 'Medication/med-uuid',
     display: 'Test Medication',
@@ -188,6 +211,9 @@ const createMockMedicationRequestBundle = (numberOfRepeatsAllowed: number | null
 });
 
 beforeEach(() => {
+  mockShowModal.mockReturnValue(jest.fn());
+  mockSaveMedicationDispense.mockResolvedValue({ ok: true, status: 201, data: { status: 'completed' } } as any);
+  mockUpdateMedicationRequestFulfillerStatus.mockResolvedValue({} as any);
   mockUseConfig.mockReturnValue({
     dispenseBehavior: {
       allowModifyingPrescription: false,
@@ -330,5 +356,56 @@ describe('DispenseForm - Complete Order Checkbox Auto-Default', () => {
     // In edit mode, the checkbox should not be rendered at all
     const checkbox = screen.queryByRole('checkbox', { name: /complete order with this dispense/i });
     expect(checkbox).not.toBeInTheDocument();
+  });
+
+  test('should not show duplicate warning for retrospective dispense when only later dispenses are in the lookback window', async () => {
+    const user = userEvent.setup();
+
+    const medicationDispense = {
+      ...createMockMedicationDispense(),
+      whenHandedOver: '2026-03-12T10:00:00.000Z',
+    };
+    const recentDispense = {
+      ...createMockMedicationDispense(),
+      id: 'existing-dispense-id',
+      whenHandedOver: '2026-03-26T10:00:00.000Z',
+    };
+
+    const medicationRequestBundle = {
+      ...createMockMedicationRequestBundle(0),
+      dispenses: [recentDispense],
+    };
+
+    mockUseConfig.mockReturnValue({
+      dispenseBehavior: {
+        allowModifyingPrescription: false,
+        restrictTotalQuantityDispensed: false,
+      },
+      completeOrderWithThisDispense: true,
+      enableStockDispense: false,
+      enableDuplicateDispenseCheck: true,
+      duplicateCheckWindowDays: 7,
+    } as any);
+
+    render(
+      <DispenseForm
+        {...mockWorkspaceProps}
+        workspaceProps={{
+          medicationDispense,
+          medicationRequestBundle,
+          mode: 'enter',
+          patientUuid: 'patient-uuid',
+          encounterUuid: 'encounter-uuid',
+          quantityRemaining: 30,
+          quantityDispensed: 0,
+        }}
+        closeWorkspace={mockCloseWorkspace}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /dispense prescription/i }));
+
+    expect(mockShowModal).not.toHaveBeenCalled();
+    expect(mockSaveMedicationDispense).toHaveBeenCalled();
   });
 });

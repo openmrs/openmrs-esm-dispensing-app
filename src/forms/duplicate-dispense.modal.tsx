@@ -114,7 +114,7 @@ const DuplicateDispenseModal: React.FC<DuplicateDispenseModalProps> = ({
             <div className={styles.metaRow}>
               {previousPerformer && (
                 <span>
-                  {t('performedBy', 'Performed by')}: <strong>{previousPerformer}</strong>
+                  {t('dispensedBy', 'Dispensed by')}: <strong>{previousPerformer}</strong>
                 </span>
               )}
 
