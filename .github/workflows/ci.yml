@@ -21,6 +21,7 @@ jobs:
           node-version: 20
           registry-url: "https://registry.npmjs.org"
       - run: yarn install --immutable
+      - run: yarn check-translations
       - run: yarn verify
       - run: yarn turbo build
       - name: Upload Artifacts

@@ -16,7 +16,8 @@
     "test:watch": "jest --config jest.config.js --watch",
     "typescript": "tsc",
     "verify": "turbo run lint test typescript",
-    "extract-translations": "i18next 'src/**/*.component.tsx' 'src/**/*.workspace.tsx' 'src/index.ts' --config ./tools/i18next-parser.config.js",
+    "extract-translations": "i18next 'src/**/*.component.tsx' 'src/**/*.workspace.tsx' 'src/**/*.modal.tsx' 'src/index.ts' --config ./tools/i18next-parser.config.js",
+    "check-translations": "yarn extract-translations && git diff --exit-code -- translations/en.json",
     "coverage": "yarn test --coverage",
     "postinstall": "husky install",
     "test-e2e": "playwright test"
