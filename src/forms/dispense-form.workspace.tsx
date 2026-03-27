@@ -108,9 +108,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
         return dispenseTime <= currentDispenseTime && currentDispenseTime - dispenseTime <= windowMs;
       })
       .sort((a, b) => {
-        const bTime = getTime(getDispenseDate(b)) ?? Number.NEGATIVE_INFINITY;
-        const aTime = getTime(getDispenseDate(a)) ?? Number.NEGATIVE_INFINITY;
-        return bTime - aTime;
+        return getTime(getDispenseDate(b)) - getTime(getDispenseDate(a));
       })
       .find((existingDispense) => {
         if (mode === 'edit' && existingDispense.id && dispense.id && existingDispense.id === dispense.id) {
