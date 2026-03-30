@@ -85,18 +85,31 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
     const dispenses = medicationRequestBundle?.dispenses ?? [];
     const duplicateCheckWindowDays = config.duplicateCheckWindowDays;
     const getDispenseDate = (d: MedicationDispense) => d.whenHandedOver ?? d.whenPrepared;
+    const getTime = (date?: string) => {
+      if (!date) {
+        return null;
+      }
+
+      const parsedTime = new Date(date).getTime();
+      return Number.isNaN(parsedTime) ? null : parsedTime;
+    };
     const windowMs = duplicateCheckWindowDays * 24 * 60 * 60 * 1000;
-    const now = Date.now();
+    const currentDispenseTime = getTime(getDispenseDate(dispense)) ?? Date.now();
 
     return dispenses
       .filter((d) => d.status === MedicationDispenseStatus.completed)
       .filter((d) => {
-        const date = getDispenseDate(d);
-        if (!date) return false;
-        const dispenseTime = new Date(date).getTime();
-        return now - dispenseTime <= windowMs;
+        const dispenseTime = getTime(getDispenseDate(d));
+        if (dispenseTime === null) {
+          return false;
+        }
+
+        // Duplicate checks are relative to the dispense date being submitted, not "now".
+        return dispenseTime <= currentDispenseTime && currentDispenseTime - dispenseTime <= windowMs;
       })
-      .sort((a, b) => new Date(getDispenseDate(b)).getTime() - new Date(getDispenseDate(a)).getTime())
+      .sort((a, b) => {
+        return getTime(getDispenseDate(b)) - getTime(getDispenseDate(a));
+      })
       .find((existingDispense) => {
         if (mode === 'edit' && existingDispense.id && dispense.id && existingDispense.id === dispense.id) {
           return false;
