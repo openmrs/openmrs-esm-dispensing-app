@@ -11,6 +11,16 @@ export const configSchema = {
     _type: Type.String,
     _default: 'Pharmacy',
   },
+  enableDuplicateDispenseCheck: {
+    _type: Type.Boolean,
+    _description: 'Enable/Disable the duplicate dispense check feature',
+    _default: true,
+  },
+  duplicateCheckWindowDays: {
+    _type: Type.Number,
+    _description: 'Number of days to look back when checking for duplicate dispenses',
+    _default: 7,
+  },
   actionButtons: {
     pauseButton: {
       enabled: {
@@ -23,6 +33,13 @@ export const configSchema = {
       enabled: {
         _type: Type.Boolean,
         _description: 'Enabled/Disable including a Close button in the button action bar',
+        _default: true,
+      },
+    },
+    printPrescriptionsButton: {
+      enabled: {
+        _type: Type.Boolean,
+        _description: 'Enabled/Disable including a Print Prescriptions button in the prescriptions action bar',
         _default: true,
       },
     },
@@ -150,12 +167,17 @@ export const configSchema = {
 
 export interface PharmacyConfig {
   drugOrderTypeUUID: string;
+  enableDuplicateDispenseCheck: boolean;
+  duplicateCheckWindowDays: number;
   appName: string;
   actionButtons: {
     pauseButton: {
       enabled: boolean;
     };
     closeButton: {
+      enabled: boolean;
+    };
+    printPrescriptionsButton: {
       enabled: boolean;
     };
   };

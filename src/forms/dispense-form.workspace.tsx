@@ -4,6 +4,7 @@ import { Button, Checkbox, Form, FormLabel, InlineLoading } from '@carbon/react'
 import {
   ExtensionSlot,
   getCoreTranslation,
+  showModal,
   showSnackbar,
   useConfig,
   usePatient,
@@ -80,110 +81,179 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
     return dosageInstruction ? calculateIsFreeTextDosage(dosageInstruction) : false;
   });
 
+  const getDuplicateDispense = (dispense: MedicationDispense): MedicationDispense => {
+    const dispenses = medicationRequestBundle?.dispenses ?? [];
+    const duplicateCheckWindowDays = config.duplicateCheckWindowDays;
+    const getDispenseDate = (d: MedicationDispense) => d.whenHandedOver ?? d.whenPrepared;
+    const getTime = (date?: string) => {
+      if (!date) {
+        return null;
+      }
+
+      const parsedTime = new Date(date).getTime();
+      return Number.isNaN(parsedTime) ? null : parsedTime;
+    };
+    const windowMs = duplicateCheckWindowDays * 24 * 60 * 60 * 1000;
+    const currentDispenseTime = getTime(getDispenseDate(dispense)) ?? Date.now();
+
+    return dispenses
+      .filter((d) => d.status === MedicationDispenseStatus.completed)
+      .filter((d) => {
+        const dispenseTime = getTime(getDispenseDate(d));
+        if (dispenseTime === null) {
+          return false;
+        }
+
+        // Duplicate checks are relative to the dispense date being submitted, not "now".
+        return dispenseTime <= currentDispenseTime && currentDispenseTime - dispenseTime <= windowMs;
+      })
+      .sort((a, b) => {
+        return getTime(getDispenseDate(b)) - getTime(getDispenseDate(a));
+      })
+      .find((existingDispense) => {
+        if (mode === 'edit' && existingDispense.id && dispense.id && existingDispense.id === dispense.id) {
+          return false;
+        }
+        const sameMedication =
+          existingDispense.medicationCodeableConcept?.coding?.[0]?.code ===
+          dispense.medicationCodeableConcept?.coding?.[0]?.code;
+        const sameQuantity =
+          existingDispense.quantity?.value === dispense.quantity?.value &&
+          existingDispense.quantity?.code === dispense.quantity?.code;
+        const sameDose =
+          existingDispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value ===
+            dispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.value &&
+          existingDispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.code ===
+            dispense.dosageInstruction?.[0]?.doseAndRate?.[0]?.doseQuantity?.code;
+        return sameMedication && sameQuantity && sameDose;
+      });
+  };
+
+  const handleDuplicateMedication = (previousDispense: MedicationDispense) => {
+    const dispose = showModal('duplicate-dispense-modal', {
+      onClose: () => dispose(),
+      medicationName: medicationDispensePayload?.medicationCodeableConcept?.text || '',
+      previousDispense: previousDispense,
+      previousDispenseDate: previousDispense?.whenHandedOver ?? previousDispense?.whenPrepared ?? undefined,
+      previousSchedule:
+        previousDispense?.dosageInstruction?.[0]?.timing?.code?.text ??
+        medicationDispensePayload?.dosageInstruction?.[0]?.timing?.code?.text,
+      previousQuantity: previousDispense?.quantity?.value ?? medicationDispensePayload?.quantity?.value,
+      previousQuantityUnit:
+        previousDispense?.quantity?.unit ??
+        previousDispense?.quantity?.code ??
+        medicationDispensePayload?.quantity?.code,
+      previousPerformer:
+        previousDispense?.performer?.[0]?.actor?.display ?? medicationDispensePayload?.performer?.[0]?.actor?.display,
+      onConfirm: () => handleSubmit(),
+    });
+  };
+
   // Submit medication dispense form
   const handleSubmit = () => {
-    if (!isSubmitting) {
-      setIsSubmitting(true);
-      const abortController = new AbortController();
-      markEncounterAsStale(encounterUuid);
-      saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
-        .then((response) => {
-          if (response.ok) {
-            if (config.completeOrderWithThisDispense && shouldCompleteOrder) {
-              return updateMedicationRequestFulfillerStatus(
-                getUuidFromReference(
-                  medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
-                ),
-                MedicationRequestFulfillerStatus.completed,
-              ).then(() => response);
-            }
-            const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
-              medicationDispensePayload,
-              medicationRequestBundle,
-              config.dispenseBehavior.restrictTotalQuantityDispensed,
-            );
-            if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
-              return updateMedicationRequestFulfillerStatus(
-                getUuidFromReference(
-                  medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
-                ),
-                newFulfillerStatus,
-              ).then(() => response);
-            }
-          }
-          return response;
-        })
-        .then((response) => {
-          const { status } = response;
-          if (config.enableStockDispense && (status === 201 || status === 200)) {
-            const stockDispenseRequestPayload = createStockDispenseRequestPayload(
-              inventoryItem,
-              patientUuid,
-              encounterUuid,
-              medicationDispensePayload,
-            );
-            sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
-              () => {
-                showSnackbar({
-                  title: t('stockDispensed', 'Stock dispensed'),
-                  kind: 'success',
-                  subtitle: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
-                });
-              },
-              (error) => {
-                showSnackbar({
-                  title: 'Stock dispense error',
-                  kind: 'error',
-                  subtitle: error?.message,
-                });
-              },
-            );
-          }
-          return response;
-        })
-        .then(
-          (response) => {
-            const { status } = response;
-            if (config.completeOrderWithThisDispense && shouldCompleteOrder && response?.data?.status === 'completed') {
-              showSnackbar({
-                title: t('prescriptionCompleted', 'Prescription completed'),
-                kind: 'success',
-                subtitle: t(
-                  'prescriptionCompletedSuccessfully',
-                  'Medication dispensed and prescription marked as completed',
-                ),
-              });
-            }
-            if (status === 201 || status === 200) {
-              revalidate(encounterUuid);
-              showSnackbar({
-                kind: 'success',
-                subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
-                title: t(
-                  mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
-                  mode === 'enter'
-                    ? 'Medication successfully dispensed.'
-                    : 'Medication dispense record successfully updated.',
-                ),
-              });
-              closeWorkspace({ discardUnsavedChanges: true });
-              setIsSubmitting(false);
-              onWorkspaceClosed?.();
-            }
-          },
-          (error) => {
-            showSnackbar({
-              kind: 'error',
-              title: t(
-                mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
-                mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
-              ),
-              subtitle: error?.message,
-            });
-            setIsSubmitting(false);
-          },
-        );
+    if (isSubmitting) {
+      return Promise.resolve();
     }
+    setIsSubmitting(true);
+    const abortController = new AbortController();
+    markEncounterAsStale(encounterUuid);
+    return saveMedicationDispense(medicationDispensePayload, MedicationDispenseStatus.completed, abortController)
+      .then((response) => {
+        if (response.ok) {
+          if (config.completeOrderWithThisDispense && shouldCompleteOrder) {
+            return updateMedicationRequestFulfillerStatus(
+              getUuidFromReference(
+                medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
+              ),
+              MedicationRequestFulfillerStatus.completed,
+            ).then(() => response);
+          }
+          const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
+            medicationDispensePayload,
+            medicationRequestBundle,
+            config.dispenseBehavior.restrictTotalQuantityDispensed,
+          );
+          if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
+            return updateMedicationRequestFulfillerStatus(
+              getUuidFromReference(
+                medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
+              ),
+              newFulfillerStatus,
+            ).then(() => response);
+          }
+        }
+        return response;
+      })
+      .then((response) => {
+        const { status } = response;
+        if (config.enableStockDispense && (status === 201 || status === 200)) {
+          const stockDispenseRequestPayload = createStockDispenseRequestPayload(
+            inventoryItem,
+            patientUuid,
+            encounterUuid,
+            medicationDispensePayload,
+          );
+          sendStockDispenseRequest(stockDispenseRequestPayload, abortController).then(
+            () => {
+              showSnackbar({
+                title: t('stockDispensed', 'Stock dispensed'),
+                kind: 'success',
+                subtitle: t('stockDispensedSuccessfully', 'Stock dispensed successfully and batch level updated.'),
+              });
+            },
+            (error) => {
+              showSnackbar({
+                title: 'Stock dispense error',
+                kind: 'error',
+                subtitle: error?.message,
+              });
+            },
+          );
+        }
+        return response;
+      })
+      .then(
+        (response) => {
+          const { status } = response;
+          if (config.completeOrderWithThisDispense && shouldCompleteOrder && response?.data?.status === 'completed') {
+            showSnackbar({
+              title: t('prescriptionCompleted', 'Prescription completed'),
+              kind: 'success',
+              subtitle: t(
+                'prescriptionCompletedSuccessfully',
+                'Medication dispensed and prescription marked as completed',
+              ),
+            });
+          }
+          if (status === 201 || status === 200) {
+            revalidate(encounterUuid);
+            showSnackbar({
+              kind: 'success',
+              subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
+              title: t(
+                mode === 'enter' ? 'medicationDispensed' : 'medicationDispenseUpdated',
+                mode === 'enter'
+                  ? 'Medication successfully dispensed.'
+                  : 'Medication dispense record successfully updated.',
+              ),
+            });
+            closeWorkspace({ discardUnsavedChanges: true });
+            setIsSubmitting(false);
+            onWorkspaceClosed?.();
+          }
+        },
+        (error) => {
+          showSnackbar({
+            kind: 'error',
+            title: t(
+              mode === 'enter' ? 'medicationDispenseError' : 'medicationDispenseUpdatedError',
+              mode === 'enter' ? 'Error dispensing medication.' : 'Error updating dispense record',
+            ),
+            subtitle: error?.message,
+          });
+          setIsSubmitting(false);
+        },
+      );
   };
 
   const updateMedicationDispense = useCallback((medicationDispenseUpdate: Partial<MedicationDispense>) => {
@@ -240,6 +310,15 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   }, [medicationRequestBundle, mode]);
 
   const isButtonDisabled = (config.enableStockDispense ? !inventoryItem : false) || !isValid || isSubmitting;
+
+  const handleSubmitOrDuplicateCheck = () => {
+    const duplicateDispense = medicationDispensePayload ? getDuplicateDispense(medicationDispensePayload) : null;
+    if (config.enableDuplicateDispenseCheck && duplicateDispense) {
+      handleDuplicateMedication(duplicateDispense);
+    } else {
+      handleSubmit();
+    }
+  };
 
   const bannerState = useMemo(() => {
     if (patient) {
@@ -309,7 +388,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
             kind="secondary">
             {getCoreTranslation('cancel', 'Cancel')}
           </Button>
-          <Button disabled={isButtonDisabled} onClick={handleSubmit}>
+          <Button disabled={isButtonDisabled} onClick={handleSubmitOrDuplicateCheck}>
             {t(
               mode === 'enter' ? 'dispensePrescription' : 'saveChanges',
               mode === 'enter' ? 'Dispense prescription' : 'Save changes',

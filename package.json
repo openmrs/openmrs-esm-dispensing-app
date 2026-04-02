@@ -16,7 +16,8 @@
     "test:watch": "jest --config jest.config.js --watch",
     "typescript": "tsc",
     "verify": "turbo run lint test typescript",
-    "extract-translations": "i18next 'src/**/*.component.tsx' 'src/**/*.workspace.tsx' 'src/index.ts' --config ./tools/i18next-parser.config.js",
+    "extract-translations": "i18next 'src/**/*.component.tsx' 'src/**/*.workspace.tsx' 'src/**/*.modal.tsx' 'src/index.ts' --config ./tools/i18next-parser.config.js",
+    "check-translations": "yarn extract-translations && git diff --exit-code -- translations/en.json",
     "coverage": "yarn test --coverage",
     "postinstall": "husky install",
     "test-e2e": "playwright test"
@@ -97,9 +98,7 @@
     "rxjs": "^6.6.7",
     "swr": "^2.2.5",
     "turbo": "^2.5.2",
-    "typescript": "^5.0.0",
-    "webpack": "^5.99.9",
-    "webpack-cli": "^6.0.1"
+    "typescript": "^5.0.0"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --cache --fix --max-warnings 0",

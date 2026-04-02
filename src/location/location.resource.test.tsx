@@ -17,6 +17,9 @@ const pharmacyConfig: PharmacyConfig = {
     closeButton: {
       enabled: true,
     },
+    printPrescriptionsButton: {
+      enabled: true,
+    },
   },
   dispenseBehavior: {
     allowModifyingPrescription: false,
@@ -42,8 +45,10 @@ const pharmacyConfig: PharmacyConfig = {
   enableStockDispense: false,
   completeOrderWithThisDispense: false,
   validateBatch: false,
+  enableDuplicateDispenseCheck: true,
   leftNavMode: 'collapsed',
   customTabs: [],
+  duplicateCheckWindowDays: 0,
 };
 
 describe('Location Resource tests', () => {
