@@ -1,6 +1,7 @@
 import { type APIRequestContext, expect } from '@playwright/test';
-import { type Order } from '@openmrs/esm-framework';
+import { useConfig, type Order } from '@openmrs/esm-framework';
 import { type Encounter } from './types';
+import type { PharmacyConfig } from '../../src/config-schema';
 
 export const generateRandomDrugOrder = async (
   api: APIRequestContext,
@@ -8,9 +9,10 @@ export const generateRandomDrugOrder = async (
   encounter: Encounter,
   providerUuid: string,
 ): Promise<Order> => {
+  const { drugOrderTypeUUID } = useConfig<PharmacyConfig>();
   const order = await api.post('order', {
     data: {
-      orderType: '131168f4-15f5-102d-96e4-000c29c2a5d7',
+      orderType: drugOrderTypeUUID,
       type: 'drugorder',
       action: 'new',
       drug: '09e58895-e7f0-4649-b7c0-e665c5c08e93',
