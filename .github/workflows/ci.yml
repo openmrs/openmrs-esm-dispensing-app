@@ -8,4 +8,7 @@ on:
 
 jobs:
   build:
+  build:
     uses: openmrs/openmrs-contrib-gha-workflows/.github/workflows/build-frontend-module.yml@main
+    with:
+      pre_verify_command: "yarn check-translations"
