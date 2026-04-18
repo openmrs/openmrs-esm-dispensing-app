@@ -72,6 +72,39 @@ svg.allergiesIcon {
   font-size: 0.9rem;
 }
 
+.prescribedSummaryRow {
+  align-items: center;
+  display: flex;
+  gap: layout.$spacing-03;
+  padding-top: layout.$spacing-03;
+  padding-bottom: layout.$spacing-03;
+}
+
+.prescribedSummaryLabel {
+  @include type.type-style('heading-01');
+  margin: 0;
+  white-space: nowrap;
+}
+
+.prescriptionInlineContainer {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.inlineAllergiesTile {
+  height: layout.$spacing-06;
+  padding: 0 layout.$spacing-03 0 0;
+  border-left: layout.$spacing-02 solid #f1c21b;
+  background-color: rgba(253, 209, 58, 0.3);
+  margin: auto;
+  width: 100%;
+}
+
+.inlineSkeletonTile {
+  width: 100%;
+}
+
 .error {
   color: $danger;
 }
