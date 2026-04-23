@@ -16,10 +16,13 @@ export function useLocations(config: PharmacyConfig) {
       ?.map((e) => ({
         id: e.uuid,
         name: e.name,
-        associatedPharmacyLocation:
-          e.attributes?.find(
-            (a) => a.attributeType.name === config.locationBehavior.locationFilter.associatedPharmacyLocationAttribute,
-          )?.value?.uuid ?? null,
+        associatedPharmacyLocations:
+          e.attributes
+            ?.filter(
+              (a) =>
+                a.attributeType.name === config.locationBehavior.locationFilter.associatedPharmacyLocationAttribute,
+            )
+            ?.map((a) => a.value.uuid) ?? [],
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [data?.data?.results, config]);
