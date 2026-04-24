@@ -46,7 +46,7 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
   const { dispenserProviderRoles } = useConfig<PharmacyConfig>();
   const session = useSession();
   const providers = useProviders(dispenserProviderRoles);
-  const { medicationRequestBundles } = usePrescriptionDetails(encounterUuid);
+  const { medicationRequestBundles, isLoading: isLoadingPrescriptionDetails } = usePrescriptionDetails(encounterUuid);
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -126,7 +126,7 @@ const OnPrescriptionFilledModal: React.FC<OnPrescriptionFilledModalProps> = ({ p
           {t('createOrderWithoutDispensing', 'Create order without dispensing')}
         </Button>
         <Button
-          disabled={isSubmitting}
+          disabled={isSubmitting || isLoadingPrescriptionDetails}
           onClick={() => {
             onConfirm();
           }}>
