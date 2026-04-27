@@ -3,7 +3,7 @@ import { getAssignedExtensions, ExtensionSlot, type PatientUuid } from '@openmrs
 import { Tab, Tabs, TabList, TabPanels, TabPanel } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import HistoryAndComments from '../history/history-and-comments.component';
-import PrescriptionDetails from './prescription-details.component';
+import PrescriptionHeader from './prescription-header.component';
 import styles from './prescription-expanded.scss';
 
 interface TabItem {
@@ -19,10 +19,6 @@ const PrescriptionExpanded: React.FC<{
   const conditionsAndDiagnosisExtensions = getAssignedExtensions('dispensing-condition-and-diagnoses');
 
   const tabs: TabItem[] = [
-    {
-      name: t('prescriptionDetails', 'Prescription details'),
-      component: <PrescriptionDetails encounterUuid={encounterUuid} patientUuid={patientUuid} />,
-    },
     conditionsAndDiagnosisExtensions && conditionsAndDiagnosisExtensions.length > 0
       ? {
           name: t('conditionsAndDiagnoses', 'Conditions and diagnoses'),
@@ -37,6 +33,7 @@ const PrescriptionExpanded: React.FC<{
 
   return (
     <div className={styles.expandedTabsParentContainer}>
+      <PrescriptionHeader encounterUuid={encounterUuid} patientUuid={patientUuid} />
       <div className={styles.verticalTabs}>
         <Tabs>
           <TabList aria-label={t('tabList', 'Tab List')}>

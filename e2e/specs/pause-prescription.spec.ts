@@ -40,7 +40,8 @@ test('Pause prescription', async ({ page, patient }) => {
   await test.step('And I expand a table row in the prescriptions table corresponding to an active prescription', async () => {
     const rowText = new RegExp(`Expand current row`);
     await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
-    await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Prescribed' })).toBeVisible();
+    await expect(page.getByText('Aspirin 81mg')).toBeVisible();
   });
 
   await test.step('Then I click the Pause button on the prescription tile', async () => {
