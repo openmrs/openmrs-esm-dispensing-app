@@ -60,7 +60,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
   // ordered; it's slightly inefficient/awkward to fetch it from the server here because we *have* fetched it earlier,
   // it just seems cleaner to fetch it here rather than to make sure we pass it down through various components; with
   // SWR handling caching, we may want to consider pulling more down into this)
-  const { medicationRequest } = useMedicationRequest(
+  const { medicationRequest, isLoading: isMedicationRequestLoading } = useMedicationRequest(
     medicationDispense.authorizingPrescription ? medicationDispense.authorizingPrescription[0].reference : null,
     config.refreshInterval,
   );
@@ -147,6 +147,9 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
 
   const { substitution } = medicationDispense;
   useEffect(() => {
+    if (isMedicationRequestLoading) {
+      return;
+    }
     if (isSubstitution) {
       // make sure that the value substitution.wasSubstituted exists and is truthy
       if (!substitution.wasSubstituted) {
@@ -158,7 +161,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
         updateMedicationDispense({ substitution: blankSubstitution });
       }
     }
-  }, [isSubstitution, substitution, updateMedicationDispense]);
+  }, [isMedicationRequestLoading, isSubstitution, substitution, updateMedicationDispense]);
 
   useEffect(() => {
     setUserCanModify(session?.user && userHasAccess(PRIVILEGE_CREATE_DISPENSE_MODIFY_DETAILS, session.user));
