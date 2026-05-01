@@ -69,7 +69,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   const [inventoryItem, setInventoryItem] = useState<InventoryItem>();
 
   // Keep track of medication dispense payload
-  const [medicationDispensePayload, setMedicationDispensePayload] = useState<MedicationDispense>();
+  const [medicationDispensePayload, setMedicationDispensePayload] = useState(medicationDispense);
 
   // to prevent duplicate submits
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -293,9 +293,6 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
           medicationDispensePayload.substitution.type?.coding[0].code))
     );
   }, [isFreeTextDosage, medicationDispensePayload, quantityRemaining]);
-
-  // initialize the internal dispense payload with the dispenses passed in as props
-  useEffect(() => setMedicationDispensePayload(medicationDispense), [medicationDispense]);
 
   // Auto-default "Complete Order With This Dispense" checkbox for orders with no refills
   useEffect(() => {
