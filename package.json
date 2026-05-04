@@ -8,9 +8,9 @@
   "source": true,
   "scripts": {
     "start": "openmrs develop",
-    "serve": "webpack serve --mode=development",
-    "build": "webpack --mode production",
-    "analyze": "webpack --mode=production --env.analyze=true",
+    "serve": "rspack serve --mode=development",
+    "build": "rspack --mode=production",
+    "analyze": "rspack --mode=production --env analyze=true",
     "lint": "eslint src --ext js,jsx,ts,tsx",
     "test": "jest --config jest.config.js",
     "test:watch": "jest --config jest.config.js --watch",
