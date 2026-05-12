@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "tools/**/*"],
+  "include": ["src/**/*", "tools/**/*", "vitest.config.ts"],
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
