@@ -1,3 +1,5 @@
+import type * as React from 'react';
+import { vi, describe, expect, test } from 'vitest';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
 import {
@@ -11,12 +13,15 @@ import { openmrsFetch, parseDate } from '@openmrs/esm-framework';
 import { MedicationRequestFulfillerStatus } from '../types';
 import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 
-jest.mocked(openmrsFetch);
-jest.mock('swr');
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-  useMemo: jest.fn((fn) => fn()),
-}));
+vi.mocked(openmrsFetch);
+vi.mock('swr');
+vi.mock('react', async (importOriginal) => {
+  const actual = await importOriginal<typeof React>();
+  return {
+    ...actual,
+    useMemo: vi.fn((fn) => fn()),
+  };
+});
 
 describe('Medication Request Resource Test', () => {
   test('usePrescriptionsTable should call active endpoint and proper date based on expiration period if status parameter is active', () => {

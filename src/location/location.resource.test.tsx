@@ -1,11 +1,12 @@
 import useSWR from 'swr';
+import { vi, describe, expect, test } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { openmrsFetch } from '@openmrs/esm-framework';
 import { useLocations } from './location.resource';
 import { type PharmacyConfig } from '../config-schema';
 
-jest.mocked(openmrsFetch);
-jest.mock('swr');
+vi.mocked(openmrsFetch);
+vi.mock('swr');
 
 const pharmacyConfig: PharmacyConfig = {
   drugOrderTypeUUID: '',

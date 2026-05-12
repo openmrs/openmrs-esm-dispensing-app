@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi, describe, expect, test, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { showModal, useConfig, usePatient } from '@openmrs/esm-framework';
@@ -7,22 +8,22 @@ import DispenseForm from './dispense-form.workspace';
 import { saveMedicationDispense } from '../medication-dispense/medication-dispense.resource';
 import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
 
-const mockUseConfig = jest.mocked(useConfig);
-const mockUsePatient = jest.mocked(usePatient);
-const mockShowModal = jest.mocked(showModal);
-const mockCloseWorkspace = jest.fn();
-const mockLaunchChildWorkspace = jest.fn();
-const mockSaveMedicationDispense = jest.mocked(saveMedicationDispense);
-const mockUpdateMedicationRequestFulfillerStatus = jest.mocked(updateMedicationRequestFulfillerStatus);
+const mockUseConfig = vi.mocked(useConfig);
+const mockUsePatient = vi.mocked(usePatient);
+const mockShowModal = vi.mocked(showModal);
+const mockCloseWorkspace = vi.fn();
+const mockLaunchChildWorkspace = vi.fn();
+const mockSaveMedicationDispense = vi.mocked(saveMedicationDispense);
+const mockUpdateMedicationRequestFulfillerStatus = vi.mocked(updateMedicationRequestFulfillerStatus);
 
-jest.mock('../medication-dispense/medication-dispense.resource', () => ({
+vi.mock('../medication-dispense/medication-dispense.resource', () => ({
   __esModule: true,
-  saveMedicationDispense: jest.fn(),
+  saveMedicationDispense: vi.fn(),
 }));
 
-jest.mock('../medication-request/medication-request.resource', () => ({
+vi.mock('../medication-request/medication-request.resource', () => ({
   __esModule: true,
-  updateMedicationRequestFulfillerStatus: jest.fn(),
+  updateMedicationRequestFulfillerStatus: vi.fn(),
 }));
 
 // Mock workspace props required by Workspace2DefinitionProps
@@ -33,18 +34,18 @@ const mockWorkspaceProps = {
   workspaceName: 'dispense-form',
   windowName: 'dispense-form-window',
   isRootWorkspace: true,
-  promptBeforeClosing: jest.fn(),
-  setTitle: jest.fn(),
+  promptBeforeClosing: vi.fn(),
+  setTitle: vi.fn(),
   showActionMenu: true,
 };
 
 // Mock the child components
-jest.mock('./medication-dispense-review.component', () => ({
+vi.mock('./medication-dispense-review.component', () => ({
   __esModule: true,
   default: () => <div>Medication Dispense Review</div>,
 }));
 
-jest.mock('./stock-dispense/stock-dispense.component', () => ({
+vi.mock('./stock-dispense/stock-dispense.component', () => ({
   __esModule: true,
   default: () => <div>Stock Dispense</div>,
 }));
@@ -211,7 +212,7 @@ const createMockMedicationRequestBundle = (numberOfRepeatsAllowed: number | null
 });
 
 beforeEach(() => {
-  mockShowModal.mockReturnValue(jest.fn());
+  mockShowModal.mockReturnValue(vi.fn());
   mockSaveMedicationDispense.mockResolvedValue({ ok: true, status: 201, data: { status: 'completed' } } as any);
   mockUpdateMedicationRequestFulfillerStatus.mockResolvedValue({} as any);
   mockUseConfig.mockReturnValue({

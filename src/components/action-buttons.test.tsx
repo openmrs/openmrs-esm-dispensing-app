@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi, describe, expect, test, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useConfig, ExtensionSlot } from '@openmrs/esm-framework';
 import { computeMedicationRequestStatus, getMostRecentMedicationDispenseStatus } from '../utils';
@@ -8,8 +9,8 @@ import CloseActionButton from './prescription-actions/close-action-button.compon
 import DispenseActionButton from './prescription-actions/dispense-action-button.component';
 import PauseActionButton from './prescription-actions/pause-action-button.component';
 
-const mockedUseConfig = jest.mocked(useConfig);
-const mockedExtensionSlot = jest.mocked(ExtensionSlot);
+const mockedUseConfig = vi.mocked(useConfig);
+const mockedExtensionSlot = vi.mocked(ExtensionSlot);
 const mockPatientUuid = '558494fe-5850-4b34-a3bf-06550334ba4a';
 const mockEncounterUuid = '7aee7123-9e50-4f72-a636-895d77a63e98';
 
