@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { OverflowMenu, OverflowMenuItem, SkeletonText, Tag, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import {
+  ExtensionSlot,
   formatDatetime,
   launchWorkspace2,
   parseDate,
@@ -106,6 +107,10 @@ const HistoryAndComments: React.FC<{
                   )}
                   patientUuid={patientUuid}
                   encounterUuid={encounterUuid}
+                />
+                <ExtensionSlot
+                  name="medication-dispense-action-slot"
+                  state={{ medicationDispense: dispense, patientUuid, encounterUuid }}
                 />
               </MedicationEvent>
             </div>
