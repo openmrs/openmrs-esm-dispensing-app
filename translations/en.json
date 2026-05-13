@@ -20,6 +20,7 @@
   "completeOrderWithThisDispense": "Complete order with this dispense",
   "conditions": "Condition",
   "conditionsAndDiagnoses": "Conditions and diagnoses",
+  "configurationError": "Configuration error",
   "couldNotDeleteMedicationDispense": "Could not delete medication dispense",
   "couldNotUpdateMedicationRequestStatus": "Could not update medication request status",
   "created": "Created",

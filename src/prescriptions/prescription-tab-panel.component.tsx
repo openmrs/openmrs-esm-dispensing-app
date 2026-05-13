@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MultiSelect, Search, TabPanel } from '@carbon/react';
-import { useConfig, useDebounce, useSession } from '@openmrs/esm-framework';
+import { showNotification, useConfig, useDebounce, useSession } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import PrescriptionsTable from './prescriptions-table.component';
 import styles from './prescriptions.scss';
-import { useLocations } from '../location/location.resource';
+import { MissingOptionalBackendDependencyError, useLocations } from '../location/location.resource';
 import { type SimpleLocation } from '../types';
 
 interface PrescriptionTabPanelProps {
@@ -23,15 +23,29 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   const config = useConfig<PharmacyConfig>();
   const isInitialized = useRef(false);
   const { sessionLocation } = useSession();
-  const { locations, isLoading: isFilterLocationsLoading } = useLocations(config);
+  const { locations, isLoading: isFilterLocationsLoading, error: locationsError } = useLocations(config);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [filterLocations, setFilterLocations] = useState<SimpleLocation[]>([]);
 
+  useEffect(() => {
+    if (locationsError instanceof MissingOptionalBackendDependencyError) {
+      showNotification({
+        kind: 'error',
+        title: t('configurationError', 'Configuration error'),
+        description: locationsError.message,
+      });
+    }
+  }, [locationsError, t]);
+
   // set any initially selected locations
   useEffect(() => {
     if (!isInitialized.current && !isFilterLocationsLoading && sessionLocation?.uuid) {
-      setFilterLocations(locations?.filter((l) => sessionLocation?.uuid === l.associatedPharmacyLocation) || []);
+      setFilterLocations(
+        locations?.filter((l) => {
+          return sessionLocation?.uuid === l.associatedPharmacyLocation;
+        }) || [],
+      );
       isInitialized.current = true; // we only want to run when the component is first mounted so we don't override user changes
     }
   }, [isFilterLocationsLoading, sessionLocation, locations]);
