@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { OverflowMenu, OverflowMenuItem, SkeletonText, Tag, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -272,6 +272,7 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
   const editable = userCanEdit(session);
   const deletable = userCanDelete(session, medicationDispense);
   const slotExtensions = useAssignedExtensions(MEDICATION_DISPENSE_ACTION_MENU_ITEM_SLOT);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleEdit = () => {
     const { workspaceName, props } = getDispenseWorkspaceConfig(medicationDispense, medicationRequestBundle) as {
@@ -304,7 +305,10 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
     <OverflowMenu
       aria-label={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
       className={styles.medicationEventActionMenu}
-      flipped>
+      flipped
+      open={menuOpen}
+      onClick={() => setMenuOpen((prev) => !prev)}
+      onClose={() => setMenuOpen(false)}>
       {editable && (
         <OverflowMenuItem className={styles.menuitem} itemText={t('editRecord', 'Edit record')} onClick={handleEdit} />
       )}
@@ -318,8 +322,8 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
         />
       )}
       <ExtensionSlot
-        name="medication-dispense-action-menu-item-slot"
-        state={{ medicationDispense, patientUuid, encounterUuid }}
+        name={MEDICATION_DISPENSE_ACTION_MENU_ITEM_SLOT}
+        state={{ medicationDispense, patientUuid, encounterUuid, closeMenu: () => setMenuOpen(false) }}
       />
     </OverflowMenu>
   );

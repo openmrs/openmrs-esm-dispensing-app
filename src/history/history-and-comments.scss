@@ -37,6 +37,10 @@
   max-width: none;
 }
 
+:global([data-extension-slot-name='medication-dispense-action-menu-item-slot']) {
+  width: 100%;
+}
+
 .historyHeader {
   padding-top: layout.$spacing-03;
   padding-bottom: layout.$spacing-03;
