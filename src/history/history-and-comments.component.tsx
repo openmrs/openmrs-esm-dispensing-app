@@ -9,6 +9,7 @@ import {
   type Session,
   showModal,
   showSnackbar,
+  useAssignedExtensions,
   useConfig,
   userHasAccess,
   useSession,
@@ -22,6 +23,7 @@ import { type MedicationDispense, MedicationDispenseStatus, type MedicationReque
 import {
   PRIVILEGE_DELETE_DISPENSE,
   PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
+  MEDICATION_DISPENSE_ACTION_MENU_ITEM_SLOT,
   PRIVILEGE_EDIT_DISPENSE,
 } from '../constants';
 import {
@@ -107,10 +109,6 @@ const HistoryAndComments: React.FC<{
                   )}
                   patientUuid={patientUuid}
                   encounterUuid={encounterUuid}
-                />
-                <ExtensionSlot
-                  name="medication-dispense-action-slot"
-                  state={{ medicationDispense: dispense, patientUuid, encounterUuid }}
                 />
               </MedicationEvent>
             </div>
@@ -273,6 +271,7 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
 
   const editable = userCanEdit(session);
   const deletable = userCanDelete(session, medicationDispense);
+  const slotExtensions = useAssignedExtensions(MEDICATION_DISPENSE_ACTION_MENU_ITEM_SLOT);
 
   const handleEdit = () => {
     const { workspaceName, props } = getDispenseWorkspaceConfig(medicationDispense, medicationRequestBundle) as {
@@ -297,33 +296,33 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
     });
   };
 
-  if (!editable && !deletable) {
+  if (!editable && !deletable && slotExtensions.length === 0) {
     return null;
-  } else {
-    return (
-      <OverflowMenu
-        aria-label={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
-        className={styles.medicationEventActionMenu}
-        flipped>
-        {editable && (
-          <OverflowMenuItem
-            className={styles.menuitem}
-            itemText={t('editRecord', 'Edit record')}
-            onClick={handleEdit}
-          />
-        )}
-        {deletable && (
-          <OverflowMenuItem
-            className={styles.menuitem}
-            hasDivider
-            isDelete
-            itemText={t('delete', 'Delete')}
-            onClick={() => handleDeleteClick({ medicationDispense, medicationRequestBundle })}
-          />
-        )}
-      </OverflowMenu>
-    );
   }
+
+  return (
+    <OverflowMenu
+      aria-label={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
+      className={styles.medicationEventActionMenu}
+      flipped>
+      {editable && (
+        <OverflowMenuItem className={styles.menuitem} itemText={t('editRecord', 'Edit record')} onClick={handleEdit} />
+      )}
+      {deletable && (
+        <OverflowMenuItem
+          className={styles.menuitem}
+          hasDivider
+          isDelete
+          itemText={t('delete', 'Delete')}
+          onClick={() => handleDeleteClick({ medicationDispense, medicationRequestBundle })}
+        />
+      )}
+      <ExtensionSlot
+        name="medication-dispense-action-menu-item-slot"
+        state={{ medicationDispense, patientUuid, encounterUuid }}
+      />
+    </OverflowMenu>
+  );
 };
 
 const DispenseTag: React.FC<{ medicationDispense: MedicationDispense }> = ({ medicationDispense }) => {
