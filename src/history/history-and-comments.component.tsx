@@ -302,27 +302,31 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
 
   if (!editable && !deletable) {
     return null;
+  } else {
+    return (
+      <OverflowMenu
+        aria-label={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
+        className={styles.medicationEventActionMenu}
+        flipped>
+        {editable && (
+          <OverflowMenuItem
+            className={styles.menuitem}
+            itemText={t('editRecord', 'Edit record')}
+            onClick={handleEdit}
+          />
+        )}
+        {deletable && (
+          <OverflowMenuItem
+            className={styles.menuitem}
+            hasDivider
+            isDelete
+            itemText={t('delete', 'Delete')}
+            onClick={() => handleDeleteClick({ medicationDispense, medicationRequestBundle })}
+          />
+        )}
+      </OverflowMenu>
+    );
   }
-
-  return (
-    <OverflowMenu
-      aria-label={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
-      className={styles.medicationEventActionMenu}
-      flipped>
-      {editable && (
-        <OverflowMenuItem className={styles.menuitem} itemText={t('editRecord', 'Edit record')} onClick={handleEdit} />
-      )}
-      {deletable && (
-        <OverflowMenuItem
-          className={styles.menuitem}
-          hasDivider
-          isDelete
-          itemText={t('delete', 'Delete')}
-          onClick={() => handleDeleteClick({ medicationDispense, medicationRequestBundle })}
-        />
-      )}
-    </OverflowMenu>
-  );
 };
 
 const DispenseTag: React.FC<{ medicationDispense: MedicationDispense }> = ({ medicationDispense }) => {
