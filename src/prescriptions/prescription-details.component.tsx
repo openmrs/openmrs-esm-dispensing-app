@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
 import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay, useStaleEncounterUuids } from '../utils';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
-import { type AllergyIntolerance, type MedicationRequest, MedicationRequestCombinedStatus } from '../types';
+import { type AllergyIntolerance, type MedicationRequestBundle, MedicationRequestCombinedStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import ActionButtons from '../components/action-buttons.component';
@@ -28,9 +28,9 @@ const PrescriptionDetails: React.FC<{
   const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
   const { staleEncounterUuids } = useStaleEncounterUuids();
 
-  const generateStatusTag = (medicationRequest: MedicationRequest): React.ReactNode => {
+  const generateStatusTag = (medicationRequestBundle: MedicationRequestBundle): React.ReactNode => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
-      medicationRequest,
+      medicationRequestBundle,
       config.medicationRequestExpirationPeriodInDays,
     );
     if (combinedStatus === MedicationRequestCombinedStatus.cancelled) {
@@ -51,6 +51,10 @@ const PrescriptionDetails: React.FC<{
 
     if (combinedStatus === MedicationRequestCombinedStatus.on_hold) {
       return <Tag type="red">{t('paused', 'Paused')}</Tag>;
+    }
+
+    if (combinedStatus === MedicationRequestCombinedStatus.dispensed) {
+      return <Tag type="blue">{t('dispensed', 'Dispensed')}</Tag>;
     }
 
     return null;
@@ -128,7 +132,7 @@ const PrescriptionDetails: React.FC<{
             <MedicationEvent
               key={bundle.request.id}
               medicationEvent={bundle.request}
-              status={generateStatusTag(bundle.request)}>
+              status={generateStatusTag(bundle)}>
               <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
                 <ActionButtons
                   patientUuid={patientUuid}

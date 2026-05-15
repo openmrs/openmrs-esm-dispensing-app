@@ -123,7 +123,13 @@ function buildPrescriptionsTableRow(
     lastDispenser:
       medicationDispense && medicationDispense[0]?.performer && medicationDispense[0]?.performer[0]?.actor.display,
     prescriber: [...new Set(medicationRequests.map((o) => o.requester.display))].join(', '),
-    status: computePrescriptionStatusMessageCode(medicationRequests, medicationRequestExpirationPeriodInDays),
+    status: computePrescriptionStatusMessageCode(
+      medicationRequests.map((request) => ({
+        request,
+        dispenses: getAssociatedMedicationDispenses(request, medicationDispense),
+      })),
+      medicationRequestExpirationPeriodInDays,
+    ),
     location: encounter?.location ? encounter?.location[0]?.location.display : null,
   };
 }

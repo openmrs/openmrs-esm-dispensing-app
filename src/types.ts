@@ -376,6 +376,7 @@ export enum MedicationRequestCombinedStatus {
   on_hold = 'on-hold',
   declined = 'declined',
   unknown = 'unknown',
+  dispensed = 'dispensed',
 }
 
 /**
