@@ -9,7 +9,6 @@ import {
   type Session,
   showModal,
   showSnackbar,
-  useAssignedExtensions,
   useConfig,
   userHasAccess,
   useSession,
@@ -23,7 +22,7 @@ import { type MedicationDispense, MedicationDispenseStatus, type MedicationReque
 import {
   PRIVILEGE_DELETE_DISPENSE,
   PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
-  MEDICATION_DISPENSE_ACTION_MENU_ITEM_SLOT,
+  MEDICATION_DISPENSE_ACTION_SLOT,
   PRIVILEGE_EDIT_DISPENSE,
 } from '../constants';
 import {
@@ -101,15 +100,21 @@ const HistoryAndComments: React.FC<{
                 medicationEvent={dispense}
                 status={<DispenseTag medicationDispense={dispense} />}
                 isDispenseEvent>
-                <MedicationDispenseActionMenu
-                  medicationDispense={dispense}
-                  medicationRequestBundle={getMedicationRequestBundleContainingMedicationDispense(
-                    medicationRequestBundles,
-                    dispense,
-                  )}
-                  patientUuid={patientUuid}
-                  encounterUuid={encounterUuid}
-                />
+                <div className={styles.dispenseEventActions}>
+                  <ExtensionSlot
+                    name={MEDICATION_DISPENSE_ACTION_SLOT}
+                    state={{ medicationDispense: dispense, patientUuid, encounterUuid }}
+                  />
+                  <MedicationDispenseActionMenu
+                    medicationDispense={dispense}
+                    medicationRequestBundle={getMedicationRequestBundleContainingMedicationDispense(
+                      medicationRequestBundles,
+                      dispense,
+                    )}
+                    patientUuid={patientUuid}
+                    encounterUuid={encounterUuid}
+                  />
+                </div>
               </MedicationEvent>
             </div>
           ))}
@@ -271,7 +276,6 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
 
   const editable = userCanEdit(session);
   const deletable = userCanDelete(session, medicationDispense);
-  const slotExtensions = useAssignedExtensions(MEDICATION_DISPENSE_ACTION_MENU_ITEM_SLOT);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleEdit = () => {
@@ -297,7 +301,7 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
     });
   };
 
-  if (!editable && !deletable && slotExtensions.length === 0) {
+  if (!editable && !deletable) {
     return null;
   }
 
@@ -321,10 +325,6 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
           onClick={() => handleDeleteClick({ medicationDispense, medicationRequestBundle })}
         />
       )}
-      <ExtensionSlot
-        name={MEDICATION_DISPENSE_ACTION_MENU_ITEM_SLOT}
-        state={{ medicationDispense, patientUuid, encounterUuid, closeMenu: () => setMenuOpen(false) }}
-      />
     </OverflowMenu>
   );
 };
