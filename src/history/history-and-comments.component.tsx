@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { OverflowMenu, OverflowMenuItem, SkeletonText, Tag, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import {
+  ExtensionSlot,
   formatDatetime,
   launchWorkspace2,
   parseDate,
@@ -21,6 +22,7 @@ import { type MedicationDispense, MedicationDispenseStatus, type MedicationReque
 import {
   PRIVILEGE_DELETE_DISPENSE,
   PRIVILEGE_DELETE_DISPENSE_THIS_PROVIDER_ONLY,
+  MEDICATION_DISPENSE_ACTION_SLOT,
   PRIVILEGE_EDIT_DISPENSE,
 } from '../constants';
 import {
@@ -98,15 +100,21 @@ const HistoryAndComments: React.FC<{
                 medicationEvent={dispense}
                 status={<DispenseTag medicationDispense={dispense} />}
                 isDispenseEvent>
-                <MedicationDispenseActionMenu
-                  medicationDispense={dispense}
-                  medicationRequestBundle={getMedicationRequestBundleContainingMedicationDispense(
-                    medicationRequestBundles,
-                    dispense,
-                  )}
-                  patientUuid={patientUuid}
-                  encounterUuid={encounterUuid}
-                />
+                <div className={styles.dispenseEventActions}>
+                  <ExtensionSlot
+                    name={MEDICATION_DISPENSE_ACTION_SLOT}
+                    state={{ medicationDispense: dispense, patientUuid, encounterUuid }}
+                  />
+                  <MedicationDispenseActionMenu
+                    medicationDispense={dispense}
+                    medicationRequestBundle={getMedicationRequestBundleContainingMedicationDispense(
+                      medicationRequestBundles,
+                      dispense,
+                    )}
+                    patientUuid={patientUuid}
+                    encounterUuid={encounterUuid}
+                  />
+                </div>
               </MedicationEvent>
             </div>
           ))}
