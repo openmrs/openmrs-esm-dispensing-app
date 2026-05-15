@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { OverflowMenu, OverflowMenuItem, SkeletonText, Tag, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -276,7 +276,6 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
 
   const editable = userCanEdit(session);
   const deletable = userCanDelete(session, medicationDispense);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleEdit = () => {
     const { workspaceName, props } = getDispenseWorkspaceConfig(medicationDispense, medicationRequestBundle) as {
@@ -309,10 +308,7 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
     <OverflowMenu
       aria-label={t('medicationDispenseActionMenu', 'Medication Dispense Action Menu')}
       className={styles.medicationEventActionMenu}
-      flipped
-      open={menuOpen}
-      onClick={() => setMenuOpen((prev) => !prev)}
-      onClose={() => setMenuOpen(false)}>
+      flipped>
       {editable && (
         <OverflowMenuItem className={styles.menuitem} itemText={t('editRecord', 'Edit record')} onClick={handleEdit} />
       )}
