@@ -33,3 +33,4 @@ jobs:
     secrets:
       NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       BOT_PAT: ${{ secrets.OMRS_BOT_GH_TOKEN }}
+      
