@@ -1,14 +1,35 @@
 name: Build
 
 on:
+  workflow_dispatch: # temporary, for debugging
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  release:
+    types:
+      - created
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
-  build:
     uses: openmrs/openmrs-contrib-gha-workflows/.github/workflows/build-frontend-module.yml@main
-    with:
+  with:
       pre_verify_command: "yarn check-translations"
+  
+  owasp-dependency-check:
+    if: ${{ github.event_name != 'pull_request' }}
+    uses: openmrs/openmrs-contrib-gha-workflows/.github/workflows/owasp-dependency-check.yml@main
+    secrets:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+      BOT_GH_TOKEN: ${{ secrets.OMRS_BOT_GH_TOKEN }}
+
+  release:
+    needs: build
+    uses: openmrs/openmrs-contrib-gha-workflows/.github/workflows/release-frontend-module.yml@main
+    secrets:
+      NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      BOT_PAT: ${{ secrets.OMRS_BOT_GH_TOKEN }}
