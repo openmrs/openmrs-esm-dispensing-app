@@ -13,7 +13,7 @@ const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
-  const { error: locationsError } = useLocations(config);
+  const { locations, isLoading: isLocationsLoading, error: locationsError } = useLocations(config);
 
   useEffect(() => {
     if (locationsError instanceof MissingOptionalBackendDependencyError) {
@@ -67,12 +67,24 @@ const PrescriptionTabLists: React.FC = () => {
           </TabList>
           <TabPanels>
             <PatientSearchTabPanel />
-            <PrescriptionTabPanel isTabActive={selectedTab === 1} status={'ACTIVE'} />
-            <PrescriptionTabPanel isTabActive={selectedTab === 2} status={''} />
+            <PrescriptionTabPanel
+              isTabActive={selectedTab === 1}
+              status={'ACTIVE'}
+              locations={locations}
+              isLocationsLoading={isLocationsLoading}
+            />
+            <PrescriptionTabPanel
+              isTabActive={selectedTab === 2}
+              status={''}
+              locations={locations}
+              isLocationsLoading={isLocationsLoading}
+            />
             {customTabs.map((tab, index) => (
               <PrescriptionTabPanel
                 isTabActive={selectedTab === index + 3}
                 customPrescriptionsTableEndpoint={tab.customPrescriptionsTableEndpoint}
+                locations={locations}
+                isLocationsLoading={isLocationsLoading}
               />
             ))}
           </TabPanels>
