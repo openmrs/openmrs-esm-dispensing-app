@@ -60,7 +60,9 @@ test('Dispense prescription', async ({ page, patient }) => {
 
   await test.step('And when I click the `History and comments` tab I should see the updated `Dispensed` status reflected', async () => {
     await page.getByRole('tab', { name: 'History and comments' }).click();
-    await expect(page.getByText('Dispensed', { exact: true })).toBeVisible();
+    await expect(
+      page.getByLabel('History and comments', { exact: true }).getByText('Dispensed', { exact: true }),
+    ).toBeVisible();
   });
 });
 
