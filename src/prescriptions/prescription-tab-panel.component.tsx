@@ -5,32 +5,34 @@ import { useConfig, useDebounce, useSession } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import PrescriptionsTable from './prescriptions-table.component';
 import styles from './prescriptions.scss';
-import { useLocations } from '../location/location.resource';
 import { type SimpleLocation } from '../types';
 
 interface PrescriptionTabPanelProps {
   isTabActive: boolean;
   status?: string;
   customPrescriptionsTableEndpoint?: string;
+  locations: SimpleLocation[];
+  isLocationsLoading: boolean;
 }
 
 const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   status,
   isTabActive,
   customPrescriptionsTableEndpoint,
+  locations,
+  isLocationsLoading,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const isInitialized = useRef(false);
   const { sessionLocation } = useSession();
-  const { locations, isLoading: isFilterLocationsLoading } = useLocations(config);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [filterLocations, setFilterLocations] = useState<SimpleLocation[]>([]);
 
   // set any initially selected locations
   useEffect(() => {
-    if (!isInitialized.current && !isFilterLocationsLoading && sessionLocation?.uuid) {
+    if (!isInitialized.current && !isLocationsLoading && sessionLocation?.uuid) {
       setFilterLocations(
         locations?.filter((l) => {
           return sessionLocation?.uuid === l.associatedPharmacyLocation;
@@ -38,13 +40,13 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
       );
       isInitialized.current = true; // we only want to run when the component is first mounted so we don't override user changes
     }
-  }, [isFilterLocationsLoading, sessionLocation, locations]);
+  }, [isLocationsLoading, sessionLocation, locations]);
 
   return (
     <TabPanel>
       <div className={styles.searchContainer}>
         {config.locationBehavior?.locationFilter?.enabled &&
-          !isFilterLocationsLoading &&
+          !isLocationsLoading &&
           isInitialized.current &&
           locations?.length > 1 && (
             <MultiSelect
@@ -78,7 +80,11 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
         status={status}
         customPrescriptionsTableEndpoint={customPrescriptionsTableEndpoint}
         debouncedSearchTerm={debouncedSearchTerm}
-        locations={filterLocations}
+        locations={
+          config.locationBehavior.restrictToVisitLocationDescendants && filterLocations.length === 0
+            ? locations
+            : filterLocations
+        }
       />
     </TabPanel>
   );

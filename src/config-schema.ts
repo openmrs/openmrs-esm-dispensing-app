@@ -96,12 +96,12 @@ export const configSchema = {
           "Name of the location attribute whose value identifies the associated pharmacy location. The location whose attribute value matches the user's login location will be pre-selected in the filter dropdown. This attribute has no effect on which locations appear as options.",
         _default: 'Associated Pharmacy Location',
       },
-      restrictToVisitLocationDescendants: {
-        _type: Type.Boolean,
-        _description:
-          "If true, further restricts the dropdown options to locations that are descendants of the current login location's nearest ancestor tagged as a visit location. Requires the EMR API module to be installed.",
-        _default: false,
-      },
+    },
+    restrictToVisitLocationDescendants: {
+      _type: Type.Boolean,
+      _description:
+        "If true, limits prescriptions shown to locations that are descendants of the current login location's nearest ancestor tagged as a visit location. Requires the EMR API module to be installed.",
+      _default: false,
     },
   },
   refreshInterval: {
@@ -204,8 +204,8 @@ export interface PharmacyConfig {
       enabled: boolean;
       tag: string;
       associatedPharmacyLocationAttribute: string;
-      restrictToVisitLocationDescendants: boolean;
     };
+    restrictToVisitLocationDescendants: boolean;
   };
   valueSets: {
     reasonForPause: {

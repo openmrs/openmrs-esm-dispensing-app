@@ -10,7 +10,7 @@
       "feature": {
         "flagName": "emrapi-module",
         "label": "EMR API Module",
-        "description": "Required if the locationBehavior.locationFilter.restrictToVisitLocationDescendants config is set to true."
+        "description": "Required if the locationBehavior.restrictToVisitLocationDescendants config is set to true."
       }
     }
   },

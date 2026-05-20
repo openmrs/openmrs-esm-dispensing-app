@@ -25,7 +25,7 @@ export class MissingOptionalBackendDependencyError extends Error {
  * Location options are further filtered with the tag specified in the configuration.
  */
 export function useLocations(config: PharmacyConfig) {
-  const { restrictToVisitLocationDescendants } = config.locationBehavior.locationFilter;
+  const { restrictToVisitLocationDescendants } = config.locationBehavior;
   const byTag = useLocationsByTag(config, !restrictToVisitLocationDescendants);
   const byVisit = useVisitLocationDescendants(config, restrictToVisitLocationDescendants);
   return restrictToVisitLocationDescendants ? byVisit : byTag;
