@@ -20,3 +20,5 @@ export const JSON_MERGE_PATH_MIME_TYPE = 'application/merge-patch+json';
 export const PRESCRIPTIONS_TABLE_ENDPOINT = 'Encounter?_query=encountersWithMedicationRequests';
 
 export const PRESCRIPTION_DETAILS_ENDPOINT = 'MedicationRequest';
+
+export const MEDICATION_DISPENSE_ACTION_SLOT = 'medication-dispense-action-slot';

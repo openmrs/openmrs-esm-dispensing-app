@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Tab, Tabs, TabList, TabPanels } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
-import { useConfig, useSession } from '@openmrs/esm-framework';
+import { showSnackbar, useConfig, useSession } from '@openmrs/esm-framework';
 import { type CustomTab } from '../types';
 import { type PharmacyConfig } from '../config-schema';
+import { MissingOptionalBackendDependencyError, useLocations } from '../location/location.resource';
 import PatientSearchTabPanel from './patient-search-tab-panel.component';
 import PrescriptionTabPanel from './prescription-tab-panel.component';
 import styles from './prescriptions.scss';
@@ -12,6 +13,20 @@ const PrescriptionTabLists: React.FC = () => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const session = useSession();
+  const { error: locationsError } = useLocations(config);
+
+  useEffect(() => {
+    if (locationsError instanceof MissingOptionalBackendDependencyError) {
+      showSnackbar({
+        kind: 'error',
+        title: t('configurationError', 'Configuration error'),
+        subtitle: t(
+          'locationFilterMisconfigured',
+          'The location filter is misconfigured. Check that the required backend module is installed.',
+        ),
+      });
+    }
+  }, [locationsError, t]);
   const [selectedTab, setSelectedTab] = useState(0);
 
   // filter tabs based on session location

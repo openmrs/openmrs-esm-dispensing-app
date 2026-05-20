@@ -87,13 +87,20 @@ export const configSchema = {
       },
       tag: {
         _type: Type.String,
-        _description: 'Name of the location tag to use when fetching locations to populate filter',
+        _description: 'Only locations with this tag will appear as options in the location dropdown filter',
         _default: 'Login Location',
       },
       associatedPharmacyLocationAttribute: {
         _type: Type.String,
-        _description: 'Name of the attribute used to associate locations with a pharmacy location',
+        _description:
+          "Name of the location attribute whose value identifies the associated pharmacy location. The location whose attribute value matches the user's login location will be pre-selected in the filter dropdown. This attribute has no effect on which locations appear as options.",
         _default: 'Associated Pharmacy Location',
+      },
+      restrictToVisitLocationDescendants: {
+        _type: Type.Boolean,
+        _description:
+          "If true, further restricts the dropdown options to locations that are descendants of the current login location's nearest ancestor tagged as a visit location. Requires the EMR API module to be installed.",
+        _default: false,
       },
     },
   },
@@ -197,6 +204,7 @@ export interface PharmacyConfig {
       enabled: boolean;
       tag: string;
       associatedPharmacyLocationAttribute: string;
+      restrictToVisitLocationDescendants: boolean;
     };
   };
   valueSets: {
