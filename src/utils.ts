@@ -80,16 +80,14 @@ export function computeFulfillerStatus(
  * @param medicationRequestExpirationPeriodInDays
  */
 export function computeMedicationRequestCombinedStatus(
-  medicationRequestBundle: MedicationRequestBundle,
+  medicationRequest: MedicationRequest,
   medicationRequestExpirationPeriondInDays: number,
 ): MedicationRequestCombinedStatus {
   const medicationRequestStatus: MedicationRequestStatus = computeMedicationRequestStatus(
-    medicationRequestBundle.request,
+    medicationRequest,
     medicationRequestExpirationPeriondInDays,
   );
-  const medicationRequestFulfillerStatus: MedicationRequestFulfillerStatus = getFulfillerStatus(
-    medicationRequestBundle.request,
-  );
+  const medicationRequestFulfillerStatus: MedicationRequestFulfillerStatus = getFulfillerStatus(medicationRequest);
 
   // if the request is no longer active, that status takes precedent
   if (medicationRequestStatus !== MedicationRequestStatus.active) {
@@ -106,11 +104,6 @@ export function computeMedicationRequestCombinedStatus(
     return MedicationRequestCombinedStatus.declined;
   } else if (medicationRequestFulfillerStatus === MedicationRequestFulfillerStatus.on_hold) {
     return MedicationRequestCombinedStatus.on_hold;
-  }
-
-  // check if there are any completed dispenses -> DISPENSED
-  if (medicationRequestBundle.dispenses?.some((dispense) => dispense.status === MedicationDispenseStatus.completed)) {
-    return MedicationRequestCombinedStatus.dispensed;
   }
 
   // otherwise, return active
@@ -215,24 +208,19 @@ export function computeNewFulfillerStatusAfterDelete(
  * @param medicationRequestExpirationPeriodInDays
  */
 export function computePrescriptionStatus(
-  medicationRequestBundles: Array<MedicationRequestBundle>,
+  medicationRequests: Array<MedicationRequest>,
   medicationRequestExpirationPeriodInDays: number,
 ): MedicationRequestCombinedStatus {
-  if (!medicationRequestBundles || medicationRequestBundles.length === 0) {
+  if (!medicationRequests || medicationRequests.length === 0) {
     return null;
   }
 
-  const medicationRequestCombinedStatuses: Array<MedicationRequestCombinedStatus> = medicationRequestBundles.map(
-    (bundle) => computeMedicationRequestCombinedStatus(bundle, medicationRequestExpirationPeriodInDays),
+  const medicationRequestCombinedStatuses: Array<MedicationRequestCombinedStatus> = medicationRequests.map(
+    (medicationRequest) =>
+      computeMedicationRequestCombinedStatus(medicationRequest, medicationRequestExpirationPeriodInDays),
   );
 
-  if (
-    medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.dispensed) ||
-    (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.completed) &&
-      medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.active))
-  ) {
-    return MedicationRequestCombinedStatus.dispensed;
-  } else if (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.active)) {
+  if (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.active)) {
     return MedicationRequestCombinedStatus.active;
   } else if (medicationRequestCombinedStatuses.includes(MedicationRequestCombinedStatus.on_hold)) {
     return MedicationRequestCombinedStatus.on_hold;
@@ -256,11 +244,11 @@ export function computePrescriptionStatus(
  * @param medicationRequestExpirationPeriodInDays
  */
 export function computePrescriptionStatusMessageCode(
-  medicationRequestBundles: Array<MedicationRequestBundle>,
+  medicationRequests: Array<MedicationRequest>,
   medicationRequestExpirationPeriodInDays: number,
 ): string {
   const medicationRequestCombinedStatus: MedicationRequestCombinedStatus = computePrescriptionStatus(
-    medicationRequestBundles,
+    medicationRequests,
     medicationRequestExpirationPeriodInDays,
   );
 
@@ -268,8 +256,6 @@ export function computePrescriptionStatusMessageCode(
     return null;
   } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.active) {
     return 'active';
-  } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.dispensed) {
-    return 'dispensed';
   } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.on_hold) {
     return 'paused';
   } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.completed) {

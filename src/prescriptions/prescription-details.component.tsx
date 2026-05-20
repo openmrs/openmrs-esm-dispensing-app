@@ -3,9 +3,19 @@ import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
 import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
-import { computeMedicationRequestCombinedStatus, getConceptCodingDisplay, useStaleEncounterUuids } from '../utils';
+import {
+  computeMedicationRequestCombinedStatus,
+  getConceptCodingDisplay,
+  useStaleEncounterUuids,
+  getMostRecentMedicationDispenseStatus,
+} from '../utils';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
-import { type AllergyIntolerance, type MedicationRequestBundle, MedicationRequestCombinedStatus } from '../types';
+import {
+  type AllergyIntolerance,
+  type MedicationRequestBundle,
+  MedicationRequestCombinedStatus,
+  MedicationDispenseStatus,
+} from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import { usePatientAllergies, usePrescriptionDetails } from '../medication-request/medication-request.resource';
 import ActionButtons from '../components/action-buttons.component';
@@ -30,9 +40,14 @@ const PrescriptionDetails: React.FC<{
 
   const generateStatusTag = (medicationRequestBundle: MedicationRequestBundle): React.ReactNode => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
-      medicationRequestBundle,
+      medicationRequestBundle.request,
       config.medicationRequestExpirationPeriodInDays,
     );
+
+    const mostRecentDispenseStatus = getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
+    if (mostRecentDispenseStatus === MedicationDispenseStatus.completed) {
+      return <Tag type="gray">{t('dispensed', 'Dispensed')}</Tag>;
+    }
     if (combinedStatus === MedicationRequestCombinedStatus.cancelled) {
       return <Tag type="red">{t('cancelled', 'Cancelled')}</Tag>;
     }
@@ -51,10 +66,6 @@ const PrescriptionDetails: React.FC<{
 
     if (combinedStatus === MedicationRequestCombinedStatus.on_hold) {
       return <Tag type="red">{t('paused', 'Paused')}</Tag>;
-    }
-
-    if (combinedStatus === MedicationRequestCombinedStatus.dispensed) {
-      return <Tag type="blue">{t('dispensed', 'Dispensed')}</Tag>;
     }
 
     return null;

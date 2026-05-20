@@ -75,7 +75,7 @@ describe('Util Tests', () => {
           },
         ],
       };
-      expect(computeMedicationRequestCombinedStatus({ request: medicationRequest, dispenses: [] }, 90)).toBe(
+      expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
         MedicationRequestCombinedStatus.on_hold,
       );
     });
@@ -109,7 +109,7 @@ describe('Util Tests', () => {
           },
         ],
       };
-      expect(computeMedicationRequestCombinedStatus({ request: medicationRequest, dispenses: [] }, 90)).toBe(
+      expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
         MedicationRequestCombinedStatus.declined,
       );
     });
@@ -143,7 +143,7 @@ describe('Util Tests', () => {
           },
         ],
       };
-      expect(computeMedicationRequestCombinedStatus({ request: medicationRequest, dispenses: [] }, 90)).toBe(
+      expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
         MedicationRequestCombinedStatus.completed,
       );
     });
@@ -171,7 +171,7 @@ describe('Util Tests', () => {
         status: MedicationRequestStatus.cancelled,
         subject: { display: '', reference: '', type: '' },
       };
-      expect(computeMedicationRequestCombinedStatus({ request: medicationRequest, dispenses: [] }, 90)).toBe(
+      expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
         MedicationRequestCombinedStatus.cancelled,
       );
     });
@@ -205,7 +205,7 @@ describe('Util Tests', () => {
           },
         ],
       };
-      expect(computeMedicationRequestCombinedStatus({ request: medicationRequest, dispenses: [] }, 90)).toBe(
+      expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
         MedicationRequestCombinedStatus.cancelled,
       );
     });
@@ -239,7 +239,7 @@ describe('Util Tests', () => {
           },
         ],
       };
-      expect(computeMedicationRequestCombinedStatus({ request: medicationRequest, dispenses: [] }, 90)).toBe(
+      expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
         MedicationRequestCombinedStatus.cancelled,
       );
     });
@@ -267,7 +267,7 @@ describe('Util Tests', () => {
         status: MedicationRequestStatus.active,
         subject: { display: '', reference: '', type: '' },
       };
-      expect(computeMedicationRequestCombinedStatus({ request: medicationRequest, dispenses: [] }, 90)).toBe(
+      expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
         MedicationRequestCombinedStatus.expired,
       );
     });
@@ -301,7 +301,7 @@ describe('Util Tests', () => {
           },
         ],
       };
-      expect(computeMedicationRequestCombinedStatus({ request: medicationRequest, dispenses: [] }, 90)).toBe(
+      expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
         MedicationRequestCombinedStatus.expired,
       );
     });
@@ -335,7 +335,7 @@ describe('Util Tests', () => {
           },
         ],
       };
-      expect(computeMedicationRequestCombinedStatus({ request: medicationRequest, dispenses: [] }, 90)).toBe(
+      expect(computeMedicationRequestCombinedStatus(medicationRequest, 90)).toBe(
         MedicationRequestCombinedStatus.expired,
       );
     });
@@ -1070,7 +1070,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
     };
     // sanity check
-    expect(computeMedicationRequestCombinedStatus({ request: activeMedicationRequest, dispenses: [] }, 90)).toBe(
+    expect(computeMedicationRequestCombinedStatus(activeMedicationRequest, 90)).toBe(
       MedicationRequestCombinedStatus.active,
     );
     const cancelledMedicationRequest = {
@@ -1097,7 +1097,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
     };
     // sanity check
-    expect(computeMedicationRequestCombinedStatus({ request: cancelledMedicationRequest, dispenses: [] }, 90)).toBe(
+    expect(computeMedicationRequestCombinedStatus(cancelledMedicationRequest, 90)).toBe(
       MedicationRequestCombinedStatus.cancelled,
     );
     const expiredMedicationRequest = {
@@ -1124,7 +1124,7 @@ describe('Util Tests', () => {
       subject: { display: '', reference: '', type: '' },
     };
     // sanity check
-    expect(computeMedicationRequestCombinedStatus({ request: expiredMedicationRequest, dispenses: [] }, 90)).toBe(
+    expect(computeMedicationRequestCombinedStatus(expiredMedicationRequest, 90)).toBe(
       MedicationRequestCombinedStatus.expired,
     );
     const onHoldMedicationRequest = {
@@ -1157,7 +1157,7 @@ describe('Util Tests', () => {
       ],
     };
     // sanity check
-    expect(computeMedicationRequestCombinedStatus({ request: onHoldMedicationRequest, dispenses: [] }, 90)).toBe(
+    expect(computeMedicationRequestCombinedStatus(onHoldMedicationRequest, 90)).toBe(
       MedicationRequestCombinedStatus.on_hold,
     );
     const declinedMedicationRequest = {
@@ -1190,7 +1190,7 @@ describe('Util Tests', () => {
       ],
     };
     // santity check
-    expect(computeMedicationRequestCombinedStatus({ request: declinedMedicationRequest, dispenses: [] }, 90)).toBe(
+    expect(computeMedicationRequestCombinedStatus(declinedMedicationRequest, 90)).toBe(
       MedicationRequestCombinedStatus.declined,
     );
     const completedMedicationRequest = {
@@ -1223,34 +1223,19 @@ describe('Util Tests', () => {
       ],
     };
     // santiy-check
-    expect(computeMedicationRequestCombinedStatus({ request: completedMedicationRequest, dispenses: [] }, 90)).toBe(
+    expect(computeMedicationRequestCombinedStatus(completedMedicationRequest, 90)).toBe(
       MedicationRequestCombinedStatus.completed,
     );
-    test('should return dispensed if any medication request combined status active and completed are present', () => {
+    test('should return active if any medication request combined status active', () => {
       expect(
         computePrescriptionStatus(
           [
-            { request: activeMedicationRequest, dispenses: [] },
-            { request: cancelledMedicationRequest, dispenses: [] },
-            { request: expiredMedicationRequest, dispenses: [] },
-            { request: onHoldMedicationRequest, dispenses: [] },
-            { request: declinedMedicationRequest, dispenses: [] },
-            { request: completedMedicationRequest, dispenses: [] },
-          ],
-          90,
-        ),
-      ).toBe(MedicationRequestCombinedStatus.dispensed);
-    });
-
-    test('should return active if any medication request combined status active, and no completed or dispensed', () => {
-      expect(
-        computePrescriptionStatus(
-          [
-            { request: activeMedicationRequest, dispenses: [] },
-            { request: cancelledMedicationRequest, dispenses: [] },
-            { request: expiredMedicationRequest, dispenses: [] },
-            { request: onHoldMedicationRequest, dispenses: [] },
-            { request: declinedMedicationRequest, dispenses: [] },
+            activeMedicationRequest,
+            cancelledMedicationRequest,
+            expiredMedicationRequest,
+            onHoldMedicationRequest,
+            declinedMedicationRequest,
+            completedMedicationRequest,
           ],
           90,
         ),
@@ -1260,11 +1245,11 @@ describe('Util Tests', () => {
       expect(
         computePrescriptionStatus(
           [
-            { request: cancelledMedicationRequest, dispenses: [] },
-            { request: expiredMedicationRequest, dispenses: [] },
-            { request: onHoldMedicationRequest, dispenses: [] },
-            { request: declinedMedicationRequest, dispenses: [] },
-            { request: completedMedicationRequest, dispenses: [] },
+            cancelledMedicationRequest,
+            expiredMedicationRequest,
+            onHoldMedicationRequest,
+            declinedMedicationRequest,
+            completedMedicationRequest,
           ],
           90,
         ),
@@ -1273,12 +1258,7 @@ describe('Util Tests', () => {
     test('should return completed if any medication request combined status completed, and none active or on hold', () => {
       expect(
         computePrescriptionStatus(
-          [
-            { request: cancelledMedicationRequest, dispenses: [] },
-            { request: expiredMedicationRequest, dispenses: [] },
-            { request: declinedMedicationRequest, dispenses: [] },
-            { request: completedMedicationRequest, dispenses: [] },
-          ],
+          [cancelledMedicationRequest, expiredMedicationRequest, declinedMedicationRequest, completedMedicationRequest],
           90,
         ),
       ).toBe(MedicationRequestCombinedStatus.completed);
@@ -1286,30 +1266,18 @@ describe('Util Tests', () => {
     test('should return declined if any medication request combined status declined, and none active or on hold or completed', () => {
       expect(
         computePrescriptionStatus(
-          [
-            { request: cancelledMedicationRequest, dispenses: [] },
-            { request: expiredMedicationRequest, dispenses: [] },
-            { request: declinedMedicationRequest, dispenses: [] },
-          ],
+          [cancelledMedicationRequest, expiredMedicationRequest, declinedMedicationRequest],
           90,
         ),
       ).toBe(MedicationRequestCombinedStatus.declined);
     });
     test('should return cancelled if any medication request combined status cancelled, and none active or on hold or completed or declined', () => {
-      expect(
-        computePrescriptionStatus(
-          [
-            { request: cancelledMedicationRequest, dispenses: [] },
-            { request: expiredMedicationRequest, dispenses: [] },
-          ],
-          90,
-        ),
-      ).toBe(MedicationRequestCombinedStatus.cancelled);
+      expect(computePrescriptionStatus([cancelledMedicationRequest, expiredMedicationRequest], 90)).toBe(
+        MedicationRequestCombinedStatus.cancelled,
+      );
     });
     test('should return expired if any medication request combined status expired, and none active or on hold or completed or declined or cancelled', () => {
-      expect(computePrescriptionStatus([{ request: expiredMedicationRequest, dispenses: [] }], 90)).toBe(
-        MedicationRequestCombinedStatus.expired,
-      );
+      expect(computePrescriptionStatus([expiredMedicationRequest], 90)).toBe(MedicationRequestCombinedStatus.expired);
     });
     test('should return null for empty array', () => {
       expect(computePrescriptionStatus([], 90)).toBe(null);
