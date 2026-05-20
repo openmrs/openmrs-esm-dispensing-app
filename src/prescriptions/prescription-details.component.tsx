@@ -44,10 +44,6 @@ const PrescriptionDetails: React.FC<{
       config.medicationRequestExpirationPeriodInDays,
     );
 
-    const mostRecentDispenseStatus = getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
-    if (mostRecentDispenseStatus === MedicationDispenseStatus.completed) {
-      return <Tag type="gray">{t('dispensed', 'Dispensed')}</Tag>;
-    }
     if (combinedStatus === MedicationRequestCombinedStatus.cancelled) {
       return <Tag type="red">{t('cancelled', 'Cancelled')}</Tag>;
     }
@@ -66,6 +62,12 @@ const PrescriptionDetails: React.FC<{
 
     if (combinedStatus === MedicationRequestCombinedStatus.on_hold) {
       return <Tag type="red">{t('paused', 'Paused')}</Tag>;
+    }
+
+    // If there is no combined status, but the last event was a dispense, display "dispensed"
+    const mostRecentDispenseStatus = getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
+    if (mostRecentDispenseStatus === MedicationDispenseStatus.completed) {
+      return <Tag type="gray">{t('dispensed', 'Dispensed')}</Tag>;
     }
 
     return null;
