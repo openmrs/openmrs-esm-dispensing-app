@@ -1,7 +1,7 @@
 name: OpenMRS CI
 
 on:
-  workflow_dispatch: # temporary, for debugging
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -17,7 +17,7 @@ concurrency:
 jobs:
   build:
     uses: openmrs/openmrs-contrib-gha-workflows/.github/workflows/build-frontend-module.yml@main
-  with:
+    with:
       pre_verify_command: "yarn check-translations"
 
   release:
