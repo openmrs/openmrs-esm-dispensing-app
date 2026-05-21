@@ -54,13 +54,18 @@ test('Dispense prescription', async ({ page, patient }) => {
     await dispenseButton.click();
   });
 
-  await test.step('Then I should see a success notification', async () => {
+  await test.step('Then I should see a success notification and the Dispensed status in the Prescription details', async () => {
     await expect(page.getByText(/medication successfully dispensed/i)).toBeVisible();
+    await expect(
+      page.getByLabel('Prescription details', { exact: true }).getByText('Dispensed', { exact: true }),
+    ).toBeVisible();
   });
 
   await test.step('And when I click the `History and comments` tab I should see the updated `Dispensed` status reflected', async () => {
     await page.getByRole('tab', { name: 'History and comments' }).click();
-    await expect(page.getByText('Dispensed', { exact: true })).toBeVisible();
+    await expect(
+      page.getByLabel('History and comments', { exact: true }).getByText('Dispensed', { exact: true }),
+    ).toBeVisible();
   });
 });
 

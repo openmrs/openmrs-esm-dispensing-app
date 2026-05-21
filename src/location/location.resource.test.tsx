@@ -36,8 +36,8 @@ const pharmacyConfig: PharmacyConfig = {
       enabled: false,
       tag: 'Login Location',
       associatedPharmacyLocationAttribute: 'Associated Pharmacy Location',
-      restrictToVisitLocationDescendants: false,
     },
+    restrictToVisitLocationDescendants: false,
   },
   refreshInterval: 10000,
   medicationRequestExpirationPeriodInDays: 0,
@@ -122,10 +122,7 @@ describe('useLocations', () => {
       ...pharmacyConfig,
       locationBehavior: {
         ...pharmacyConfig.locationBehavior,
-        locationFilter: {
-          ...pharmacyConfig.locationBehavior.locationFilter,
-          restrictToVisitLocationDescendants: true,
-        },
+        restrictToVisitLocationDescendants: true,
       },
     };
 
