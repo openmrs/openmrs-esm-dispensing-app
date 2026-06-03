@@ -66,7 +66,7 @@ const PrescriptionTabLists: React.FC = () => {
             ))}
           </TabList>
           <TabPanels>
-            <PatientSearchTabPanel />
+            <PatientSearchTabPanel locations={locations} />
             <PrescriptionTabPanel
               isTabActive={selectedTab === 1}
               status={'ACTIVE'}

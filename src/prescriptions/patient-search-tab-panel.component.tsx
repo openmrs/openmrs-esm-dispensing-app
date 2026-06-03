@@ -4,8 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { PatientSearchPictogram } from '@openmrs/esm-framework';
 import PrescriptionsTable from './prescriptions-table.component';
 import styles from './patient-search-tab-panel.scss';
+import { type SimpleLocation } from '../types';
 
-const PatientSearchTabPanel: React.FC = () => {
+interface PatientSearchTabPanelProps {
+  locations: Array<SimpleLocation>;
+}
+
+const PatientSearchTabPanel: React.FC<PatientSearchTabPanelProps> = ({ locations }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [submittedSearchTerm, setSubmittedSearchTerm] = useState('');
@@ -39,7 +44,7 @@ const PatientSearchTabPanel: React.FC = () => {
             loadData={true}
             status={'ACTIVE'}
             debouncedSearchTerm={submittedSearchTerm}
-            locations={[]}
+            locations={locations}
           />
         ) : (
           <div className={styles.searchForPatientPlaceholder}>
