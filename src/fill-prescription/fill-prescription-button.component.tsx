@@ -47,6 +47,7 @@ const FillPrescriptionButton: React.FC<{}> = () => {
                   patient: patient,
                   visitContext: activeVisit,
                   drugOrderWorkspaceName: 'dispensing-order-basket-add-drug-order-workspace',
+                  allergyFormWorkspaceName: 'dispensing-order-basket-add-allergy-workspace',
                   visibleOrderPanels: [drugOrderTypeUUID],
                   onOrderBasketSubmitted: (encounterUuid: string, _: Array<Order>) => {
                     showModal('on-prescription-filled-modal', {
