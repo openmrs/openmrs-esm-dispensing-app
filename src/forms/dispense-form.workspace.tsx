@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSWRConfig } from 'swr';
 import { useTranslation } from 'react-i18next';
 import { Button, Checkbox, Form, FormLabel, InlineLoading } from '@carbon/react';
 import {
@@ -62,6 +63,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
   closeWorkspace,
 }) => {
   const { t } = useTranslation();
+  const { mutate } = useSWRConfig();
   const { patient, isLoading } = usePatient(patientUuid);
   const config = useConfig<PharmacyConfig>();
 
@@ -226,7 +228,7 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
             });
           }
           if (status === 201 || status === 200) {
-            revalidate(encounterUuid);
+            revalidate(mutate, encounterUuid);
             showSnackbar({
               kind: 'success',
               subtitle: t('medicationListUpdated', 'Medication dispense list has been updated.'),
