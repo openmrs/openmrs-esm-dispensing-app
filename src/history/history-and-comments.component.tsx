@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useSWRConfig } from 'swr';
 import { OverflowMenu, OverflowMenuItem, SkeletonText, Tag, Tile } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -146,6 +147,7 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
   encounterUuid,
 }) => {
   const { t } = useTranslation();
+  const { mutate } = useSWRConfig();
   const session = useSession();
   const config = useConfig<PharmacyConfig>();
   const userCanEdit = (session: Session): boolean =>
@@ -253,7 +255,7 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
             newFulfillerStatus,
           )
             .then(() => {
-              revalidate(encounterUuid);
+              revalidate(mutate, encounterUuid);
             })
             .catch(() => {
               showSnackbar({
@@ -263,7 +265,7 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
               });
             });
         }
-        revalidate(encounterUuid);
+        revalidate(mutate, encounterUuid);
       })
       .catch(() => {
         showSnackbar({
