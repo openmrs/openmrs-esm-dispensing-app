@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import template from 'lodash/template';
-import { type ScopedMutator } from 'swr/_internal';
+import { type useSWRConfig } from 'swr';
 import {
   type Coding,
   type DispensingStore,
@@ -24,6 +24,8 @@ import {
   PRESCRIPTION_DETAILS_ENDPOINT,
   PRESCRIPTIONS_TABLE_ENDPOINT,
 } from './constants';
+
+type ScopedMutator = ReturnType<typeof useSWRConfig>['mutate'];
 
 const unitsDontMatchErrorMessage =
   "Misconfiguration, please contact your System Administrator:  Can't calculate quantity dispensed if units don't match. Likely issue: allowModifyingPrescription and restrictTotalQuantityDispensed configuration parameters both set to true. " +
