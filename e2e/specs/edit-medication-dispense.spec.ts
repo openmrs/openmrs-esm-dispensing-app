@@ -52,8 +52,10 @@ test.beforeEach(async ({ api, fhirApi, patient }) => {
     .toBeGreaterThan(0);
 });
 
-test('Edit medication dispense', async ({ page }) => {
+test('Edit medication dispense', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
+  const patientRow = page.getByRole('row', { name: new RegExp(patient.person.display) });
+  const historyTabPanel = page.getByRole('tabpanel', { name: 'History and comments' });
 
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
@@ -65,21 +67,21 @@ test('Edit medication dispense', async ({ page }) => {
     await expect(page.getByRole('tab', { name: 'All prescriptions' })).toHaveAttribute('aria-selected', 'true');
   });
 
-  await test.step('Then I should see the prescription in the table', async () => {
-    await expect(page.getByRole('row', { name: 'Expand current row' }).first()).toBeVisible({ timeout: 15000 });
+  await test.step("Then I should see the patient's prescription in the table", async () => {
+    await expect(patientRow).toBeVisible({ timeout: 15000 });
   });
 
   await test.step('And I expand the prescription row', async () => {
-    await page.getByRole('row', { name: 'Expand current row' }).getByLabel('Expand current row').first().click();
+    await patientRow.getByLabel('Expand current row').click();
   });
 
   await test.step('And I navigate to the History and comments tab', async () => {
     await page.getByRole('tab', { name: 'History and comments' }).click();
-    await expect(page.getByText('QUANTITY 5 Tablet')).toBeVisible();
+    await expect(historyTabPanel.getByText('QUANTITY 5 Tablet')).toBeVisible();
   });
 
   await test.step('And I edit the dispense record', async () => {
-    await page.getByLabel('History and comments').getByRole('button', { name: 'Options' }).click();
+    await historyTabPanel.getByRole('button', { name: 'Options' }).click();
     await page.getByRole('menuitem', { name: 'Edit Record' }).click();
   });
 
@@ -97,7 +99,7 @@ test('Edit medication dispense', async ({ page }) => {
   });
 
   await test.step('And the quantity should be updated to 9', async () => {
-    await expect(page.getByText('QUANTITY 9 Tablet')).toBeVisible();
+    await expect(historyTabPanel.getByText('QUANTITY 9 Tablet')).toBeVisible();
   });
 });
 
