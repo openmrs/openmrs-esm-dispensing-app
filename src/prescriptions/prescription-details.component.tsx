@@ -2,10 +2,11 @@ import React from 'react';
 import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
-import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import { ExtensionSlot, type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
 import {
   computeMedicationRequestCombinedStatus,
   getConceptCodingDisplay,
+  getUuidFromReference,
   useStaleEncounterUuids,
   getMostRecentMedicationDispenseStatus,
 } from '../utils';
@@ -145,15 +146,22 @@ const PrescriptionDetails: React.FC<{
             <MedicationEvent
               key={bundle.request.id}
               medicationEvent={bundle.request}
-              status={generateStatusTag(bundle)}>
-              <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
-                <ActionButtons
-                  patientUuid={patientUuid}
-                  encounterUuid={encounterUuid}
-                  medicationRequestBundle={bundle}
-                  disabled={staleEncounterUuids.includes(encounterUuid)}
-                />
-              </UserHasAccess>
+              status={generateStatusTag(bundle)}
+              alignContentStart
+              footer={
+                <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
+                  <ActionButtons
+                    patientUuid={patientUuid}
+                    encounterUuid={encounterUuid}
+                    medicationRequestBundle={bundle}
+                    disabled={staleEncounterUuids.includes(encounterUuid)}
+                  />
+                </UserHasAccess>
+              }>
+              <ExtensionSlot
+                name="dispensing-prescription-side-effects-slot"
+                state={{ drugUuid: getUuidFromReference(bundle.request.medicationReference?.reference) }}
+              />
             </MedicationEvent>
           ))
         ) : (
