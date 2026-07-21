@@ -41,7 +41,7 @@
   "dispensedBy": "Отпустил",
   "dispensedMedication": "выданный медикамент",
   "dispensePrescription": "Назначение",
-  "dispensing": "Отпуск",
+  "dispensing": "Выдача медикаментов",
   "dispensingAppError": "Ошибка приложения Аптека",
   "dispensingAppMisconfigurationMessage": "Пожалуйста, свяжитесь с системным администратором: Ошибка конфигурации — 'restrictTotalQuantityDispensed' не может быть включён, если включён 'allowModifyingPrescription'.",
   "dose": "Дозировка",
