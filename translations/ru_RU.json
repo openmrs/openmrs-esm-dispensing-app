@@ -147,7 +147,7 @@
   "unknownAllergy": "Неизвестная аллергия",
   "updateStatusFailed": "Не удалось обновить статус",
   "view": "Просмотр",
-  "visitRequired": "Требуется посещение",
-  "visitRequiredForPatientToFillPrescription": "Для выполнения назначения пациенту требуется посещение",
+  "visitRequired": "Указать визит обязательно",
+  "visitRequiredForPatientToFillPrescription": "Для выдачи медикаментов визит обязателен",
   "withQuantity": "с количеством"
 }
