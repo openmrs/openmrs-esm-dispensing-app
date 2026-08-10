@@ -386,7 +386,7 @@ describe('DispenseForm - Complete Order Checkbox Auto-Default', () => {
       enableStockDispense: false,
       enableDuplicateDispenseCheck: true,
       duplicateCheckWindowDays: 7,
-    } as any);
+    });
 
     render(
       <DispenseForm

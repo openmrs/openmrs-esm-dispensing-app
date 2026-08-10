@@ -226,7 +226,7 @@ const MedicationDispenseReview: React.FC<MedicationDispenseReviewProps> = ({
                 titleText={t('medicationFormulation', 'Medication Formulation')}
                 label={t('medicationFormulation', 'Medication Formulation')}
                 onChange={({ selectedItem }) => {
-                  const typedItem = selectedItem as Medication;
+                  const typedItem = selectedItem;
                   if ('Medication/' + typedItem.id !== medicationDispense.medicationReference.reference) {
                     updateMedicationDispense({
                       medicationCodeableConcept: undefined,

@@ -178,7 +178,7 @@ describe('MedicationEvent', () => {
           route: {
             coding: [],
           },
-        } as any,
+        },
       ],
     };
 

@@ -11,7 +11,7 @@
     "serve": "rspack serve --mode=development",
     "build": "rspack --mode=production",
     "analyze": "rspack --mode=production --env analyze=true",
-    "lint": "eslint src --ext js,jsx,ts,tsx",
+    "lint": "eslint src",
     "test": "cross-env TZ=UTC vitest run --passWithNoTests",
     "test:watch": "cross-env TZ=UTC vitest watch",
     "typescript": "tsc",
@@ -59,6 +59,7 @@
     "swr": "2.x"
   },
   "devDependencies": {
+    "@openmrs/eslint-config": "^2.0.0",
     "@openmrs/esm-framework": "next",
     "@playwright/test": "^1.52.0",
     "@swc/core": "^1.7.14",
@@ -71,15 +72,11 @@
     "@types/react-router": "^5.1.20",
     "@types/react-router-dom": "^5.1.7",
     "@types/webpack-env": "^1.16.0",
-    "@typescript-eslint/eslint-plugin": "^8.54.0",
-    "@typescript-eslint/parser": "^8.54.0",
     "@vitest/coverage-v8": "^4.1.2",
     "cross-env": "^10.1.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.3.1",
-    "eslint": "^8.57.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint": "^9.39.0",
     "eslint-plugin-unused-imports": "^4.3.0",
     "husky": "^6.0.0",
     "i18next": "^25.0.0",
@@ -97,6 +94,7 @@
     "swr": "2.2.5",
     "turbo": "^2.5.2",
     "typescript": "^5.0.0",
+    "typescript-eslint": "^8.66.0",
     "vitest": "^4.1.2"
   },
   "lint-staged": {
