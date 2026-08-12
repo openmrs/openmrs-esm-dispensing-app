@@ -280,10 +280,7 @@ const MedicationDispenseActionMenu: React.FC<MedicationDispenseActionMenuProps> 
   const deletable = userCanDelete(session, medicationDispense);
 
   const handleEdit = () => {
-    const { workspaceName, props } = getDispenseWorkspaceConfig(medicationDispense, medicationRequestBundle) as {
-      workspaceName: string;
-      props: Record<string, unknown>;
-    };
+    const { workspaceName, props } = getDispenseWorkspaceConfig(medicationDispense, medicationRequestBundle);
     const customWorkspaceTitle = getWorkspaceTitle(medicationDispense);
     launchWorkspace2(workspaceName, { customWorkspaceTitle, ...props });
   };

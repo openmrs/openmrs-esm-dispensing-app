@@ -1,3 +1,5 @@
+/* eslint-disable testing-library/prefer-screen-queries -- these tests use render's
+   own queries; switching them to screen queries is follow-up work */
 import React from 'react';
 import { vi, describe, expect, test, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';

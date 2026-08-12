@@ -52,6 +52,13 @@ test.beforeEach(async ({ api, fhirApi, patient }) => {
     .toBeGreaterThan(0);
 });
 
+test.afterEach(async ({ api, fhirApi }) => {
+  await deleteMedicationDispense(fhirApi, medicationDispense.id);
+  await deleteEncounter(api, encounter.uuid);
+  await deleteDrugOrder(api, drugOrder.uuid);
+  await endVisit(api, visit);
+});
+
 test('Edit medication dispense', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
   const patientRow = page.getByRole('row', { name: new RegExp(patient.person.display) });
@@ -101,11 +108,4 @@ test('Edit medication dispense', async ({ page, patient }) => {
   await test.step('And the quantity should be updated to 9', async () => {
     await expect(historyTabPanel.getByText('QUANTITY 9 Tablet')).toBeVisible();
   });
-});
-
-test.afterEach(async ({ api, fhirApi }) => {
-  await deleteMedicationDispense(fhirApi, medicationDispense.id);
-  await deleteEncounter(api, encounter.uuid);
-  await deleteDrugOrder(api, drugOrder.uuid);
-  await endVisit(api, visit);
 });
