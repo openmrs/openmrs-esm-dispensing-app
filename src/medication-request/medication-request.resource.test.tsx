@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import useSWR from 'swr';
 import {
   updateMedicationRequestFulfillerStatus,
+  getPrescriptionRowDate,
   useMedicationRequest,
   usePatientAllergies,
   usePrescriptionDetails,
@@ -11,6 +12,7 @@ import {
 } from './medication-request.resource';
 import { openmrsFetch, parseDate } from '@openmrs/esm-framework';
 import { MedicationRequestFulfillerStatus } from '../types';
+import type { Encounter, MedicationRequest } from '../types';
 import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
 
 vi.mocked(openmrsFetch);
@@ -24,6 +26,23 @@ vi.mock('react', async (importOriginal) => {
 });
 
 describe('Medication Request Resource Test', () => {
+  test('uses the newest MedicationRequest authoredOn as the prescription table row date', () => {
+    const encounter = { period: { start: '2023-01-01T08:00:00Z' } } as Encounter;
+    const medicationRequests = [
+      { authoredOn: '2023-01-01T08:00:00Z' },
+      { authoredOn: '2023-02-15T10:30:00Z' },
+      { authoredOn: '2023-01-20T09:00:00Z' },
+    ] as Array<MedicationRequest>;
+
+    expect(getPrescriptionRowDate(encounter, medicationRequests)).toBe('2023-02-15T10:30:00Z');
+  });
+
+  test('uses the encounter start as the prescription table row date when authoredOn is unavailable', () => {
+    const encounter = { period: { start: '2023-01-01T08:00:00Z' } } as Encounter;
+
+    expect(getPrescriptionRowDate(encounter, [{} as MedicationRequest])).toBe('2023-01-01T08:00:00Z');
+  });
+
   test('usePrescriptionsTable should call active endpoint and proper date based on expiration period if status parameter is active', () => {
     // @ts-ignore
     useSWR.mockImplementation(() => ({ data: { data: 'mockedReturnData' } }));

@@ -106,7 +106,7 @@ function buildPrescriptionsTableRow(
 ): PrescriptionsTableRow {
   return {
     id: encounter?.id,
-    created: encounter?.period?.start,
+    created: getPrescriptionRowDate(encounter, medicationRequests),
     patient: {
       name: encounter?.subject?.display,
       uuid: encounter?.subject?.reference?.split('/')[1],
@@ -126,6 +126,16 @@ function buildPrescriptionsTableRow(
     status: computePrescriptionStatusMessageCode(medicationRequests, medicationRequestExpirationPeriodInDays),
     location: encounter?.location ? encounter?.location[0]?.location.display : null,
   };
+}
+
+export function getPrescriptionRowDate(encounter: Encounter, medicationRequests: Array<MedicationRequest>): string {
+  const newestAuthoredOn = medicationRequests
+    .map((medicationRequest) => medicationRequest.authoredOn)
+    .filter((authoredOn): authoredOn is string => Boolean(authoredOn) && dayjs(authoredOn).isValid())
+    .sort((a, b) => dayjs(b).valueOf() - dayjs(a).valueOf())[0];
+
+  // Older MedicationRequests may not have authoredOn, so retain the encounter date as a fallback.
+  return newestAuthoredOn ?? encounter?.period?.start;
 }
 
 export function usePrescriptionDetails(encounterUuid: string, refreshInterval = null) {
