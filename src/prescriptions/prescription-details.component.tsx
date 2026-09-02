@@ -2,7 +2,7 @@ import React from 'react';
 import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
-import { ExtensionSlot, type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import { ExtensionSlot, getAssignedExtensions, type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
 import {
   computeMedicationRequestCombinedStatus,
   getConceptCodingDisplay,
@@ -38,6 +38,7 @@ const PrescriptionDetails: React.FC<{
   } = usePatientAllergies(patientUuid, config.refreshInterval);
   const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
   const { staleEncounterUuids } = useStaleEncounterUuids();
+  const sideEffectsSlotFilled = getAssignedExtensions('dispensing-prescription-side-effects-slot').length > 0;
 
   const generateStatusTag = (medicationRequestBundle: MedicationRequestBundle): React.ReactNode => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
@@ -142,28 +143,39 @@ const PrescriptionDetails: React.FC<{
       )}
       {medicationRequestBundles &&
         (medicationRequestBundles.length > 0 ? (
-          medicationRequestBundles.map((bundle) => (
-            <MedicationEvent
-              key={bundle.request.id}
-              medicationEvent={bundle.request}
-              status={generateStatusTag(bundle)}
-              alignContentStart
-              footer={
-                <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
-                  <ActionButtons
-                    patientUuid={patientUuid}
-                    encounterUuid={encounterUuid}
-                    medicationRequestBundle={bundle}
-                    disabled={staleEncounterUuids.includes(encounterUuid)}
-                  />
-                </UserHasAccess>
-              }>
-              <ExtensionSlot
-                name="dispensing-prescription-side-effects-slot"
-                state={{ drugUuid: getUuidFromReference(bundle.request.medicationReference?.reference) }}
-              />
-            </MedicationEvent>
-          ))
+          medicationRequestBundles.map((bundle) => {
+            const drugUuid = getUuidFromReference(bundle.request.medicationReference?.reference);
+            const actionButtons = (
+              <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
+                <ActionButtons
+                  patientUuid={patientUuid}
+                  encounterUuid={encounterUuid}
+                  medicationRequestBundle={bundle}
+                  disabled={staleEncounterUuids.includes(encounterUuid)}
+                />
+              </UserHasAccess>
+            );
+
+            return sideEffectsSlotFilled ? (
+              <MedicationEvent
+                key={bundle.request.id}
+                medicationEvent={bundle.request}
+                status={generateStatusTag(bundle)}
+                alignContentStart
+                footer={actionButtons}>
+                {drugUuid && (
+                  <ExtensionSlot name="dispensing-prescription-side-effects-slot" state={{ drugUuid }} />
+                )}
+              </MedicationEvent>
+            ) : (
+              <MedicationEvent
+                key={bundle.request.id}
+                medicationEvent={bundle.request}
+                status={generateStatusTag(bundle)}>
+                {actionButtons}
+              </MedicationEvent>
+            );
+          })
         ) : (
           <p className={styles.emptyState}>{t('noPrescriptionsFound', 'No prescriptions found')}</p>
         ))}

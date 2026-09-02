@@ -39,6 +39,10 @@
   display: flex;
   justify-content: flex-end;
   margin-top: layout.$spacing-05;
+
+  &:empty {
+    display: none;
+  }
 }
 
 .medicationName {
