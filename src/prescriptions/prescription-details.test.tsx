@@ -4,12 +4,13 @@ import { render, screen } from '@testing-library/react';
 import { ExtensionSlot, getAssignedExtensions, useConfig } from '@openmrs/esm-framework';
 import { usePrescriptionDetails, usePatientAllergies } from '../medication-request/medication-request.resource';
 import { useStaleEncounterUuids } from '../utils';
+import type * as EsmFramework from '@openmrs/esm-framework';
 import type * as Utils from '../utils';
 import { type MedicationRequest, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
 import PrescriptionDetails from './prescription-details.component';
 
 vi.mock('@openmrs/esm-framework', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@openmrs/esm-framework')>()),
+  ...(await importOriginal<typeof EsmFramework>()),
   getAssignedExtensions: vi.fn(() => []),
 }));
 vi.mock('../components/action-buttons.component', () => ({ default: () => null }));
@@ -337,7 +338,7 @@ describe('PrescriptionDetails', () => {
         request: buildRequest({
           medicationReference: undefined,
           medicationCodeableConcept: { coding: [{ code: '123', display: 'Paracetamol' }], text: 'Paracetamol' },
-        } as Partial<MedicationRequest>),
+        }),
         dispenses: [],
       };
       mockUsePrescriptionDetails.mockReturnValue({

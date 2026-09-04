@@ -2,7 +2,13 @@ import React from 'react';
 import { SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
-import { ExtensionSlot, getAssignedExtensions, type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
+import {
+  ExtensionSlot,
+  getAssignedExtensions,
+  type PatientUuid,
+  useConfig,
+  UserHasAccess,
+} from '@openmrs/esm-framework';
 import {
   computeMedicationRequestCombinedStatus,
   getConceptCodingDisplay,
@@ -163,9 +169,7 @@ const PrescriptionDetails: React.FC<{
                 status={generateStatusTag(bundle)}
                 alignContentStart
                 footer={actionButtons}>
-                {drugUuid && (
-                  <ExtensionSlot name="dispensing-prescription-side-effects-slot" state={{ drugUuid }} />
-                )}
+                {drugUuid && <ExtensionSlot name="dispensing-prescription-side-effects-slot" state={{ drugUuid }} />}
               </MedicationEvent>
             ) : (
               <MedicationEvent
