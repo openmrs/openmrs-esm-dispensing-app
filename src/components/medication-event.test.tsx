@@ -210,4 +210,10 @@ describe('MedicationEvent', () => {
 
     expect(screen.getByRole('button', { name: 'Action Button' })).toBeInTheDocument();
   });
+
+  it('renders the footer content when provided', () => {
+    render(<MedicationEvent medicationEvent={baseMedicationRequest} footer={<button>Dispense</button>} />);
+
+    expect(screen.getByRole('button', { name: 'Dispense' })).toBeInTheDocument();
+  });
 });
