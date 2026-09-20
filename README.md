@@ -1,6 +1,6 @@
 # OpenMRS ESM Dispensing App
 
-![Node.js CI](https://github.com/openmrs/openmrs-esm-dispensing-app/workflows/Node.js%20CI/badge.svg)
+[![OpenMRS CI](https://github.com/openmrs/openmrs-esm-dispensing-app/actions/workflows/ci.yml/badge.svg)](https://github.com/openmrs/openmrs-esm-dispensing-app/actions/workflows/ci.yml)
 
 This repository is for the OpenMRS Dispensing App. For more information, please see the
 [OpenMRS Frontend Developer Documentation](https://openmrs.atlassian.net/wiki/x/sQubAQ).
@@ -32,7 +32,7 @@ These mappings enable the dispensing app to properly handle medication dispense 
 
 The Medication Dispense Status value set can be found [in this OCL search](https://app.openconceptlab.org/#/search/?q=medication+dispense+status).
 
-It also is bundled in the "DrugDispense" OCL package provided by the Reference Application: [OpenMRS refapp distro package](https://github.com/openmrs/openmrs-distro-referenceapplication/tree/main/distro/configuration/ocl).
+It also is bundled in the "DrugDispense" OCL package provided by the [Reference Application demo content package](https://github.com/openmrs/openmrs-content-referenceapplication-demo/tree/main/configuration/backend_configuration/ocl).
 
 The "DrugDispense" also provides the default value sets for the "Substitution Type", "Substitution Reason", and "Medication Dispense Status Reason".
 
@@ -117,7 +117,7 @@ Note: All backend requests will be proxied to your local OpenMRS instance runnin
 
 If you run into errors with running the code, and see errors in the console related to having not enough file watchers on Linux, these instructions help: [React Native error: enospc system limit for number of file watchers reached](https://stackoverflow.com/questions/55763428/react-native-error-enospc-system-limit-for-number-of-file-watchers-reached).
 
-If you are unable to commit and push using Intellij, you may need to update the path in Intellij to match your terminal: [Command not found](https://typicode.github.io/husky/#/?id=command-not-found).
+If you are unable to commit and push using Intellij, you may need to update the path in Intellij to match your terminal: [Command not found](https://github.com/typicode/husky/blob/v6.0.0/docs/README.md#command-not-found).
 
 ## Contributing
 
