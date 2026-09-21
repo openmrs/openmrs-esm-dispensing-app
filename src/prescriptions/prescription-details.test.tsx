@@ -1,18 +1,13 @@
 import React from 'react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ExtensionSlot, getAssignedExtensions, useConfig } from '@openmrs/esm-framework';
+import { ExtensionSlot, useAssignedExtensions, useConfig } from '@openmrs/esm-framework';
 import { usePrescriptionDetails, usePatientAllergies } from '../medication-request/medication-request.resource';
 import { useStaleEncounterUuids } from '../utils';
-import type * as EsmFramework from '@openmrs/esm-framework';
 import type * as Utils from '../utils';
 import { type MedicationRequest, type MedicationRequestBundle, MedicationRequestStatus } from '../types';
 import PrescriptionDetails from './prescription-details.component';
 
-vi.mock('@openmrs/esm-framework', async (importOriginal) => ({
-  ...(await importOriginal<typeof EsmFramework>()),
-  getAssignedExtensions: vi.fn(() => []),
-}));
 vi.mock('../components/action-buttons.component', () => ({ default: () => null }));
 vi.mock('./prescription-actions.component', () => ({ default: () => null }));
 vi.mock('../medication-request/medication-request.resource');
@@ -29,7 +24,7 @@ const mockUsePrescriptionDetails = vi.mocked(usePrescriptionDetails);
 const mockUsePatientAllergies = vi.mocked(usePatientAllergies);
 const mockUseStaleEncounterUuids = vi.mocked(useStaleEncounterUuids);
 const mockExtensionSlot = vi.mocked(ExtensionSlot);
-const mockGetAssignedExtensions = vi.mocked(getAssignedExtensions);
+const mockUseAssignedExtensions = vi.mocked(useAssignedExtensions);
 
 const mockEncounterUuid = 'test-encounter-uuid';
 const mockPatientUuid = 'test-patient-uuid';
@@ -67,7 +62,7 @@ describe('PrescriptionDetails', () => {
     mockUseStaleEncounterUuids.mockReturnValue({
       staleEncounterUuids: [],
     });
-    mockGetAssignedExtensions.mockReturnValue([]);
+    mockUseAssignedExtensions.mockReturnValue([]);
   });
 
   describe('Allergies Display', () => {
@@ -304,7 +299,7 @@ describe('PrescriptionDetails', () => {
   describe('Side effects extension slot', () => {
     beforeEach(() => {
       mockExtensionSlot.mockClear();
-      mockGetAssignedExtensions.mockReturnValue([{ name: 'medication-side-effects-panel-dispensing' }] as any);
+      mockUseAssignedExtensions.mockReturnValue([{ name: 'medication-side-effects-panel-dispensing' }] as any);
       mockUsePatientAllergies.mockReturnValue({
         allergies: [],
         totalAllergies: 0,
@@ -359,7 +354,7 @@ describe('PrescriptionDetails', () => {
     });
 
     it('does not mount the side effects slot when no extension is assigned to it', () => {
-      mockGetAssignedExtensions.mockReturnValue([]);
+      mockUseAssignedExtensions.mockReturnValue([]);
       const bundle: MedicationRequestBundle = { request: buildRequest(), dispenses: [] };
       mockUsePrescriptionDetails.mockReturnValue({
         medicationRequestBundles: [bundle],

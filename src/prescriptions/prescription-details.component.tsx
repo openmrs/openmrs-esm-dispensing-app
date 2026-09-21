@@ -4,8 +4,8 @@ import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
 import {
   ExtensionSlot,
-  getAssignedExtensions,
   type PatientUuid,
+  useAssignedExtensions,
   useConfig,
   UserHasAccess,
 } from '@openmrs/esm-framework';
@@ -44,7 +44,7 @@ const PrescriptionDetails: React.FC<{
   } = usePatientAllergies(patientUuid, config.refreshInterval);
   const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
   const { staleEncounterUuids } = useStaleEncounterUuids();
-  const sideEffectsSlotFilled = getAssignedExtensions('dispensing-prescription-side-effects-slot').length > 0;
+  const sideEffectsSlotFilled = useAssignedExtensions('dispensing-prescription-side-effects-slot').length > 0;
 
   const generateStatusTag = (medicationRequestBundle: MedicationRequestBundle): React.ReactNode => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
