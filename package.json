@@ -45,12 +45,12 @@
     "url": "https://github.com/openmrs/openmrs-esm-dispensing/issues"
   },
   "dependencies": {
-    "@carbon/react": "^1.83.0",
     "classnames": "^2.5.1",
     "lodash-es": "^4.17.21",
     "react-to-print": "^2.14.13"
   },
   "peerDependencies": {
+    "@carbon/react": "1.x",
     "@openmrs/esm-framework": "10.x",
     "dayjs": "1.x",
     "react": "18.x",
@@ -60,6 +60,7 @@
     "swr": "2.x"
   },
   "devDependencies": {
+    "@carbon/react": "^1.83.0",
     "@openmrs/eslint-config": "^2.0.0",
     "@openmrs/esm-framework": "next",
     "@playwright/test": "^1.52.0",

@@ -2608,6 +2608,7 @@ __metadata:
     typescript-eslint: "npm:^8.66.0"
     vitest: "npm:^4.1.2"
   peerDependencies:
+    "@carbon/react": 1.x
     "@openmrs/esm-framework": 10.x
     dayjs: 1.x
     react: 18.x
