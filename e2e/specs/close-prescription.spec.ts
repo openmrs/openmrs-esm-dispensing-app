@@ -50,7 +50,7 @@ test('Close prescription', async ({ page, patient }) => {
   });
 
   await test.step('Then I click the Close button on the prescription tile', async () => {
-    await page.getByRole('button', { name: 'danger Close' }).click();
+    await page.getByRole('button', { name: /^(danger )?close$/i }).click();
     await expect(page.getByText('Close prescription')).toBeVisible();
     await expect(page.getByText('Reason for close')).toBeVisible();
   });
