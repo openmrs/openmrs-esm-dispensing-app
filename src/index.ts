@@ -34,6 +34,12 @@ export const closeActionButton = getSyncLifecycle(CloseActionButton, options);
 export const dispenseActionButton = getSyncLifecycle(DispenseActionButton, options);
 export const pauseActionButton = getSyncLifecycle(PauseActionButton, options);
 
+// Prescription actions footer
+export const prescriptionPrintAction = getAsyncLifecycle(
+  () => import('./print-prescription/prescription-print-action.extension'),
+  options,
+);
+
 // Dispensing workspace
 // t('closePrescription', 'Close prescription')
 export const closeDispenseWorkspace = getAsyncLifecycle(() => import('./forms/close-dispense-form.workspace'), options);

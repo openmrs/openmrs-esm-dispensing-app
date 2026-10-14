@@ -61,6 +61,11 @@
       }
     },
     {
+      "name": "prescription-print-action",
+      "slot": "prescription-actions-footer-slot",
+      "component": "prescriptionPrintAction"
+    },
+    {
       "name": "dispense-action-button",
       "slot": "prescription-action-button-slot",
       "component": "dispenseActionButton"
