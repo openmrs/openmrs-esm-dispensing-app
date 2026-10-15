@@ -1,6 +1,6 @@
 {
   "name": "@openmrs/esm-dispensing-app",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "license": "MPL-2.0",
   "description": "Medication dispensing application",
   "browser": "dist/openmrs-esm-dispensing-app.js",
@@ -35,14 +35,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openmrs/openmrs-esm-dispensing.git"
+    "url": "git+https://github.com/openmrs/openmrs-esm-dispensing-app.git"
   },
   "homepage": "https://github.com/openmrs/openmrs-esm-dispensing#readme",
   "publishConfig": {
     "access": "public"
   },
   "bugs": {
-    "url": "https://github.com/openmrs/openmrs-esm-dispensing/issues"
+    "url": "https://openmrs.atlassian.net/jira/software/c/projects/O3/boards/37"
   },
   "dependencies": {
     "classnames": "^2.5.1",
@@ -51,7 +51,7 @@
   },
   "peerDependencies": {
     "@carbon/react": "1.x",
-    "@openmrs/esm-framework": "10.x",
+    "@openmrs/esm-framework": "11.x",
     "dayjs": "1.x",
     "react": "18.x",
     "react-dom": "18.x",
