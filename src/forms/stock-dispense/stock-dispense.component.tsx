@@ -5,6 +5,7 @@ import { formatDate, useConfig } from '@openmrs/esm-framework';
 import { type MedicationDispense, type InventoryItem } from '../../types';
 import { type PharmacyConfig } from '../../config-schema';
 import { useDispenseStock } from './stock.resource';
+import { isValidBatch } from './stock-dispense.utils';
 
 type StockDispenseProps = {
   medicationDispense: MedicationDispense;
@@ -15,80 +16,26 @@ type StockDispenseProps = {
 const StockDispense: React.FC<StockDispenseProps> = ({ medicationDispense, updateInventoryItem }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
+  const validateBatch = typeof config === 'undefined' || Boolean(config.validateBatch);
 
   const drugUuid = medicationDispense?.medicationReference?.reference?.split('/')[1];
   const { inventoryItems, error, isLoading } = useDispenseStock(drugUuid);
+
   const validInventoryItems = inventoryItems
-    .filter((item) => isValidBatch(medicationDispense, item))
+    .filter((item) => isValidBatch(medicationDispense, item, validateBatch))
     .sort((a, b) => new Date(a.expiration).getTime() - new Date(b.expiration).getTime());
 
-  function parseDate(dateString) {
-    return new Date(dateString);
-  }
-
-  //check whether the drug will expire before the medication period ends
-  function isValidBatch(medicationToDispense, inventoryItem) {
-    if (typeof config !== 'undefined' && !config.validateBatch) {
-      return true;
-    }
-    if (medicationToDispense?.dosageInstruction && medicationToDispense?.dosageInstruction.length > 0) {
-      return medicationToDispense.dosageInstruction.some((instruction) => {
-        if (
-          instruction.timing?.repeat?.duration &&
-          instruction.timing?.repeat?.durationUnit &&
-          inventoryItem.quantity > 0
-        ) {
-          const durationUnit = instruction.timing.repeat.durationUnit;
-          const durationValue = instruction.timing.repeat.duration;
-          const lastMedicationDate = new Date();
-
-          switch (durationUnit) {
-            case 's':
-              lastMedicationDate.setSeconds(lastMedicationDate.getSeconds() + durationValue);
-              break;
-            case 'min':
-              lastMedicationDate.setMinutes(lastMedicationDate.getMinutes() + durationValue);
-              break;
-            case 'h':
-              lastMedicationDate.setHours(lastMedicationDate.getHours() + durationValue);
-              break;
-            case 'd':
-              lastMedicationDate.setDate(lastMedicationDate.getDate() + durationValue);
-              break;
-            case 'wk':
-              lastMedicationDate.setDate(lastMedicationDate.getDate() + durationValue * 7);
-              break;
-            case 'mo':
-              lastMedicationDate.setMonth(lastMedicationDate.getMonth() + durationValue);
-              break;
-            case 'y':
-              lastMedicationDate.setFullYear(lastMedicationDate.getFullYear() + durationValue);
-              break;
-            default:
-              return false;
-          }
-
-          const expiryDate = parseDate(inventoryItem.expiration);
-          return expiryDate > lastMedicationDate;
-        }
-        return false;
-      });
-    }
-    return false;
-  }
-
-  const toStockDispense = (inventoryItems) => {
-    return t(
+  const toStockDispense = (item: InventoryItem) =>
+    t(
       'stockDispenseDetails',
       'Batch: {{batchNumber}} - Quantity: {{quantity}} ({{quantityUoM}}) - Expiry: {{expiration}}',
       {
-        batchNumber: inventoryItems.batchNumber,
-        quantity: Math.floor(inventoryItems.quantity),
-        quantityUoM: inventoryItems.quantityUoM,
-        expiration: formatDate(new Date(inventoryItems.expiration)),
+        batchNumber: item.batchNumber,
+        quantity: Math.floor(item.quantity),
+        quantityUoM: item.quantityUoM,
+        expiration: formatDate(new Date(item.expiration)),
       },
     );
-  };
 
   if (error) {
     return (
