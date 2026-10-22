@@ -22,3 +22,5 @@ export const PRESCRIPTIONS_TABLE_ENDPOINT = 'Encounter?_query=encountersWithMedi
 export const PRESCRIPTION_DETAILS_ENDPOINT = 'MedicationRequest';
 
 export const MEDICATION_DISPENSE_ACTION_SLOT = 'medication-dispense-action-slot';
+
+export const PRESCRIPTION_ACTIONS_FOOTER_SLOT = 'prescription-actions-footer-slot';
