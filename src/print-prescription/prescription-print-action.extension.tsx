@@ -22,6 +22,7 @@ const PrescriptionPrintAction: React.FC<PrescriptionPrintActionProps> = ({ encou
     });
   }, [encounterUuid, patientUuid]);
 
+  // TODO: this config will be removed in favor of configuring the `prescription-actions-footer-slot` extension slot instead.
   if (!config.actionButtons.printPrescriptionsButton.enabled) {
     return null;
   }
