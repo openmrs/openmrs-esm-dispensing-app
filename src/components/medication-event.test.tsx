@@ -210,4 +210,15 @@ describe('MedicationEvent', () => {
 
     expect(screen.getByRole('button', { name: 'Action Button' })).toBeInTheDocument();
   });
+
+  it('renders additional details in the details column', () => {
+    render(
+      <MedicationEvent medicationEvent={baseMedicationRequest} additionalDetails={<p>Side effects</p>}>
+        <button>Dispense</button>
+      </MedicationEvent>,
+    );
+
+    expect(screen.getByText('Side effects')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Dispense' })).toBeInTheDocument();
+  });
 });
