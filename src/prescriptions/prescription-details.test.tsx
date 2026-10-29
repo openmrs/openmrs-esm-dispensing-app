@@ -1,7 +1,7 @@
 import React from 'react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ExtensionSlot, useAssignedExtensions, useConfig } from '@openmrs/esm-framework';
+import { ExtensionSlot, useConfig } from '@openmrs/esm-framework';
 import { usePrescriptionDetails, usePatientAllergies } from '../medication-request/medication-request.resource';
 import { useStaleEncounterUuids } from '../utils';
 import type * as Utils from '../utils';
@@ -24,7 +24,6 @@ const mockUsePrescriptionDetails = vi.mocked(usePrescriptionDetails);
 const mockUsePatientAllergies = vi.mocked(usePatientAllergies);
 const mockUseStaleEncounterUuids = vi.mocked(useStaleEncounterUuids);
 const mockExtensionSlot = vi.mocked(ExtensionSlot);
-const mockUseAssignedExtensions = vi.mocked(useAssignedExtensions);
 
 const mockEncounterUuid = 'test-encounter-uuid';
 const mockPatientUuid = 'test-patient-uuid';
@@ -62,7 +61,6 @@ describe('PrescriptionDetails', () => {
     mockUseStaleEncounterUuids.mockReturnValue({
       staleEncounterUuids: [],
     });
-    mockUseAssignedExtensions.mockReturnValue([]);
   });
 
   describe('Allergies Display', () => {
@@ -299,7 +297,6 @@ describe('PrescriptionDetails', () => {
   describe('Side effects extension slot', () => {
     beforeEach(() => {
       mockExtensionSlot.mockClear();
-      mockUseAssignedExtensions.mockReturnValue([{ name: 'medication-side-effects-panel-dispensing' }] as any);
       mockUsePatientAllergies.mockReturnValue({
         allergies: [],
         totalAllergies: 0,
@@ -336,26 +333,6 @@ describe('PrescriptionDetails', () => {
         }),
         dispenses: [],
       };
-      mockUsePrescriptionDetails.mockReturnValue({
-        medicationRequestBundles: [bundle],
-        prescriptionDate: new Date(),
-        error: undefined,
-        isLoading: false,
-        mutate: vi.fn(),
-        isValidating: false,
-      });
-
-      render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
-
-      const slotCall = mockExtensionSlot.mock.calls.find(
-        (call) => call[0].name === 'dispensing-prescription-side-effects-slot',
-      );
-      expect(slotCall).toBeUndefined();
-    });
-
-    it('does not mount the side effects slot when no extension is assigned to it', () => {
-      mockUseAssignedExtensions.mockReturnValue([]);
-      const bundle: MedicationRequestBundle = { request: buildRequest(), dispenses: [] };
       mockUsePrescriptionDetails.mockReturnValue({
         medicationRequestBundles: [bundle],
         prescriptionDate: new Date(),

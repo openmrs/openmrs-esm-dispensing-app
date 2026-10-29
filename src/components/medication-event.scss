@@ -4,7 +4,8 @@
 
 .medicationEventTile {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  column-gap: layout.$spacing-07;
   width: 100%;
   margin: layout.$spacing-01 0 layout.$spacing-03;
   padding: layout.$spacing-04 layout.$spacing-05 layout.$spacing-04 layout.$spacing-03;
@@ -17,31 +18,15 @@
     border-left: layout.$spacing-03 solid red;
   }
 
-  &.isTablet .content {
+  &.isTablet {
     flex-direction: column;
     gap: layout.$spacing-05;
   }
 }
 
-.content {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.contentStart {
-  justify-content: flex-start;
-  column-gap: layout.$spacing-07;
-}
-
-.footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: layout.$spacing-05;
-
-  &:empty {
-    display: none;
-  }
+.details {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .medicationName {
