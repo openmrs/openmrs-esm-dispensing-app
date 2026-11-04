@@ -218,7 +218,8 @@ describe('MedicationEvent', () => {
       </MedicationEvent>,
     );
 
-    expect(screen.getByText('Side effects')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Dispense' })).toBeInTheDocument();
+    const detailsColumn = screen.getByText('Side effects').parentElement;
+    expect(detailsColumn).toContainElement(screen.getByText('Paracetamol 500mg tablet'));
+    expect(detailsColumn).not.toContainElement(screen.getByRole('button', { name: 'Dispense' }));
   });
 });
