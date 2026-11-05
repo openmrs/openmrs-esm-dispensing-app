@@ -4,6 +4,7 @@ import isToday from 'dayjs/plugin/isToday';
 import useSWR from 'swr';
 import { openmrsFetch, type Session } from '@openmrs/esm-framework';
 import {
+  computeInitialDispenseQuantity,
   deleteMedicationDispense,
   initiateMedicationDispenseBody,
   saveMedicationDispense,
@@ -244,5 +245,44 @@ describe('Medication Dispense Resource tests', () => {
     expect(medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.code).toBe('385055001');
     expect(medicationDispense.dosageInstruction[0].doseAndRate[0].doseQuantity.unit).toBe('Tablet');
     expect(medicationDispense.substitution.wasSubstituted).toBe(false);
+  });
+
+  test('computeInitialDispenseQuantity pre-fills the remaining quantity when it is smaller than the prescribed one', () => {
+    // prescribed 5, 2 already dispensed
+    expect(computeInitialDispenseQuantity(5, 3)).toBe(3);
+    // nothing dispensed yet
+    expect(computeInitialDispenseQuantity(5, 5)).toBe(5);
+    // refills: more remains than one fill
+    expect(computeInitialDispenseQuantity(5, 10)).toBe(5);
+    // remaining not computed (restrictTotalQuantityDispensed off)
+    expect(computeInitialDispenseQuantity(5, null)).toBe(5);
+    expect(computeInitialDispenseQuantity(5, undefined)).toBe(5);
+    // no prescribed quantity
+    expect(computeInitialDispenseQuantity(undefined, 3)).toBe(3);
+  });
+
+  test('initiateMedicationDispenseBody pre-fills the quantity remaining instead of the prescribed quantity', () => {
+    const medicationRequest = {
+      resourceType: 'MedicationRequest',
+      id: '456def',
+      status: MedicationRequestStatus.active,
+      medicationReference: { reference: 'Medication/123abc' },
+      subject: { reference: 'Patient/765432' },
+      dispenseRequest: {
+        numberOfRepeatsAllowed: 0,
+        quantity: { value: 5, system: 'http://snomed.info/sct', code: '123456789', unit: 'Tablet' },
+        validityPeriod: { start: '' },
+      },
+      dosageInstruction: [{ text: 'Take with food', timing: { repeat: { duration: 5, durationUnit: 'd' } } }],
+    } as unknown as MedicationRequest;
+    const session = { currentProvider: { uuid: 'ghi789' }, sessionLocation: { uuid: '987654' } } as Session;
+
+    const partial = initiateMedicationDispenseBody(medicationRequest, session, [], true, 3);
+    expect(partial.quantity.value).toBe(3);
+    expect(partial.quantity.unit).toBe('Tablet');
+    expect(partial.quantity.code).toBe('123456789');
+
+    const unrestricted = initiateMedicationDispenseBody(medicationRequest, session, [], true, null);
+    expect(unrestricted.quantity.value).toBe(5);
   });
 });
