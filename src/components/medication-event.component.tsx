@@ -12,6 +12,7 @@ import {
   getQuantity,
   getRefillsAllowed,
 } from '../utils';
+import PrescriptionDuration from './prescription-duration.component';
 import styles from './medication-event.scss';
 
 /**
@@ -62,7 +63,10 @@ const MedicationEvent: React.FC<{
             {dosageInstruction?.timing?.repeat?.duration && (
               <>
                 {' '}
-                for {dosageInstruction.timing.repeat.duration} {dosageInstruction.timing.repeat.durationUnit}
+                <PrescriptionDuration
+                  duration={dosageInstruction.timing.repeat.duration}
+                  durationUnit={dosageInstruction.timing.repeat.durationUnit}
+                />
               </>
             )}
           </p>

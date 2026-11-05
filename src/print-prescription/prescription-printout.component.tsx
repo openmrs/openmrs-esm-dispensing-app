@@ -11,6 +11,7 @@ import {
   getQuantity,
   getRefillsAllowed,
 } from '../utils';
+import { usePrescriptionDurationText } from '../components/prescription-duration.component';
 import styles from './print-prescription.scss';
 
 type PrescriptionsPrintoutProps = {
@@ -20,6 +21,7 @@ type PrescriptionsPrintoutProps = {
 
 const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ excludedPrescription, medicationRequests }) => {
   const { t } = useTranslation();
+  const durationText = usePrescriptionDurationText();
   const {
     sessionLocation: { display: facilityName },
   } = useSession();
@@ -94,7 +96,7 @@ const PrescriptionsPrintout: React.FC<PrescriptionsPrintoutProps> = ({ excludedP
                         <span className={styles.prescriptionInfo}>
                           {dosageInstruction?.route?.text} &mdash; {dosageInstruction?.timing?.code?.text}
                           {dosageInstruction?.timing?.repeat?.duration
-                            ? ` ${t('for', 'for')} ${dosageInstruction?.timing?.repeat?.duration} ${dosageInstruction?.timing?.repeat?.durationUnit}`
+                            ? ` ${durationText(dosageInstruction.timing.repeat.duration, dosageInstruction.timing.repeat.durationUnit)}`
                             : ''}
                         </span>
                         {quantity && (
