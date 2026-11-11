@@ -3,7 +3,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { render, renderHook, screen } from '@testing-library/react';
 import { useFhirFetchAll, usePagination } from '@openmrs/esm-framework';
 import { usePatientConditions } from './conditions.resource';
-import type { Condition } from './conditions.resource';
+import type * as conditionsResource from './conditions.resource';
 import PatientConditions from './conditions.component';
 
 vi.mock('./conditions.resource', () => ({
@@ -16,19 +16,10 @@ const mockUsePagination = vi.mocked(usePagination);
 
 const mockPatientUuid = 'test-patient-uuid';
 
-interface ConditionsResourceModule {
-  usePatientConditions: (patientUuid: string) => {
-    conditions: Array<Condition>;
-    isLoading: boolean;
-    error: Error;
-    mutate: () => void;
-  };
-}
-
 describe('usePatientConditions', () => {
   it('queries only problem-list conditions by requesting the problem-list-item category', async () => {
     const { usePatientConditions: realUsePatientConditions } =
-      await vi.importActual<ConditionsResourceModule>('./conditions.resource');
+      await vi.importActual<typeof conditionsResource>('./conditions.resource');
 
     vi.mocked(useFhirFetchAll).mockReturnValue({
       data: [],
