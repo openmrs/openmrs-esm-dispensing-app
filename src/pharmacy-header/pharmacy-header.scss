@@ -1,38 +1,17 @@
+@use '@carbon/colors';
 @use '@carbon/layout';
 @use '@carbon/type';
 @use '@openmrs/esm-styleguide/src/vars' as *;
 
 .header {
-  @include type.type-style('body-compact-02');
-  color: $text-02;
-  height: layout.$spacing-12;
   background-color: $ui-02;
-  display: flex;
-  justify-content: space-between;
-}
-
-.leftJustifiedItems {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-left: layout.$spacing-05;
+  border-bottom: 1px solid colors.$gray-20;
 }
 
 .rightJustifiedItems {
   @include type.type-style('body-compact-02');
   color: $text-02;
   padding-top: layout.$spacing-05;
-}
-
-.pageName {
-  @include type.type-style('heading-04');
-}
-
-.pageLabels {
-  margin-left: layout.$spacing-05;
-  p:first-of-type {
-    margin-bottom: layout.$spacing-02;
-  }
 }
 
 .dateAndLocation {
@@ -48,8 +27,4 @@
 
 .middot {
   margin: 0 layout.$spacing-03;
-}
-
-.view {
-  @include type.type-style('label-01');
 }

@@ -51,7 +51,6 @@ export const generateRandomPatient = async (api: APIRequestContext): Promise<Pat
     data: {},
   });
 
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   await expect(identifierRes.ok()).toBeTruthy();
   const { identifier } = await identifierRes.json();
 
@@ -94,7 +93,6 @@ export const generateRandomPatient = async (api: APIRequestContext): Promise<Pat
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/await-thenable
   await expect(patientRes.ok()).toBeTruthy();
   return await patientRes.json();
 };

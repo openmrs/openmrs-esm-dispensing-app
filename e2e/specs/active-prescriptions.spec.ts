@@ -25,8 +25,16 @@ test.beforeEach(async ({ api, patient }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 });
 
+test.afterEach(async ({ api }) => {
+  await deleteEncounter(api, encounter.uuid);
+  await deleteDrugOrder(api, drugOrder.uuid);
+  await endVisit(api, visit);
+});
+
 test('View active prescriptions', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
+  const patientName = `${patient.person.display}`;
+  const patientRow = page.getByRole('row', { name: new RegExp(patientName) });
 
   await test.step('When I navigate to the dispensing page', async () => {
     await dispensingPage.goTo();
@@ -48,25 +56,13 @@ test('View active prescriptions', async ({ page, patient }) => {
   });
 
   await test.step('And the table should contain the test prescription', async () => {
-    const patientName = `${patient.person.display}`;
-    const patientRow = page.getByRole('row', { name: new RegExp(patientName) });
     await expect(patientRow.getByRole('cell', { name: patientName })).toBeVisible();
     await expect(patientRow.getByRole('cell', { name: 'Aspirin 81mg' })).toBeVisible();
     await expect(patientRow.getByRole('cell', { name: 'Active' })).toBeVisible();
   });
 
   await test.step('And I should be able to expand the prescription row to see details', async () => {
-    await page
-      .getByRole('row', { name: /Expand current row/ })
-      .getByLabel('Expand current row')
-      .nth(0)
-      .click();
+    await patientRow.getByLabel('Expand current row').click();
     await expect(page.getByLabel('Prescription details', { exact: true })).toBeVisible();
   });
-});
-
-test.afterEach(async ({ api }) => {
-  await deleteEncounter(api, encounter.uuid);
-  await deleteDrugOrder(api, drugOrder.uuid);
-  await endVisit(api, visit);
 });

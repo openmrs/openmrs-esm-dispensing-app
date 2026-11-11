@@ -2,11 +2,11 @@
   "$schema": "https://json.openmrs.org/routes.schema.json",
   "backendDependencies": {
     "fhir2": ">=1.2",
-    "webservices.rest": ">=2.2.0 <4.0.0"
+    "webservices.rest": ">=2.2.0 <6.0.0-0"
   },
   "optionalBackendDependencies": {
     "emrapi": {
-      "version": ">=3.3.0 <4.0.0",
+      "version": ">=3.3.0 <5.0.0-0",
       "feature": {
         "flagName": "emrapi-module",
         "label": "EMR API Module",
@@ -64,6 +64,9 @@
       "name": "pick-action-button",
       "slot": "prescription-action-button-slot",
       "component": "pickActionButton"
+      "name": "prescription-print-action",
+      "slot": "prescription-actions-footer-slot",
+      "component": "prescriptionPrintAction"
     },
     {
       "name": "dispense-action-button",

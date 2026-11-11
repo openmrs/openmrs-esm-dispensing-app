@@ -25,6 +25,12 @@ test.beforeEach(async ({ api, patient }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 });
 
+test.afterEach(async ({ api }) => {
+  await deleteEncounter(api, encounter.uuid);
+  await deleteDrugOrder(api, drugOrder.uuid);
+  await endVisit(api, visit);
+});
+
 test('Pause prescription', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
 
@@ -38,8 +44,8 @@ test('Pause prescription', async ({ page, patient }) => {
   });
 
   await test.step('And I expand a table row in the prescriptions table corresponding to an active prescription', async () => {
-    const rowText = new RegExp(`Expand current row`);
-    await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
+    const patientRow = page.getByRole('row', { name: new RegExp(patient.person.display) });
+    await patientRow.getByLabel('Expand current row').click();
     await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
   });
 
@@ -63,10 +69,4 @@ test('Pause prescription', async ({ page, patient }) => {
   await test.step('Then I should see a success notification', async () => {
     await expect(page.getByText(/medication dispense paused./i)).toBeVisible();
   });
-});
-
-test.afterEach(async ({ api }) => {
-  await deleteEncounter(api, encounter.uuid);
-  await deleteDrugOrder(api, drugOrder.uuid);
-  await endVisit(api, visit);
 });

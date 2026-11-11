@@ -25,8 +25,15 @@ test.beforeEach(async ({ api, patient }) => {
   drugOrder = await generateRandomDrugOrder(api, patient.uuid, encounter, orderer.uuid);
 });
 
+test.afterEach(async ({ api }) => {
+  await deleteEncounter(api, encounter.uuid);
+  await deleteDrugOrder(api, drugOrder.uuid);
+  await endVisit(api, visit);
+});
+
 test('Close prescription', async ({ page, patient }) => {
   const dispensingPage = new DispensingPage(page);
+
   await test.step('When I navigate to the dispensing app', async () => {
     await dispensingPage.goTo();
   });
@@ -37,13 +44,13 @@ test('Close prescription', async ({ page, patient }) => {
   });
 
   await test.step('And I expand a table row in the prescriptions table corresponding to an active prescription', async () => {
-    const rowText = new RegExp(`Expand current row`);
-    await page.getByRole('row', { name: rowText }).getByLabel('Expand current row').nth(0).click();
+    const patientRow = page.getByRole('row', { name: new RegExp(patient.person.display) });
+    await patientRow.getByLabel('Expand current row').click();
     await expect(page.getByLabel('Prescription details', { exact: true }).getByText('Aspirin 81mg')).toBeVisible();
   });
 
   await test.step('Then I click the Close button on the prescription tile', async () => {
-    await page.getByRole('button', { name: 'danger Close' }).click();
+    await page.getByRole('button', { name: /^(danger )?close$/i }).click();
     await expect(page.getByText('Close prescription')).toBeVisible();
     await expect(page.getByText('Reason for close')).toBeVisible();
   });
@@ -62,10 +69,4 @@ test('Close prescription', async ({ page, patient }) => {
   await test.step('Then I should see a success notification', async () => {
     await expect(page.getByText(/medication dispense closed/i)).toBeVisible();
   });
-});
-
-test.afterEach(async ({ api }) => {
-  await deleteEncounter(api, encounter.uuid);
-  await deleteDrugOrder(api, drugOrder.uuid);
-  await endVisit(api, visit);
 });

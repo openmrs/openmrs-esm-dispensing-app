@@ -8,7 +8,7 @@ import styles from './prescription-expanded.scss';
 
 interface TabItem {
   name: string;
-  component: JSX.Element;
+  component: React.JSX.Element;
 }
 
 const PrescriptionExpanded: React.FC<{

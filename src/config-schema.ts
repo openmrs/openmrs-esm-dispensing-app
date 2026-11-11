@@ -191,6 +191,10 @@ export interface PharmacyConfig {
     closeButton: {
       enabled: boolean;
     };
+    /**
+     * @deprecated This property is deprecated and will be removed in a future release. 
+     * Configure the button in the `prescription-actions-footer-slot` extension slot instead.
+     */
     printPrescriptionsButton: {
       enabled: boolean;
     };
