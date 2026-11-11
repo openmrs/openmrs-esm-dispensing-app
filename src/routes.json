@@ -61,6 +61,11 @@
       }
     },
     {
+      "name": "pick-action-button",
+      "slot": "prescription-action-button-slot",
+      "component": "pickActionButton"
+    },
+    {
       "name": "dispense-action-button",
       "slot": "prescription-action-button-slot",
       "component": "dispenseActionButton"

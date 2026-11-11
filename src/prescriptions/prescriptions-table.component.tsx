@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   DataTable,
   DataTableSkeleton,
@@ -18,9 +18,9 @@ import {
 } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
-import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import { usePrescriptionsByStage, usePrescriptionsTable } from '../medication-request/medication-request.resource';
 import { type PharmacyConfig } from '../config-schema';
-import { type SimpleLocation } from '../types';
+import { type PrescriptionStage, type SimpleLocation } from '../types';
 import PatientInfoCell from '../patient/patient-info-cell.component';
 import PrescriptionExpanded from './prescription-expanded.component';
 import styles from './prescriptions.scss';
@@ -31,6 +31,8 @@ interface PrescriptionsTableProps {
   locations: SimpleLocation[];
   status?: string;
   customPrescriptionsTableEndpoint?: string;
+  /** When set, show only the prescriptions in this lab-style stage. */
+  stage?: PrescriptionStage;
 }
 
 const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
@@ -39,14 +41,15 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
   locations,
   status,
   customPrescriptionsTableEndpoint,
+  stage,
 }) => {
   const { t } = useTranslation();
   const config = useConfig<PharmacyConfig>();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const nextOffSet = (page - 1) * pageSize;
-  const { prescriptionsTableRows, error, isLoading, totalOrders } = usePrescriptionsTable(
-    loadData,
+  const table = usePrescriptionsTable(
+    loadData && !stage,
     customPrescriptionsTableEndpoint,
     status,
     pageSize,
@@ -56,6 +59,20 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
     config.medicationRequestExpirationPeriodInDays,
     config.refreshInterval,
   );
+
+  const byStage = usePrescriptionsByStage(
+    loadData && Boolean(stage),
+    debouncedSearchTerm,
+    locations,
+    config.medicationRequestExpirationPeriodInDays,
+    config.refreshInterval,
+  );
+  const stageRows = useMemo(() => byStage.rows?.filter((row) => row.stage === stage), [byStage.rows, stage]);
+  const prescriptionsTableRows = stage
+    ? stageRows?.slice(nextOffSet, nextOffSet + pageSize)
+    : table.prescriptionsTableRows;
+  const { error, isLoading } = stage ? byStage : table;
+  const totalOrders = stage ? stageRows?.length : table.totalOrders;
 
   // reset back to page 1 whenever search term changes
   useEffect(() => {
@@ -70,6 +87,7 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
   // t('expired', 'Expired')
   // t('cancelled', 'Cancelled')
   // t('dispensed', 'Dispensed')
+  // t('picked', 'Picked')
 
   let columns = [
     { header: t('created', 'Created'), key: 'created' },

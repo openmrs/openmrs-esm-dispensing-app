@@ -7,6 +7,7 @@ import DispensingDashboardComponent from './dashboard/dispensing-dashboard.compo
 import DispensingLinkComponent from './dispensing-link.component';
 import DispensingLinkHomepageComponent from './dashboard/dispensing-dashboard-link.component';
 import PauseActionButton from './components/prescription-actions/pause-action-button.component';
+import PickActionButton from './components/prescription-actions/pick-action-button.component';
 
 export const importTranslation = require.context('../translations', false, /.json$/, 'lazy');
 
@@ -33,6 +34,7 @@ export const dispensingDashboardLink = getSyncLifecycle(DispensingLinkHomepageCo
 export const closeActionButton = getSyncLifecycle(CloseActionButton, options);
 export const dispenseActionButton = getSyncLifecycle(DispenseActionButton, options);
 export const pauseActionButton = getSyncLifecycle(PauseActionButton, options);
+export const pickActionButton = getSyncLifecycle(PickActionButton, options);
 
 // Dispensing workspace
 // t('closePrescription', 'Close prescription')

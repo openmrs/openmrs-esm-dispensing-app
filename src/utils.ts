@@ -14,6 +14,7 @@ import {
   MedicationRequestCombinedStatus,
   MedicationRequestFulfillerStatus,
   MedicationRequestStatus,
+  type PrescriptionStage,
   type Quantity,
 } from './types';
 import { createGlobalStore, fhirBaseUrl, parseDate, useStore } from '@openmrs/esm-framework';
@@ -257,7 +258,11 @@ export function computePrescriptionStatusMessageCode(
   if (medicationRequestCombinedStatus === null) {
     return null;
   } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.active) {
-    return 'active';
+    return medicationRequests.some(
+      (medicationRequest) => getFulfillerStatus(medicationRequest) === MedicationRequestFulfillerStatus.in_progress,
+    )
+      ? 'picked'
+      : 'active';
   } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.on_hold) {
     return 'paused';
   } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.completed) {
@@ -268,6 +273,67 @@ export function computePrescriptionStatusMessageCode(
     return 'expired';
   } else if (medicationRequestCombinedStatus === MedicationRequestCombinedStatus.cancelled) {
     return 'cancelled';
+  }
+  return null;
+}
+
+/**
+ * Whether the pharmacy has started on a request: it was picked, paused, or has already been
+ * (partly) dispensed.
+ */
+export function isMedicationRequestPicked(
+  medicationRequest: MedicationRequest,
+  medicationDispenses: Array<MedicationDispense> = [],
+): boolean {
+  const fulfillerStatus = getFulfillerStatus(medicationRequest);
+  return (
+    fulfillerStatus === MedicationRequestFulfillerStatus.in_progress ||
+    fulfillerStatus === MedicationRequestFulfillerStatus.on_hold ||
+    (medicationDispenses ?? []).some((dispense) => dispense.status === MedicationDispenseStatus.completed)
+  );
+}
+
+/**
+ * The lab-style stage of a prescription (all the requests of one encounter):
+ * - picked: something is still open and the pharmacy has started on it
+ * - ordered: something is still open and nobody has picked it yet
+ * - dispensed: nothing is open and at least one drug was dispensed
+ * - declined: nothing is open and every drug was declined
+ * Prescriptions that expired or were cancelled without being dispensed have no stage.
+ */
+export function computePrescriptionStage(
+  medicationRequests: Array<MedicationRequest>,
+  medicationDispenses: Array<MedicationDispense>,
+  medicationRequestExpirationPeriodInDays: number,
+): PrescriptionStage | null {
+  if (!medicationRequests?.length) {
+    return null;
+  }
+  const requests = medicationRequests.map((medicationRequest) => {
+    const dispenses = getAssociatedMedicationDispenses(medicationRequest, medicationDispenses ?? []) ?? [];
+    const status = computeMedicationRequestCombinedStatus(medicationRequest, medicationRequestExpirationPeriodInDays);
+    const dispensed =
+      status === MedicationRequestCombinedStatus.completed ||
+      dispenses.some((dispense) => dispense.status === MedicationDispenseStatus.completed);
+    return { medicationRequest, dispenses, status, dispensed };
+  });
+  const open = requests.filter(
+    (request) =>
+      !request.dispensed &&
+      (request.status === MedicationRequestCombinedStatus.active ||
+        request.status === MedicationRequestCombinedStatus.on_hold),
+  );
+  if (open.length) {
+    const started =
+      requests.some((request) => request.dispensed) ||
+      open.some((request) => isMedicationRequestPicked(request.medicationRequest, request.dispenses));
+    return started ? 'picked' : 'ordered';
+  }
+  if (requests.some((request) => request.dispensed)) {
+    return 'dispensed';
+  }
+  if (requests.some((request) => request.status === MedicationRequestCombinedStatus.declined)) {
+    return 'declined';
   }
   return null;
 }

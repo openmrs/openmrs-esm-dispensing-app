@@ -58,6 +58,12 @@ export const configSchema = {
         'Enable/Disable restricting dispensing quantity greater than total quantity ordered. Marks prescription as complete when total quantity dispensed. If true, allowModifyingPrescription *must* be false, as this functionality relies solely on numeric quantity and assumes no change in formulation, dosage, unit, etc',
       _default: false,
     },
+    requirePickBeforeDispense: {
+      _type: Type.Boolean,
+      _description:
+        'Lab-style workflow: a pharmacist must Pick a prescription (Ordered -> Picked) before it can be dispensed.',
+      _default: true,
+    },
   },
   dispenserProviderRoles: {
     _type: Type.Array,
@@ -193,6 +199,7 @@ export interface PharmacyConfig {
   dispenseBehavior: {
     allowModifyingPrescription: boolean;
     restrictTotalQuantityDispensed: boolean;
+    requirePickBeforeDispense: boolean;
   };
   dispenserProviderRoles: [];
   medicationRequestExpirationPeriodInDays: number;

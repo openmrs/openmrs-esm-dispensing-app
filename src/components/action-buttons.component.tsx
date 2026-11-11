@@ -6,6 +6,7 @@ import {
   computeQuantityRemaining,
   getMostRecentMedicationDispenseStatus,
   computeTotalQuantityDispensed,
+  isMedicationRequestPicked,
 } from '../utils';
 import { type PharmacyConfig } from '../config-schema';
 import { useProviders } from '../medication-dispense/medication-dispense.resource';
@@ -34,9 +35,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     medicationRequestBundle.request,
     config.medicationRequestExpirationPeriodInDays,
   );
-  const dispensable =
+  const canBeFilled =
     medicationRequestStatus === MedicationRequestStatus.active &&
     mostRecentMedicationDispenseStatus !== MedicationDispenseStatus.declined;
+
+  // lab-style workflow: Ordered -> Pick -> Picked -> Dispense
+  const picked = isMedicationRequestPicked(medicationRequestBundle.request, medicationRequestBundle.dispenses);
+  const requirePick = config.dispenseBehavior.requirePickBeforeDispense;
+  const pickable = requirePick && canBeFilled && !picked;
+  const dispensable = canBeFilled && (picked || !requirePick);
 
   const pauseable =
     config.actionButtons.pauseButton.enabled &&
@@ -60,6 +67,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   }
 
   const prescriptionActionsState = {
+    pickable,
     dispensable,
     pauseable,
     closeable,
