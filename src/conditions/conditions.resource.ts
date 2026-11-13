@@ -67,8 +67,10 @@ export interface Condition {
   recorder: string;
 }
 
+const conditionsCategoryUrl = 'http://terminology.hl7.org/CodeSystem/condition-category|problem-list-item';
+
 export const usePatientConditions = (patientUuid: string) => {
-  const url = `${fhirBaseUrl}/Condition?patient=${patientUuid}&_summary=data&clinical-status=active`;
+  const url = `${fhirBaseUrl}/Condition?patient=${patientUuid}&category=${conditionsCategoryUrl}&_summary=data&clinical-status=active`;
   const { data, isLoading, mutate, error } = useFhirFetchAll<Resource>(url);
 
   const conditions = useMemo(() => {

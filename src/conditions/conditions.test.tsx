@@ -1,8 +1,9 @@
 import React from 'react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { usePagination } from '@openmrs/esm-framework';
+import { render, renderHook, screen } from '@testing-library/react';
+import { useFhirFetchAll, usePagination } from '@openmrs/esm-framework';
 import { usePatientConditions } from './conditions.resource';
+import type * as conditionsResource from './conditions.resource';
 import PatientConditions from './conditions.component';
 
 vi.mock('./conditions.resource', () => ({
@@ -14,6 +15,26 @@ const mockUsePatientConditions = vi.mocked(usePatientConditions);
 const mockUsePagination = vi.mocked(usePagination);
 
 const mockPatientUuid = 'test-patient-uuid';
+
+describe('usePatientConditions', () => {
+  it('queries only problem-list conditions by requesting the problem-list-item category', async () => {
+    const { usePatientConditions: realUsePatientConditions } =
+      await vi.importActual<typeof conditionsResource>('./conditions.resource');
+
+    vi.mocked(useFhirFetchAll).mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: undefined,
+      mutate: vi.fn(),
+    } as any);
+
+    renderHook(() => realUsePatientConditions(mockPatientUuid));
+
+    const url = vi.mocked(useFhirFetchAll).mock.calls[0][0];
+    expect(url).toContain('patient=test-patient-uuid');
+    expect(url).toContain('category=http://terminology.hl7.org/CodeSystem/condition-category|problem-list-item');
+  });
+});
 
 describe('PatientConditions', () => {
   beforeEach(() => {
