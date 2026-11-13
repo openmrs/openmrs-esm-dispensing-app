@@ -210,4 +210,17 @@ describe('MedicationEvent', () => {
 
     expect(screen.getByRole('button', { name: 'Action Button' })).toBeInTheDocument();
   });
+
+  it('renders additional details in the details column', () => {
+    render(
+      <MedicationEvent medicationEvent={baseMedicationRequest} additionalDetails={<p>Side effects</p>}>
+        <button>Dispense</button>
+      </MedicationEvent>,
+    );
+
+    // eslint-disable-next-line testing-library/no-node-access -- which column the details land in is the behaviour under test
+    const detailsColumn = screen.getByText('Side effects').parentElement;
+    expect(detailsColumn).toContainElement(screen.getByText('Paracetamol 500mg tablet'));
+    expect(detailsColumn).not.toContainElement(screen.getByRole('button', { name: 'Dispense' }));
+  });
 });
