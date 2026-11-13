@@ -1,8 +1,12 @@
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
-import { fhirBaseUrl, openmrsFetch, parseDate } from '@openmrs/esm-framework';
-import { JSON_MERGE_PATH_MIME_TYPE, OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS } from '../constants';
+import { fhirBaseUrl, openmrsFetch, parseDate, restBaseUrl } from '@openmrs/esm-framework';
+import {
+  JSON_MERGE_PATH_MIME_TYPE,
+  OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
+  PRESCRIPTIONS_TABLE_ENDPOINT,
+} from '../constants';
 import {
   type AllergyIntoleranceResponse,
   type EncounterResponse,
@@ -13,6 +17,7 @@ import {
   type Encounter,
   type MedicationRequestFulfillerStatus,
   type MedicationRequestBundle,
+  type PrescriptionStage,
   type SimpleLocation,
 } from '../types';
 import {
@@ -22,6 +27,7 @@ import {
   getPrescriptionTableEndpoint,
   sortMedicationDispensesByWhenHandedOver,
   computePrescriptionStatusMessageCode,
+  computePrescriptionStage,
   getAssociatedMedicationDispenses,
 } from '../utils';
 
@@ -54,7 +60,23 @@ export function usePrescriptionsTable(
 
   let prescriptionsTableRows: PrescriptionsTableRow[];
   if (data) {
-    const entries = data?.data.entry;
+    prescriptionsTableRows = buildPrescriptionsTableRows(data?.data.entry, medicationRequestExpirationPeriodInDays);
+  }
+
+  return {
+    prescriptionsTableRows,
+    error: error,
+    isLoading: !prescriptionsTableRows && !error,
+    totalOrders: data?.data.total,
+  };
+}
+
+function buildPrescriptionsTableRows(
+  entries: EncounterResponse['entry'],
+  medicationRequestExpirationPeriodInDays: number,
+): PrescriptionsTableRow[] {
+  let prescriptionsTableRows: PrescriptionsTableRow[];
+  {
     if (entries) {
       const encounters = entries
         .filter((entry) => entry?.resource?.resourceType == 'Encounter')
@@ -89,12 +111,69 @@ export function usePrescriptionsTable(
       prescriptionsTableRows = [];
     }
   }
+  return prescriptionsTableRows;
+}
+
+/** Page size the server allows when loading every prescription for the stage lists and tiles. */
+const STAGE_PAGE_SIZE = 100;
+/** Upper bound on prescriptions loaded for the stage lists, to keep the page responsive. */
+const STAGE_MAX_PRESCRIPTIONS = 2000;
+
+async function fetchAllPrescriptionPages(url: string) {
+  const entries: EncounterResponse['entry'] = [];
+  let offset = 0;
+  let total = 0;
+  do {
+    const response = await openmrsFetch<EncounterResponse>(`${url}&_getpagesoffset=${offset}`);
+    entries.push(...(response.data?.entry ?? []));
+    total = response.data?.total ?? 0;
+    offset += STAGE_PAGE_SIZE;
+  } while (offset < total && offset < STAGE_MAX_PRESCRIPTIONS);
+  return { entries, total };
+}
+
+/**
+ * Every prescription from the last `medicationRequestExpirationPeriodInDays` days, sorted into the
+ * lab-style stages (Ordered, Picked, Dispensed, Declined). Backs the stage tabs and tiles.
+ */
+export function usePrescriptionsByStage(
+  loadData: boolean,
+  patientSearchTerm: string = '',
+  locations: SimpleLocation[] = [],
+  medicationRequestExpirationPeriodInDays: number,
+  refreshInterval: number,
+) {
+  const since = dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString();
+  const location = locations?.map((l) => l.id).join(',');
+  // starts with the table endpoint so revalidate() refreshes it after every pick, dispense or decline
+  const url = loadData
+    ? `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_count=${STAGE_PAGE_SIZE}&date=ge${since}` +
+      (patientSearchTerm ? `&patientSearchTerm=${patientSearchTerm}` : '') +
+      (location ? `&location=${location}` : '')
+    : null;
+  const { data, error } = useSWR(url, fetchAllPrescriptionPages, { refreshInterval });
+
+  const rows = useMemo(() => {
+    if (!data) {
+      return undefined;
+    }
+    return (buildPrescriptionsTableRows(data.entries, medicationRequestExpirationPeriodInDays) ?? []).filter(
+      (row) => row.stage,
+    );
+  }, [data, medicationRequestExpirationPeriodInDays]);
+
+  const counts = useMemo(() => {
+    const result: Record<PrescriptionStage, number> = { ordered: 0, picked: 0, dispensed: 0, declined: 0 };
+    rows?.forEach((row) => (result[row.stage] += 1));
+    return result;
+  }, [rows]);
 
   return {
-    prescriptionsTableRows,
-    error: error,
-    isLoading: !prescriptionsTableRows && !error,
-    totalOrders: data?.data.total,
+    rows,
+    counts,
+    error,
+    isLoading: !rows && !error,
+    isTruncated: (data?.total ?? 0) > STAGE_MAX_PRESCRIPTIONS,
   };
 }
 
@@ -104,6 +183,13 @@ function buildPrescriptionsTableRow(
   medicationDispense: Array<MedicationDispense>,
   medicationRequestExpirationPeriodInDays: number,
 ): PrescriptionsTableRow {
+  const stage = computePrescriptionStage(
+    medicationRequests,
+    medicationDispense,
+    medicationRequestExpirationPeriodInDays,
+  );
+  // a dispensed prescription whose order is still running reads "Dispensed" rather than "Active"
+  const status = computePrescriptionStatusMessageCode(medicationRequests, medicationRequestExpirationPeriodInDays);
   return {
     id: encounter?.id,
     created: encounter?.period?.start,
@@ -123,7 +209,8 @@ function buildPrescriptionsTableRow(
     lastDispenser:
       medicationDispense && medicationDispense[0]?.performer && medicationDispense[0]?.performer[0]?.actor.display,
     prescriber: [...new Set(medicationRequests.map((o) => o.requester.display))].join(', '),
-    status: computePrescriptionStatusMessageCode(medicationRequests, medicationRequestExpirationPeriodInDays),
+    status: stage === 'dispensed' && status === 'active' ? 'dispensed' : status,
+    stage,
     location: encounter?.location ? encounter?.location[0]?.location.display : null,
   };
 }
@@ -233,6 +320,22 @@ export function useMedicationRequest(reference: string, refreshInterval) {
     medicationRequest: data ? data.data : null,
     isLoading,
   };
+}
+
+/**
+ * Sets the order's fulfiller status and comment through the REST API, the way the Laboratory app
+ * does. The comment ("Picked by ...", the reason for declining) is shown with the order.
+ */
+export function updateOrderFulfillerDetails(
+  orderUuid: string,
+  fulfillerStatus: MedicationRequestFulfillerStatus,
+  fulfillerComment?: string,
+) {
+  return openmrsFetch(`${restBaseUrl}/order/${orderUuid}/fulfillerdetails/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: { fulfillerStatus, ...(fulfillerComment ? { fulfillerComment } : {}) },
+  });
 }
 
 export function updateMedicationRequestFulfillerStatus(

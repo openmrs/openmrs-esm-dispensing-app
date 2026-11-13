@@ -2,7 +2,7 @@ import React from 'react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useConfig, useSession } from '@openmrs/esm-framework';
-import { usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import { usePrescriptionsByStage, usePrescriptionsTable } from '../medication-request/medication-request.resource';
 import PrescriptionTabPanel from './prescription-tab-panel.component';
 import { type SimpleLocation } from '../types';
 
@@ -11,6 +11,7 @@ vi.mock('../medication-request/medication-request.resource');
 const mockUseConfig = vi.mocked(useConfig);
 const mockUseSession = vi.mocked(useSession);
 const mockUsePrescriptionsTable = vi.mocked(usePrescriptionsTable);
+const mockUsePrescriptionsByStage = vi.mocked(usePrescriptionsByStage);
 
 const descendantLocations: SimpleLocation[] = [
   { id: 'loc-mch', name: 'KGH MCH', associatedPharmacyLocation: null },
@@ -18,6 +19,13 @@ const descendantLocations: SimpleLocation[] = [
 ];
 
 beforeEach(() => {
+  mockUsePrescriptionsByStage.mockReturnValue({
+    rows: [],
+    counts: { ordered: 0, picked: 0, dispensed: 0, declined: 0 },
+    error: undefined,
+    isLoading: false,
+    isTruncated: false,
+  });
   mockUsePrescriptionsTable.mockReturnValue({
     prescriptionsTableRows: [],
     error: undefined,

@@ -13,7 +13,7 @@ import {
   type Workspace2DefinitionProps,
 } from '@openmrs/esm-framework';
 import { saveMedicationDispense, useReasonForCloseValueSet } from '../medication-dispense/medication-dispense.resource';
-import { updateMedicationRequestFulfillerStatus } from '../medication-request/medication-request.resource';
+import { updateOrderFulfillerDetails } from '../medication-request/medication-request.resource';
 import { type MedicationDispense, MedicationDispenseStatus, MedicationRequestFulfillerStatus } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import { getUuidFromReference, markEncounterAsStale, revalidate } from '../utils';
@@ -74,11 +74,15 @@ const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormPro
         .then((response) => {
           // only update request status when added a new dispense event, not updating
           if (response.ok && !medicationDispense.id) {
-            return updateMedicationRequestFulfillerStatus(
+            // like a rejected lab request, record the reason on the order so the prescriber can see it
+            const reasonCode = medicationDispensePayload.statusReasonCodeableConcept?.coding[0]?.code;
+            const reason = reasonsForClose.find((option) => option.id === reasonCode)?.text;
+            return updateOrderFulfillerDetails(
               getUuidFromReference(
                 medicationDispensePayload.authorizingPrescription[0].reference, // assumes authorizing prescription exist
               ),
               MedicationRequestFulfillerStatus.declined,
+              reason,
             );
           } else {
             return response;
@@ -153,7 +157,7 @@ const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormPro
               <ComboBox
                 id="reasonForPause"
                 items={reasonsForClose}
-                titleText={t('reasonForClose', 'Reason for close')}
+                titleText={t('reasonForDecline', 'Reason for decline')}
                 itemToString={(item) => item?.text}
                 initialSelectedItem={{
                   id: medicationDispense.statusReasonCodeableConcept?.coding[0]?.code,
@@ -185,7 +189,7 @@ const CloseDispenseForm: React.FC<Workspace2DefinitionProps<CloseDispenseFormPro
             {getCoreTranslation('cancel', 'Cancel')}
           </Button>
           <Button disabled={!isValid || isSubmitting} onClick={handleSubmit}>
-            {t(mode === 'enter' ? 'close' : 'saveChanges', mode === 'enter' ? 'Close' : 'Save changes')}
+            {t(mode === 'enter' ? 'decline' : 'saveChanges', mode === 'enter' ? 'Decline' : 'Save changes')}
           </Button>
         </section>
       </Form>

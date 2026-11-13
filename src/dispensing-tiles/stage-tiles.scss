@@ -1,0 +1,36 @@
+@use '@carbon/layout';
+@use '@carbon/type';
+@use '@openmrs/esm-styleguide/src/vars' as *;
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: layout.$spacing-05;
+  margin: layout.$spacing-05 0;
+}
+
+.tile,
+.selectedTile {
+  border: 1px solid $ui-03;
+  min-height: 7rem;
+}
+
+.selectedTile {
+  border-color: $color-blue-60-2;
+  box-shadow: inset 0 -3px 0 $color-blue-60-2;
+}
+
+.label {
+  @include type.type-style('heading-compact-01');
+  color: $text-02;
+}
+
+.count {
+  @include type.type-style('heading-05');
+  margin: layout.$spacing-03 0;
+}
+
+.caption {
+  @include type.type-style('label-01');
+  color: $text-02;
+}
