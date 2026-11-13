@@ -32,7 +32,13 @@ const DispenseActionButton: React.FC<DispenseActionButtonProps> = ({
   const dispenseWorkspaceProps = {
     patientUuid,
     encounterUuid,
-    medicationDispense: initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, true),
+    medicationDispense: initiateMedicationDispenseBody(
+      medicationRequestBundle.request,
+      session,
+      providers,
+      true,
+      quantityRemaining,
+    ),
     medicationRequestBundle,
     quantityRemaining,
     quantityDispensed,

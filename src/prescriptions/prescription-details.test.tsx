@@ -1,6 +1,8 @@
 import React from 'react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import i18next from 'i18next';
+import { initReactI18next } from 'react-i18next';
 import { useConfig } from '@openmrs/esm-framework';
 import { usePrescriptionDetails, usePatientAllergies } from '../medication-request/medication-request.resource';
 import { useStaleEncounterUuids } from '../utils';
@@ -8,6 +10,11 @@ import type * as Utils from '../utils';
 import PrescriptionDetails from './prescription-details.component';
 
 vi.mock('../medication-request/medication-request.resource');
+vi.mock('../components/medication-event.component', () => ({
+  default: ({ status }) => <div>{status}</div>,
+}));
+vi.mock('../components/action-buttons.component', () => ({ default: () => null }));
+vi.mock('./prescription-actions.component', () => ({ default: () => null }));
 vi.mock('../utils', async (importOriginal) => {
   const actual = await importOriginal<typeof Utils>();
   return {
@@ -267,6 +274,74 @@ describe('PrescriptionDetails', () => {
       render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
 
       expect(screen.getByText(/no prescriptions found/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Status tag', () => {
+    const quantity = { value: 5, unit: 'Tablet', code: 'tab', system: 'sys' };
+    const request = {
+      resourceType: 'MedicationRequest',
+      id: 'request-1',
+      status: 'active',
+      dispenseRequest: { numberOfRepeatsAllowed: 0, quantity, validityPeriod: { start: new Date().toISOString() } },
+    };
+    const dispense = (id: string, value: number) => ({
+      resourceType: 'MedicationDispense',
+      id,
+      status: 'completed',
+      quantity: { ...quantity, value },
+      whenHandedOver: new Date().toISOString(),
+    });
+
+    beforeAll(async () => {
+      // a separate instance: the framework mock listens for the default instance being initialised
+      await i18next.createInstance().use(initReactI18next).init({ lng: 'en', resources: {} });
+    });
+
+    beforeEach(() => {
+      mockUsePatientAllergies.mockReturnValue({
+        allergies: [],
+        totalAllergies: 0,
+        error: undefined,
+        isLoading: false,
+      });
+    });
+
+    const renderWithDispenses = (dispenses, restrictTotalQuantityDispensed: boolean) => {
+      mockUseConfig.mockReturnValue({
+        refreshInterval: 10000,
+        medicationRequestExpirationPeriodInDays: 90,
+        dispenseBehavior: { allowModifyingPrescription: false, restrictTotalQuantityDispensed },
+      });
+      mockUsePrescriptionDetails.mockReturnValue({
+        medicationRequestBundles: [{ request, dispenses }],
+        prescriptionDate: new Date(),
+        error: undefined,
+        isLoading: false,
+        mutate: vi.fn(),
+        isValidating: false,
+      } as any);
+      render(<PrescriptionDetails encounterUuid={mockEncounterUuid} patientUuid={mockPatientUuid} />);
+    };
+
+    it('shows a partial dispense as partially dispensed with the quantities, not "Dispensed"', () => {
+      renderWithDispenses([dispense('dispense-1', 2)], true);
+
+      expect(screen.getByText('Partially dispensed 2/5')).toBeInTheDocument();
+      expect(screen.queryByText('Dispensed')).not.toBeInTheDocument();
+    });
+
+    it('adds up several partial dispenses', () => {
+      renderWithDispenses([dispense('dispense-2', 1), dispense('dispense-1', 2)], true);
+
+      expect(screen.getByText('Partially dispensed 3/5')).toBeInTheDocument();
+    });
+
+    it('keeps "Dispensed" when the total quantity is not restricted', () => {
+      renderWithDispenses([dispense('dispense-1', 2)], false);
+
+      expect(screen.getByText('Dispensed')).toBeInTheDocument();
+      expect(screen.queryByText(/Partially dispensed/)).not.toBeInTheDocument();
     });
   });
 });

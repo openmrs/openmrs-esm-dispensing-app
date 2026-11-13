@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
 import {
   computeMedicationRequestCombinedStatus,
+  computeTotalQuantityDispensed,
+  computeTotalQuantityOrdered,
   getConceptCodingDisplay,
   useStaleEncounterUuids,
   getMostRecentMedicationDispenseStatus,
@@ -67,6 +69,22 @@ const PrescriptionDetails: React.FC<{
     // If there is no combined status, but the last event was a dispense, display "dispensed"
     const mostRecentDispenseStatus = getMostRecentMedicationDispenseStatus(medicationRequestBundle.dispenses);
     if (mostRecentDispenseStatus === MedicationDispenseStatus.completed) {
+      // when the total quantity is restricted, an active request with a dispense has only been partly dispensed
+      // (the request is completed once nothing remains), so say so rather than "Dispensed"
+      if (config.dispenseBehavior?.restrictTotalQuantityDispensed) {
+        const quantityOrdered = computeTotalQuantityOrdered(medicationRequestBundle.request);
+        const quantityDispensed = computeTotalQuantityDispensed(medicationRequestBundle.dispenses);
+        if (quantityOrdered && quantityDispensed < quantityOrdered) {
+          return (
+            <Tag type="blue">
+              {t('partiallyDispensed', 'Partially dispensed {{quantityDispensed}}/{{quantityOrdered}}', {
+                quantityDispensed,
+                quantityOrdered,
+              })}
+            </Tag>
+          );
+        }
+      }
       return <Tag type="gray">{t('dispensed', 'Dispensed')}</Tag>;
     }
 

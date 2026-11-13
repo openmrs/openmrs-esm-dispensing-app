@@ -98,6 +98,7 @@
   "orderedMedication": "ordered medication",
   "orders": "Orders",
   "ordersForHomeDelivery": "Orders for home delivery",
+  "partiallyDispensed": "Partially dispensed {{quantityDispensed}}/{{quantityOrdered}}",
   "patientInstructions": "Patient instructions",
   "patientName": "Patient name",
   "pause": "Pause",
