@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
 import { fhirBaseUrl, openmrsFetch, parseDate, restBaseUrl } from '@openmrs/esm-framework';
+import { type StageDateRange, stageDateParams } from '../prescriptions/stage-date-range';
 import {
   JSON_MERGE_PATH_MIME_TYPE,
   OPENMRS_FHIR_EXT_REQUEST_FULFILLER_STATUS,
@@ -114,40 +115,59 @@ function buildPrescriptionsTableRows(
   return prescriptionsTableRows;
 }
 
-/** Page size the server allows when loading every prescription for the stage lists and tiles. */
-const STAGE_PAGE_SIZE = 100;
+/** Prescriptions per request for the stage lists and tiles. */
+const STAGE_PAGE_SIZE = 20;
+/** Pages loaded at the same time: each prescription costs the server ~0.25 s, so small parallel pages finish soonest. */
+const STAGE_PARALLEL_PAGES = 5;
 /** Upper bound on prescriptions loaded for the stage lists, to keep the page responsive. */
 const STAGE_MAX_PRESCRIPTIONS = 2000;
 
-async function fetchAllPrescriptionPages(url: string) {
-  const entries: EncounterResponse['entry'] = [];
-  let offset = 0;
-  let total = 0;
-  do {
-    const response = await openmrsFetch<EncounterResponse>(`${url}&_getpagesoffset=${offset}`);
-    entries.push(...(response.data?.entry ?? []));
-    total = response.data?.total ?? 0;
-    offset += STAGE_PAGE_SIZE;
-  } while (offset < total && offset < STAGE_MAX_PRESCRIPTIONS);
+/** Offsets of the pages after the first, up to the cap. */
+export function remainingPageOffsets(total: number, pageSize = STAGE_PAGE_SIZE, max = STAGE_MAX_PRESCRIPTIONS) {
+  const offsets: Array<number> = [];
+  for (let offset = pageSize; offset < total && offset < max; offset += pageSize) {
+    offsets.push(offset);
+  }
+  return offsets;
+}
+
+/** Loads the first page, then the others STAGE_PARALLEL_PAGES at a time instead of one after another. */
+export async function fetchAllPrescriptionPages(url: string) {
+  const first = await openmrsFetch<EncounterResponse>(`${url}&_getpagesoffset=0`);
+  const total = first.data?.total ?? 0;
+  const offsets = remainingPageOffsets(total);
+  const rest: Array<{ data: EncounterResponse }> = [];
+  for (let i = 0; i < offsets.length; i += STAGE_PARALLEL_PAGES) {
+    const batch = offsets.slice(i, i + STAGE_PARALLEL_PAGES);
+    rest.push(
+      ...(await Promise.all(
+        batch.map((offset) => openmrsFetch<EncounterResponse>(`${url}&_getpagesoffset=${offset}`)),
+      )),
+    );
+  }
+  const entries: EncounterResponse['entry'] = [
+    ...(first.data?.entry ?? []),
+    ...rest.flatMap((response) => response.data?.entry ?? []),
+  ];
   return { entries, total };
 }
 
 /**
- * Every prescription from the last `medicationRequestExpirationPeriodInDays` days, sorted into the
- * lab-style stages (Ordered, Picked, Dispensed, Declined). Backs the stage tabs and tiles.
+ * The prescriptions of the chosen period (today by default, see {@link StageDateRange}), sorted into
+ * the lab-style stages (Ordered, Picked, Dispensed, Declined). Backs the stage tabs and tiles.
  */
 export function usePrescriptionsByStage(
   loadData: boolean,
   patientSearchTerm: string = '',
   locations: SimpleLocation[] = [],
+  dateRange: StageDateRange,
   medicationRequestExpirationPeriodInDays: number,
   refreshInterval: number,
 ) {
-  const since = dayjs(new Date()).startOf('day').subtract(medicationRequestExpirationPeriodInDays, 'day').toISOString();
   const location = locations?.map((l) => l.id).join(',');
   // starts with the table endpoint so revalidate() refreshes it after every pick, dispense or decline
   const url = loadData
-    ? `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_count=${STAGE_PAGE_SIZE}&date=ge${since}` +
+    ? `${fhirBaseUrl}/${PRESCRIPTIONS_TABLE_ENDPOINT}&_count=${STAGE_PAGE_SIZE}${stageDateParams(dateRange)}` +
       (patientSearchTerm ? `&patientSearchTerm=${patientSearchTerm}` : '') +
       (location ? `&location=${location}` : '')
     : null;

@@ -19,6 +19,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { formatDatetime, parseDate, useConfig } from '@openmrs/esm-framework';
 import { usePrescriptionsByStage, usePrescriptionsTable } from '../medication-request/medication-request.resource';
+import { useStageDateRange } from './stage-date-range';
 import { type PharmacyConfig } from '../config-schema';
 import { type PrescriptionStage, type SimpleLocation } from '../types';
 import PatientInfoCell from '../patient/patient-info-cell.component';
@@ -60,10 +61,12 @@ const PrescriptionsTable: React.FC<PrescriptionsTableProps> = ({
     config.refreshInterval,
   );
 
+  const { range } = useStageDateRange();
   const byStage = usePrescriptionsByStage(
     loadData && Boolean(stage),
     debouncedSearchTerm,
     locations,
+    range,
     config.medicationRequestExpirationPeriodInDays,
     config.refreshInterval,
   );

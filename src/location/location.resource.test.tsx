@@ -29,6 +29,7 @@ const pharmacyConfig: PharmacyConfig = {
     allowModifyingPrescription: false,
     restrictTotalQuantityDispensed: false,
     requirePickBeforeDispense: true,
+    bulkPickAndDispense: true,
   },
   dispenserProviderRoles: [],
   locationBehavior: {

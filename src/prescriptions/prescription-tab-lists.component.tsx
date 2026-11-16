@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Tab, Tabs, TabList, TabPanels } from '@carbon/react';
+import { DatePicker, DatePickerInput, Tab, Tabs, TabList, TabPanels } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { showSnackbar, useConfig, useSession } from '@openmrs/esm-framework';
 import { type CustomTab, type PrescriptionStage } from '../types';
@@ -7,6 +7,7 @@ import { type PharmacyConfig } from '../config-schema';
 import { MissingOptionalBackendDependencyError, useLocations } from '../location/location.resource';
 import { usePrescriptionsByStage } from '../medication-request/medication-request.resource';
 import StageTiles from '../dispensing-tiles/stage-tiles.component';
+import { useStageDateRange } from './stage-date-range';
 import PatientSearchTabPanel from './patient-search-tab-panel.component';
 import PrescriptionTabPanel from './prescription-tab-panel.component';
 import styles from './prescriptions.scss';
@@ -45,10 +46,12 @@ const PrescriptionTabLists: React.FC = () => {
     () => locations?.filter((location) => location.associatedPharmacyLocation === session.sessionLocation?.uuid) ?? [],
     [locations, session],
   );
+  const { range, setRange } = useStageDateRange();
   const { counts, isLoading: isCountsLoading } = usePrescriptionsByStage(
     !isLocationsLoading,
     '',
     sessionPharmacyLocations,
+    range,
     config.medicationRequestExpirationPeriodInDays,
     config.refreshInterval,
   );
@@ -69,6 +72,22 @@ const PrescriptionTabLists: React.FC = () => {
   return (
     <main className="omrs-main-content">
       <section className={styles.prescriptionTabsContainer}>
+        <div className={styles.stageDateRange}>
+          <DatePicker
+            datePickerType="range"
+            dateFormat="d/m/Y"
+            maxDate={new Date().toISOString()}
+            value={[range.start, range.end]}
+            onChange={([start, end]: Array<Date>) => start && setRange(start, end ?? start)}>
+            <DatePickerInput
+              id="stage-date-from"
+              labelText={t('prescriptionsFrom', 'Prescriptions from')}
+              placeholder="dd/mm/yyyy"
+              size="md"
+            />
+            <DatePickerInput id="stage-date-to" labelText={t('to', 'to')} placeholder="dd/mm/yyyy" size="md" />
+          </DatePicker>
+        </div>
         <StageTiles
           counts={counts}
           isLoading={isCountsLoading}

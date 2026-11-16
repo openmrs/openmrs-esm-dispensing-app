@@ -150,3 +150,10 @@
 .paginationContainer {
   width: 100%;
 }
+
+// MediHealth: the period of the stage tabs (today by default)
+.stageDateRange {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.5rem 0 0.75rem;
+}

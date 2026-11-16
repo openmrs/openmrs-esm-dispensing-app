@@ -709,3 +709,37 @@ const dispensingStore = createGlobalStore<DispensingStore>('dispensing-store', {
 export function useStaleEncounterUuids() {
   return useStore(dispensingStore);
 }
+
+/**
+ * MediHealth bulk workflow. A drug can be picked when its order is active, it was not declined and
+ * nobody picked or dispensed it yet ("Pick Order" picks all of them).
+ */
+export function isBundlePickable(bundle: MedicationRequestBundle, expirationPeriodInDays: number): boolean {
+  return (
+    computeMedicationRequestStatus(bundle.request, expirationPeriodInDays) === MedicationRequestStatus.active &&
+    !isBundleDeclined(bundle) &&
+    !isMedicationRequestPicked(bundle.request, bundle.dispenses)
+  );
+}
+
+/**
+ * A picked drug that has not been dispensed or declined yet ("Dispense Drugs" dispenses all of them).
+ */
+export function isBundleDispensable(bundle: MedicationRequestBundle, expirationPeriodInDays: number): boolean {
+  const fulfillerStatus = getFulfillerStatus(bundle.request);
+  return (
+    computeMedicationRequestStatus(bundle.request, expirationPeriodInDays) === MedicationRequestStatus.active &&
+    !isBundleDeclined(bundle) &&
+    (fulfillerStatus === MedicationRequestFulfillerStatus.in_progress ||
+      fulfillerStatus === MedicationRequestFulfillerStatus.on_hold) &&
+    !(bundle.dispenses ?? []).some((dispense) => dispense.status === MedicationDispenseStatus.completed)
+  );
+}
+
+/** "Declined" drugs are left off the prescription total; everything else counts. */
+export function isBundleDeclined(bundle: MedicationRequestBundle): boolean {
+  return (
+    getMostRecentMedicationDispenseStatus(bundle.dispenses) === MedicationDispenseStatus.declined ||
+    getFulfillerStatus(bundle.request) === MedicationRequestFulfillerStatus.declined
+  );
+}
