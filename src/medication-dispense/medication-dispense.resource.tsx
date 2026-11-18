@@ -65,7 +65,7 @@ export function useProviders(providerRoles: Array<string>) {
       : `${restBaseUrl}/provider?v=${rep})`,
     openmrsFetch,
   );
-  return data?.data?.results.sort((a, b) => a.person?.display.localeCompare(b.person?.display));
+  return data?.data?.results.sort((a, b) => a.person?.display.localeCompare(b.person?.display)) ?? [];
 }
 
 export function useReasonForPauseValueSet(uuid: string) {
