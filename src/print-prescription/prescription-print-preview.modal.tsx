@@ -32,14 +32,14 @@ const PrescriptionPrintPreviewModal: React.FC<PrescriptionPrintPreviewModalProps
   const componentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-    onBeforeGetContent: () => {
+    contentRef: componentRef,
+    onBeforePrint: () => {
       setPrintError(null);
+      return Promise.resolve();
     },
-    onPrintError: (error) => {
+    onPrintError: () => {
       setPrintError(t('printError', 'An error occurred while printing. Please try again.'));
     },
-    copyStyles: true,
   });
 
   return (
