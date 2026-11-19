@@ -94,11 +94,17 @@ export function useValueSet(uuid: string) {
 }
 
 // TODO: what about the issue with the repetitive reloading?
+/**
+ * @param quantityRemaining when restrictTotalQuantityDispensed is on, the quantity still to dispense; the
+ *   dispense quantity is pre-filled with it (capped at the prescribed quantity) instead of the full prescribed
+ *   quantity, so a second dispense after a partial one does not suggest more than is left
+ */
 export function initiateMedicationDispenseBody(
   medicationRequest: MedicationRequest,
   session: Session,
   providers: Provider[],
   populateDispenseInformation: boolean,
+  quantityRemaining?: number,
 ): MedicationDispense {
   let medicationDispense: MedicationDispense = {
     resourceType: 'MedicationDispense',
@@ -129,7 +135,7 @@ export function initiateMedicationDispenseBody(
     medicationDispense = {
       ...medicationDispense,
       quantity: {
-        value: medicationRequest.dispenseRequest?.quantity?.value,
+        value: computeInitialDispenseQuantity(medicationRequest.dispenseRequest?.quantity?.value, quantityRemaining),
         code: medicationRequest.dispenseRequest?.quantity?.code,
         unit: medicationRequest.dispenseRequest?.quantity?.unit,
         system: medicationRequest.dispenseRequest?.quantity?.system,
@@ -165,6 +171,20 @@ export function initiateMedicationDispenseBody(
     };
   }
   return medicationDispense;
+}
+
+/**
+ * The quantity to pre-fill on a new dispense: the prescribed quantity, or what remains to dispense when that is
+ * known (restrictTotalQuantityDispensed) and smaller.
+ */
+export function computeInitialDispenseQuantity(prescribedQuantity: number, quantityRemaining?: number): number {
+  if (quantityRemaining === null || quantityRemaining === undefined || quantityRemaining < 0) {
+    return prescribedQuantity;
+  }
+  if (prescribedQuantity === null || prescribedQuantity === undefined) {
+    return quantityRemaining;
+  }
+  return Math.min(prescribedQuantity, quantityRemaining);
 }
 
 export const blankSubstitution = {
