@@ -170,11 +170,19 @@ const DispenseForm: React.FC<Workspace2DefinitionProps<DispenseFormProps, {}, {}
               MedicationRequestFulfillerStatus.completed,
             ).then(() => response);
           }
-          const newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
+          let newFulfillerStatus = computeNewFulfillerStatusAfterDispenseEvent(
             medicationDispensePayload,
             medicationRequestBundle,
             config.dispenseBehavior.restrictTotalQuantityDispensed,
           );
+          // lab-style workflow: dispensing a picked prescription completes it, like approving a lab result
+          if (
+            config.dispenseBehavior.requirePickBeforeDispense &&
+            !newFulfillerStatus &&
+            getFulfillerStatus(medicationRequestBundle.request) === MedicationRequestFulfillerStatus.in_progress
+          ) {
+            newFulfillerStatus = MedicationRequestFulfillerStatus.completed;
+          }
           if (getFulfillerStatus(medicationRequestBundle.request) !== newFulfillerStatus) {
             return updateMedicationRequestFulfillerStatus(
               getUuidFromReference(

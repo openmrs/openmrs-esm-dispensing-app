@@ -1,5 +1,5 @@
-import React from 'react';
-import { SkeletonText, Tag, Tile } from '@carbon/react';
+import React, { useState } from 'react';
+import { Checkbox, SkeletonText, Tag, Tile } from '@carbon/react';
 import { WarningFilled } from '@carbon/react/icons';
 import { useTranslation } from 'react-i18next';
 import { type PatientUuid, useConfig, UserHasAccess } from '@openmrs/esm-framework';
@@ -8,7 +8,11 @@ import {
   getConceptCodingDisplay,
   useStaleEncounterUuids,
   getMostRecentMedicationDispenseStatus,
+  isBundleDeclined,
+  isBundleDispensable,
 } from '../utils';
+import { formatNaira, usePharmacyBill } from '../medication-request/pharmacy-bill.resource';
+import BulkActions from './bulk-actions.component';
 import { PRIVILEGE_CREATE_DISPENSE } from '../constants';
 import {
   type AllergyIntolerance,
@@ -37,6 +41,28 @@ const PrescriptionDetails: React.FC<{
   } = usePatientAllergies(patientUuid, config.refreshInterval);
   const { medicationRequestBundles, error, isLoading } = usePrescriptionDetails(encounterUuid, config.refreshInterval);
   const { staleEncounterUuids } = useStaleEncounterUuids();
+  const bulk = config.dispenseBehavior.bulkPickAndDispense;
+  const { linesByOrder, error: pricesError, mutate: reloadPrices } = usePharmacyBill(bulk ? encounterUuid : null);
+  const pricesAvailable = bulk && !pricesError;
+  // "Picked from store" ticks: only to help the pharmacist keep track while collecting the drugs
+  const [pickedFromStore, setPickedFromStore] = useState<Record<string, boolean>>({});
+
+  const priceLine = (bundle: MedicationRequestBundle): React.ReactNode => {
+    const line = linesByOrder[bundle.request.id];
+    if (!pricesAvailable || !line) {
+      return null;
+    }
+    return (
+      <p className={styles.priceLine} data-testid="drug-price">
+        {line.priced
+          ? `${line.quantity} ${line.quantityUnits ?? ''} \u00d7 ${formatNaira(line.unitPrice)} = `
+          : t('noPriceInBilling', 'No price in billing')}
+        {line.priced && <strong>{formatNaira(line.total)}</strong>}
+        {line.billed && <Tag type="green">{t('billedOn', 'Billed ({{receipt}})', { receipt: line.billed })}</Tag>}
+        {isBundleDeclined(bundle) && <span> {t('notCharged', '(declined, not charged)')}</span>}
+      </p>
+    );
+  };
 
   const generateStatusTag = (medicationRequestBundle: MedicationRequestBundle): React.ReactNode => {
     const combinedStatus: MedicationRequestCombinedStatus = computeMedicationRequestCombinedStatus(
@@ -146,6 +172,17 @@ const PrescriptionDetails: React.FC<{
               key={bundle.request.id}
               medicationEvent={bundle.request}
               status={generateStatusTag(bundle)}>
+              {priceLine(bundle)}
+              {bulk && isBundleDispensable(bundle, config.medicationRequestExpirationPeriodInDays) && (
+                <Checkbox
+                  id={`picked-from-store-${bundle.request.id}`}
+                  labelText={t('pickedFromStore', 'Picked from store')}
+                  checked={Boolean(pickedFromStore[bundle.request.id])}
+                  onChange={(_, { checked }) =>
+                    setPickedFromStore((current) => ({ ...current, [bundle.request.id]: checked }))
+                  }
+                />
+              )}
               <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
                 <ActionButtons
                   patientUuid={patientUuid}
@@ -159,6 +196,18 @@ const PrescriptionDetails: React.FC<{
         ) : (
           <p className={styles.emptyState}>{t('noPrescriptionsFound', 'No prescriptions found')}</p>
         ))}
+      {bulk && medicationRequestBundles?.length > 0 && (
+        <UserHasAccess privilege={PRIVILEGE_CREATE_DISPENSE}>
+          <BulkActions
+            encounterUuid={encounterUuid}
+            bundles={medicationRequestBundles}
+            linesByOrder={linesByOrder}
+            pricesAvailable={pricesAvailable}
+            onBillChanged={() => void reloadPrices()}
+            disabled={staleEncounterUuids.includes(encounterUuid)}
+          />
+        </UserHasAccess>
+      )}
       {medicationRequestBundles?.length > 0 && (
         <PrescriptionsActionsFooter
           encounterUuid={encounterUuid}

@@ -85,3 +85,12 @@ svg.allergiesIcon {
 .skeletonTile {
   width: 100%;
 }
+
+// MediHealth: drug price from billing
+.priceLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
