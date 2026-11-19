@@ -122,7 +122,8 @@ describe('MedicationEvent', () => {
   it('renders duration when available', () => {
     render(<MedicationEvent medicationEvent={baseMedicationRequest} />);
 
-    expect(screen.getByText(/for 7 d/)).toBeInTheDocument();
+    expect(screen.getByText(/forDurationDays/)).toBeInTheDocument();
+    expect(screen.queryByText(/for 7 d$/)).not.toBeInTheDocument();
   });
 
   it('renders quantity when available', () => {
