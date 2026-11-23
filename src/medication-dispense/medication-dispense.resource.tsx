@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import dayjs from 'dayjs';
 import useSWR from 'swr';
 import { fhirBaseUrl, restBaseUrl, openmrsFetch, type Session } from '@openmrs/esm-framework';
@@ -65,7 +66,10 @@ export function useProviders(providerRoles: Array<string>) {
       : `${restBaseUrl}/provider?v=${rep})`,
     openmrsFetch,
   );
-  return data?.data?.results.sort((a, b) => a.person?.display.localeCompare(b.person?.display));
+  return useMemo(
+    () => [...(data?.data?.results ?? [])].sort((a, b) => a.person?.display.localeCompare(b.person?.display)),
+    [data],
+  );
 }
 
 export function useReasonForPauseValueSet(uuid: string) {

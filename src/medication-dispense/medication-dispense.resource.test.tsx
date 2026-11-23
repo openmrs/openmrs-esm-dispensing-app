@@ -2,12 +2,14 @@ import dayjs from 'dayjs';
 import { vi, describe, expect, test } from 'vitest';
 import isToday from 'dayjs/plugin/isToday';
 import useSWR from 'swr';
+import { renderHook } from '@testing-library/react';
 import { openmrsFetch, type Session } from '@openmrs/esm-framework';
 import {
   deleteMedicationDispense,
   initiateMedicationDispenseBody,
   saveMedicationDispense,
   useOrderConfig,
+  useProviders,
   useSubstitutionReasonValueSet,
   useSubstitutionTypeValueSet,
 } from './medication-dispense.resource';
@@ -101,6 +103,56 @@ describe('Medication Dispense Resource tests', () => {
     useSWR.mockImplementation(() => ({ data: { data: 'mockedOrderConfig' } }));
     const orderConfig = useOrderConfig();
     expect(orderConfig.orderConfigObject).toBe('mockedOrderConfig');
+  });
+
+  test('useProviders returns an empty list until provider results load', () => {
+    const providers: Array<Provider> = [{ uuid: 'provider-a', person: { display: 'Ada' } }];
+    const mockUseSWR = vi.mocked(useSWR);
+    mockUseSWR.mockReturnValueOnce({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      isValidating: true,
+      mutate: vi.fn(),
+    });
+
+    const { result, rerender } = renderHook(() => useProviders(['Pharmacist']));
+
+    expect(result.current).toEqual([]);
+
+    mockUseSWR.mockReturnValueOnce({
+      data: { data: { results: providers } },
+      error: undefined,
+      isLoading: false,
+      isValidating: false,
+      mutate: vi.fn(),
+    });
+    rerender();
+
+    expect(result.current).toEqual(providers);
+  });
+
+  test('useProviders sorts a copy of the SWR results and keeps that copy stable', () => {
+    const results: Array<Provider> = [
+      { uuid: 'provider-z', person: { display: 'Zane' } },
+      { uuid: 'provider-a', person: { display: 'Ada' } },
+      { uuid: 'provider-m', person: { display: 'Maya' } },
+    ];
+    const cachedOrder = results.map((provider) => provider.uuid);
+    const swrResponse = { data: { data: { results } } };
+
+    // @ts-ignore
+    useSWR.mockImplementation(() => swrResponse);
+
+    const { result, rerender } = renderHook(() => useProviders(['Pharmacist']));
+
+    expect(result.current.map((provider) => provider.uuid)).toEqual(['provider-a', 'provider-m', 'provider-z']);
+    expect(result.current).not.toBe(results);
+    expect(results.map((provider) => provider.uuid)).toEqual(cachedOrder);
+
+    const sortedProviders = result.current;
+    rerender();
+    expect(result.current).toBe(sortedProviders);
   });
 
   test('useSubstitutionTypeValueSet should call fetch substitution type value set via SWR', () => {
