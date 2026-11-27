@@ -21,8 +21,9 @@ const MedicationEvent: React.FC<{
   medicationEvent: MedicationRequest | MedicationDispense;
   status?: ReactNode;
   children?: ReactNode;
+  additionalDetails?: ReactNode;
   isDispenseEvent?: boolean;
-}> = ({ medicationEvent, status = null, children, isDispenseEvent }) => {
+}> = ({ medicationEvent, status = null, children, additionalDetails = null, isDispenseEvent }) => {
   const { t } = useTranslation();
   const dosageInstruction = getDosageInstruction(medicationEvent.dosageInstruction);
   const isFreeTextDosage = calculateIsFreeTextDosage(dosageInstruction);
@@ -37,7 +38,7 @@ const MedicationEvent: React.FC<{
         [styles.dispenseEvent]: isDispenseEvent,
         [styles.isTablet]: isTablet,
       })}>
-      <div>
+      <div className={styles.details}>
         <p className={styles.medicationName}>
           {status}
           {status && ' '}
@@ -87,6 +88,7 @@ const MedicationEvent: React.FC<{
         {dosageInstruction?.additionalInstruction?.length > 0 && (
           <p className={styles.bodyLong01}>{dosageInstruction?.additionalInstruction[0].text}</p>
         )}
+        {additionalDetails}
       </div>
       {children}
     </Tile>
