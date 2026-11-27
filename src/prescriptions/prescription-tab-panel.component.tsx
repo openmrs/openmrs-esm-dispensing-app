@@ -5,11 +5,12 @@ import { useConfig, useDebounce, useSession } from '@openmrs/esm-framework';
 import { type PharmacyConfig } from '../config-schema';
 import PrescriptionsTable from './prescriptions-table.component';
 import styles from './prescriptions.scss';
-import { type SimpleLocation } from '../types';
+import { type PrescriptionStage, type SimpleLocation } from '../types';
 
 interface PrescriptionTabPanelProps {
   isTabActive: boolean;
   status?: string;
+  stage?: PrescriptionStage;
   customPrescriptionsTableEndpoint?: string;
   locations: SimpleLocation[];
   isLocationsLoading: boolean;
@@ -17,6 +18,7 @@ interface PrescriptionTabPanelProps {
 
 const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
   status,
+  stage,
   isTabActive,
   customPrescriptionsTableEndpoint,
   locations,
@@ -78,6 +80,7 @@ const PrescriptionTabPanel: React.FC<PrescriptionTabPanelProps> = ({
       <PrescriptionsTable
         loadData={isTabActive}
         status={status}
+        stage={stage}
         customPrescriptionsTableEndpoint={customPrescriptionsTableEndpoint}
         debouncedSearchTerm={debouncedSearchTerm}
         locations={

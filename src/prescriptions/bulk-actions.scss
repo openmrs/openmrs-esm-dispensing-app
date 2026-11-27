@@ -1,0 +1,20 @@
+@use '@carbon/layout';
+@use '@carbon/type';
+
+.bulkActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: layout.$spacing-05;
+  margin: layout.$spacing-05 0;
+}
+
+.total {
+  @include type.type-style('heading-compact-02');
+}
+
+.buttons {
+  display: flex;
+  gap: layout.$spacing-03;
+}

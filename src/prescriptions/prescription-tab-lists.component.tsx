@@ -1,10 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Tab, Tabs, TabList, TabPanels } from '@carbon/react';
+import { DatePicker, DatePickerInput, Tab, Tabs, TabList, TabPanels } from '@carbon/react';
 import { useTranslation } from 'react-i18next';
 import { showSnackbar, useConfig, useSession } from '@openmrs/esm-framework';
-import { type CustomTab } from '../types';
+import { type CustomTab, type PrescriptionStage } from '../types';
 import { type PharmacyConfig } from '../config-schema';
 import { MissingOptionalBackendDependencyError, useLocations } from '../location/location.resource';
+import { usePrescriptionsByStage } from '../medication-request/medication-request.resource';
+import StageTiles from '../dispensing-tiles/stage-tiles.component';
+import { useStageDateRange } from './stage-date-range';
 import PatientSearchTabPanel from './patient-search-tab-panel.component';
 import PrescriptionTabPanel from './prescription-tab-panel.component';
 import styles from './prescriptions.scss';
@@ -27,7 +30,31 @@ const PrescriptionTabLists: React.FC = () => {
       });
     }
   }, [locationsError, t]);
-  const [selectedTab, setSelectedTab] = useState(0);
+  // Lab-style stages, in the order of their tabs (after Search)
+  const stages: Array<{ stage: PrescriptionStage; title: string }> = [
+    { stage: 'ordered', title: t('ordered', 'Ordered') },
+    { stage: 'picked', title: t('picked', 'Picked') },
+    { stage: 'dispensed', title: t('dispensed', 'Dispensed') },
+    { stage: 'declined', title: t('declined', 'Declined') },
+  ];
+  const firstStageTab = 1;
+  const allPrescriptionsTab = firstStageTab + stages.length;
+  const [selectedTab, setSelectedTab] = useState(firstStageTab);
+
+  // the tiles count what the stage tabs show by default: the pharmacy linked to this session location
+  const sessionPharmacyLocations = useMemo(
+    () => locations?.filter((location) => location.associatedPharmacyLocation === session.sessionLocation?.uuid) ?? [],
+    [locations, session],
+  );
+  const { range, setRange } = useStageDateRange();
+  const { counts, isLoading: isCountsLoading } = usePrescriptionsByStage(
+    !isLocationsLoading,
+    '',
+    sessionPharmacyLocations,
+    range,
+    config.medicationRequestExpirationPeriodInDays,
+    config.refreshInterval,
+  );
 
   // filter tabs based on session location
   const customTabs: Array<CustomTab> = useMemo(() => {
@@ -45,17 +72,38 @@ const PrescriptionTabLists: React.FC = () => {
   return (
     <main className="omrs-main-content">
       <section className={styles.prescriptionTabsContainer}>
-        <Tabs onChange={handleTabChange}>
+        <div className={styles.stageDateRange}>
+          <DatePicker
+            datePickerType="range"
+            dateFormat="d/m/Y"
+            maxDate={new Date().toISOString()}
+            value={[range.start, range.end]}
+            onChange={([start, end]: Array<Date>) => start && setRange(start, end ?? start)}>
+            <DatePickerInput
+              id="stage-date-from"
+              labelText={t('prescriptionsFrom', 'Prescriptions from')}
+              placeholder="dd/mm/yyyy"
+              size="md"
+            />
+            <DatePickerInput id="stage-date-to" labelText={t('to', 'to')} placeholder="dd/mm/yyyy" size="md" />
+          </DatePicker>
+        </div>
+        <StageTiles
+          counts={counts}
+          isLoading={isCountsLoading}
+          selectedStage={stages[selectedTab - firstStageTab]?.stage}
+          onSelect={(stage) => setSelectedTab(firstStageTab + stages.findIndex((s) => s.stage === stage))}
+        />
+        <Tabs selectedIndex={selectedTab} onChange={handleTabChange}>
           <TabList aria-label={t('tabList', 'Tab List')} contained className={styles.tabsContainer}>
             <Tab title={t('search', 'Search')} id={'tab-search'} className={styles.tab}>
               {t('search', 'Search')}
             </Tab>
-            <Tab
-              title={t('activePrescriptions', 'Active Prescriptions')}
-              id={'tab-active-prescription'}
-              className={styles.tab}>
-              {t('activePrescriptions', 'Active Prescriptions')}
-            </Tab>
+            {stages.map(({ stage, title }) => (
+              <Tab key={stage} title={title} id={'tab-' + stage} className={styles.tab}>
+                {title} ({counts[stage]})
+              </Tab>
+            ))}
             <Tab title={t('allPrescriptions', 'All Prescriptions')} id={'tab-all-prescription'} className={styles.tab}>
               {t('allPrescriptions', 'All Prescriptions')}
             </Tab>
@@ -67,21 +115,24 @@ const PrescriptionTabLists: React.FC = () => {
           </TabList>
           <TabPanels>
             <PatientSearchTabPanel locations={locations} />
+            {stages.map(({ stage }, index) => (
+              <PrescriptionTabPanel
+                key={stage}
+                isTabActive={selectedTab === firstStageTab + index}
+                stage={stage}
+                locations={locations}
+                isLocationsLoading={isLocationsLoading}
+              />
+            ))}
             <PrescriptionTabPanel
-              isTabActive={selectedTab === 1}
-              status={'ACTIVE'}
-              locations={locations}
-              isLocationsLoading={isLocationsLoading}
-            />
-            <PrescriptionTabPanel
-              isTabActive={selectedTab === 2}
+              isTabActive={selectedTab === allPrescriptionsTab}
               status={''}
               locations={locations}
               isLocationsLoading={isLocationsLoading}
             />
             {customTabs.map((tab, index) => (
               <PrescriptionTabPanel
-                isTabActive={selectedTab === index + 3}
+                isTabActive={selectedTab === allPrescriptionsTab + 1 + index}
                 customPrescriptionsTableEndpoint={tab.customPrescriptionsTableEndpoint}
                 locations={locations}
                 isLocationsLoading={isLocationsLoading}

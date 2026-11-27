@@ -358,6 +358,7 @@ export enum MedicationRequestStatus {
  * hence the case difference from the other statuses
  */
 export enum MedicationRequestFulfillerStatus {
+  in_progress = 'IN_PROGRESS',
   on_hold = 'ON_HOLD',
   declined = 'DECLINED',
   completed = 'COMPLETED',
@@ -448,7 +449,14 @@ export interface PrescriptionsTableRow {
   lastDispenser: string;
   status: string;
   location: string;
+  stage?: PrescriptionStage;
 }
+
+/**
+ * Where a prescription is in the pharmacy's lab-style workflow: Ordered (waiting for the pharmacy),
+ * Picked (a pharmacist is working on it), Dispensed, or Declined.
+ */
+export type PrescriptionStage = 'ordered' | 'picked' | 'dispensed' | 'declined';
 
 export interface Quantity {
   value: number;

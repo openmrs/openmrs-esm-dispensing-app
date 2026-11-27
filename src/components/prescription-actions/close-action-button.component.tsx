@@ -27,6 +27,7 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
   const { t } = useTranslation();
 
   const closeDispenseFormProps = {
+    customWorkspaceTitle: t('declinePrescription', 'Decline prescription'),
     patientUuid,
     encounterUuid,
     medicationDispense: initiateMedicationDispenseBody(medicationRequestBundle.request, session, providers, false),
@@ -42,7 +43,7 @@ const CloseActionButton: React.FC<CloseActionButtonProps> = ({
   }
   return (
     <Button kind="danger" onClick={handleLaunchWorkspace} disabled={disabled}>
-      {t('close', 'Close')}
+      {t('decline', 'Decline')}
     </Button>
   );
 };
